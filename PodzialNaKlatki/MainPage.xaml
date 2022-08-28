@@ -5,6 +5,7 @@
     xmlns:local="using:PodzialNaKlatki"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
 
@@ -14,13 +15,21 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="100" />
         </Grid.RowDefinitions>
-        <TextBlock Grid.Row="0" Text="Podział na klatki" FontSize="24" HorizontalAlignment="Center" />
-        <TextBlock Grid.Row="2" Name="uiMsgText" VerticalAlignment="Center" />
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="150"/>
+        </Grid.ColumnDefinitions>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Text="Podział na klatki" FontSize="24" HorizontalAlignment="Center" />
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="3" Name="uiMsgText" VerticalAlignment="Center" />
         <!--<Button Grid.Row="2" HorizontalAlignment="Right" Content="Ok, co teraz?" Click="uiNextStep_Click"/>-->
 
-        <ScrollViewer Grid.Row="3" ZoomMode="Enabled"   >
+        <Button Name="uiOpen" Click="uiOpen_Click" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" >
+            <SymbolIcon Symbol="OpenFile"/>
+        </Button>
+        
+        <ScrollViewer Grid.Row="3" Grid.Column="0" ZoomMode="Enabled" Name="uiMainPicScroll" Visibility="Collapsed" >
             <!-- DoubleTapped="uiMainPic_Tapped"-->
             <!--  HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible"  -->
             <Image Name="uiFullPicture" RightTapped="uiMainPic_RightTapped">
@@ -42,21 +51,28 @@
         <Ellipse Name="uiTopOnLeft" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Left"  Fill="Blue" Width="8" Height="15" Margin="5,5,5,5"  Tapped="uiSetTop_Tapped"/>
         <Ellipse Name="uiTopOnRight" Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Right"  Fill="Blue" Width="8" Height="15" Margin="5,5,5,5"  Tapped="uiSetTop_Tapped"/>
 
-        <ListView Grid.Row="4" x:Name="uiPicList" Margin="5,10,10,10"  
-                      ScrollViewer.HorizontalScrollMode="Enabled" 
-                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                      ScrollViewer.VerticalScrollMode="Disabled"
-                      ScrollViewer.VerticalScrollBarVisibility="Hidden" >
-            <ListView.ItemContainerStyle>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
-                </Style>
-            </ListView.ItemContainerStyle>
-            <ListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <ItemsStackPanel Orientation="Horizontal"/>
-                </ItemsPanelTemplate>
-            </ListView.ItemsPanel>
+        <StackPanel Grid.Row="3" Grid.Column="1" Margin="10,5,10,5">
+            <!-- kolejne kontrolki -->
+            <muxc:NumberBox Name="uiTLleft" Header="Top left, X" Minimum="0" AcceptsExpression="true" SpinButtonPlacementMode="Inline" HorizontalAlignment="Left"/>
+            <muxc:NumberBox Name="uiTLtop" Header="Top right, Y" Minimum="0" AcceptsExpression="true" SpinButtonPlacementMode="Inline" HorizontalAlignment="Left"/>
+            <muxc:NumberBox Name="uiKwidth" Header="Szerokość klatki" Minimum="10" AcceptsExpression="true" SpinButtonPlacementMode="Inline" HorizontalAlignment="Left"/>
+            <muxc:NumberBox Name="uiKheight" Header="Wysokość klatki" Minimum="10" AcceptsExpression="true" SpinButtonPlacementMode="Inline" HorizontalAlignment="Left"/>
+            <muxc:NumberBox Name="uiKstep" Header="Skok klatki" Minimum="10" AcceptsExpression="true" SpinButtonPlacementMode="Inline" HorizontalAlignment="Left"/>
+
+            <Button HorizontalAlignment="Center" Content="Split!" Margin="0,10,0,10" Click="uiSplit_Click" />
+
+            <TextBox Name="uiFilePrefix" Header="Filename prefix" Width="50" HorizontalAlignment="Left" />
+            <muxc:NumberBox Name="uiCurrFrame" Header="Numer klatki" Minimum="0" AcceptsExpression="true" SpinButtonPlacementMode="Inline" HorizontalAlignment="Left"/>
+
+            <Button HorizontalAlignment="Center" Content="Save!" Margin="0,10,0,10" Click="uiSave_Click" Name="uiSave" IsEnabled="false"/>
+
+        </StackPanel>
+        
+        <ListView Grid.Row="3" Grid.Column="2" x:Name="uiPicList" Margin="5,10,10,10"  
+                      ScrollViewer.HorizontalScrollMode="Disabled" 
+                      ScrollViewer.HorizontalScrollBarVisibility="Hidden" 
+                      ScrollViewer.VerticalScrollMode="Enabled"
+                      ScrollViewer.VerticalScrollBarVisibility="Auto" >
 
             <ListView.ItemTemplate>
                 <DataTemplate>
@@ -67,7 +83,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Image Source="{Binding oImageSrc, Mode=OneWay }" Width="80" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" />
+                        <Image Source="{Binding oImageSrc, Mode=OneWay }" Width="100" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" />
                         <TextBlock Grid.Row="1"  Text="{Binding sData, Mode=OneWay }" />
                     </Grid>
                 </DataTemplate>
@@ -79,10 +95,10 @@
     <Page.BottomAppBar>
         <CommandBar>
             <AppBarButton Icon="OpenFile" Label="Open" Click="uiOpen_Click" />
-            <AppBarSeparator/>
-            <AppBarButton Icon="Play" Label="Split" Click="uiSplit_Click"/>
-            <AppBarSeparator/>
-            <AppBarButton Icon="Save" Label="Save"/>
+            <!--<AppBarSeparator/>
+            <AppBarButton Icon="Play" Label="Split" Click="uiSplit_Click"/>-->
+            <!--<AppBarSeparator/>
+            <AppBarButton Icon="Save" Label="Save"/>-->
         </CommandBar>
     </Page.BottomAppBar>
 </Page>

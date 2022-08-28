@@ -40,7 +40,7 @@ Public NotInheritable Class MainPage
     Private moBitmap As BitmapImage = Nothing
     Private moDataStream As MemoryStream = Nothing
     'Private moBitmap As Windows.Graphics.Imaging.SoftwareBitmap = Nothing 'BitmapImage = Nothing
-    Private mlKlatki As List(Of JednaKlatka) = New List(Of JednaKlatka)
+    Private mlKlatki As ObservableCollection(Of JednaKlatka) = New ObservableCollection(Of JednaKlatka)
     Private miStep As Integer = 0
 
 #Region "kolejne kroki"
@@ -77,6 +77,9 @@ Public NotInheritable Class MainPage
 #Region "wczytywanie wieloklatkowego obrazka"
 
     Private Async Sub uiOpen_Click(sender As Object, e As RoutedEventArgs)
+        uiOpen.Visibility = Visibility.Collapsed
+        uiMainPicScroll.Visibility = Visibility.Visible
+
         moFile = Await RunFilePicker()
         If moFile Is Nothing Then Return
         Await WczytajPicek(moFile)
@@ -224,26 +227,32 @@ Public NotInheritable Class MainPage
     Private Async Sub uiSetStep_Click(sender As Object, e As RoutedEventArgs)
         ' z menu, którym jest OK - zatwierdzenie z RightTapped (jakby co, mozna poprawic!)
         Select Case miStep
-            Case 0
-                ' uiMsgText.Text = "zaznacz LEWĄ krawędź na GÓRZE paska"
-                moPointLT = moLastPoint
-            Case 1
-                ' uiMsgText.Text = "zaznacz LEWĄ krawędź na DOLE paska"
-                moPointLT2 = moLastPoint
-                Await ObracanieGlownegoObrazka()
+            'Case 0
+            '    ' uiMsgText.Text = "zaznacz LEWĄ krawędź na GÓRZE paska"
+            '    moPointLT = moLastPoint
+            'Case 1
+            '    ' uiMsgText.Text = "zaznacz LEWĄ krawędź na DOLE paska"
+            '    moPointLT2 = moLastPoint
+            '    Await ObracanieGlownegoObrazka()
             Case 2
                 ' uiMsgText.Text = "zaznacz lewy górny róg najwyższej klatki"
                 moPointLT = moLastPoint
+                uiTLleft.Value = CInt(moPointLT.X * GetScale())
+                uiTLtop.Value = CInt(moPointLT.Y * GetScale())
             Case 3
                 'uiMsgText.Text = "zaznacz prawy dolny róg najwyższej klatki"
                 moPointRB = moLastPoint
+                uiKwidth.Value = CInt(Math.Abs(moPointRB.X - moPointLT.X) * GetScale())
+                uiKheight.Value = CInt(Math.Abs(moPointRB.Y - moPointLT.Y) * GetScale())
             Case 4
                 'uiMsgText.Text = "zaznacz lewy górny róg drugiej klatki"
                 moPointLT2 = moLastPoint
+                uiKstep.Value = CInt(Math.Abs(moPointLT2.Y - moPointLT.Y) * GetScale())
                 Await PodzielNaKlatki()
             Case Else
                 uiMsgText.Text = "a nie wiem co teraz?"
         End Select
+
 
         NextStep()
     End Sub
@@ -304,8 +313,24 @@ Public NotInheritable Class MainPage
 
     'End Sub
 
+    Private Sub WczytajPoprzednieWielkosci()
+
+        uiTLleft.Value = GetSettingsInt("uiTLleft")
+        uiTLtop.Value = GetSettingsInt("uiTLtop")
+
+        uiKwidth.Value = GetSettingsInt("uiKwidth", 10)
+        uiKheight.Value = GetSettingsInt("uiKheight", 10)
+
+        uiKstep.Value = GetSettingsInt("uiuiKstep", 10)
+
+        uiFilePrefix.Text = GetSettingsString("filePrefix", "fr")
+        uiCurrFrame.Value = GetSettingsInt("uiCurrFrame", 1)
+
+    End Sub
+
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         PokazGore()
+        WczytajPoprzednieWielkosci()
     End Sub
 
     Private Async Function MyCamerasTimerZmniejszanie(iMaxSize As Integer, oFileInput As Windows.Storage.StorageFile) As Task(Of Boolean)
@@ -358,18 +383,15 @@ Public NotInheritable Class MainPage
         fileStream.Dispose()
     End Function
 
+    Private Function GetScale() As Double
+        ' moBitmap.PixelHeight = 14040, czyli faktycznie rozmiar bitmapy
+        ' uiFullPicture.ActualHeight ≈ 5300, i wedle tego są podawane moPointLT2 !
 
+        Return moBitmap.PixelHeight / uiFullPicture.ActualHeight
+    End Function
 
 #Region "dzielenie na klatki"
 
-    Private Async Function PokazPickerKatalogu() As Task(Of Windows.Storage.StorageFolder)
-        Dim picker = New Windows.Storage.Pickers.FolderPicker
-        picker.FileTypeFilter.Add(".jpg")
-        picker.FileTypeFilter.Add(".tif")
-
-        Return Await picker.PickSingleFolderAsync
-
-    End Function
 
     Private Async Function PodzielNaKlatki() As Task
         ' wejście:
@@ -385,57 +407,55 @@ Public NotInheritable Class MainPage
         ' wyjscie: 
         '   mlKlatki
         mlKlatki.Clear()
-        DialogBox("teraz dzielę, ale tylko na niby")
-
 
         Dim decoder As Windows.Graphics.Imaging.BitmapDecoder =
                 Await Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(moDataStream.AsRandomAccessStream)
 
-        Dim dScale As Double = moBitmap.PixelHeight / uiFullPicture.ActualHeight
-        ' moBitmap.PixelHeight = 14040, czyli faktycznie rozmiar bitmapy
-        ' uiFullPicture.ActualHeight ≈ 5300, i wedle tego są podawane moPointLT2 !
+        Dim dScale As Double = GetScale()
 
-        Dim iCurrY As Integer = moPointLT.Y * dScale
-        Dim iCurrX As Integer = moPointLT.X * dScale
-        Dim iKlatkaWys As Integer = (moPointRB.Y - moPointLT.Y) * dScale
-        Dim iKlatkaSzer As Integer = (moPointRB.X - moPointLT.X) * dScale
-        Dim iYStep As Integer = (moPointLT2.Y - moPointLT.Y) * dScale
+        Dim iCurrY As Integer = uiTLtop.Value
+        Dim iCurrX As Integer = uiTLleft.Value
+        Dim iKlatkaWys As Integer = uiKheight.Value
+        Dim iKlatkaSzer As Integer = uiKwidth.Value
+        Dim iYStep As Integer = uiKstep.Value
 
-        Dim iLicznik As Integer = 0
-        Dim oFold As Windows.Storage.StorageFolder = Await PokazPickerKatalogu()
-        If oFold Is Nothing Then
-            DialogBox("FAIL PodzielNaKlatki, oFold Is Nothing")
-            Return
-        End If
+        Dim iLicznik As Integer = uiCurrFrame.Value
 
         While iCurrY + iKlatkaWys < moBitmap.PixelHeight
 
-            ' *TODO* licznik brac z Settings, i tam aktualizowac
-            Dim oFileOut As Windows.Storage.StorageFile =
-                Await oFold.CreateFileAsync("fr" & iLicznik.ToString("000") & ".jpg", Windows.Storage.CreationCollisionOption.FailIfExists)
-            Dim oOutStream As Windows.Storage.Streams.IRandomAccessStream =
-                Await oFileOut.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite)
+            Dim oKlatka As New JednaKlatka
+            oKlatka.sData = iLicznik.ToString("000")
+
+            oKlatka.oOutStream = New Windows.Storage.Streams.InMemoryRandomAccessStream
             Dim encoder As Windows.Graphics.Imaging.BitmapEncoder =
-                Await Windows.Graphics.Imaging.BitmapEncoder.CreateForTranscodingAsync(oOutStream, decoder)
+                Await Windows.Graphics.Imaging.BitmapEncoder.CreateForTranscodingAsync(oKlatka.oOutStream, decoder)
             'BitmapTransform w tej kolejnosci robi: scale, flip, rotation, crop
 
-            Dim oKlatka As New Windows.Graphics.Imaging.BitmapBounds
-            oKlatka.Height = iKlatkaWys
-            oKlatka.Width = iKlatkaSzer
-            oKlatka.X = iCurrX
-            oKlatka.Y = iCurrY
+            Dim oBounds As New Windows.Graphics.Imaging.BitmapBounds
+            oBounds.Height = iKlatkaWys
+            oBounds.Width = iKlatkaSzer
+            oBounds.X = iCurrX
+            oBounds.Y = iCurrY
 
-            encoder.BitmapTransform.Bounds = oKlatka
+            encoder.BitmapTransform.Bounds = oBounds
 
             Await encoder.FlushAsync()
-            Await oOutStream.FlushAsync
-            oOutStream.Dispose()
+            Await oKlatka.oOutStream.FlushAsync
+
+            ' teraz ze stream do bitmap
+            oKlatka.oOutStream.Seek(0)
+            oKlatka.oImageSrc = New BitmapImage
+            oKlatka.oImageSrc.SetSource(oKlatka.oOutStream)
+
+            mlKlatki.Add(oKlatka)
 
             iLicznik += 1
             iCurrY += iYStep
         End While
 
-        DialogBox("Stworzylem " & iLicznik & " ramek")
+        DialogBox("Stworzylem " & iLicznik - uiCurrFrame.Value & " ramek")
+        'uiPicList.ItemsSource = Nothing
+        uiPicList.ItemsSource = mlKlatki
 
 
     End Function
@@ -462,17 +482,78 @@ Public NotInheritable Class MainPage
 
     End Sub
 
-    Private Sub uiSplit_Click(sender As Object, e As RoutedEventArgs)
-        SprobujPoliczycKlatki
+    Private Sub ZapiszWartosci()
+
+        SetSettingsInt("uiTLleft", uiTLleft.Value)
+        SetSettingsInt("uiTLtop", uiTLtop.Value)
+
+        SetSettingsInt("uiKwidth", uiKwidth.Value)
+        SetSettingsInt("uiKheight", uiKheight.Value)
+
+        SetSettingsInt("uiuiKstep", uiKstep.Value)
+
+        SetSettingsString("filePrefix", uiFilePrefix.Text)
+        SetSettingsInt("uiCurrFrame", uiCurrFrame.Value)
+
+    End Sub
+
+    Private Async Sub uiSplit_Click(sender As Object, e As RoutedEventArgs)
+        Await PodzielNaKlatki()
+        ZapiszWartosci()
+        uiSave.IsEnabled = True
         'PodzielNaKlatki()
         'uiPicList.ItemsSource = mlKlatki
     End Sub
+#End Region
 
+    Private Async Function PokazPickerKatalogu() As Task(Of Windows.Storage.StorageFolder)
+        Dim picker = New Windows.Storage.Pickers.FolderPicker
+        picker.FileTypeFilter.Add(".jpg")
+        picker.FileTypeFilter.Add(".tif")
+
+        Return Await picker.PickSingleFolderAsync
+
+    End Function
+
+    Private Async Sub uiSave_Click(sender As Object, e As RoutedEventArgs)
+        If mlKlatki Is Nothing Then Return  ' zablokowane normalnie przez uiSplit
+        If mlKlatki.Count < 1 Then
+            DialogBox("ERROR: zero klatek? Nie mam nic do zapisania...")
+            Return
+        End If
+
+        Dim oFold As Windows.Storage.StorageFolder = Await PokazPickerKatalogu()
+        If oFold Is Nothing Then Return
+
+        For Each oKlatka As JednaKlatka In mlKlatki
+            Dim sFilename As String = uiFilePrefix.Text & oKlatka.sData & ".jpg"
+            If Await oFold.FileExistsAsync(sFilename) Then
+                DialogBox("Plik już istnieje!" & vbCrLf & sFilename)
+                Return
+            End If
+
+            Dim oFile As Windows.Storage.StorageFile =
+                Await oFold.CreateFileAsync(sFilename, Windows.Storage.CreationCollisionOption.FailIfExists)
+
+            Dim fileStream As Windows.Storage.Streams.IRandomAccessStream =
+                Await oFile.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite)
+            Dim oRdrStream = oKlatka.oOutStream.AsStreamForRead
+            oRdrStream.Seek(0, SeekOrigin.Begin)
+            oRdrStream.CopyTo(fileStream.AsStreamForWrite)
+
+            Await fileStream.FlushAsync
+            fileStream.Dispose()
+
+
+        Next
+
+    End Sub
 End Class
 
-#End Region
+
 
 Public Class JednaKlatka
     Public Property oImageSrc As BitmapImage
     Public Property sData As String
+    Public Property oOutStream As Windows.Storage.Streams.InMemoryRandomAccessStream
 End Class
