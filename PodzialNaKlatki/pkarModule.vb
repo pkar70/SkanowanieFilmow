@@ -1,1 +1,1 @@
-../../_mojeSuby/pkarModule.vb
+H:/Home/PIOTR/VStudio/_Vs2017/MyLibs/UWPappTel/pkarModuleWithLib.vb
