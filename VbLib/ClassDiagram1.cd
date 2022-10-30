@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Vblib.Autotagger" Collapsed="true">
+    <Position X="16.75" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Autotagger\Autotagger.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.Buffer">
+    <Position X="14.75" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAIgAAAAAAQAIAAgQAIAAAAAAQACgAA=</HashCode>
+      <FileName>Buffer\Buffer.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.CloudStorage" Collapsed="true">
+    <Position X="16.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CloudStorage\CloudStorage.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.Database" Collapsed="true">
+    <Position X="16.75" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Database\Database.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.LocalStorage" Collapsed="true">
+    <Position X="16.5" Y="1" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>LocalStorage\LocalStorage.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.PicSourceBase">
+    <Position X="9" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAABAAAAAgQAAAIoACBAAASAAIAgQAIAAQAAAQACgAA=</HashCode>
+      <FileName>PicSources\PicSourceBase.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.PostProcBase" Collapsed="true">
+    <Position X="16.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>PostProcessing\PostProcBase.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.ExifTag">
+    <Position X="11" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ICQAAIADgQAAABAAgCAAAQAAAAEAAEAEAQCAAAACAAA=</HashCode>
+      <FileName>Structy\ExifTag.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.GeneralTreeNode" Collapsed="true">
+    <Position X="14.75" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAIAAAAAAAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Structy\GeneralTree.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.GeneralTree" Collapsed="true">
+    <Position X="16.5" Y="6.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAACAgAAAAAAAAAAAAAAAAAAAAAII=</HashCode>
+      <FileName>Structy\GeneralTree.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.OnePic" Collapsed="true">
+    <Position X="15.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEABAAAAAAAAAAACAAAAAAIAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Structy\OnePic.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Vblib.OneSourcePic">
+    <Position X="13" Y="0.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAgAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAEAA=</HashCode>
+      <FileName>Structy\OneSourcePic.vb</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

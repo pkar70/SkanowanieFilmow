@@ -1,0 +1,43 @@
+﻿<Window x:Class="EditEntryHist"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="List of items" Height="450" Width="400" Loaded="Window_Loaded">
+    <Grid Height="434" VerticalAlignment="Top">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="300" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Name="uiTitle" FontSize="20" HorizontalAlignment="Center" />
+
+        <TextBlock Grid.Row="1" HorizontalAlignment="Left" Text="Items list:" VerticalAlignment="Bottom" FontWeight="Bold" />
+        <Button Grid.Row="1" HorizontalAlignment="Right" Content=" + " Margin="5,5,5,5" Click="uiAdd_Click"/>
+
+        <ListView Name="uiLista" Grid.Row="2">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0"  >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding itemText}" />
+                        <Button Grid.Column="1" Content="DEL" Margin="5,0,5,0" Click="uiDel_Click" HorizontalAlignment="Right" />
+                    </Grid>
+                </DataTemplate> 
+            </ListView.ItemTemplate>
+        </ListView>
+        
+        <Button Content=" OK " HorizontalAlignment="Center" Width="Auto" Grid.Row="3" Click="uiOK_Click" Margin="5,15,5,5"/>
+    </Grid>
+</Window>

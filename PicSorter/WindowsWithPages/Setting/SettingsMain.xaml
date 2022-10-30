@@ -1,0 +1,23 @@
+﻿<Page x:Class="SettingsMain"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      Title="SettingsMain" Loaded="Page_Loaded">
+    <StackPanel Width="170">
+        <TextBlock HorizontalAlignment="Center" Text="" Name="uiVersion"/>
+        <Button Content="Global settings" Margin="5,15,5,25" FontSize="18" Click="uiGlobalSett_Click"/>
+
+        <Button Content="Sources" Margin="5,15,5,5" FontSize="18" Click="uiSettSources_Click"/>
+        <Button Content="Local arch" IsEnabled="false" Margin="5,15,5,5" FontSize="18"/>
+        <Button Content="Cloud storage" IsEnabled="false" Margin="5,15,5,5" FontSize="18"/>
+        <Button Content="Publishing" IsEnabled="false" Margin="5,15,5,35" FontSize="18"/>
+
+        <Button Content="Dir tree" IsEnabled="false" Margin="5,15,5,5" FontSize="18"/>
+        <Button Content="Tag tree" IsEnabled="false" Margin="5,15,5,5" FontSize="18"/>
+        <Button Content="Autotags" IsEnabled="false" Margin="5,15,5,5" FontSize="18"/>
+
+        <Button Content="Misc" Margin="5,35,5,5" FontSize="18" Click="uiMiscSett_Click"/>
+    </StackPanel>
+</Page>

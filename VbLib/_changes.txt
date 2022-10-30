@@ -1,0 +1,3 @@
+﻿
+'** VbLib do kombajnu zdjęciowego **
+

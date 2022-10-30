@@ -1,0 +1,832 @@
+
+Co można zapisywać do skanów w EXIF
+(w archiwum domowym)
+
+Pytanie: czy EXIF można dodać do TIFFów (oryginalnych), czy tylko do JPG?
+Zrobić bazę danych, flat file może być, filename bez tagów, tagi?
+Tak żeby po zmianie JPGa (nowy create JPG from TIFF) przechodziły tagi do JPGa
+TAK! TIFF można EXIFować
+
+EXIF 2.32 (2010.04.26)
+https://www.cipa.jp/std/documents/e/DC-X008-Translation-2019-E.pdf
+
+Jak zrobić żeby dodanie tagu po stronie domowej aktualizowało wszystko?
+
+Sprawdzic istnienie tagów ktore chce wykorzystac w istniejacych plikach (powinny byc empty)
+
+Sprwadzic roznice miedzy l:\fotovideo i ext:\fotovideo i ext10t:\fotovideo - roznice w plikach
+
+Jesli udaloby sie znalezc serwis ktory mozna podpiąć jako dysk (webdav), to mozna zrezygnowac z lokalnego storage?
+ (bo oba zewnetrzne muszą zostać, jako ze tylko one mają TIFF)
+
+
+Uzgadnianie dat, jak w programie ktory mam cmdline
+- ten tez zrobić cmdline
+
+1) date and time
+ "YYYY:MM:DD HH:MM:SS" , 24 godzinny zegar, chyba można robić spacje w nieznanych polach ("  ") - ale to trzeba sprawdzic. Inaczej podawałby 01.01 00:00:00 
+
+2) location
+a) wspolrzedne
+b) nazwa
+
+3) description - ludzie
+
+4) copyright - dorzucane automatem, (C) Andrzej Karocki, (C) Władysław Karocki, (C) Piotr Karocki, (C) Emil Widacki, (C) Joanna Karocka
+- w zależności od tego z jakiego podkatalogu
+"Copyright, kto, 19xx. All rights reserved." - tak w samplu
+
+5) Usuwanie orientation?
+
+6) okreslenie zrodla (film, przezrocze, odbitka)
+ FileSource: 1 - skaner prezzroczysty, 2 - skaner reflex, 3 - cyfrowe
+
+7) numer filmu, magazynka, itp.
+
+8) numer ramki
+
+Image title	ImageDescription ASCII(any)
+Person who created the image	Artist	ASCII(any)
+Copyright holder	Copyright	ASCII(any)
+File change date and time	DateTime	ASCII(20)
+
+Dla nie-ASCII to Exif Private tag UserComment
+
+DateTimeDigitized
+DateTimeOriginal
+UserComment
+
+GPS:
+
+
+Od strony tagów EXIF:
+FileSource: 1 - skaner prezzroczysty, 2 - skaner reflex, 3 - cyfrowe
+DateTimeOriginal: dla WP_ z nazwy
+DateTimeDigitized: pliku, minimum w katalogu z TIFF
+Artist: z path
+Copyright: z path
+ImageDescription: numer filmu, ramka, itp., ew. ID z storefile? filename dla TIFFa (bez keywordow - opisów), albo wlasnie z keywordami
+UserComment: osoby, miejsca (z filename brane) - mogą być krótkie (-JA) albo średnie (Piotr) albo długie (Piotr Karocki)
+- ważne że krótkie w miarę powinno być jako całość
+
+Pytanie co zrobić gdy już coś tam jest - więc na początek zrobić weryfikację czy są to pola puste (picparam w SQL można spróbować)
+- bo można potem zapisywać EXIFa ponownie, już bez dat: aktualizacja ImageDescription/UserComment
+
+
+sub ProcessExif(oFolder)
+ for each folder in oFolder.folders
+	processexif(folder)
+ next
+
+ tiffDate = TryFindDate(oFolder)
+
+ for each file in oFolder.files
+	processexif(file, tiffDate)
+ next
+end sub
+
+sub processExif(oFile, tiffDate)
+  DateTimeDigitized = oFile.DateTimeDigitized
+  if isnull(DateTimeDigitized) then DateTimeDigitized=tiffDate
+  
+  DateTimeOriginal=oFile.DateTimeOriginal
+  if isnull(DateTimeOriginal) then
+	 if oFile.Name.startswith("WP-") then DateTimeOriginal=oFile.Name
+	 ' z filename, bo czasem tam są; dla digital - takze data z file.datecreated
+  end if
+
+  Artist = oFile.Artist
+  if isnull(Artist) then Artist = PathToArtist(oFile.Path)
+  
+  Copyright = oFile.Copyright
+  if isnull(Copyright) then Copyright = PathToCopyright(oFile.Path)
+
+  FileSource = oFile.FileSource
+  if isnull(FileSource) then FileSource = PathToFileSource(oFile.Path)
+
+  ImageDescription = oFile.ImageDescription
+  ' tu bez warunku - zawsze wstawiamy?
+  ImageDescription = PathToDescr(oFile.Path)	' film, ramka, id dla odbitki
+  
+  UserComment = oFile.UserComment
+ ' tez bez warunku?
+  UserComment = NameToComment(oFile.Name)	' tagi z filename
+
+
+ oFile.ExifSave()
+
+
+end sub
+
+
+function PathToArtist(sPath)
+ if sPath.Contains("dWladziu") then return "Wladyslaw Karocki"
+...
+end function
+
+function PathToCopyright(sPath)
+ if sPath.Contains("dWladziu") then return "(C) Wladyslaw Karocki. All rights reserved."
+...
+end function
+
+function PathToFileSource(sPath)
+ if sPath.Contains("cyfrowe") then return 3
+ if sPath.Contains("analog") then return 1
+ return 2	' odbitki, skaner reflect
+...
+end function
+
+function TryFindDate(oFolder)
+ oFolder.TIFF
+ oFolder.Name & TIFF ale na zewnetrznym nosniku (zeby robic aktualizacje na dysku lokalnym a nie na zewnetrzntm?)
+
+
+ImageProperties.PeopleNames 'readonly
+ImageProperties.Keywords ' .Add, itp.
+
+
+About                           : uuid:faf5bdd5-ba3d-11da-ad31-d33d75182f1b - na wp_kefir.jpg
+
+' https://exiftool.org/TagNames/EXIF.html
+
+ExifTool: (podkreslone, czyli oficjalne)
+ImageDescription	IFD0
+Orientation=1	IFD0
+ModifyDate IFD0 (called DateTime by the EXIF spec.)
+Artist IFD0
+Copyright	IFD0	(may contain copyright notices for photographer and editor)
+DateTimeOriginal	ExifIFD	(date/time when original image was taken)
+CreateDate	ExifIFD	(called DateTimeDigitized by the EXIF spec.)
+UserComment	ExifIFD	(undef)
+FileSource	ExifIFD
+0xa420 ImageUniqueID	ExifIFD string ASCII(33)
+
+
+
+niepodkreslone:
+0x87b1	GeoTiffAsciiParams IFD0 (string)
+0x9212 SecurityClassification string ExifIFD (C/R/S/T/U), do "tajne" :) (ale jest tez non-writable, 0xa212)
+0x9211 ImageNumber int32u ExifIFD (ale jest tez non-writable, 0xa211)
+0xc789	ReelName	string	IFD0
+0xc68b	OriginalRawFileName	string!	IFD0
+0xc614	UniqueCameraModel	string	IFD0 (dla Certo i Belplasca mozna to zrobic, takze Lumia)
+
+FileSource: 1 - skaner prezzroczysty, 2 - skaner reflex, 3 - cyfrowe
+
+
+gdy Software = "Windows 10" to wtedy do Camera mozna wstawiac "Lumia", ale sprawdzic czy Lumia 650/550 daje Lumia do srodka (bo moze daje, i wtedy nie trzeba rozrozniac samemu pomiedzy roznymi telefonami)
+tak, Lumia 650 wpisuje Camera że Lumia 650
+
+mozna wlasne tagi zdefiniowac, i to byloby dobre może? Ale w ExifTool to mozna zrobic, nie wiem jak we wlasnym programie
+
+Pytanie co zrobić gdy już coś tam jest - więc na początek zrobić weryfikację czy są to pola puste (picparam w SQL można spróbować)
+- bo można potem zapisywać EXIFa ponownie, już bez dat: aktualizacja ImageDescription/UserComment
+
+
+IDpliku w bazie zapisany w EXIF pozwala potem na rename jakieś, które działa takze w StoreFiles podmieniając nazwy
+
+mając StoreFiles, mozna zrobic testy działania (wymyślania co wpisać), bo przeciez są tam wszystkie nazwy plików
+
+Tags - tak samo jak miałem w tym pliku, -JA i takze #miejsce (tak jak było planowane)
+
+Jak sie robi albumy w shutterfly? Na ile to moze byc "wirtualny album" brany z tagów?
+Na ile wirtualny album można zrobić w OneDrive?
+Czy OneDrive "cudzy" też można podpiąć? Bo może do Aśki tak podłączyć zdjęcia, jak będzie wyszukiwarka na tym działała? (od strony WWW, wszystkie -JA)
+
+Do shutterfly zrobić emaila z sugestiami:
+1) folder within folders, it should take no more than 2..3 man-days of work :) (including migration of current data)
+2) all Exif data should be shown in photo info
+3) Tags from Exif should be imported as Shutterfly tags
+4) create virtual albums from Tags (e.g. all photos with "this" in Tags)
+5) searching by number of people visible (e.g. all photos with only 1 person)
+6) sending to gettyimages
+
+
+Moje sprawdzania:
+* daty w *\TIFF - czy ich MIN(date) moze byc traktowane jako ScanDate?
+* exiftool bez robienia backupu - choć na razie teoretycznie może być, jest miejsce na extFotoVideo
+* czy dla TIFF i dla JPG to zrobić? Auto-przenoszenie opisow z JPG do jego TIFFa? (bo teraz są w JPG, ich migracja do TIFFa)
+
+* Moze tak:
+1) JPG, otagowanie kompletne
+2) TIFF, otagowanie wedle JPG - jak znajduje TIFFa do JPG, to moze to zrobic od razu w jednym przebiegu
+3) podczas tagowania, log działania - i potem program który realizuje rename itp. zgodnie z tym logiem na swiezo zrobionym JPG z TIFFa?
+4) wrapper VBS do exiftoola, albo wlasny pelny program
+
+Problemy:
+1) wrzucane czasem skany odbitek do katalogu ze skanami filmu (chyba tylko film127, ale nie jestem pewien)
+
+Skaner nowy: nie tylko sredni format, minolta16, ale i powtorka film127, film 35 mm bez perforacji, oraz te jeszcze nie zeskanowane filmy co tata ma
+Albo wziac z Widoku ten drugi FilmScan, zeby sprwadzic czy i on sie zacina (=> zacinanie nie z powodu skanera)
+Zeskanowac filmy syberyjskie
+Zeskanowac filmy lat '50 dWladziu
+
+Wrocic do przekazywnaia zdjec do Muzeum Krakowa
+Wrocic do przekazywnaia zdjec do NAC
+Wrocic do przekazywania sprzetu do MUFO
+
+
+App do Shutterfly:
+*) test logowania
+*) tworzenie folderu/albumu
+*) wrzucanie zdjęcia
+*) opisanie tagami z filename/EXIFa
+
+shutterstock - jak to wygląda jeszcze raz sprawdzić
+
+app zarządzania fotkami:
+*) synchro między storage (l:\fotovideo - JPGi, ext10G:\fotovideo - calosc, extFoto:\fotovideo całość)
+  *) wrzuć TIFFy na zewnatrz
+  *) zrób stykówki/refresh stykówki
+*) rename JPGa, i migracja -KEY do EXIF:Tags, aktualizacja w SQL:StoreFiles (i mirrorach!), Shutterfly
+*) wyszukiwanie wedle Tags, i robienie z tego virtual folder z obrazkami
+*) wrzucanie do Shutterfly, i ewentualnie do Shutterstock
+
+osobna SQL:Table na te tagi/dane fotek? może w ogóle niezaleznie od StoreFiles, moze tych fotek tam nie dawać?
+
+Czy app dla UWP desktop, czy takze UWP telefon, a moze MAUI, a moze WinForms?
+
+Zakładając że mamy StoreFiles z fileDate, i tego nie ruszamy, możemy dowolnie robić na JPG?
+
+Na start:
+1) Skrypt: przegląd wszystkich zdjęć exiftoolem, zapisanie wszystkich parametrów do pliku (np. w każdym katalogu: exifs.txt)
+-zachowanie danych "na wszelki wypadek", będa też filedate zapisane
+ exiftool -u -json -r . > exifs.all.txt
+
+2) Skrypt: minmax date pliku dla każdego katalogu (JPG, TIFF)
+select min(filedate), max(filedate), path from StoreFiles where path like '%fotovideo%' group by path 
+
+3) Próba znajdywania TIFF dla kazdego JPG (JPG.Filename.SubstrBefore(" ").Before("-"))
+- jesli gdzies nie znajdzie, to wtedy zaradzenie temu PRZED pozostałymi działaniami
+ findTIFFforJPG.vbs
+
+4) automat, który dla każdego JPG sprobuje znalezc TIFFa, i zrobi listę:
+	filename.tiff date tiffmindate tiffmaxdate filename.jpg date jpgmindate jpgmaxdate
+	(min i max: dla folderu)
+ przeglądnięcie tego, czy można to wykorzystać jako ScanDate, ewentualnie do każdego katalogu wstwaić plik scandate-yyyymmmdd.txt, i z niego brać scandate
+ (jeśli data sie zgadza, to bierzemy date i time z pliku, jesli filedate sie nie zgadza z datą scandate*txt, to wtedy przyjmuje datę ze scandate:00:00:00)
+
+5) automat który znajdzie StoreFile.ID dla każdego JPG
+
+6) skrypt, który stworzy plik z zapisaniem tego co byłoby do EXIF wrzucane (per katalog?) -  poza (C) oraz Artist (czyli poza tekstami stałymi)
+
+
+# generate CSV file with common tags from all images in a directory
+exiftool -common -csv dir > out.csv
+
+# update metadata for all images in a directory from CSV file
+exiftool -csv=a.csv dir
+
+analogicznie z JSONfile
+-overwrite_original
+-overwrite_original_in_place (zachowane wtedy jest createDate)
+-P (preserve) zachowanie dat z oryginału
+-r rekurencyjnie	# tylko gdy filename to katalog
+-u	#unknown też
+
+
+-i SYMLINKS	# zeby bez chodzenia po linkach
+
+
+
+0 (snieżynka) - antyzamarzanie, 6-8°
+1 - garaż, 12-13°
+2 - sypialnia, 15-16°
+3 - kuchnia i salon, 18-20°
+4 - łazienka, 22-24°
+5 (max) - wyjątkowe, 25-28°
+[Schlosser] 6 - 30 °
+
+
+
+App telefon: wrzucanie zdjec, tagowanie ich, krotki opis. Albo tylko zebranie. Moze byc wrzucenie do katalogu "bufor"
+
+dostęp rodzinny: np dla Michała także, albo Ani/Marcin, do wrzucania zdjęć
+Wtedy niekoniecznie -JA, może -PI byłoby badziej na miejscu
+
+na oneDrive lista folderów ze zdjeciami (wybór gdzie wrzucać docelowo)
+jakoś permisson - np. michał tylko według -MK, -CH, -KK, -WK ? Albo WOjtek Ż, wedle -8wz (-8)?
+czyli typu "jamcitosam", i wedle tego dostępy? ale mozna byloby ominąć app i dostac sie do calosci.
+a prezciez są także TAJNE
+
+
+
+APP1) telefoniczna moze być potrzebna
+ sieganie do Azure:Cosmos do katalogu, wyszukiwanie obrazkow, pokazywanie
+APP2) telefoniczna uploader - Sprzedażna
+ wrzuc obrazek do wybranych Store wraz z opisem 
+App3) komputer archiwizacyjna
+ a) browse katalog na dysku (potem moze foreach, i wrzucanie calego tree)
+ b) umozliwienie opisu dokladniejszego (miejsca!), -KRA, -KRANS, -KRAN26 tak zeby bylo -KRA zawsze
+ c) uzupelnianie EXIFa
+ d) zaznaczenie gdzie sie chce wyslac
+ e) pamiętanie per storage: max rozmiar fotki (auto-skalowanie), sprawdzic czy sie przepiszą EXIF tag po skalowaniu
+ f) sieganie do SQL (nie telefon, więc zadziała), wpisanie tam fotki, EXIF, gdzie poszło; może to byc takze jako pliki TXT dla kazdego storage
+ g) TXT: oryginaly.json (EXIF), <storage_service>.TXT - id w oryginaly, id w service (ichniejszy), path w service, name w service (do opisywania tagami)
+
+ h) katalogi wirtualne (wedle -TAG)
+ i) wyszukiwanie
+ j) mozliwosc dodania TAGu do fotki (we wszystkich serwisach)
+ k) timeout fotek w serwisach?
+
+ g) reapply Tagi do JPG (po edycji)
+ h) reapply Tagi do TIFF (po rescan) - poza scandate
+
+ i) wskazanie katalogu - pyta o ID katalogu, tak zeby zrobic rename plików, i sprawdza ID czy jest unikalny (nie nazwa, tylko ID, np. katalog film10.15, ID: t10_50, bo film10.15 moze byc nie tylko dW przeciez)
+
+ Czy TIFF z FilmScan ma EXiF, w szczegolnosci ScanDate
+
+ Serwisy w VBlib:
+* CreateAlbum(path) as oAlbum # stworzenie strukury podkatalogów, zakładam że najnizszy poziom to Album, ktory jest umieszczony w Folder
+* UploadPhoto(oAlbum, oResizedPicture, sTags) as oUploadedPhoto - albo service sam sobie skaluje	# wrzucanie fotek, serwis moze miec ograniczoną rozdzielczosc (np. do MordkoKsiazki daję mniejsze), zwraca mi jakiś ID który pozwala później do tej fotki sie dostac
+* AddToVirtualAlbum(oAlbum?, oUploadedPhoto)	# dodawanie do albumow, np. wedle tagów - Album typu "zdjecia z Wojtkiem", i samo tam trafia jak jest napisane ze Wojtek na zdjeciu jest
+* BrowseDir(path) as List(Of file)	# udaje chodzenie po katalogach, taki Norton Commander :)
+* GetMetadataFor(pathname) As JSON # opis ktory jest po stronie serwisu, ichniejsze rozpoznawanie twarzy , itp rzeczy; moge sobie dopisac do swoich znacznikow
+* GetSharingLink # jakos implementacja tego, historia linków? co bylo udostepnione a co nie
+* ShareBetweenServices # jakoś, z Shutterfly do FaceBook
+
+Serwisy dla mnie do dokladniejszego sprawdzenia:
+* facebook - do szkolnych itp.
+* shutterfly - archiwum
+* shutterstock - sprzedażne
+* instagram
+- kto ma prawa, bo jako "zacheta" do sprawdzenia na shutterstock do kupienia mozna
+* ewentualnie jakies ktore robią konkursy po pare tygodniowo, licznik, raz na tydzien pokazuje app listę fotek z tego tygodnia i pozwala wybrac ktore wyslac
+
+
+ VirtualAlbum dla każdego TAG
+
+* serwisy:
+ property bool JPG
+ property bool TIF
+ property bool Archival (ze wszystko)
+
+* moze rozpoznawanie twarzy po stronie serwisu, albo inne atrybty nadawane przez serwis, i dodanie tego do EXIF?
+
+
+* moze na start przeniesienie tagów do EXIF oraz pliku txt, a zmiany nazw plikow do bez tagów?
+ za to dodanie prefixu do fr, z zaznaczeniem konkretnego filmu (zeby nazwa byla unikalna) - nie fr10 tylko fr-15.05-10, badz dM_15_05-10 (moze lepiej kropki nie uzywac), ta_xxx, itd?
+ rename wszystkich TIFF wtedy by bylo
+
+ z tego zrobic uniq ID, ktory bedzie wstawiany do TIFFów; tabelka rename takze dla StoreFiles (albo tam rescandir przepuscic, i niech strace 20k IDów - to long czy int, ile to 20k jest)
+
+
+IDy ramek
+[A].a[T|M|W|P|A].t[N|P|O].f[filmID].[ramkaId]
+[A].a[T|M|W|P|A].t[N|P|O].p[pudelkoID].[odbitkaID]
+
+[D].a[T|P|A|AK|x].f[folderID].[fotkaID]
+
+analog/digital
+autor: tata, dM, dW, ja, aska, X-unknown, AK - Anka, MK - Marcin Kurcz, 8WL - SP, Wojtek Lewandowski, 5MD - 5 LO, Marcin Dziurzynski
+typ: negatyw, pozytyw, odbitka
+filmID, a dla odbitek: id pudelka
+ramkaID, a dla odbitek: id w pudelku (co nie znaczy ze nie moze zostac tak jak jest teraz, ciagla numeracja)
+folderID: id katalogu, jakis prosty (typu sygnatura, 0-Krakow, 01-Krakow, DniMiasta, itp.; albo szukanie poprzez bazę danych, i tylko numer kolejny)
+
+VLO - muszą być 2 nazwiska
+ABi Adam Bielański
+ABo Anna Borowczak	
+AC Anna Chadzińska	
+AG Andrzej Grzybczyk	
+AI Arkadiusz Iwanicki
+AK Agata Kornelak
+AP Agata Płonka	Liceum	
+AS Aleksandra Seledyn 
+AW Agnieszka Wantuch	
+BP Bernadetta Piekarczyk
+ED Elżbieta Dusik	
+GB Grzegorz Bubak	
+GC Grzegorz Cyganek	
+GK Grzegorz Kitliński	
+JK Jarosław Kadulski	
+JO Janusz Odrzywołek	
+JP Jolanta Pers	
+KK Kinga Konopka
+MD Marcin Dziurzyński	
+MKr Mikołaj Krehlik
+MKo Monika Kozłowska	
+MM Maria Mycielska	
+MS Maciej Stachura	
+MW Mateusz Widłak	
+PF Piotr Faron	Liceum	
+PM Piotr Mazur	Liceum	
+PWo Paweł Wójcik	
+PWy Piotr Wykurz
+RB Robert Bałucki	
+RJ Renata Jarosz	
+RN Ryszard Niszczota	
+SS Sebastian Sit	
+SW Sabina Wiltos (Korbiel)
+TJ Tomasz Jaśkowski	
+TS Tomasz Salamon	
+WC Wojciech Czarnecki	
+WS Wojciech Słowakiewicz	
+
+- muszą być 3 litery nazwiska
+AKob Agnieszka Kobyłko	
+AKol Anna Kolanowska	
+APi Andrzej Pilch	
+APa Anna Pasula	
+AR Agnieszka Raszewska	
+ASo Andrzej Soja	
+ASl Anna Śliwińska	
+AZ Anna Zielińska	
+BK Barbara Katra	
+DD Dariusz Dybczak	
+DG Dorota Gaździk	
+EL Elżbieta Legutko	
+ES Elżbieta Spiechowicz	
+IW Iwona Wiśniewska	
+JK Jolanta Knapik	
+KG Katarzyna Gruszkowska	
+KK Katarzyna Kostka	
+KWo Katarzyna Wójcik	
+KWn Konrad Wnęk	
+KWe Krzysztof Węgrzyn	
+MK Monika Kądzioła	
+MN Marcin Nowak	
+MO Monika Owsiak	
+MW Marcin Wojdyła	
+PP Paweł Pietruszka	
+RK Rafał Kromka	
+RM Rafal Mis	
+RRo Renata Różycka	
+RRu Renata Rusek	
+RZ Rafał Ziobro	
+SD Sebastian Drozd	
+WB Wojciech Bryksy	
+WL Wojciech Lewandowski	
+WZ Wojciech Żychowicz	
+
+Osoby do zaznaczania: combo, z filtrem, DODAJ; drzewko hierarchiczne (rodzina, SP, LO) ?
+
+dostep do zdjec: wedle pelnego filtra, tzn. dla grupy 8a - zdjecia 8a, zdjecia z -JA -n1 oraz -n0 -widok,
+ dla PNIE zdjecia mbr, -JA-n1 z okresu 1970-1980, i tak dalej
+
+GrajCyganie: dekady z nazwÄ…, do wyboru - albo przynajmniej "ignore dekady" checkbox
+bo inaczej z AnkÄ…, a inaczej jak sam
+
+Katalpa
+https://pl.wikipedia.org/wiki/Surmia
+
+
+Sekwencja uruchamiania:
+*) bieżące cyfrowe
+*) archiwum cyfrowe (powoli)
+*) bieżące skany odbitek
+*) archiwum skanów odbitek
+*) bieżące skany
+*) archiwum skanów
+
+AppDesktop:
+Uzywanie:
+1) wybierz źródło (np. FromFuji, katalog - a może i MTP (telefonn via USB))
+2) gallery na wejściu, pełny obrazek, slideshow. DELETE, ROTATE, CROP, RESIZE, SHELL(digitalimaging) - zachowanie daty!
+2a) jakoś: UseAsFaceTrain
+3) tagi:
+	a) z source file EXIF jak jest,
+	b) z filename, jak jest (i reguły per source? WP-.... daje datę)
+	c) z source dir, jak są podane (np. Lumia532-> (C) JA)
+	d) podane dla całości batch
+	e) podane dla konkretnego zdjęcia
+4) checkbox select, oraz select z dirtree -> MOVE, oraz aktualizacja indeksu
+5) dla moved, checkboxy do PUBLISH per destination, ustawianie rozmiar
+7) get metadata from published - może rozpoznawanie twarzy?
+8) możliwość stop/pause na każdym etapie, a więc metainfo sobie gdzieś pamiętać statusu
+
+10) ewentualnie SENDTO jakiś cloud, ktory ma rozpoznawanie twarzy, do bufora, i sprawdzenie co rozpozna?
+11) rozpoznawanie twarzy itp w Azure?
+12) przeglądówki (tworzenie per folder w Storage)
+13) virtual przeglądówka (wedle tagów), coś jak szukajPicka
+
+
+PYTANIE: co z filmikami? je też zabieramy?
+MAUI tylko Windows 10, więc dla Taty niet.
+
+OBIEKTY:
+*) SOURCE : FOLDER|MTP, to będą albo karta z aparatu (FOLD/subf+?/file), albo telefon (MTP/CameraRoll), albo zrzucone skądś (FOLD/subf*/file - browser za każdym razem), albo folder z OneDrive
+	typ/name
+	path (internal data)
+	recursive yes/no
+	sourceRemove yes/no, delayed? TimeSpan
+	default tags
+	default publish?
+	include:List(Of string), exclude:List(of string) - maski regexp
+	IMPLEMENT: vblib, JSON na config, moze %computername%.picsource.json jako konfiguracja (kopia) w miejscu, przy podłączaniu source szuka takich i pyta czy zaimportować (defaulttags), ale też może byc dla roznych instacji - roznie
+	UI: dodaj (moze byc wielokrotne), visible yes/no, tagRules ?
+	METHODS: Dir(allFiles = false - od ostatniego, albo calosc), GetFile(filepath), GetTags(filepath),  COnfigCreate, COnfigSave
+	Count(allFiles=false, since=yyyymmddhhmmss), First, Next, Purge(olderThanDate), DateMin, DateMax,
+	Moze STRUCT SrcFile path, name, tags, publishers, stream.
+	reguły rename? np. dir\file z karty SD na dir_file?, DSCF1234 na yymmddhhmmss? dla latwiejszego uniqID
+	FUNKCJONALNOSC: Purge, Download
+Tu moze BUFFER, z plikami sciagnietym z zewnątrz, wraz z tagami dopisanymi w pliku
+może też różne buffer dla różnych sources?
+Albo tagi dopisywac automatycznie podczas kopiowania pliku? tyle że to zepsuje daty.
+
+*) LOCALSTORAGE : INTERNAL|EXTERNAL (podłącz dysk...) 
+	typ/name
+	root-path (dla EXT - wewnatrz EXT, bo litera dysku nieznana)
+	vollabel: (wazne dla EXT, bo po tym rozpoznaje istnienie)
+	include:List(Of string), exclude:List(of string) (np. tylko JPG)
+	delayed:List(of picture) ?
+	IMPLEMENT: vblib, JSON na config, kopia w root-path
+	UI: dodaj, in_use yes/no
+	FUNKCJONALNOSC: permanent storage, Save, ApplyTags, Find/Search, GetById (Id na pathname - w srodku STORAGE, app tego nie widzi), GetTagsById, GetPathForId (do AcdSee itp.)
+
+*) CLOUDSTORAGE : 
+	typ/name
+	username/password
+	include:List(Of string), exclude:List(of string) (np. tylko JPG)
+	IMPLEMENT: vblib, JSON na config
+	UI: config, in_use yes/no
+	FUNKCJONALNOSC: permanent storage, Save, ApplyTags, Download?, GetTags, Dir(path)
+	to właściwie to samo co PublishPlace?. reapplytags y/n, reupload y/n
+
+
+*) PUBLISHPLACE : facebook|instagram|... (ale facebook moze byc dwa razy, np face-public i face-rodzina ?)
+	typ/name
+	username/password
+	include:List(Of string), exclude:List(of string) (np. tylko JPG)
+	defaultsize [=1000, to dłuzszy bok ma miec max 1000]
+	defaultscalepercent [=50, to zmniejsza 2×]
+	IMPLEMENT: vblib, JSON na config
+	FUNKCJONALNOSC: permanent storage, Save, ApplyTags, Download?, GetTags, Dir(path) reapplytags y/n, reupload y/n
+
+*) DIRTREE
+	subpath
+	ID	' IDcomponent? przy tworzeniu ID zdjecia moglby robic skladanke z IDów, ale trzeba tez zapewnic move w ditree i bez problemow potem zjandywanie
+	defaulttags
+	IMPLEMENT: vblib, JSON na config
+	UI: prosty edytor, dodaj TU, oraz open in notepad/VStudio i reload
+	może być dir przestawiany w drzewie, ale ID się nie zmienia? i w filesystem cos jak IDIDIDID_nazwa, nazwa[IDIDIDID], czyli inaczej NODE inaczej LEAF?
+	ID moze byc datą (parowozjada np., czy inny event), ale moze byc kilka z tą samą datą, więc nie tylko data. Przy skanach data nie zadziała (nie jest znana).
+	historia zmian katalogów - zeby byo latwiej dosjc do tego skąd ID itp
+
+*) TAGTREE
+	level0: grupa (osoby, miejsca...) zwierzeta, transport, pora roku (snieg, morze, ...)
+	level1 i w głąb: np. Kraków - Widok - mieszkanie, rodzina-aska, 8a-wz
+	id -JA #WID
+	name Piotr Karocki, Widok
+	IMPLEMENT: vblib, JSON na config
+	UI: prosty edytor, usun/dodaj TU, oraz open in notepad/VStudio i reload
+	STRUCT z używanymi TAGami, i LoadFromFile(filename), SaveToFIle(filename), zmiana tagów to również reapply tagów w serwisach! resave pliku do storage (external disk)
+
+*) PUBLISHED
+	ptr-publishplace
+	datetime
+	remote-id
+	[ptr-picture]
+
+*) PICTURE
+	listof(tags) (niektóre)
+	uniqueId
+	ptr-dirtree
+	delayedstorage: jesli nie wszystkie localstorage mają kopie - to tu ktore nie; ewentualnie inaczej to zrobić
+	localstorage: jesli nie wszystkie localstorage mają kopie - to tu ktora INTERNAL ma (jako source do delayed kopiowania)
+	[listof(published)]
+
+*) AUTOTAG (np. AzureAPI, cloudpic do katalogu temp)
+	typ/name
+	username/password
+	internaldata (np. tempalbum path)
+	usagelimit
+	IMPLEMENT: vblib, JSON na config
+	moze takze OCR na obrazku? moze jakies napisy same sie w ten sposób przepiszą? lokalny OCR (jak w comixlang)
+
+*) TRAINFACE - albo to w ramach TAGS?
+	name
+	listof(piclink)
+
+
+*) DELAYEDCOPY
+	ptr-localstorage bez kopii
+	ptr-localstorage z kopią
+	ptr-picture
+	- albo inaczej, w prostszej wersji, jakoś; tu także zmienione tagi do send?
+
+
+Settings, guziki horiz=center, stackpanel
+ [sources]
+ [buffer] -> albo jako global, path do buffer, path do OneDrive?
+ [localarchives]
+ [cloudstorage]
+ [publishing]
+<empty>
+ [dirtree]
+ [tagtree]
+ [autotags]
+
+mainpage
+ [get/process (xx)] -> kolejne etapy procesu, xx: buffer.count+delayedcopy.count(any)
+ rozdzielic to na get i na process?
+ [browse] -> po dirtree, podawanie count() - jesli zaznaczono checkbox liczenia, na koniec contactsheet i open z localstorage
+ [search] -> trzy kolummny, tags tak, tagtree, tags nie, moze tez jakos folderami ograniczac (autor, skan/costam)
+ [slideshow] -> albo to dopiero z search
+<empty>
+ [settings]
+
+
+najpierw zrobic:
+ sources i buffer, zabieranie z source do buffer i metadata w buffer
+ struct tags na przechowywanie EXIF, ale struct mogłaby być szersza, bo np w EXIF:MSTAGS moze byc JSON?  w nim List(Of (autotagsource string, tags string))?
+ enum pipeline 0 source/unknown, 10 buffer, 20 ... tak zeby mozna bylo wstawic jakis po drodze. Moze 100, 200?
+ kopiowanie: na init pyta (checkboxy) o defaulttags, ktore nadac (default: all YES). 
+ zbiera istniejące tagi (jak są), a dla geotag EXIF próbuje znaleźć miejsce (Konwersja geotag na tagi miejsca, jeśli jest znane.
+Else: Openstreetmap słownik? Albo ten geo pl oficjalny, który miał być do pylenia czy tp)
+
+
+windowsforms, bedzie wiecej okien (co sie moze przydac?), tylko trzeba vblib zmienic - settingsy itd. na wlasne (a moze nie vblib, tylko pkmodulewithlib?)
+https://stackoverflow.com/questions/13898310/multiple-windows-forms-on-one-application
+
+
+get/process:
+ [download from source] -> menu: all, oraz lista where visible=yes
+ [tryautotag] -> np wrzucenie do shutterfly, i odczytanie tagow
+ [apply tags (xx)] (xx) - buffer.count() 
+ [local archive (xx)] - delayedcopy.count(etap)
+ [webarchive] - delayedcopy.count(etap)
+ [publish] - delayedcopy.count(etap)
+ 
+w kazdym katalogu picsort.json, z danymi picków z tego katalogu [picsort - czy pic-arch, nazwa app]
+zabrac z grajCyganie logike sprawdzania fullFileSystem permission - chyba ze jest prosciej do zrobienia
+poczatek moze byc bowiem w UWP i VBLib. Jak w VbLib 1.4 nie mozna bedzie dac MTP, to wydzielic to do VbLib2.0 - akurat to na pewno w Phone nie bedzie uzywane. A zwykly FileSystem - i owszem, moze byc.
+ w UWP moze byc SOURCE:CameraRoll :)
+
+Datowanie zdjęć jak w PESEL? wiek do miesiąca? ale to byloby złę sortowanie
+18xx, 19xx, 20xx - może 'hex' jako dekada?
+FUnkcjonalnosc app: SyncStorage(internal, external) - dir/s/b po obu stronach
+MakeLink/Share w jakiś sposób, może byc z fotki menu |copy link to i submenu z wszystkimi services
+
+search, opcja make virtual album z resultatow
+
+niektore tagsy mają historię ((c) na pewno), moze w tym samym pliku co tagtree, a moze w taghist.json
+
+
+Zacząć wykorzystywać Azure speech2text do nagrań wykładów?
+App która ma browse audio file, send, i pokazuje tekst
+plus pilnuje ze tylko 5 godzin miesiecznie
+niby jest polski
+
+rozpoznawanie twarzy Azure: 20 per minute, 30k trans per month free
+grupa(myfriends), milion osob (Anna), 248 twarzy
+"Computer vision Image Analysis 4.0": The new API includes image captioning, image tagging, object detection people detection, and Read OCR functionality, available in the same Analyze Image operation. 
+https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/quickstarts-sdk/identity-client-library?pivots=programming-language-csharp?pivots=programming-language-csharp
+
+Do unicode decore mozna dodac link
+https://util.unicode.org/UnicodeJsps/character.jsp?a=FE0F
+czyli pelne dane jednego znaku
+
+szczegolnie rozpoznawanie twarzy i autotagowanie powinno byc dostepne takze pozniej
+
+
+prosze umiejscowic zdjecia na mapce (jako pinezki), oraz wyszukiwanie wedlug mapki
+
+takze konwersja miejsca (-WIDOK) na GPS?
+
+czy WinForms moze miec include ClassLib 1.4, 2.0?
+SQL pole JSON? (na tagi)
+WinForms: Win32. WPF: XAML
+
+Exif: SaveAsJSON (w dir source np.)
+
+
+
+
+---- NAUKA NAUKA NAUKA NAUKA NAUKA NAUKA NAUKA NAUKA -----------
+
+1) Logging, takie jak jest w Uno, bo może się to do czegoś przydać (np. DumpCurrMethod może robić dokładniejszą info?)
+
+2) $"string{insert}" co mogłoby uprościć niektóre wyrażenia stringowe
+https://docs.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/strings/interpolated-strings
+
+ Dim msg As String = $"Hi, Welcome {(If(name = "Suresh", "Admin", "Guest"))}"
+Dim msg As String = $"Hi {name}, Today is {Date.Now.DayOfWeek} and it's {Date.Now:HH:mm} now.
+        Welcome to Tutlane World
+        Your location is {location}"
+
+
+3) <ControlTemplate> czy inszy CustomControl i jego wykorzystanie
+3a) Slider + po prawej stronie jego Value, może to {Binding <path>, RelativeSource={RelativeSource TemplatedParent}} albo w ramach DataContext {Binding Path=a.b.c} - w ramach DataContext
+
+4) WinAppSDK i Store
+
+5) WinUI3 vbproj
+5a) porownac cmdline app, nową zrobioną (a więc C) oraz to co zrobiłem z VB - czym się różnią
+
+6) vsix zrobić który w VB do Dim cos = ,,, dodawałby Dim cos As TYPE, i ew. zamiana var na typ.
+ (korzystając z source do tego co podaje typy:
+https://marketplace.visualstudio.com/items?itemName=Jonkers.VarTypeViewerVsix
+https://marketplace.visualstudio.com/items?itemName=AlexanderGayko.VarAdorner
+tylko jeden GitHub: https://github.com/jonkeda/VarTypeViewer )
+
+7) cmd, wysylajacy wszystkie zmiany w vs2017 (commit: chore: autosave data, push)
+
+8) VSIX, który bylby "version changer", bo https://marketplace.visualstudio.com/items?itemName=Newky2k.VersionChanger nie robi z Manifest
+
+---- ZMIANY w app -- ZMIANY w app -- ZMIANY w app -------------
+
+**MazurCic**
+	porównanie po latach? jak się zmienia dynamizm, w czym są różnice
+
+
+**GeneticChild**
+	email z prawdop dziecka, jest 0.0762959999999999 zamiast 8 % :)
+
+**VSIXgetType**
+	(nowe)
+
+---- ZMIANY we wszystkich app -- ZMIANY we wszystkich app -------------
+
+1) VBlib, jedynie z plikiem pkarlibmodule i zmiana z pkarmodule na pkarmodulewithlib
+ using vb14 = VBlib.pkarlibmodule14;
+ [cel: jeden plik, bez konieczności sync pkarmod, pkarmodwithlib, pkarlibmod]
+
+2) wstawienie zmiennych do defs.ini w vblib
+ [cel: porządek w zmiennych, a'la dokumentacja]
+
+2.1) dodać plik changes.txt, i tam przenieść zmiany z mainpage; w nim sekcja *TODO* i wpisywać pomysły
+
+3) InitLib
+
+4) migracja wywołań pkarmodule->vb14
+
+5) dla Uno, zrobienie tak by działało RemoteSystems (w App.cs)
+ [cel: żeby przechodząc do Uno nie tracić funkcjonalności]
+
+6) Settings na Extensions
+ [cel: ułatwienie przy migracji do MAUI]
+
+7) migracja GetLangString do VBlib
+ [cel: ułatwienie przy migracji do MAUI]
+
+8) WinUI 2 (nuget Microsoft.UI.XAML)
+ [cel: ładniejsze czasem]
+
+8a) RadioMenuFlyoutItem (2.1), można robić z ToggleMenuFlyoutItem, bo samo się przełącza
+8b) wieksze upakowanie (2.1) <Grid.Resources><ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" /></Grid.Resources>
+8c) RadioButtons (2.3), może być Items z ItemsSource
+8d) Expander (2.6), detailsy chowalne (wiele app, głównie w ListView)
+8e) DropDownButton (2.0), wybór akcji 
+
+9) sprawdzać wszystkie TextBox, na InputScope, spellcheck, history
+ [cel: żeby było porządnie]
+
+10) nr wersji zawsze sprawdzać (Package), i ujednolicać
+ [cel: żeby było porządnie]
+
+11) migracja rzeczy z *vb/*cs do vblib/vb
+ [cel1: uratowanie kodu VB przy migracji do Uno]
+ [cel2: ułatwienie przy migracji do MAUI]
+
+ jako Private inVb As new vblib.[klasa], z możliwością przekazania parametrów (choćby delegated do czegoś) w ctor
+
+12) Converters, budować sobie bibliotekę własnych i zacząć tego używać
+ [cel: uproszcznie kodu, usunięcie "Display" propertiesów budowanych z 'binary' properties
+
+12_) może część jako dodatkowe Public Property Display {get {return $"{this.CompositionName} by {this.ArtistName}, released: " + this.ReleaseDateTime.ToString("d");
+12a) KonwerterVisibility
+12b) KonwerterMAC
+12c) KOnwerterVal2StringFormat
+
+    xmlns:myConv="using:pkarConv" 
+        <myConv:KonwersjaVisibility x:Key="KonwersjaVisibility" />
+
+
+
+13) Bindingsy
+ [cel: przerzucanie kodu z VB/CS do XAML]
+
+13a) tam, gdzie jest read/only itp., próbować przechodzić na x:Bind [cel: x:Bind ma string.format i ogólnie funkcje, oraz jest ponoć szybszy]
+13b) TargetNullValue=0  zamiast innego kombinowania dla Null
+13c) {Binding Width, RelativeSource={RelativeSource Self}} - zależny sam od siebie
+13d) {Binding <path>, RelativeSource={RelativeSource TemplatedParent}} - że do elementu w ramach ListView:DataTemplate
+13e) {Binding Path=a.b.c} - w ramach DataContext
+
+
+14) <ControlTemplate> czy inszy CustomControl
+ [cel: uproszczenie kodu, reusable controls, jednolitość moich app]
+
+15) List oraz Details dla Selected (https://docs.microsoft.com/en-us/windows/u[Windows App SDKwp/data-binding/data-binding-quickstart)
+
+16) aktualizacja Nugetow
+
+
+---- ZMIANY w App NOT telefon -------------
+
+1) można migrować do WinUI 3: minimum version 1809 (build 17763) tyle że bez znaczenia, bo po oderwaniu się od telefonu może być i jeszcze nowsze
+ czyli Windows App SDK (WinAppSDK), dawniej Reunion
+
+2) https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/migrate-to-windows-app-sdk/migrate-to-windows-app-sdk-ovw
+
+3) wtedy to nie będzie UWP, i będzie desktop-only, co być może i tak przejdzie do Uno,  
+
+
+------------------------ c#			VB		VB		VB
+WinUI3 desktop app	ClassLibWinUI3desk	ClassLibUWP	ClassLib14	ClassLib20
+UnoNe6Android		ClassLibWinUI3desk	-----------	ClassLib14	ClassLib20
+UnoNet6UWP		-----------------	ClassLibUWP	ClassLib14	ClassLib20
+UnoXamarinAdroid	ClassLibWinUI3desk	-----------	ClassLib14	ClassLib20
+UnoNet6UWP		------------------	ClassLibUWP	ClassLib14	ClassLib20
+UWPnontel		------------------ 	ClassLibUWP	ClassLib14	ClassLib20
+"Usuwanie NUGET z app - tylko w VBlib" 

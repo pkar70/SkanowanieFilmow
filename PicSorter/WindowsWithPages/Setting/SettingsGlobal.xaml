@@ -1,0 +1,31 @@
+﻿<Page x:Class="SettingsGlobal"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      Title="SettingsGlobal" Loaded="Page_Loaded">
+    <Grid Margin="5,5,5,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Folder for data"/>
+        <TextBox Grid.Row="1" Grid.Column="0" Name="uiFolderData" />
+        <Button Grid.Row="1" Grid.Column="1" Content=" ... " Click="uiBrowseDataFolder" Margin="5,0,5,0" />
+
+        <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="Folder for buffering photos"/>
+        <TextBox Grid.Row="3" Grid.Column="0" Name="uiFolderBuffer" />
+        <Button Grid.Row="3" Grid.Column="1" Content=" ... " Click="uiBrowseBufferFolder" Margin="5,0,5,0" />
+
+        <Button Grid.Row="4" Grid.ColumnSpan="2" Content=" OK " HorizontalAlignment="Center" Width="Auto" Margin="5,20,5,0" Click="uiOK_Click"/>
+    </Grid>
+</Page>
