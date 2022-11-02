@@ -13,8 +13,7 @@ Class MainPage
 
         ' *TODO* guziki pozostałe wyłączane jak nie ma LocalStorage
 
-        ' *TODO* licznik brany z buffer.json.count
-        Dim count As Integer = 0
+        Dim count As Integer = Application.GetBuffer.Count
         uiProcess.Content = $"Process ({count})"
 
 
@@ -35,6 +34,7 @@ Class MainPage
     End Sub
 
     Private Sub uiRetrieve_Click(sender As Object, e As RoutedEventArgs)
-
+        Dim oWnd As New ProcessDownload
+        oWnd.Show()
     End Sub
 End Class

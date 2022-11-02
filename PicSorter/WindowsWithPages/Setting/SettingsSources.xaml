@@ -5,23 +5,33 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
       Title="SettingsSources" Loaded="Page_Loaded">
-    <Grid>
+    <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" x:Name="uiRowTitle"/>
             <RowDefinition Height="*" x:Name="uiRowSrcList" />
-            <RowDefinition Height="*" x:Name="uiRowSrcProp" />
+            <RowDefinition Height="2*" x:Name="uiRowSrcProp" />
             <RowDefinition Height="Auto" x:Name="uiRowOK"/>
         </Grid.RowDefinitions>
 
         <TextBlock Text="Źródła zdjęć" HorizontalAlignment="Center" FontSize="18" />
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Margin="2,2,2,2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" x:Name="uiRowListaHdr"/>
                 <RowDefinition Height="*" x:Name="uiRowListaItems" />
             </Grid.RowDefinitions>
             <TextBlock Text="Lista źródeł:" FontWeight="Bold" />
-            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddSource_Click"/>
+            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddSource_Click" Name="uiAddSource" Margin="2,2,2,2"/>
+            <Popup IsOpen="False" Name="uiAddSourcePopup" PlacementTarget="{Binding ElementName=uiAddSource}">
+                <Menu Name="uiMenuSourcesTypes">
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                </Menu>
+            </Popup>
+
 
             <ListView Name="uiLista" Grid.Row="1">
                 <ListView.ItemContainerStyle>
@@ -41,20 +51,72 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding enabled}" />
-                            <TextBlock Grid.Column="1" Text="{Binding Typ}" />
-                            <TextBlock Grid.Column="2" Text="{Binding Name}" />
+                            <TextBlock Grid.Column="1" Text="{Binding Typ}" Margin="2,0,5,0"/>
+                            <TextBlock Grid.Column="2" Text="{Binding SourceName}" />
                             <Button Grid.Column="3" Content="EDIT" Margin="5,0,5,0" Click="uiEdit_Click" HorizontalAlignment="Center"  />
                             <Button Grid.Column="4" Content="DEL" Margin="5,0,5,0" Click="uiDel_Click" HorizontalAlignment="Center"  />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+        </Grid>
 
 
+
+        <Grid Grid.Row="2" Name="uiEditSource" Visibility="Hidden" Margin="2,2,2,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Type:" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Name="uiSrcType" FontWeight="Bold" />
+
+            <TextBlock Grid.Row="1" Text="Nazwa:" />
+            <TextBox Grid.Row="1" Grid.Column="1" Name="uiSrcName" />
+
+            <TextBlock Grid.Row="2" Text="Volume:" />
+            <ComboBox Grid.Row="2" Grid.Column="1" Name="uiSrcVolume" />
+
+            <TextBlock Grid.Row="3" Text="Path:" />
+            <TextBox Grid.Row="3" Grid.Column="1" Name="uiSrcPath" Margin="0,0,15,0"/>
+            <Button Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Content=" ... " Click="uiSrcBrowse_Click" Name="uiSrcBrowse"/>
+
+            <TextBlock Grid.Row="4" Text="Recursive:" />
+            <CheckBox Grid.Row="4" Grid.Column="1" Name="uiSrcRecursive" />
+
+            <TextBlock Grid.Row="5" Text="Purge delay (days):" />
+            <TextBox Grid.Row="5" Grid.Column="1" Name="uiSrcPurge" InputScope="Digits" />
+
+	<!--Public Property defaultPublish As List(Of String)   ' lista IDs-->
+
+            <TextBlock Grid.Row="6" Text="Include mask:" />
+            <TextBox Grid.Row="6" Grid.Column="1" Name="uiSrcInclude" />
+
+            <TextBlock Grid.Row="7" Text="Exclude mask:" />
+            <TextBox Grid.Row="7" Grid.Column="1" Name="uiSrcExclude" />
+
+            <TextBlock Grid.Row="8" Text="Ostatni download:" />
+            <TextBlock Grid.Row="8" Grid.Column="1" Name="uiSrcLastDownload" />
+
+            <Button Grid.Row="9" Content=" EXIF " Click="uiEditExif_Click" Name="uiOpenExif" Width="100" Height="Auto" Grid.ColumnSpan="2"/>
+
+            <Button Grid.Row="10" Content=" OK " Click="uiEditOk_Click" Width="80" Height="Auto" Margin="5,10,5,5"  Grid.ColumnSpan="2"/>
         </Grid>
         
-        <Button Grid.Row="2" Content=" otworz EXIF " Height="Auto" Width="Auto" Click="uiOpenExif_Click" Name="uiOpenExif"/>
-
-        <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Width="Auto" Click="uiOk_Click"/>
+        <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Width="Auto" Click="uiOk_Click" Name="uiOK"/>
     </Grid>
 </Page>

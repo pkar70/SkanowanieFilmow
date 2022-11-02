@@ -405,7 +405,7 @@ Public Module pkar
     '        VBlib.DumpCurrMethod(", count=" & oRadios.Count)
     '        For Each oRadio As Windows.Devices.Radios.Radio In oRadios
     '            VBlib.DumpMessage("NEXT RADIO")
-    '            VBlib.DumpMessage("name=" & oRadio.Name)
+    '            VBlib.DumpMessage("name=" & oRadio.SourceName)
     '            VBlib.DumpMessage("kind=" & oRadio.Kind)
     '            VBlib.DumpMessage("state=" & oRadio.State)
     '        Next
@@ -681,37 +681,37 @@ Module Extensions
 
     '<Extension()>
     'Public Sub GetSettingsBool(ByVal oItem As ToggleSwitch, Optional sName As String = "", Optional bDefault As Boolean = False)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Dim bBool As Boolean = Vblib.GetSettingsBool(sName, bDefault)
     '    oItem.IsOn = bBool
     'End Sub
     '<Extension()>
     'Public Sub SetSettingsBool(ByVal oItem As ToggleSwitch, Optional sName As String = "", Optional bRoam As Boolean = False)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Vblib.SetSettingsBool(sName, oItem.IsOn, bRoam)
     'End Sub
 
     '<Extension()>
     'Public Sub GetSettingsBool(ByVal oItem As ToggleButton, Optional sName As String = "", Optional bDefault As Boolean = False)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Dim bBool As Boolean = Vblib.GetSettingsBool(sName, bDefault)
     '    oItem.IsChecked = bBool
     'End Sub
     '<Extension()>
     'Public Sub SetSettingsBool(ByVal oItem As ToggleButton, Optional sName As String = "", Optional bRoam As Boolean = False)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Vblib.SetSettingsBool(sName, oItem.IsChecked, bRoam)
     'End Sub
 
     '<Extension()>
     'Public Sub GetSettingsBool(ByVal oItem As AppBarToggleButton, Optional sName As String = "", Optional bDefault As Boolean = False)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Dim bBool As Boolean = Vblib.GetSettingsBool(sName, bDefault)
     '    oItem.IsChecked = bBool
     'End Sub
     '<Extension()>
     'Public Sub SetSettingsBool(ByVal oItem As AppBarToggleButton, Optional sName As String = "", Optional bRoam As Boolean = False)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Vblib.SetSettingsBool(sName, oItem.IsChecked, bRoam)
     'End Sub
 
@@ -724,7 +724,7 @@ Module Extensions
     '''' <param name="dScale"></param>
     '<Extension()>
     'Public Sub SetSettingsInt(ByVal oItem As TextBox, Optional sName As String = "", Optional bRoam As Boolean = False, Optional dScale As Double = 1)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Dim dTmp As Integer
     '    If Not Double.TryParse(oItem.Text, dTmp) Then Return
     '    dTmp *= dScale
@@ -739,7 +739,7 @@ Module Extensions
     '''' <param name="dScale"></param>
     '<Extension()>
     'Public Sub GetSettingsInt(ByVal oItem As TextBox, Optional sName As String = "", Optional dScale As Double = 1)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Dim dTmp As Integer = Vblib.GetSettingsInt(sName)
     '    dTmp /= dScale
     '    oItem.Text = dTmp
@@ -747,25 +747,25 @@ Module Extensions
 
     '<Extension()>
     'Public Sub SetSettingsInt(ByVal oItem As Windows.UI.Xaml.Controls.Slider, Optional sName As String = "", Optional bRoam As Boolean = False)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Vblib.SetSettingsInt(sName, oItem.Value, bRoam)
     'End Sub
 
     '<Extension()>
     'Public Sub GetSettingsInt(ByVal oItem As Windows.UI.Xaml.Controls.Slider, Optional sName As String = "")
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    oItem.Value = Vblib.GetSettingsInt(sName)
     'End Sub
 
     '<Extension()>
     'Public Sub SetSettingsDate(ByVal oItem As CalendarDatePicker, Optional sName As String = "", Optional bRoam As Boolean = False)
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Vblib.SetSettingsDate(sName, oItem.Date.Value, bRoam)
     'End Sub
 
     '<Extension()>
     'Public Sub GetSettingsDate(ByVal oItem As CalendarDatePicker, Optional sName As String = "")
-    '    If sName = "" Then sName = oItem.Name
+    '    If sName = "" Then sName = oItem.SourceName
     '    Dim dDTOff As DateTimeOffset = Vblib.GetSettingsDate(sName)
     '    oItem.Date = dDTOff
     'End Sub
@@ -847,7 +847,7 @@ Module Extensions
     '        If oPage.FindName("uiPkAutoProgRing") Is Nothing Then
     '            If bRing Then
     '                Dim _mProgRing As New ProgressRing With {
-    '                    .Name = "uiPkAutoProgRing",
+    '                    .SourceName = "uiPkAutoProgRing",
     '                    .VerticalAlignment = VerticalAlignment.Center,
     '                    .HorizontalAlignment = HorizontalAlignment.Center,
     '                    .Visibility = Visibility.Collapsed
@@ -868,7 +868,7 @@ Module Extensions
     '        If oPage.FindName("uiPkAutoProgBar") Is Nothing Then
     '            If bBar Then
     '                Dim _mProgBar As New ProgressBar With {
-    '                    .Name = "uiPkAutoProgBar",
+    '                    .SourceName = "uiPkAutoProgBar",
     '                    .VerticalAlignment = VerticalAlignment.Bottom,
     '                    .HorizontalAlignment = HorizontalAlignment.Stretch,
     '                    .Visibility = Visibility.Collapsed

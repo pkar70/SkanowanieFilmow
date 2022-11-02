@@ -33,3 +33,23 @@ Public Enum OrientationEnum
     rightBottom = 7
     leftBottom = 8
 End Enum
+
+Public Enum PicSourceType
+    NONE = 0
+    FOLDER = 1
+    MTP = 2
+    AdHOC = 3
+End Enum
+
+Public Class ExifSource
+    Public Const SourceDefault As String = "SOURCE_DEFAULT"
+    Public Const SourceFile As String = "SOURCE_FILEATTR"
+    Public Const SourceDescriptIon As String = "SOURCE_DESCRIPT.ION"
+    Public Const FileExif As String = "FILE_EXIF"
+End Class
+
+Public Enum AutoTaggerType
+    Local = 1
+    WebPublic = 2
+    WebAccount = 3
+End Enum

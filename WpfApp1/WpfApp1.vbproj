@@ -1,9 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <RootNamespace>PicSorterNS</RootNamespace>
+    <RootNamespace>WpfApp1</RootNamespace>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
@@ -20,17 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VbLib20\VbLib20.vbproj" />
-    <ProjectReference Include="..\VbLib\VbLib.vbproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="WindowsWithPages\SlideShow\" />
-    <Folder Include="WindowsWithPages\Search\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MediaDevices" Version="1.9.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.22621.755" />
   </ItemGroup>
 
 </Project>

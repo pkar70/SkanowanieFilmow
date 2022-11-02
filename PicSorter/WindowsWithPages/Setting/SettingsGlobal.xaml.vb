@@ -4,24 +4,35 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 Class SettingsGlobal
 
-    Private Sub FolderBrowser(oBox As TextBox, sDefaultDir As String)
+    Public Shared Function FolderBrowser(sDefaultDir As String) As String
         Dim oPicker As New Microsoft.Win32.SaveFileDialog
         oPicker.FileName = "none" ' Default file name
         oPicker.CheckPathExists = True
-        If IO.Directory.Exists(oBox.Text) Then
-            oPicker.InitialDirectory = oBox.Text
-        Else
-            oPicker.InitialDirectory = sDefaultDir
-        End If
+        oPicker.InitialDirectory = sDefaultDir
 
         ' Show open file dialog box
         Dim result? As Boolean = oPicker.ShowDialog()
 
         ' Process open file dialog box results
-        If result <> True Then Return
+        If result <> True Then Return ""
 
         Dim filename As String = oPicker.FileName
-        oBox.Text = IO.Path.GetDirectoryName(filename)
+        Return IO.Path.GetDirectoryName(filename)
+    End Function
+
+    Public Shared Sub FolderBrowser(oBox As TextBox, sDefaultDir As String)
+
+        Dim sDir As String
+        If IO.Directory.Exists(oBox.Text) Then
+            sDir = oBox.Text
+        Else
+            sDir = sDefaultDir
+        End If
+
+        sDir = FolderBrowser(sDir)
+        If String.IsNullOrWhiteSpace(sDir) Then Return
+
+        oBox.Text = sDir
     End Sub
 
 
@@ -41,7 +52,7 @@ Class SettingsGlobal
         Dim sPath As String = ""
 
         Dim oDrives = IO.DriveInfo.GetDrives()
-        For Each oDrive In oDrives
+        For Each oDrive As IO.DriveInfo In oDrives
             If oDrive.DriveType = IO.DriveType.Fixed And oDrive.AvailableFreeSpace > iMax Then
                 iMax = oDrive.AvailableFreeSpace
                 sPath = oDrive.Name

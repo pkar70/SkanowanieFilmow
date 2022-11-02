@@ -42,14 +42,25 @@ Partial Class Application
 
     End Function
 
-    Public Shared Function GetSourcesList() As Vblib.PicSourceList
+    Private Shared gSourcesList As VbLib20.PicSourceList
+    Private Shared gBuffer As Vblib.Buffer
+
+    Public Shared Function GetSourcesList() As VbLib20.PicSourceList
+
         If gSourcesList Is Nothing Then
-            gSourcesList = New Vblib.PicSourceList(Application.GetDataFolder)
+            Vblib.PicSourceBase._dataFolder = Application.GetDataFolder ' żeby JSON mógł wczytać sources
+            gSourcesList = New VbLib20.PicSourceList(Application.GetDataFolder)
             gSourcesList.Load()
+            gSourcesList.InitDataDirectory()
         End If
         Return gSourcesList
     End Function
 
-    Public Shared gSourcesList As Vblib.PicSourceList
+    Public Shared Function GetBuffer() As Vblib.Buffer
+        If gBuffer Is Nothing Then
+            gBuffer = New Vblib.Buffer(Application.GetDataFolder)
+        End If
+        Return gBuffer
+    End Function
 
 End Class

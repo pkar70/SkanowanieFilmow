@@ -1,0 +1,54 @@
+﻿<Window x:Class="ProcessBrowse"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="ProcessBrowse" Height="400" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" SizeChanged="Window_SizeChanged">
+    <Grid Margin="5,5,5,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" Name="naButtony"/>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" Name="naProgBar"/>
+        </Grid.RowDefinitions>
+
+        <Button Content=" Histogram " HorizontalAlignment="Left" Height="Auto" Width="Auto" Click="uiOpenHistoragam_Click" />
+        <ComboBox Name="uiComboSize" HorizontalAlignment="Center" >
+            <ComboBoxItem Content="fit" IsSelected="true" />
+            <ComboBoxItem Content="400" />
+            <ComboBoxItem Content="320" />
+            <ComboBoxItem Content="240" />
+            <ComboBoxItem Content="160" />
+        </ComboBox>
+        <Button Content=" Delete " HorizontalAlignment="Right" Height="Auto" Width="Auto" Click="uiDeleteSelected_Click" />
+
+        <ListView Name="uiPicList" Grid.Row="1" Margin="5,5,5,5"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                      ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2" >
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" >
+                            <Image.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
+                                <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
+                                <MenuItem Header="Delete" Click="uiDelOne_Click"/>
+                                <MenuItem Header="Show big" Click="uiShowBig_Click"/>
+                            </ContextMenu>
+                        </Image.ContextMenu>
+                    </Image>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal"></WrapPanel>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ListView>
+
+        <ProgressBar Name="uiProgBar" Height="4" Grid.Row="2" Visibility="Hidden"  />
+
+    </Grid>
+</Window>

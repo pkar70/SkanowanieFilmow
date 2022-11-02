@@ -1,5 +1,4 @@
-﻿Imports vb14 = Vblib.pkarlibmodule14
-
+﻿
 Class SettingMisc
     Private Sub uiListCopyr_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New EditEntryHist(App.GetDataFolder, "Copyrights", "Dodaj właściciela praw", "(c) KTO, All rights reserved.")

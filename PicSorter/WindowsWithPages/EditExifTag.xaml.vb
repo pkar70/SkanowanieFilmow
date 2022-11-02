@@ -30,7 +30,7 @@ Public Class EditExifTag
         _addRemove = addRemove
     End Sub
 
-    Private Sub WypelnComboDeviceType()
+    Private Sub WypelnComboDeviceType(eTypZrodla As Vblib.FileSourceDeviceTypeEnum)
         uiFileSourceDeviceType.Items.Clear()
 
         uiFileSourceDeviceType.Items.Add(" ")
@@ -38,12 +38,13 @@ Public Class EditExifTag
         For iLp = 0 To 6
             Dim devType As Vblib.FileSourceDeviceTypeEnum = iLp
             If devType.ToString = iLp.ToString Then Exit For
-            uiFileSourceDeviceType.Items.Add(iLp & ": " & devType.ToString)
+            Dim iInd As Integer = uiFileSourceDeviceType.Items.Add(iLp & ": " & devType.ToString)
+            If eTypZrodla = iLp Then uiFileSourceDeviceType.SelectedIndex = iInd
         Next
 
         If _addRemove Then uiFileSourceDeviceType.Items.Add("-")
 
-        uiFileSourceDeviceType.SelectedValue = _exifTag.FileSourceDeviceType
+        'uiFileSourceDeviceType.SelectedValue = _exifTag.FileSourceDeviceType
     End Sub
 
     Private Sub WypelnComboPlikiem(oCombo As ComboBox, sFiletitle As String, sCurrent As String)
@@ -87,7 +88,7 @@ Public Class EditExifTag
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
 
         uiSource.Text = _sourceDisplay
-        WypelnComboDeviceType()
+        WypelnComboDeviceType(_exifTag.FileSourceDeviceType)
         WypelnComboPlikiem(uiAuthor, "authors", _exifTag.Author)
         WypelnComboPlikiem(uiCopyright, "copyrights", _exifTag.Copyright)
         WypelnComboPlikiem(uiCameraModel, "cameras", _exifTag.CameraModel)
@@ -138,6 +139,7 @@ Public Class EditExifTag
             _exifTag.DateMax = DateTime.MinValue
         End If
 
+        Me.Close()
     End Sub
 End Class
 

@@ -1,5 +1,10 @@
 ﻿Imports System.IO
 
+' Shutterfly
+' Instagram
+' Facebook
+' Chomikuj
+
 Public Class CloudStorage
     Public Property defaultPostprocess As List(Of String)
     Public Property afterTagsChange As Integer ' ignoruj, upload photo, upload metatada

@@ -12,38 +12,39 @@ Public Class ExifTag
 
     ' najpierw te, które mogą być narzucone przez SOURCE_DIR
 
-    Public Property TagSource As String ' SOURCE_DIR, SOURCE_FILENAME, SOURCE_EXIF, ...
+    Public Property ExifSource As String ' ExifSource.SourceFile, ...
     Public Property FileSourceDeviceType As FileSourceDeviceTypeEnum
     Public Property Author As String
     Public Property Copyright As String
     Public Property CameraModel As String   ' 0xc614	UniqueCameraModel	string	IFD0 (dla Certo i Belplasca mozna to zrobic, takze Lumia)
 
     ' daty, które mają różne znaczenie w różnych kontekstach
+    ' dla pliku kopiowanego z aparatu via explorer: CREATE = data skopiowania, MODIFY = data z aparatu (wczesniejsza)
     Public Property DateMin As DateTime     ' min i max data, jeśli nie mamy pełnej daty (np. "na pewno po 1943, bo jest tata, i na pewno przed 1955, bo wtedy most odbudowano)
     Public Property DateMax As DateTime
 
 
-    ' te, które mogą być z nazwy pliku SOURCE_FILENAME
+    ' te, które mogą być z nazwy pliku ExifSource.SourceFile
 
-    ' + TagSource, FileSourceDeviceType, DateMin, DateMax (tu: min/max data CreateTime/ModifyTime)
+    ' + ExifSource, FileSourceDeviceType, DateMin, DateMax (tu: min/max data CreateTime/ModifyTime)
     Public Property DateTimeOriginal As String
 
 
-    ' SOURCE_FILEATTRIB
+    ' ExifSource.SourceFile
 
-    ' + TagSource
+    ' + ExifSource
     Public Property DateTimeScanned As String
 
 
     ' z innych źródeł (czyli już zawsze, bo SOURCE_EXIF)
-    Public Property Tags As String
+    Public Property Keywords As String  ' UserComment, 9286
     Public Property Restrictions As RestrictionsEnum ' 0x9212 SecurityClassification string ExifIFD (C/R/S/T/U), do "tajne" :) (ale jest tez non-writable, 0xa212)
     Public Property Orientation As OrientationEnum  ' do usuwania z pliku, bo jego rotate podczas import?
     Public Property PicGuid As String   ' 0x9211 ImageNumber int32u ExifIFD (ale jest tez non-writable, 0xa211)
-    Public Property ReelName As String   ' 0xc789	ReelName	string	IFD0
+    'Public Property ReelName As String   ' 0xc789	ReelName	string	IFD0
     Public Property GeoTag As MyBasicGeoposition    ' 0x87b1	GeoTiffAsciiParams IFD0 (string)
     Public Property TagsChanged As Boolean = False
-    Public Property AlienTags As List(Of String)    ' importowane z różnych miejsc, autorozpoznawanie -> TagSource
+    'Public Property AlienTags As List(Of String)    ' importowane z różnych miejsc, autorozpoznawanie -> ExifSource
 
 
     Public Function ApplyToFile(sPathName As String)
@@ -60,8 +61,14 @@ Public Class ExifTag
     End Function
 
     Public Sub New(sSource As String)
-        TagSource = sSource
+        ExifSource = sSource
     End Sub
+
+    Public Function Clone() As ExifTag
+        Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(Me, Newtonsoft.Json.Formatting.Indented)
+        Dim oNew As ExifTag = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ExifTag))
+        Return oNew
+    End Function
 
 End Class
 
@@ -113,7 +120,7 @@ End Class
 
 '    DateTimeOriginal = oFile.DateTimeOriginal
 '    If isnull(DateTimeOriginal) Then
-'        If oFile.Name.startswith("WP-") Then DateTimeOriginal = oFile.Name
+'        If oFile.SourceName.startswith("WP-") Then DateTimeOriginal = oFile.SourceName
 '        ' z filename, bo czasem tam są; dla digital - takze data z file.datecreated
 '    End If
 
@@ -132,7 +139,7 @@ End Class
 
 '    UserComment = oFile.UserComment
 '    ' tez bez warunku?
-'    UserComment = NameToComment(oFile.Name) ' tagi z filename
+'    UserComment = NameToComment(oFile.SourceName) ' tagi z filename
 
 
 '    oFile.ExifSave()
@@ -160,7 +167,7 @@ End Class
 
 'Function TryFindDate(oFolder)
 '    oFolder.TIFF
-'    oFolder.Name & TIFF ale na zewnetrznym nosniku (zeby robic aktualizacje na dysku lokalnym a nie na zewnetrzntm?)
+'    oFolder.SourceName & TIFF ale na zewnetrznym nosniku (zeby robic aktualizacje na dysku lokalnym a nie na zewnetrzntm?)
 
 
 'ImageProperties.PeopleNames 'readonly
