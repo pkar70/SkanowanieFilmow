@@ -6,6 +6,11 @@
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="ProcessBrowse" Height="400" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" SizeChanged="Window_SizeChanged">
+
+    <Window.Resources>
+        <local:KonwersjaVisibility x:Key="KonwersjaVisibility"/>
+    </Window.Resources>
+    
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" Name="naButtony"/>
@@ -13,32 +18,78 @@
             <RowDefinition Height="Auto" Name="naProgBar"/>
         </Grid.RowDefinitions>
 
-        <Button Content=" Histogram " HorizontalAlignment="Left" Height="Auto" Width="Auto" Click="uiOpenHistoragam_Click" />
-        <ComboBox Name="uiComboSize" HorizontalAlignment="Center" >
-            <ComboBoxItem Content="fit" IsSelected="true" />
-            <ComboBoxItem Content="400" />
-            <ComboBoxItem Content="320" />
-            <ComboBoxItem Content="240" />
-            <ComboBoxItem Content="160" />
-        </ComboBox>
-        <Button Content=" Delete " HorizontalAlignment="Right" Height="Auto" Width="Auto" Click="uiDeleteSelected_Click" />
+        <Grid Name="naGuziki" Margin="5,0,5,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Orientation="Horizontal" >
+                <Button Content=" Histogram " Height="Auto" Width="Auto" Click="uiOpenHistoragam_Click" Margin="5,0,15,0"/>
+                <Button Content=" Mapogram " Height="Auto" Width="Auto" IsEnabled="False" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">
+                <Button Content=" Split " Height="Auto" Width="Auto" Click="uiSplitMode_Click" Margin="0,0,15,0" />
+                <ComboBox Name="uiComboSize" >
+                    <ComboBoxItem Content="fit all" IsSelected="true" />
+                    <ComboBoxItem Content="fit run"/>
+                    <ComboBoxItem Content="400" />
+                    <ComboBoxItem Content="320" />
+                    <ComboBoxItem Content="240" />
+                    <ComboBoxItem Content="160" />
+                    <ComboBoxItem Content="100" />
+                </ComboBox>
+            </StackPanel>
+
+            <Button Name="uiAction" Content=" Action " Grid.Column="2" HorizontalAlignment="Right" Height="Auto" Width="Auto" Click="uiActionOpen_Click" />
+            <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}">
+                <Menu >
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                    <MenuItem Header="Delete" Click="uiDeleteSelected_Click" />
+                    <MenuItem Header="Autotags" Name="uiMenuAutotags" IsEnabled="False" />
+                    <MenuItem Header="Describe" Click="uiDescribeSelected_Click" />
+                    <MenuItem Header="Archive" Name="uiMenuArchive" IsEnabled="False" />
+                    <MenuItem Header="Publish" Name="uiMenuPublish" IsEnabled="False"  />
+                </Menu>
+            </Popup>
+
+        </Grid>
+        
 
         <ListView Name="uiPicList" Grid.Row="1" Margin="5,5,5,5"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
-                      ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2" >
+                      ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2" SelectionChanged="uiPicList_SelChanged" >
 
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="Margin" Value="-6 0 0 0" />
+                </Style>
+            </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" >
+                    <StackPanel Orientation="Horizontal" >
+                        <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaVisibility}}" Background="SkyBlue" Height="{Binding iDuzoscH, Mode=OneWay }" Width="{Binding widthPaskow}" />
+                        <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=NEG}" Height="{Binding iDuzoscH, Mode=OneWay }" Width="{Binding widthPaskow}" />
+                        <Grid Height="{Binding iDuzoscH, Mode=OneWay }" Width="4" />
+                        <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" >
                             <Image.ContextMenu>
-                            <ContextMenu>
-                                <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
-                                <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
-                                <MenuItem Header="Delete" Click="uiDelOne_Click"/>
-                                <MenuItem Header="Show big" Click="uiShowBig_Click"/>
-                            </ContextMenu>
-                        </Image.ContextMenu>
-                    </Image>
+                                <ContextMenu>
+                                    <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
+                                    <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
+                                    <MenuItem Header="Show big" Click="uiShowBig_Click"/>
+                                    <MenuItem Header="Describe" Click="uiDescribe_Click" />
+                                    <Separator/>
+                                    <MenuItem Header="Delete" Click="uiDelOne_Click"/>
+                                </ContextMenu>
+                            </Image.ContextMenu>
+                        </Image>
+                    </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
             <ItemsControl.ItemsPanel>

@@ -37,6 +37,8 @@ Public Class ProcessDownload
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
         ' uproszczona wersja
 
+        If Not Await vb14.DialogBoxYNAsync("Ściągnąć ze wszystkich zaznaczonych źródeł?") Then Return
+
         For Each oSrc As Vblib.PicSourceBase In Application.GetSourcesList.GetList
             If Not oSrc.enabled Then Continue For
 

@@ -63,4 +63,6 @@ Partial Class Application
         Return gBuffer
     End Function
 
+    Public Shared gAutoTagery As Vblib.AutotaggerBase() = {New Vblib.AutoTag_EXIF, New Taggers_OCR.AutoTag_OCR}
+
 End Class

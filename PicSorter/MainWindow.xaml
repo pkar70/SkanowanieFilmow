@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="PicSorter" Height="500" Width="250" Loaded="Window_Loaded">
+        Title="PicSorter" Height="500" Width="250" Loaded="Window_Loaded" Closing="Window_Closing">
     <Grid>
         
     </Grid>

@@ -1,4 +1,6 @@
-﻿Class ProcessPic
+﻿
+
+Class ProcessPic
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         AktualizujGuziki()
     End Sub
@@ -25,5 +27,10 @@
         Dim oWnd As New ProcessBrowse
         oWnd.ShowDialog()
         AktualizujGuziki()
+    End Sub
+
+    Private Sub uiAutotag_Click(sender As Object, e As RoutedEventArgs) Handles uiAutotag.Click
+        Dim oWnd As New AutoTags
+        oWnd.ShowDialog()
     End Sub
 End Class

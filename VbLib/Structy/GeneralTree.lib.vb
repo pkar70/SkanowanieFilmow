@@ -2,7 +2,6 @@
     Public Property Name As String
     Public Property Childs As List(Of GeneralTreeNode)
 
-
 End Class
 
 Public Class GeneralTree

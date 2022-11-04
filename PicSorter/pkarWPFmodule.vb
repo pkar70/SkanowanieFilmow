@@ -381,10 +381,10 @@ Public Module pkar
     '    End Try
     'End Function
 
-    'Public Sub OpenBrowser(sLink As String)
-    '        Dim oUri As New Uri(sLink)
-    '        oUri.OpenBrowser
-    '    End Sub
+    Public Sub OpenBrowser(sLink As String)
+        Dim oUri As New Uri(sLink)
+        oUri.OpenBrowser
+    End Sub
 
 #Region "Bluetooth"
     '    ''' <summary>
@@ -502,7 +502,8 @@ Public Module pkar
 
     Public Async Function FromLibDialogBoxInputAllDirectAsync(sMsg As String, Optional sDefault As String = "", Optional sYes As String = "Continue", Optional sNo As String = "Cancel") As Task(Of String)
         Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
-        Return InputBox(sMsg, sAppName, sDefault)
+        Throw New Exception("nie umiem input boxa w Core 3.1")
+        ' Return InputBox(sMsg, sAppName, sDefault)
     End Function
 
 
@@ -623,24 +624,12 @@ Module Extensions
     '    End Sub
 
 
-    '    <Extension()>
-    '    Public Sub OpenBrowser(ByVal oUri As System.Uri, Optional bForceEdge As Boolean = False)
-    '        If bForceEdge Then
-    '            ' tylko w FilteredRss
-    '            Dim options = New Windows.System.LauncherOptions With
-    '                {
-    '                    .TargetApplicationPackageFamilyName = "Microsoft.MicrosoftEdge_8wekyb3d8bbwe"
-    '                }
-    '#Disable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
-    '            Windows.System.Launcher.LaunchUriAsync(oUri, options)
-    '#Enable Warning BC42358
-    '        Else
-
-    '#Disable Warning BC42358 ' Because this call is not awaited, execution of the current method continues before the call is completed
-    '            Windows.System.Launcher.LaunchUriAsync(oUri)
-    '#Enable Warning BC42358
-    '        End If
-    '    End Sub
+    <Runtime.CompilerServices.Extension>
+    Public Sub OpenBrowser(ByVal oUri As System.Uri)
+        Dim sdpsi As New System.Diagnostics.ProcessStartInfo(oUri.ToString)
+        sdpsi.UseShellExecute = True
+        System.Diagnostics.Process.Start(sdpsi)
+    End Sub
 
 
 
@@ -679,6 +668,18 @@ Module Extensions
         Vblib.SetSettingsString(sName, oItem.Text, bRoam)
     End Sub
 
+    <Runtime.CompilerServices.Extension()>
+    Public Sub GetSettingsBool(ByVal oItem As CheckBox, Optional sName As String = "", Optional bDefault As Boolean = False)
+        If sName = "" Then sName = oItem.Name
+        Dim bBool As Boolean = Vblib.GetSettingsBool(sName, bDefault)
+        oItem.IsChecked = bBool
+    End Sub
+    <Runtime.CompilerServices.Extension()>
+    Public Sub SetSettingsBool(ByVal oItem As CheckBox, Optional sName As String = "", Optional bRoam As Boolean = False)
+        If sName = "" Then sName = oItem.Name
+        Vblib.SetSettingsBool(sName, oItem.IsChecked, bRoam)
+    End Sub
+
     '<Extension()>
     'Public Sub GetSettingsBool(ByVal oItem As ToggleSwitch, Optional sName As String = "", Optional bDefault As Boolean = False)
     '    If sName = "" Then sName = oItem.SourceName
@@ -715,35 +716,35 @@ Module Extensions
     '    Vblib.SetSettingsBool(sName, oItem.IsChecked, bRoam)
     'End Sub
 
-    '''' <summary>
-    '''' Zapisanie SettingsInt z możliwością skalowania (TextBox: zł.gr to dScale = 100)
-    '''' </summary>
-    '''' <param name="oItem"></param>
-    '''' <param name="sName"></param>
-    '''' <param name="bRoam"></param>
-    '''' <param name="dScale"></param>
-    '<Extension()>
-    'Public Sub SetSettingsInt(ByVal oItem As TextBox, Optional sName As String = "", Optional bRoam As Boolean = False, Optional dScale As Double = 1)
-    '    If sName = "" Then sName = oItem.SourceName
-    '    Dim dTmp As Integer
-    '    If Not Double.TryParse(oItem.Text, dTmp) Then Return
-    '    dTmp *= dScale
-    '    Vblib.SetSettingsInt(sName, dTmp, bRoam)
-    'End Sub
+    ''' <summary>
+    ''' Zapisanie SettingsInt z możliwością skalowania (TextBox: zł.gr to dScale = 100)
+    ''' </summary>
+    ''' <param name="oItem"></param>
+    ''' <param name="sName"></param>
+    ''' <param name="bRoam"></param>
+    ''' <param name="dScale"></param>
+    <Runtime.CompilerServices.Extension()>
+    Public Sub SetSettingsInt(ByVal oItem As TextBox, Optional sName As String = "", Optional bRoam As Boolean = False, Optional dScale As Double = 1)
+        If sName = "" Then sName = oItem.Name
+        Dim dTmp As Double
+        If Not Double.TryParse(oItem.Text, dTmp) Then Return
+        dTmp *= dScale
+        Vblib.SetSettingsInt(sName, dTmp, bRoam)
+    End Sub
 
-    '''' <summary>
-    '''' Pobranie SettingsInt z możliwością skalowania (TextBox: zł.gr to dScale = 100)
-    '''' </summary>
-    '''' <param name="oItem"></param>
-    '''' <param name="sName"></param>
-    '''' <param name="dScale"></param>
-    '<Extension()>
-    'Public Sub GetSettingsInt(ByVal oItem As TextBox, Optional sName As String = "", Optional dScale As Double = 1)
-    '    If sName = "" Then sName = oItem.SourceName
-    '    Dim dTmp As Integer = Vblib.GetSettingsInt(sName)
-    '    dTmp /= dScale
-    '    oItem.Text = dTmp
-    'End Sub
+    ''' <summary>
+    ''' Pobranie SettingsInt z możliwością skalowania (TextBox: zł.gr to dScale = 100)
+    ''' </summary>
+    ''' <param name="oItem"></param>
+    ''' <param name="sName"></param>
+    ''' <param name="dScale"></param>
+    <Runtime.CompilerServices.Extension()>
+    Public Sub GetSettingsInt(ByVal oItem As TextBox, Optional sName As String = "", Optional dScale As Double = 1, Optional iDefault As Integer = 0)
+        If sName = "" Then sName = oItem.Name
+        Dim dTmp As Integer = Vblib.GetSettingsInt(sName, iDefault)
+        dTmp /= dScale
+        oItem.Text = dTmp
+    End Sub
 
     '<Extension()>
     'Public Sub SetSettingsInt(ByVal oItem As Windows.UI.Xaml.Controls.Slider, Optional sName As String = "", Optional bRoam As Boolean = False)
@@ -1000,4 +1001,31 @@ Module Extensions
 #End Region
 
 End Module
+
+#Region "Konwertery Bindings XAML"
+' nie mogą być w VBlib, bo Implements Microsoft.UI.Xaml.Data.IValueConverter
+
+' parameter = NEG robi negację
+Public Class KonwersjaVisibility
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+        Dim bTemp As Boolean = CType(value, Boolean)
+        If parameter IsNot Nothing Then
+            Dim sParam As String = CType(parameter, String)
+            If sParam.ToUpperInvariant = "NEG" Then bTemp = Not bTemp
+        End If
+        If bTemp Then Return Visibility.Visible
+
+        Return Visibility.Collapsed
+    End Function
+
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+#End Region
+
 

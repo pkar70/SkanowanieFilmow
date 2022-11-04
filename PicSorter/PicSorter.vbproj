@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>PicSorterNS</RootNamespace>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
@@ -20,6 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ClassLibrary2\Taggers_OCR_lib.vbproj" />
+    <ProjectReference Include="..\Taggers_OCR\Taggers_OCR_lib.vbproj" />
     <ProjectReference Include="..\VbLib20\VbLib20.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>
@@ -30,6 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ExifLib" Version="1.7.0" />
     <PackageReference Include="MediaDevices" Version="1.9.0" />
   </ItemGroup>
 

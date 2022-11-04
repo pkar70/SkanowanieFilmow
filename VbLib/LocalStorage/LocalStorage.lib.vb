@@ -11,3 +11,9 @@ End Class
 '	IMPLEMENT: vblib, JSON na config, kopia w root-path
 '	UI: dodaj, in_use yes/no
 '	FUNKCJONALNOSC: permanent storage, Save, ApplyTags, Find/Search, GetById (Id na pathname - w srodku STORAGE, app tego nie widzi), GetTagsById, GetPathForId (Do AcdSee itp.)
+' na razie bez wyszukiwania, itp., tylko
+' * samo buffer->storage,
+' * aktualizacja pliku json w katalogu,
+' * aktualizacja JSON bufora ("plik przekazany do archiwum"), co daje Purge potem
+' * jesli OnePic.IsExifed = false, to pyta czy zapisac tagi do niego
+

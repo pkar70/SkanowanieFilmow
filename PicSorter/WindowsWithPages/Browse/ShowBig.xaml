@@ -5,8 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="ShowBig" Height="450" Width="800" Loaded="Window_Loaded">
+        Title="ShowBig" Height="450" Width="800" Loaded="Window_Loaded" SizeChanged="Window_SizeChanged">
     <Grid>
-        
+        <ScrollViewer Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click">
+            <!-- ZoomMode="Enabled" -->
+            <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center" >
+                <Image.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
+                        <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
+                        <MenuItem Header="Delete" IsEnabled="False" />
+                        <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
+                        <MenuItem Header="Describe" Click="uiDescribe_Click" />
+                        <MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />
+                    </ContextMenu>
+                </Image.ContextMenu>
+            </Image>
+        </ScrollViewer>
     </Grid>
 </Window>

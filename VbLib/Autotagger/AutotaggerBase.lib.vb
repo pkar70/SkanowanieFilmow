@@ -1,10 +1,15 @@
-﻿Public Interface AutotaggerInterface
-    Property Typek As AutoTaggerType    ' lokalny, web, web z autoryzacją
-    Property Nazwa As String
-    Property MinWinVersion As String
-    Function ApplyToFile(oFile As OnePic) As Boolean
+﻿Public MustInherit Class AutotaggerBase
+    Public MustOverride ReadOnly Property Typek As AutoTaggerType    ' lokalny, web, web z autoryzacją
+    Public MustOverride ReadOnly Property Nazwa As String
+    Public MustOverride ReadOnly Property MinWinVersion As String
 
-End Interface
+    ''' <summary>
+    ''' Zwraca przygotowany EXIFtag, albo NULL, gdy błąd. EXIFtag może być pusty!
+    ''' </summary>
+    ''' <param name="oFile"></param>
+    ''' <returns></returns>
+    Public MustOverride Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
+End Class
 
 
 ' https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/quickstarts-sdk/image-analysis-client-library?tabs=visual-studio%2C3-2&pivots=programming-language-csharp
@@ -40,7 +45,6 @@ End Interface
 ' FILE_EXIF
 
 '	reguły rename? np. dir\file z karty SD na dir_file?, DSCF1234 na yymmddhhmmss? dla latwiejszego uniqID 
-' Descript.Ion 
 
 '*) AUTOTAG (np. AzureAPI, cloudpic do katalogu temp)
 '	typ/ name

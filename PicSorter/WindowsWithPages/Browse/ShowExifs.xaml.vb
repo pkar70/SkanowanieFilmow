@@ -1,4 +1,6 @@
 ﻿
+Imports Newtonsoft.Json
+Imports vb14 = Vblib.pkarlibmodule14
 
 
 Public Class ShowExifs
@@ -17,7 +19,24 @@ Public Class ShowExifs
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         uiTitle.Text = _picek.sSuggestedFilename
 
-        Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(_picek.Exifs, Newtonsoft.Json.Formatting.Indented)
+        Dim oSerSet As New JsonSerializerSettings
+        If vb14.GetSettingsBool("uiFullJSON") Then
+            oSerSet.NullValueHandling = NullValueHandling.Include
+        Else
+            oSerSet.NullValueHandling = NullValueHandling.Ignore
+        End If
+
+
+        Dim sTxt As String = ""
+        If _picek.descriptions IsNot Nothing Then
+            sTxt = "Descriptions:" & vbCrLf & vbCrLf
+
+            sTxt &= JsonConvert.SerializeObject(_picek.descriptions, Formatting.Indented, oSerSet)
+            sTxt = sTxt & vbCrLf & vbCrLf & vbCrLf & "Exifs:" & vbCrLf & vbCrLf
+        End If
+
+        sTxt &= JsonConvert.SerializeObject(_picek.Exifs, Formatting.Indented, oSerSet)
+
         uiDump.Text = sTxt
     End Sub
 End Class

@@ -4,6 +4,7 @@
 'https://www.cipa.jp/std/documents/e/DC-X008-Translation-2019-E.pdf
 
 
+Imports System.IO
 ''' <summary>
 ''' Tags that can be added to file
 ''' </summary>
@@ -16,7 +17,8 @@ Public Class ExifTag
     Public Property FileSourceDeviceType As FileSourceDeviceTypeEnum
     Public Property Author As String
     Public Property Copyright As String
-    Public Property CameraModel As String   ' 0xc614	UniqueCameraModel	string	IFD0 (dla Certo i Belplasca mozna to zrobic, takze Lumia)
+    ' Public Property CameraMaker As String
+    Public Property CameraModel As String
 
     ' daty, które mają różne znaczenie w różnych kontekstach
     ' dla pliku kopiowanego z aparatu via explorer: CREATE = data skopiowania, MODIFY = data z aparatu (wczesniejsza)
@@ -37,28 +39,19 @@ Public Class ExifTag
 
 
     ' z innych źródeł (czyli już zawsze, bo SOURCE_EXIF)
-    Public Property Keywords As String  ' UserComment, 9286
-    Public Property Restrictions As RestrictionsEnum ' 0x9212 SecurityClassification string ExifIFD (C/R/S/T/U), do "tajne" :) (ale jest tez non-writable, 0xa212)
+    Public Property Keywords As String  ' ImageDescription (only ASCII)
+    Public Property UserComment As String  ' UserComment, 9286
+    Public Property Restrictions As String ' 0x9blic 212 SecurityClassification string ExifIFD (C/R/S/T/U), do "tajne" :) (ale jest tez non-writable, 0xa212)
     Public Property Orientation As OrientationEnum  ' do usuwania z pliku, bo jego rotate podczas import?
-    Public Property PicGuid As String   ' 0x9211 ImageNumber int32u ExifIFD (ale jest tez non-writable, 0xa211)
-    'Public Property ReelName As String   ' 0xc789	ReelName	string	IFD0
+    Public Property PicGuid As String   ' 0xA420 ImageUniqueID ASCII!
+    Public Property ReelName As String   ' 0xc789	ReelName	string	IFD0
     Public Property GeoTag As MyBasicGeoposition    ' 0x87b1	GeoTiffAsciiParams IFD0 (string)
-    Public Property TagsChanged As Boolean = False
+    Public Property GeoName As String ' GeoTiffAsciiParams
+
+    Public Property OriginalRAW As String   ' Tag 0xc68b (9 bytes, string[9])
+
     'Public Property AlienTags As List(Of String)    ' importowane z różnych miejsc, autorozpoznawanie -> ExifSource
 
-
-    Public Function ApplyToFile(sPathName As String)
-        ' z zachowaniem daty pliku!
-    End Function
-
-    ''' <summary>
-    ''' as constructor - read all metadata from file
-    ''' </summary>
-    ''' <param name="sPathName"></param>
-    ''' <returns></returns>
-    Public Shared Function GetFromFile(sPathName As String)
-
-    End Function
 
     Public Sub New(sSource As String)
         ExifSource = sSource

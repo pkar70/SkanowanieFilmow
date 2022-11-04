@@ -1,10 +1,18 @@
 ﻿
+' wykorzystuje Microsoft.Windows.SDK.Contracts
 
 Public Class AutoTag_OCR
+    Inherits Vblib.AutotaggerBase
 
-    'Public Sub test()
-    '    wpf
-    'End Sub
+    Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
+    Public Overrides ReadOnly Property Nazwa As String = "AUTO_OCR"
+    Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
+
+    Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+        Dim oNewExif As New Vblib.ExifTag(Nazwa)
+
+
+    End Function
 
 
     'Private Async Function ZrobOCR() As Task(Of Boolean)

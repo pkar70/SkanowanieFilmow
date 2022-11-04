@@ -1,8 +1,11 @@
 ﻿Imports vb14 = Vblib.pkarlibmodule14
 
 Class SettingsMain
+    Private Sub uiListSett_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingListy)
+    End Sub
     Private Sub uiMiscSett_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingMisc)
+        Me.NavigationService.Navigate(New SettingsMisc)
     End Sub
 
     Private Sub uiGlobalSett_Click(sender As Object, e As RoutedEventArgs)

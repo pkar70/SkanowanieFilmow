@@ -1,13 +1,14 @@
-﻿<Page x:Class="SettingMisc"
+﻿<Page x:Class="SettingListy"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
-      Title="SettingMisc" >
+      Title="Listy" >
     <StackPanel>
         <Button Content="List of (C) tags" Margin="5,15,5,25" FontSize="18" Click="uiListCopyr_Click" Width="150"/>
         <Button Content="List of Authors" Margin="5,15,5,25" FontSize="18" Click="uiListAuthor_Click" Width="150"/>
-        <Button Content="List of Cameras" Margin="5,15,5,25" FontSize="18" Click="uiListCamera_Click" Width="150"/>
+        <!--<Button Content="List of camera makers" Margin="5,15,5,25" FontSize="18" Click="uiListCameraMakers_Click" Width="190"/>-->
+        <Button Content="List of cameras" Margin="5,15,5,25" FontSize="18" Click="uiListCameraModels_Click" Width="150"/>
     </StackPanel>
 </Page>

@@ -1,4 +1,72 @@
 
+
+geografia na miejsce (w Polsce)
+
+Jakby więc wziąć zamienić współrzędne na miejsce:
+https://meteo.imgw.pl/api/geo/v2/revers/search/50.05/19.95
+[
+{"identifier":"Kazimierz gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Kazimierz","lat":"50.04972222","lon":"19.945","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"0.35834118398788","synoptic":false},
+{"identifier":"Krak\u00f3w gm. Krak\u00f3w","name":"Krak\u00f3w","lat":"50.049686","lon":"19.955626","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Krak\u00f3w","rank":"100000","dist":"0.40321027550083","synoptic":true},
+{"identifier":"Podg\u00f3rze gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Podg\u00f3rze","lat":"50.04527778","lon":"19.95555556","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"0.65808619496068","synoptic":false},
+{"identifier":"Stradom gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Stradom","lat":"50.05333333","lon":"19.94083333","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"0.75214838818782","synoptic":false},
+{"identifier":"\u015ar\u00f3dmie\u015bcie gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"\u015ar\u00f3dmie\u015bcie","lat":"50.05555556","lon":"19.94277778","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"0.80467498016457","synoptic":false},
+{"identifier":"Wawel gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Wawel","lat":"50.05416667","lon":"19.93472222","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.1851162881051","synoptic":false},
+{"identifier":"Ludwin\u00f3w gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Ludwin\u00f3w","lat":"50.04361111","lon":"19.93666667","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.187909655312","synoptic":false},
+{"identifier":"Osiedle Podwawelskie gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Osiedle Podwawelskie","lat":"50.04388889","lon":"19.93111111","catchment":"O_Z_K_92_1","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.5102744759965","synoptic":false},
+{"identifier":"Krak\u00f3w - Grzeg\u00f3rzki gm. Krak\u00f3w","name":"Krak\u00f3w - Grzeg\u00f3rzki","lat":"50.062","lon":"19.961","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Krak\u00f3w","rank":"10000","dist":"1.548277288214","synoptic":"false"},
+{"identifier":"Krak\u00f3w gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Krak\u00f3w","lat":"50.06166667","lon":"19.9375","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.5745788205846","synoptic":false},
+{"identifier":"Weso\u0142a gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Weso\u0142a","lat":"50.06416667","lon":"19.95166667","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.5797487985277","synoptic":false},
+{"identifier":"Grzeg\u00f3rzki gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Grzeg\u00f3rzki","lat":"50.05861111","lon":"19.96777778","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.5898936776719","synoptic":false},
+{"identifier":"Krak\u00f3w - Stare Miasto gm. Krak\u00f3w","name":"Krak\u00f3w - Stare Miasto","lat":"50.062","lon":"19.937","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Krak\u00f3w","rank":"10000","dist":"1.625367043024","synoptic":"false"},
+{"identifier":"Stare Miasto gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Stare Miasto","lat":"50.06305556","lon":"19.93888889","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.6542931159185","synoptic":false},
+{"identifier":"Bonarka gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Bonarka","lat":"50.03472222","lon":"19.9425","catchment":"O_Z_K_92_1","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.7812456498563","synoptic":false},
+{"identifier":"Nowy \u015awiat gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Nowy \u015awiat","lat":"50.05916667","lon":"19.92861111","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.8359669703687","synoptic":false},
+{"identifier":"Mateczny gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Mateczny","lat":"50.03527778","lon":"19.93583333","catchment":"O_Z_K_92_1","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.9244131715993","synoptic":false}
+]
+
+
+
+
+
+jak bedzie rotate, crop, czy tp., to sprawdzac zachowanie metadata - bo nie mozna ich tracic!
+(szczegolnie tych spoza PicSorter)
+
+obrazek na mapkę - gdzie to miało być
+zamiana lokalizacji na miejscowość
+jak histogram - pinezki na mapie ze zdjęć
+
+1) oprocz rozmiaru, jeszcze combo pokazywania / filtrowania (albo guzik od tego)
+
+3) filtry do pokazywania: bez tagów X (lista autotagów)
+do contextMenu: apply autofilter, add ExifTag (describe)
+tak samo do pelnej selekcji (z delete zrobic ACTION z menu, delete, apply tag, describe)
+
+4) OCR jednak zrobic moze jako cwiczenie?
+
+5) najpierw jednak StorageLocal, nawet jesli uproszczone (bezfiltrowe)
+6) local internal
+7) moze local external także
+- choc to wymaga obslugi katalogow
+folder: yyyyMMdd-name (default: name="")
+
+AutoTags:
+
+* OCR
+
+Autotag z contextmenu: prosi o potwierdzenie / poprawę (poza Exif read)
+Autotag seryjny - też pyta
+
+COUNT na mainscreen: local arch (xx) - to co jest juz Tagged, czyli AUTO_ badz MANUAL_ prefix
+ publish: to co jest juz do localarch wyslane
+
+BigPic do oddzielnego okna - tak zeby bylo menu, i dac tam to samo menu co w Browser
+tam mogloby dzialac DEL do kasowania, PGUP/PGDWN, SPACE do next
+
+do browsera - obracanie
+
+
+
+
 Co można zapisywać do skanów w EXIF
 (w archiwum domowym)
 
@@ -628,16 +696,11 @@ mainpage
 
 
 najpierw zrobic:
- sources i buffer, zabieranie z source do buffer i metadata w buffer
  struct tags na przechowywanie EXIF, ale struct mogłaby być szersza, bo np w EXIF:MSTAGS moze byc JSON?  w nim List(Of (autotagsource string, tags string))?
  enum pipeline 0 source/unknown, 10 buffer, 20 ... tak zeby mozna bylo wstawic jakis po drodze. Moze 100, 200?
  kopiowanie: na init pyta (checkboxy) o defaulttags, ktore nadac (default: all YES). 
  zbiera istniejące tagi (jak są), a dla geotag EXIF próbuje znaleźć miejsce (Konwersja geotag na tagi miejsca, jeśli jest znane.
 Else: Openstreetmap słownik? Albo ten geo pl oficjalny, który miał być do pylenia czy tp)
-
-
-windowsforms, bedzie wiecej okien (co sie moze przydac?), tylko trzeba vblib zmienic - settingsy itd. na wlasne (a moze nie vblib, tylko pkmodulewithlib?)
-https://stackoverflow.com/questions/13898310/multiple-windows-forms-on-one-application
 
 
 get/process:
@@ -659,9 +722,6 @@ FUnkcjonalnosc app: SyncStorage(internal, external) - dir/s/b po obu stronach
 MakeLink/Share w jakiś sposób, może byc z fotki menu |copy link to i submenu z wszystkimi services
 
 search, opcja make virtual album z resultatow
-
-niektore tagsy mają historię ((c) na pewno), moze w tym samym pliku co tagtree, a moze w taghist.json
-
 
 Zacząć wykorzystywać Azure speech2text do nagrań wykładów?
 App która ma browse audio file, send, i pokazuje tekst

@@ -1,4 +1,6 @@
 ﻿Public Class OneTag
+    Inherits MojaStruct
+
     Public Property sTagId As String
     Public Property sDisplayName As String
     Public Property minDate As DateTime

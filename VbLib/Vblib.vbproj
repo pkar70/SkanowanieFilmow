@@ -49,5 +49,9 @@
     <Folder Include="DirTree\" />
     <Folder Include="TagTree\" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ExifDataLib\Taggers_ExifDataLib.csproj" />
+    <ProjectReference Include="..\Taggers_ExifLib\Taggers_ExifDataLib.csproj" />
+  </ItemGroup>
 
 </Project>

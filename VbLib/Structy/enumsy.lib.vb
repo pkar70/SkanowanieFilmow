@@ -16,11 +16,11 @@ Public Enum FileSourceDeviceTypeEnum
     digital = 3
 End Enum
 
-Public Enum RestrictionsEnum
-    forAll = 0
-    family = 1
-    onlyAuthor = 255
-End Enum
+Public Class RestrictionsEnum
+    Public Const forAll As String = "" ' unrestricted (=U)
+    Public Const family As String = "c" ' confidential
+    Public Const onlyAuthor As String = "s" ' secret
+End Class
 
 ' gdzie jest (0,0)
 Public Enum OrientationEnum

@@ -15,7 +15,7 @@ Class SettingsSources
     End Sub
 
     Private Sub uiAddSource_Click(sender As Object, e As RoutedEventArgs)
-        uiAddSourcePopup.IsOpen = True
+        uiAddSourcePopup.IsOpen = Not uiAddSourcePopup.IsOpen
     End Sub
 
     Private Sub uiEdit_Click(sender As Object, e As RoutedEventArgs)

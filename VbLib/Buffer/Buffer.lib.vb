@@ -95,8 +95,4 @@ Public Class FilesInBuffer
 
 End Class
 
-'*) DELAYEDCOPY
-'	ptr-localstorage bez kopii
-'	ptr-localstorage z kopią
-'	ptr-picture
-'	- albo inaczej, w prostszej wersji, jakoś; tu także zmienione tagi do send?
+
