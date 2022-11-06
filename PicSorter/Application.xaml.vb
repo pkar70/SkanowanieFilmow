@@ -63,6 +63,19 @@ Partial Class Application
         Return gBuffer
     End Function
 
+    Private Shared gKeywords As Vblib.KeywordsList
+
+    Public Shared Function GetKeywords() As Vblib.KeywordsList
+        If gKeywords Is Nothing Then
+            gKeywords = New Vblib.KeywordsList(Application.GetDataFolder)
+            gKeywords.Load()
+        End If
+        Return gKeywords
+    End Function
+
+
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {New Vblib.AutoTag_EXIF, New Taggers_OCR.AutoTag_OCR}
+
+
 
 End Class

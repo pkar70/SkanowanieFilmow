@@ -1,0 +1,101 @@
+﻿<Page x:Class="SettingsKeywords"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PicSorterNS"
+      mc:Ignorable="d" 
+      Title="Keywords" Loaded="Page_Loaded">
+    <Page.Resources>
+        <local:KonwersjaDaty x:Key="KonwersjaDaty"/>
+    </Page.Resources>
+    <Grid Margin="5,5,5,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" Name="naTitle"/>
+            <RowDefinition Height="*" Name="naListe"/>
+            <RowDefinition Height="Auto" Name="naNewEdit_znikane"/>
+            <RowDefinition Height="Auto" Name="naOK"/>
+        </Grid.RowDefinitions>
+        <TextBlock HorizontalAlignment="Center" FontSize="16" Text="Keywords" />
+        <TreeView Grid.Row="1" Name="uiTreeView" HorizontalAlignment="Stretch" >
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                </Style>
+            </TreeView.ItemContainerStyle>
+
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
+                    <Grid HorizontalAlignment="Stretch" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="60" Name="naID" />
+                            <ColumnDefinition Width="*" Name="naName" />
+                            <ColumnDefinition Width="Auto" Name="naMinDate" />
+                            <ColumnDefinition Width="Auto" Name="naMaxDate" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{Binding sTagId}" />
+                        <TextBlock Text="{Binding sDisplayName}" Grid.Column="1" Margin="5,0,5,0"/>
+                        <!--<DatePicker SelectedDate="{Binding minDate}" SelectedDateFormat="Short"  Grid.Column="2" />-->
+                        <TextBlock Text="{Binding minDate, Converter={StaticResource KonwersjaDaty}}" Grid.Column="2"/>
+                        <TextBlock Text="{Binding maxDate, Converter={StaticResource KonwersjaDaty}}" Grid.Column="3" Margin="5,0,0,0"/>
+
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Edit" Click="uiEditKeyword_Click" />
+                                <MenuItem Header="Add subitem" Click="uiAddSubItem_Click" />
+                                <Separator/>
+                                <MenuItem Header="Export node" Click="uiExportItem_Click" />
+                                <MenuItem Header="Import subnode" Click="uiImportSubItem_Click" />
+                            </ContextMenu>
+                        </Grid.ContextMenu>
+                    </Grid>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
+        </TreeView>
+        <Grid Grid.Row="2" Name="uiAddEdit" Visibility="Collapsed" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Id" />
+            <TextBlock Grid.Row="1" Text="Name" />
+            <TextBlock Grid.Row="2" Text="MinDate" />
+            <TextBlock Grid.Row="3" Text="MaxDate" />
+            <TextBlock Grid.Row="4" Text="Latitude" />
+            <TextBlock Grid.Row="5" Text="Longitude" />
+            <TextBlock Grid.Row="6" Text="Radius (km)" />
+            <TextBlock Grid.Row="7" Text="DefPublish" />
+            <TextBlock Grid.Row="8" Text="DenyPublish" />
+            <TextBlock Grid.Row="9" Text="Notes" />
+
+            <TextBox Grid.Row="0" Name="uiId" Grid.Column="1"/>
+            <TextBox Grid.Row="1" Name="uiDisplayName" Grid.Column="1"/>
+            <DatePicker Grid.Row="2" Name="uiMinDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01"/>
+            <DatePicker Grid.Row="3" Name="uiMaxDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01"/>
+            <TextBox Grid.Row="4" Name="uiLatitude" Grid.Column="1" InputScope="Number"/>
+            <TextBox Grid.Row="5" Name="uiLongitude" Grid.Column="1" InputScope="Number"/>
+            <TextBox Grid.Row="6" Name="uiRadius" Grid.Column="1"  InputScope="Digits" />
+            <TextBox Grid.Row="7" Name="uiDefPublish" Grid.Column="1"/>
+            <TextBox Grid.Row="8" Name="uiDenyPublish" Grid.Column="1"/>
+            <TextBox Grid.Row="9" Name="uiNotes" Grid.Column="1" AcceptsReturn="True" Height="40"/>
+
+            <Button Content=" Done " HorizontalAlignment="Center" Grid.Row="10" Grid.ColumnSpan="2" Margin="5,10,5,15" Click="uiAddEditDone_Click"/>
+        </Grid>
+        <Button Content=" OK " Click="uiOk_Click" Grid.Row="3" HorizontalAlignment="Center" />
+    </Grid>
+</Page>

@@ -17,7 +17,8 @@
                         <MenuItem Header="Delete" IsEnabled="False" />
                         <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
                         <MenuItem Header="Describe" Click="uiDescribe_Click" />
-                        <MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />
+                        <!--<MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />-->
+                        <MenuItem Header="On map" Name="uiOnMap" />
                     </ContextMenu>
                 </Image.ContextMenu>
             </Image>

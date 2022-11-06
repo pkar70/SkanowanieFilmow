@@ -22,4 +22,8 @@ Class SettingsMain
     Private Sub uiSettSources_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsSources)
     End Sub
+
+    Private Sub uiKeywords_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsKeywords)
+    End Sub
 End Class

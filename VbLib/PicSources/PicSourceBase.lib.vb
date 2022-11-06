@@ -12,7 +12,7 @@ Public MustInherit Class PicSourceBase
 	Public Property Path As String  ' znaczenie zmienne w zależności od Type
 	Public Property VolLabel As String  ' device MTP, albo vollabel dysku do sprawdzania
 	Public Property Recursive As Boolean
-	Public Property sourcePurgeDelay As TimeSpan
+	Public Property sourcePurgeDelay As TimeSpan = TimeSpan.FromDays(7)
 	Public Property defaultPublish As List(Of String)   ' lista IDs
 	Public Property includeMask As String = "*.jpg;*.tif;*.png" ' maski regexp
 	Public Property excludeMask As String  ' maski regexp
@@ -287,6 +287,7 @@ Public MustInherit Class PicSourceBase
 	''' </summary>
 	''' <param name="sId"></param>
 	Public Sub AddToPurgeList(sId As String)
+		If Typ = PicSourceType.AdHOC Then Return
 		IO.File.AppendAllText(_purgeFile, Date.Now.ToString("yyyyMMdd.HHmm") & vbTab & sId & vbCrLf)
 	End Sub
 
@@ -296,6 +297,8 @@ Public MustInherit Class PicSourceBase
 	''' <param name="bRealPurge">TRUE: kasuj, FALSE: tylko policz</param>
 	''' <returns></returns>
 	Public Function Purge(bRealPurge As Boolean) As Integer
+		If Typ = PicSourceType.AdHOC Then Return 0
+
 		If Not IO.File.Exists(_purgeFile) Then Return 0
 		Dim sContent As String() = IO.File.ReadAllLines(_purgeFile)
 		Dim sNewContent As New List(Of String)

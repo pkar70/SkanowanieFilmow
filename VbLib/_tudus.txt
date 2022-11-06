@@ -1,4 +1,72 @@
 
+DEFAULTS: gdy nie ma żadnego Source, to robi Adhoc
+DOC: najpierw szybka ścieżka, bez ustawień: adhoc, browse, autosplit godzinowe, archive do adhoc
+	potem z wszystkimi bajerami opisywać ("wszystko moze być ustawione, zmodyfikowane, zautomatyzowane")
+DOC: "zbierz ze wszystkich źródeł przed sortowaniem - tak, aby autopodział był poprawny"
+DOC: gdy zdjęcie nie ma GeoTag, przyjmujemy że jest tam gdzie poprzednie
+ARCHIVE, TARGET:
+	1) lista paths
+	2) zakres dat - nie modyfikowalne potem?   - ale o co mi chodziło?
+SETT - MISC - ARCHIVEDIRSTRUCT (albo per archive?)
+	[ ] 198x
+	[x]  + 1981
+	[ ]  |  + 1981.01
+	( )  |  |   + 1981.01.23
+	(*)  |  |   + 1981.01.23.sb (sprawdzic jaki to byl dzien)
+	dwa ostatnie to radio, z dniem tygodnia bądź bez
+	ale i tak zawsze znajduje, bo sobie sprawdza czy przypadkiem nie trzeba wejść głębiej
+	po dacie - podkreslenie, badz spacja, i cokolwiek, i to cokolwiek moze byc zmieniane potem poza programem
+
+ARCHIVE: zmiana filename na yyyymmddhhmmss , a moze nie, bo moze lepsze sortowanie by name (rozdziela zrodla) oraz by date (jest po kolei)
+
+BROWSE - SELECT - SENDTO ARCH, pyta o nazwę:
+  TextBlock 1981.01.23.sb , TextBox [..]
+  przy autoarch nie pyta (nazwa = tylko data)
+
+CONFIG: backup settings, SaveAs zip z nazwą = data
+
+DIRTREE: nie ma oddzielnego do setup, nie ma sensu, jest tylko "dir selector" przy SendTo Arch
+JedenDir: id (1981.01.23), name (1981.01.23.sb_wyjazd), opis (wyjazd do Wieliczki z dziadkami, pociągiem i psem), [datemin, datemax, geomin, geomax] [keywords]
+
+ARCHIVE: ADHOC oraz FOLDER, analogicznie do Source (zawsze sprawdza vollabel), includemask, excludemask, pending As Bool - gdy czeka na odesłanie (taki sam pending dla Publish)
+
+SOURCE: czy browse potrafi pokazać RAF z Fuji? Jak tak, to dołączyć do default includemask
+
+ARCHIVE autosplit: szybkie sprawdzenie czy są EXIFy, jesli nie, to sugeruje najpierw puszczenie autoexif (dla geo)
+
+BROWSER: dodać "security" (że ukrywany, taki nie idzie do PUBLISH - choć to też można zrobić przez TAG=private)
+BROWSER: przerobić na new(lista), i na niej tylko operacje, a nie na całym buforze
+		- potem się przyda, przy otwieraniu Browser na katalogu
+
+BROWSER: dodać akcje:
+	* rotate - z kasowaniem Exif.Orientation
+	* crop
+	* resize
+	- ale sprawdzac zachowanie metadata - bo nie mozna ich tracic! (szczegolnie tych spoza PicSorter)
+
+KEYWORDS: export/import z podanego węzła (np. mogę wysłać tacie - rodzinę)
+
+BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
+
+BIGPIC: DEL do kasowania, PGUP/PGDWN, SPACE do next
+
+BROWSER: combo pokazywania / filtrowania (albo guzik od tego), filtry do pokazywania: bez tagów X (lista autotagów)
+
+MAIN: local arch (xx) - count to co jest juz Tagged, czyli AUTO_ badz MANUAL_ prefix - albo to co ma pending
+MAIN: publish: count to co jest juz do localarch wyslane - albo to co ma pending
+
+BROWSER: sub new(lista) i do tej listy potem, a nie do Buffer
+
+DBASE: obsługa jakiejś bazy danych
+
+SEARCH: tagtree, z checkbox MUSI_BYC i NIE_MOZE
+TAGTREE: dodac -no, -n1, -n2 - albo to z zewnetrznego serwisu
+TAGTREE DOC: może być *, oznaczające wszystko (default/deny publish)
+
+============================================================================================================
+==================	rozne web serwisy		rozne web serwisy		==========================================
+============================================================================================================
+
 
 geografia na miejsce (w Polsce)
 
@@ -26,43 +94,10 @@ https://meteo.imgw.pl/api/geo/v2/revers/search/50.05/19.95
 
 
 
+============================================================================================================
+============================== o EXIF	 o EXIF	 o EXIF	 o EXIF	 o EXIF	 o EXIF	================================
+============================================================================================================
 
-
-jak bedzie rotate, crop, czy tp., to sprawdzac zachowanie metadata - bo nie mozna ich tracic!
-(szczegolnie tych spoza PicSorter)
-
-obrazek na mapkę - gdzie to miało być
-zamiana lokalizacji na miejscowość
-jak histogram - pinezki na mapie ze zdjęć
-
-1) oprocz rozmiaru, jeszcze combo pokazywania / filtrowania (albo guzik od tego)
-
-3) filtry do pokazywania: bez tagów X (lista autotagów)
-do contextMenu: apply autofilter, add ExifTag (describe)
-tak samo do pelnej selekcji (z delete zrobic ACTION z menu, delete, apply tag, describe)
-
-4) OCR jednak zrobic moze jako cwiczenie?
-
-5) najpierw jednak StorageLocal, nawet jesli uproszczone (bezfiltrowe)
-6) local internal
-7) moze local external także
-- choc to wymaga obslugi katalogow
-folder: yyyyMMdd-name (default: name="")
-
-AutoTags:
-
-* OCR
-
-Autotag z contextmenu: prosi o potwierdzenie / poprawę (poza Exif read)
-Autotag seryjny - też pyta
-
-COUNT na mainscreen: local arch (xx) - to co jest juz Tagged, czyli AUTO_ badz MANUAL_ prefix
- publish: to co jest juz do localarch wyslane
-
-BigPic do oddzielnego okna - tak zeby bylo menu, i dac tam to samo menu co w Browser
-tam mogloby dzialac DEL do kasowania, PGUP/PGDWN, SPACE do next
-
-do browsera - obracanie
 
 
 
@@ -99,10 +134,6 @@ a) wspolrzedne
 b) nazwa
 
 3) description - ludzie
-
-4) copyright - dorzucane automatem, (C) Andrzej Karocki, (C) Władysław Karocki, (C) Piotr Karocki, (C) Emil Widacki, (C) Joanna Karocka
-- w zależności od tego z jakiego podkatalogu
-"Copyright, kto, 19xx. All rights reserved." - tak w samplu
 
 5) Usuwanie orientation?
 
@@ -312,8 +343,6 @@ app zarządzania fotkami:
 
 osobna SQL:Table na te tagi/dane fotek? może w ogóle niezaleznie od StoreFiles, moze tych fotek tam nie dawać?
 
-Czy app dla UWP desktop, czy takze UWP telefon, a moze MAUI, a moze WinForms?
-
 Zakładając że mamy StoreFiles z fileDate, i tego nie ruszamy, możemy dowolnie robić na JPG?
 
 Na start:
@@ -378,7 +407,6 @@ czyli typu "jamcitosam", i wedle tego dostępy? ale mozna byloby ominąć app i 
 a prezciez są także TAJNE
 
 
-
 APP1) telefoniczna moze być potrzebna
  sieganie do Azure:Cosmos do katalogu, wyszukiwanie obrazkow, pokazywanie
 APP2) telefoniczna uploader - Sprzedażna
@@ -424,10 +452,6 @@ Serwisy dla mnie do dokladniejszego sprawdzenia:
 
  VirtualAlbum dla każdego TAG
 
-* serwisy:
- property bool JPG
- property bool TIF
- property bool Archival (ze wszystko)
 
 * moze rozpoznawanie twarzy po stronie serwisu, albo inne atrybty nadawane przez serwis, i dodanie tego do EXIF?
 
@@ -452,80 +476,45 @@ filmID, a dla odbitek: id pudelka
 ramkaID, a dla odbitek: id w pudelku (co nie znaczy ze nie moze zostac tak jak jest teraz, ciagla numeracja)
 folderID: id katalogu, jakis prosty (typu sygnatura, 0-Krakow, 01-Krakow, DniMiasta, itp.; albo szukanie poprzez bazę danych, i tylko numer kolejny)
 
-VLO - muszą być 2 nazwiska
-ABi Adam Bielański
-ABo Anna Borowczak	
-AC Anna Chadzińska	
-AG Andrzej Grzybczyk	
-AI Arkadiusz Iwanicki
-AK Agata Kornelak
-AP Agata Płonka	Liceum	
-AS Aleksandra Seledyn 
-AW Agnieszka Wantuch	
-BP Bernadetta Piekarczyk
-ED Elżbieta Dusik	
-GB Grzegorz Bubak	
-GC Grzegorz Cyganek	
-GK Grzegorz Kitliński	
-JK Jarosław Kadulski	
-JO Janusz Odrzywołek	
-JP Jolanta Pers	
-KK Kinga Konopka
-MD Marcin Dziurzyński	
-MKr Mikołaj Krehlik
-MKo Monika Kozłowska	
-MM Maria Mycielska	
-MS Maciej Stachura	
-MW Mateusz Widłak	
-PF Piotr Faron	Liceum	
-PM Piotr Mazur	Liceum	
-PWo Paweł Wójcik	
-PWy Piotr Wykurz
-RB Robert Bałucki	
-RJ Renata Jarosz	
-RN Ryszard Niszczota	
-SS Sebastian Sit	
-SW Sabina Wiltos (Korbiel)
-TJ Tomasz Jaśkowski	
-TS Tomasz Salamon	
-WC Wojciech Czarnecki	
-WS Wojciech Słowakiewicz	
 
-- muszą być 3 litery nazwiska
-AKob Agnieszka Kobyłko	
-AKol Anna Kolanowska	
-APi Andrzej Pilch	
-APa Anna Pasula	
-AR Agnieszka Raszewska	
-ASo Andrzej Soja	
-ASl Anna Śliwińska	
-AZ Anna Zielińska	
-BK Barbara Katra	
-DD Dariusz Dybczak	
-DG Dorota Gaździk	
-EL Elżbieta Legutko	
-ES Elżbieta Spiechowicz	
-IW Iwona Wiśniewska	
-JK Jolanta Knapik	
-KG Katarzyna Gruszkowska	
-KK Katarzyna Kostka	
-KWo Katarzyna Wójcik	
-KWn Konrad Wnęk	
-KWe Krzysztof Węgrzyn	
-MK Monika Kądzioła	
-MN Marcin Nowak	
-MO Monika Owsiak	
-MW Marcin Wojdyła	
-PP Paweł Pietruszka	
-RK Rafał Kromka	
-RM Rafal Mis	
-RRo Renata Różycka	
-RRu Renata Rusek	
-RZ Rafał Ziobro	
-SD Sebastian Drozd	
-WB Wojciech Bryksy	
-WL Wojciech Lewandowski	
-WZ Wojciech Żychowicz	
+Miejsca:
+(pozniej)
+
+rodzinne (wnetrza - z numerem)
+-W11	Na Blonie rodzice (wnetrze), 1975-
+-N26	Nowosadecka ja (wnetrze)
+-N21	Nowosadecka dziadki (wnetrze, u dziadkow)
+-L26	Litewska 26/ (wnetrze), -1975
+-G12	Groble 12/ (wnetrze)
+-S27	Senatorska 27/ (wnetrze)
+-R03	Rekawka (wnetrze)
+-Sxx	Snycerska (wnetrze)
+
+-WID	osiedle Widok
+-NOW	osiedle Nowosądecka
+
+
+
+inne Kraków:
+-WAW	Wawel
+-RYN	Rynek
+
+-KRAK	Kraków, nie pasujący do żadnego dokładniejszego - ale może także zawsze powyzej?
+
+inne:
+-SIDZ	Sidzina
+-WAWA	Warszawa
+-WROC	Wrocław
+-SUCH	Sucha (wakacje)
+-ZAKO	Zakopane
+-TATR	Tatry
+-GORC	Gorce (w tym Turbacz)
+-LWOW	Lwów
+
+
+VLO - muszą być 2 nazwiska
+8a: muszą być 3 litery nazwiska
+
 
 Osoby do zaznaczania: combo, z filtrem, DODAJ; drzewko hierarchiczne (rodzina, SP, LO) ?
 
@@ -573,24 +562,6 @@ PYTANIE: co z filmikami? je też zabieramy?
 MAUI tylko Windows 10, więc dla Taty niet.
 
 OBIEKTY:
-*) SOURCE : FOLDER|MTP, to będą albo karta z aparatu (FOLD/subf+?/file), albo telefon (MTP/CameraRoll), albo zrzucone skądś (FOLD/subf*/file - browser za każdym razem), albo folder z OneDrive
-	typ/name
-	path (internal data)
-	recursive yes/no
-	sourceRemove yes/no, delayed? TimeSpan
-	default tags
-	default publish?
-	include:List(Of string), exclude:List(of string) - maski regexp
-	IMPLEMENT: vblib, JSON na config, moze %computername%.picsource.json jako konfiguracja (kopia) w miejscu, przy podłączaniu source szuka takich i pyta czy zaimportować (defaulttags), ale też może byc dla roznych instacji - roznie
-	UI: dodaj (moze byc wielokrotne), visible yes/no, tagRules ?
-	METHODS: Dir(allFiles = false - od ostatniego, albo calosc), GetFile(filepath), GetTags(filepath),  COnfigCreate, COnfigSave
-	Count(allFiles=false, since=yyyymmddhhmmss), First, Next, Purge(olderThanDate), DateMin, DateMax,
-	Moze STRUCT SrcFile path, name, tags, publishers, stream.
-	reguły rename? np. dir\file z karty SD na dir_file?, DSCF1234 na yymmddhhmmss? dla latwiejszego uniqID
-	FUNKCJONALNOSC: Purge, Download
-Tu moze BUFFER, z plikami sciagnietym z zewnątrz, wraz z tagami dopisanymi w pliku
-może też różne buffer dla różnych sources?
-Albo tagi dopisywac automatycznie podczas kopiowania pliku? tyle że to zepsuje daty.
 
 *) LOCALSTORAGE : INTERNAL|EXTERNAL (podłącz dysk...) 
 	typ/name
@@ -634,10 +605,7 @@ Albo tagi dopisywac automatycznie podczas kopiowania pliku? tyle że to zepsuje 
 *) TAGTREE
 	level0: grupa (osoby, miejsca...) zwierzeta, transport, pora roku (snieg, morze, ...)
 	level1 i w głąb: np. Kraków - Widok - mieszkanie, rodzina-aska, 8a-wz
-	id -JA #WID
-	name Piotr Karocki, Widok
-	IMPLEMENT: vblib, JSON na config
-	UI: prosty edytor, usun/dodaj TU, oraz open in notepad/VStudio i reload
+	(...)
 	STRUCT z używanymi TAGami, i LoadFromFile(filename), SaveToFIle(filename), zmiana tagów to również reapply tagów w serwisach! resave pliku do storage (external disk)
 
 *) PUBLISHED
@@ -645,22 +613,6 @@ Albo tagi dopisywac automatycznie podczas kopiowania pliku? tyle że to zepsuje 
 	datetime
 	remote-id
 	[ptr-picture]
-
-*) PICTURE
-	listof(tags) (niektóre)
-	uniqueId
-	ptr-dirtree
-	delayedstorage: jesli nie wszystkie localstorage mają kopie - to tu ktore nie; ewentualnie inaczej to zrobić
-	localstorage: jesli nie wszystkie localstorage mają kopie - to tu ktora INTERNAL ma (jako source do delayed kopiowania)
-	[listof(published)]
-
-*) AUTOTAG (np. AzureAPI, cloudpic do katalogu temp)
-	typ/name
-	username/password
-	internaldata (np. tempalbum path)
-	usagelimit
-	IMPLEMENT: vblib, JSON na config
-	moze takze OCR na obrazku? moze jakies napisy same sie w ten sposób przepiszą? lokalny OCR (jak w comixlang)
 
 *) TRAINFACE - albo to w ramach TAGS?
 	name
@@ -674,43 +626,11 @@ Albo tagi dopisywac automatycznie podczas kopiowania pliku? tyle że to zepsuje 
 	- albo inaczej, w prostszej wersji, jakoś; tu także zmienione tagi do send?
 
 
-Settings, guziki horiz=center, stackpanel
- [sources]
- [buffer] -> albo jako global, path do buffer, path do OneDrive?
- [localarchives]
- [cloudstorage]
- [publishing]
-<empty>
- [dirtree]
- [tagtree]
- [autotags]
-
-mainpage
- [get/process (xx)] -> kolejne etapy procesu, xx: buffer.count+delayedcopy.count(any)
- rozdzielic to na get i na process?
- [browse] -> po dirtree, podawanie count() - jesli zaznaczono checkbox liczenia, na koniec contactsheet i open z localstorage
- [search] -> trzy kolummny, tags tak, tagtree, tags nie, moze tez jakos folderami ograniczac (autor, skan/costam)
- [slideshow] -> albo to dopiero z search
-<empty>
- [settings]
-
-
 najpierw zrobic:
- struct tags na przechowywanie EXIF, ale struct mogłaby być szersza, bo np w EXIF:MSTAGS moze byc JSON?  w nim List(Of (autotagsource string, tags string))?
- enum pipeline 0 source/unknown, 10 buffer, 20 ... tak zeby mozna bylo wstawic jakis po drodze. Moze 100, 200?
- kopiowanie: na init pyta (checkboxy) o defaulttags, ktore nadac (default: all YES). 
  zbiera istniejące tagi (jak są), a dla geotag EXIF próbuje znaleźć miejsce (Konwersja geotag na tagi miejsca, jeśli jest znane.
 Else: Openstreetmap słownik? Albo ten geo pl oficjalny, który miał być do pylenia czy tp)
 
 
-get/process:
- [download from source] -> menu: all, oraz lista where visible=yes
- [tryautotag] -> np wrzucenie do shutterfly, i odczytanie tagow
- [apply tags (xx)] (xx) - buffer.count() 
- [local archive (xx)] - delayedcopy.count(etap)
- [webarchive] - delayedcopy.count(etap)
- [publish] - delayedcopy.count(etap)
- 
 w kazdym katalogu picsort.json, z danymi picków z tego katalogu [picsort - czy pic-arch, nazwa app]
 zabrac z grajCyganie logike sprawdzania fullFileSystem permission - chyba ze jest prosciej do zrobienia
 poczatek moze byc bowiem w UWP i VBLib. Jak w VbLib 1.4 nie mozna bedzie dac MTP, to wydzielic to do VbLib2.0 - akurat to na pewno w Phone nie bedzie uzywane. A zwykly FileSystem - i owszem, moze byc.
@@ -733,160 +653,24 @@ grupa(myfriends), milion osob (Anna), 248 twarzy
 "Computer vision Image Analysis 4.0": The new API includes image captioning, image tagging, object detection people detection, and Read OCR functionality, available in the same Analyze Image operation. 
 https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/quickstarts-sdk/identity-client-library?pivots=programming-language-csharp?pivots=programming-language-csharp
 
-Do unicode decore mozna dodac link
+Do unicode decode mozna dodac link
 https://util.unicode.org/UnicodeJsps/character.jsp?a=FE0F
 czyli pelne dane jednego znaku
 
 szczegolnie rozpoznawanie twarzy i autotagowanie powinno byc dostepne takze pozniej
 
-
 prosze umiejscowic zdjecia na mapce (jako pinezki), oraz wyszukiwanie wedlug mapki
 
 takze konwersja miejsca (-WIDOK) na GPS?
 
-czy WinForms moze miec include ClassLib 1.4, 2.0?
 SQL pole JSON? (na tagi)
-WinForms: Win32. WPF: XAML
-
-Exif: SaveAsJSON (w dir source np.)
-
 
 
 
 ---- NAUKA NAUKA NAUKA NAUKA NAUKA NAUKA NAUKA NAUKA -----------
 
-1) Logging, takie jak jest w Uno, bo może się to do czegoś przydać (np. DumpCurrMethod może robić dokładniejszą info?)
-
-2) $"string{insert}" co mogłoby uprościć niektóre wyrażenia stringowe
-https://docs.microsoft.com/en-us/dotnet/visual-basic/programming-guide/language-features/strings/interpolated-strings
-
- Dim msg As String = $"Hi, Welcome {(If(name = "Suresh", "Admin", "Guest"))}"
-Dim msg As String = $"Hi {name}, Today is {Date.Now.DayOfWeek} and it's {Date.Now:HH:mm} now.
-        Welcome to Tutlane World
-        Your location is {location}"
-
-
-3) <ControlTemplate> czy inszy CustomControl i jego wykorzystanie
-3a) Slider + po prawej stronie jego Value, może to {Binding <path>, RelativeSource={RelativeSource TemplatedParent}} albo w ramach DataContext {Binding Path=a.b.c} - w ramach DataContext
-
-4) WinAppSDK i Store
-
-5) WinUI3 vbproj
-5a) porownac cmdline app, nową zrobioną (a więc C) oraz to co zrobiłem z VB - czym się różnią
-
-6) vsix zrobić który w VB do Dim cos = ,,, dodawałby Dim cos As TYPE, i ew. zamiana var na typ.
- (korzystając z source do tego co podaje typy:
-https://marketplace.visualstudio.com/items?itemName=Jonkers.VarTypeViewerVsix
-https://marketplace.visualstudio.com/items?itemName=AlexanderGayko.VarAdorner
-tylko jeden GitHub: https://github.com/jonkeda/VarTypeViewer )
-
-7) cmd, wysylajacy wszystkie zmiany w vs2017 (commit: chore: autosave data, push)
-
-8) VSIX, który bylby "version changer", bo https://marketplace.visualstudio.com/items?itemName=Newky2k.VersionChanger nie robi z Manifest
-
----- ZMIANY w app -- ZMIANY w app -- ZMIANY w app -------------
-
-**MazurCic**
-	porównanie po latach? jak się zmienia dynamizm, w czym są różnice
-
-
-**GeneticChild**
-	email z prawdop dziecka, jest 0.0762959999999999 zamiast 8 % :)
-
-**VSIXgetType**
-	(nowe)
-
 ---- ZMIANY we wszystkich app -- ZMIANY we wszystkich app -------------
-
-1) VBlib, jedynie z plikiem pkarlibmodule i zmiana z pkarmodule na pkarmodulewithlib
- using vb14 = VBlib.pkarlibmodule14;
- [cel: jeden plik, bez konieczności sync pkarmod, pkarmodwithlib, pkarlibmod]
 
 2) wstawienie zmiennych do defs.ini w vblib
  [cel: porządek w zmiennych, a'la dokumentacja]
 
-2.1) dodać plik changes.txt, i tam przenieść zmiany z mainpage; w nim sekcja *TODO* i wpisywać pomysły
-
-3) InitLib
-
-4) migracja wywołań pkarmodule->vb14
-
-5) dla Uno, zrobienie tak by działało RemoteSystems (w App.cs)
- [cel: żeby przechodząc do Uno nie tracić funkcjonalności]
-
-6) Settings na Extensions
- [cel: ułatwienie przy migracji do MAUI]
-
-7) migracja GetLangString do VBlib
- [cel: ułatwienie przy migracji do MAUI]
-
-8) WinUI 2 (nuget Microsoft.UI.XAML)
- [cel: ładniejsze czasem]
-
-8a) RadioMenuFlyoutItem (2.1), można robić z ToggleMenuFlyoutItem, bo samo się przełącza
-8b) wieksze upakowanie (2.1) <Grid.Resources><ResourceDictionary Source="ms-appx:///Microsoft.UI.Xaml/DensityStyles/Compact.xaml" /></Grid.Resources>
-8c) RadioButtons (2.3), może być Items z ItemsSource
-8d) Expander (2.6), detailsy chowalne (wiele app, głównie w ListView)
-8e) DropDownButton (2.0), wybór akcji 
-
-9) sprawdzać wszystkie TextBox, na InputScope, spellcheck, history
- [cel: żeby było porządnie]
-
-10) nr wersji zawsze sprawdzać (Package), i ujednolicać
- [cel: żeby było porządnie]
-
-11) migracja rzeczy z *vb/*cs do vblib/vb
- [cel1: uratowanie kodu VB przy migracji do Uno]
- [cel2: ułatwienie przy migracji do MAUI]
-
- jako Private inVb As new vblib.[klasa], z możliwością przekazania parametrów (choćby delegated do czegoś) w ctor
-
-12) Converters, budować sobie bibliotekę własnych i zacząć tego używać
- [cel: uproszcznie kodu, usunięcie "Display" propertiesów budowanych z 'binary' properties
-
-12_) może część jako dodatkowe Public Property Display {get {return $"{this.CompositionName} by {this.ArtistName}, released: " + this.ReleaseDateTime.ToString("d");
-12a) KonwerterVisibility
-12b) KonwerterMAC
-12c) KOnwerterVal2StringFormat
-
-    xmlns:myConv="using:pkarConv" 
-        <myConv:KonwersjaVisibility x:Key="KonwersjaVisibility" />
-
-
-
-13) Bindingsy
- [cel: przerzucanie kodu z VB/CS do XAML]
-
-13a) tam, gdzie jest read/only itp., próbować przechodzić na x:Bind [cel: x:Bind ma string.format i ogólnie funkcje, oraz jest ponoć szybszy]
-13b) TargetNullValue=0  zamiast innego kombinowania dla Null
-13c) {Binding Width, RelativeSource={RelativeSource Self}} - zależny sam od siebie
-13d) {Binding <path>, RelativeSource={RelativeSource TemplatedParent}} - że do elementu w ramach ListView:DataTemplate
-13e) {Binding Path=a.b.c} - w ramach DataContext
-
-
-14) <ControlTemplate> czy inszy CustomControl
- [cel: uproszczenie kodu, reusable controls, jednolitość moich app]
-
-15) List oraz Details dla Selected (https://docs.microsoft.com/en-us/windows/u[Windows App SDKwp/data-binding/data-binding-quickstart)
-
-16) aktualizacja Nugetow
-
-
----- ZMIANY w App NOT telefon -------------
-
-1) można migrować do WinUI 3: minimum version 1809 (build 17763) tyle że bez znaczenia, bo po oderwaniu się od telefonu może być i jeszcze nowsze
- czyli Windows App SDK (WinAppSDK), dawniej Reunion
-
-2) https://docs.microsoft.com/en-us/windows/apps/windows-app-sdk/migrate-to-windows-app-sdk/migrate-to-windows-app-sdk-ovw
-
-3) wtedy to nie będzie UWP, i będzie desktop-only, co być może i tak przejdzie do Uno,  
-
-
------------------------- c#			VB		VB		VB
-WinUI3 desktop app	ClassLibWinUI3desk	ClassLibUWP	ClassLib14	ClassLib20
-UnoNe6Android		ClassLibWinUI3desk	-----------	ClassLib14	ClassLib20
-UnoNet6UWP		-----------------	ClassLibUWP	ClassLib14	ClassLib20
-UnoXamarinAdroid	ClassLibWinUI3desk	-----------	ClassLib14	ClassLib20
-UnoNet6UWP		------------------	ClassLibUWP	ClassLib14	ClassLib20
-UWPnontel		------------------ 	ClassLibUWP	ClassLib14	ClassLib20
-"Usuwanie NUGET z app - tylko w VBlib" 

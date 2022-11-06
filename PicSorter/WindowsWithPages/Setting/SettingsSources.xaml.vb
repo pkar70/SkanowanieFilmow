@@ -150,7 +150,13 @@ Class SettingsSources
 
         uiSrcRecursive.IsChecked = _item.Recursive
 
-        uiSrcPurge.Text = _item.sourcePurgeDelay.TotalDays
+        If oItem.Typ = Vblib.PicSourceType.AdHOC Then
+            uiSrcPurge.IsEnabled = False
+            uiSrcPurge.Text = "---"
+        Else
+            uiSrcPurge.IsEnabled = True
+            uiSrcPurge.Text = _item.sourcePurgeDelay.TotalDays
+        End If
 
         '<!--Public Property defaultPublish As List(Of String)   ' lista IDs-->
 

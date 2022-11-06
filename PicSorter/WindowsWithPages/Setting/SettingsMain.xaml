@@ -15,7 +15,7 @@
         <Button Content="Publishing" IsEnabled="false" Margin="5,10,5,25" FontSize="18"/>
 
         <Button Content="Dir tree" IsEnabled="false" Margin="5,10,5,5" FontSize="18"/>
-        <Button Content="Tag tree" IsEnabled="false" Margin="5,10,5,5" FontSize="18"/>
+        <Button Content="Tag tree" Margin="5,10,5,5" FontSize="18" Click="uiKeywords_Click"/>
         <Button Content="Autotags" IsEnabled="false" Margin="5,10,5,5" FontSize="18"/>
 
         <Button Content="Listy" Margin="5,35,5,5" FontSize="18" Click="uiListSett_Click"/>

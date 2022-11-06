@@ -258,7 +258,7 @@ Public Class ProcessBrowse
     Private Function GetMaxBok(iCount As Integer) As Integer
         Dim iPixeli As Integer = Me.ActualWidth * Me.ActualHeight * 0.8   ' na zaokrąglenia
         Dim iPixPerPic As Integer = iPixeli / iCount  ' pikseli² na obrazek
-        Dim iMaxBok As Integer = Math.Sqrt(iPixPerPic)
+        Dim iMaxBok As Integer = Math.Min(400, Math.Sqrt(iPixPerPic))
         Return iMaxBok
     End Function
 
@@ -411,23 +411,22 @@ Public Class ProcessBrowse
         uiActionsPopup.IsOpen = Not uiActionsPopup.IsOpen
     End Sub
 
-    Public Delegate Sub UImenuOnClick(sender As Object, e As RoutedEventArgs)
-    Private Shared _UImenuOnClick As UImenuOnClick
+    'Private Shared _UImenuOnClick As RoutedEventHandler
 
-    Private Shared Sub MenuAutoTaggersRun(sender As Object, e As RoutedEventArgs)
-        If _UImenuOnClick Is Nothing Then Return
-        _UImenuOnClick(sender, e)
-    End Sub
+    'Private Shared Sub MenuAutoTaggersRun(sender As Object, e As RoutedEventArgs)
+    '    If _UImenuOnClick Is Nothing Then Return
+    '    _UImenuOnClick(sender, e)
+    'End Sub
 
-    Public Shared Sub WypelnMenuAutotagerami(oMenuItem As MenuItem, oEventHandler As UImenuOnClick)
+    Public Shared Sub WypelnMenuAutotagerami(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
         oMenuItem.Items.Clear()
-        _UImenuOnClick = oEventHandler
+        ' _UImenuOnClick = oEventHandler
 
         For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
             Dim oNew As New MenuItem
             oNew.Header = oEngine.Nazwa.Replace("_", "__")
             oNew.DataContext = oEngine
-            AddHandler oNew.Click, AddressOf MenuAutoTaggersRun
+            AddHandler oNew.Click, oEventHandler
             oMenuItem.Items.Add(oNew)
         Next
 

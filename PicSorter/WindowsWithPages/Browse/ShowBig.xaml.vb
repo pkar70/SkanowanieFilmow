@@ -68,6 +68,7 @@ Public Class ShowBig
         ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
 
         OnOffMap()
+        SettingsMapsy.WypelnMenuMapami(uiOnMap, AddressOf uiOnMap_Click)
 
         ' MenuAutoTaggerow()
 
@@ -147,7 +148,12 @@ Public Class ShowBig
         Dim oGps As Vblib.MyBasicGeoposition = _picek.oPic.GetGeoTag
         If oGps Is Nothing Then Return
 
-        Dim sUri As New Uri("https://www.openstreetmap.org/#map=16/" & oGps.Latitude & "/" & oGps.Longitude)
+        Dim oFE As FrameworkElement = sender
+        Dim oMapa As Vblib.JednaMapa = oFE?.DataContext
+
+        Dim sUri As Uri = oMapa.UriForGeo(oGps)
+
+        'Dim sUri As New Uri("https://www.openstreetmap.org/#map=16/" & oGps.Latitude & "/" & oGps.Longitude)
         sUri.OpenBrowser
     End Sub
 

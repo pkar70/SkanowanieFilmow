@@ -500,10 +500,55 @@ Public Module pkar
         Return False
     End Function
 
+    Private Sub pkmoduleInputBox_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim oFE As FrameworkElement = sender
+
+        Dim guard As Integer = 5
+
+        Do
+            Dim oWnd As Window = TryCast(oFE, Window)
+            If oWnd IsNot Nothing Then
+                oWnd.DialogResult = True
+                oWnd.Close()
+                Exit Do
+            End If
+            oFE = oFE.Parent
+            guard -= 1
+        Loop While guard > 0
+    End Sub
+
     Public Async Function FromLibDialogBoxInputAllDirectAsync(sMsg As String, Optional sDefault As String = "", Optional sYes As String = "Continue", Optional sNo As String = "Cancel") As Task(Of String)
         Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
-        Throw New Exception("nie umiem input boxa w Core 3.1")
-        ' Return InputBox(sMsg, sAppName, sDefault)
+
+        Dim oStack As New StackPanel With {.Margin = New Thickness(5, 5, 5, 5)}
+        Dim oTxt As New TextBox With {.Text = sMsg}
+        oStack.Children.Add(oTxt)
+
+        Dim oBox As New TextBox With {.Text = sDefault, .Margin = New Thickness(5, 5, 5, 5)}
+        oStack.Children.Add(oBox)
+
+        Dim oButt As New Button With
+            {
+            .Content = " " & sYes & " ",
+            .HorizontalAlignment = HorizontalAlignment.Center,
+            .Margin = New Thickness(5, 10, 5, 5),
+            .FontSize = 14
+            }
+        AddHandler oButt.Click, AddressOf pkmoduleInputBox_Click
+
+        oStack.Children.Add(oButt)
+
+        Dim oWnd As New Window
+        oWnd.Content = oStack
+        oWnd.Height = 140
+
+        Dim bRet = oWnd.ShowDialog
+
+        If Not bRet Then Return ""
+
+        Return oBox.Text
+
     End Function
 
 
@@ -1018,6 +1063,24 @@ Public Class KonwersjaVisibility
         If bTemp Then Return Visibility.Visible
 
         Return Visibility.Collapsed
+    End Function
+
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+Public Class KonwersjaDaty
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+        Dim temp As DateTime = CType(value, DateTime)
+
+        If temp.Year < 1000 Then Return "--"
+        If temp.Year > 2100 Then Return "--"
+
+        Return temp.ToString("yyyy-MM-dd")
     End Function
 
 

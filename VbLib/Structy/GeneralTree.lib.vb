@@ -1,4 +1,6 @@
-﻿Public Class GeneralTreeNode
+﻿
+
+Public Class GeneralTreeNode
     Public Property Name As String
     Public Property Childs As List(Of GeneralTreeNode)
 
