@@ -1,4 +1,5 @@
-﻿Imports vb14 = Vblib.pkarlibmodule14
+﻿Imports System.IO.Compression
+Imports vb14 = Vblib.pkarlibmodule14
 
 Class SettingsMain
     Private Sub uiListSett_Click(sender As Object, e As RoutedEventArgs)
@@ -25,5 +26,45 @@ Class SettingsMain
 
     Private Sub uiKeywords_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsKeywords)
+    End Sub
+
+    Private Sub uiBackup_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim oPicker As New Microsoft.Win32.SaveFileDialog
+        oPicker.FileName = "picsorter." & Date.Now.ToString("yyyyMMdd") & ".zip"
+        oPicker.CheckPathExists = True
+        oPicker.InitialDirectory = Application.GetDataFolder
+
+        ' Show open file dialog box
+        Dim result? As Boolean = oPicker.ShowDialog()
+
+        ' Process open file dialog box results
+        If result <> True Then Return
+
+        Dim filename As String = oPicker.FileName
+
+        ' jednak można do tego samego katalogu, bo pakujemy tylko JSON i TXT
+        'If IO.Path.GetDirectoryName(filename).ToLowerInvariant = Application.GetDataFolder.ToLowerInvariant Then
+        '    vb14.DialogBox("Nie można robić backup do katalogu z konfiguracją")
+        '    Return
+        'End If
+
+        Dim oArchive = IO.Compression.ZipFile.Open(filename, IO.Compression.ZipArchiveMode.Create)
+        For Each sFile As String In IO.Directory.GetFiles(Application.GetDataFolder, "*.txt")
+            oArchive.CreateEntryFromFile(sFile, IO.Path.GetFileName(sFile))
+        Next
+        For Each sFile As String In IO.Directory.GetFiles(Application.GetDataFolder, "*.json")
+            oArchive.CreateEntryFromFile(sFile, IO.Path.GetFileName(sFile))
+        Next
+
+        oArchive.Dispose()
+
+        vb14.DialogBox("Archiwum utworzone.")
+        ' System.IO.Compression.ZipFile.CreateFromDirectory()
+
+    End Sub
+
+    Private Sub uiArchives_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsArchive)
     End Sub
 End Class

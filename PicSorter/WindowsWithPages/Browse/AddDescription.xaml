@@ -6,9 +6,27 @@
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="AddDescription" Height="200" Width="200" ResizeMode="NoResize" Loaded="Window_Loaded" >
+    <!--<Window.Resources>
+    <ItemsPanelTemplate x:Key="MenuItemPanelTemplate">
+        <StackPanel Margin="-20,0,0,0" />
+    </ItemsPanelTemplate>
+    </Window.Resources>-->
+    
     <StackPanel Margin="5,5,5,5">
         <TextBlock Name="uiTitle" HorizontalAlignment="Center" />
-        <TextBlock FontWeight="Bold" Text="Keywords:" />
+        <Grid>
+            <TextBlock FontWeight="Bold" Text="Keywords:" />
+            <Button Content=" + " HorizontalAlignment="Right" Name="uiAdd" Click="uiAdd_Click"/>
+            <Popup IsOpen="False" Name="uiAddPopup" PlacementTarget="{Binding ElementName=uiAdd}" HorizontalOffset="-10" >
+                <Menu Name="uiMenuKeywords">
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                </Menu>
+            </Popup>
+        </Grid>
         <TextBox Name="uiKeywords" />
         <TextBlock FontWeight="Bold" Text="Description:" Margin="0,8,0,0"/>
         <TextBox Name="uiDescription" AcceptsReturn="True" Height="40" />

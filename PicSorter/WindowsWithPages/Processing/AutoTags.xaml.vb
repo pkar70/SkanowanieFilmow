@@ -50,7 +50,8 @@ Public Class AutoTags
             oNew.engine = oEngine
             oNew.maxCount = iMax
             oNew.count = PoliczUstawione(oNew.nazwa)
-            oNew.dymek = oNew.count & "/" & oNew.maxCount
+            oNew.dymekCount = vbCrLf & oNew.count & "/" & oNew.maxCount
+            oNew.dymekAbout = oEngine.DymekAbout
 
             _lista.Add(oNew)
         Next
@@ -95,6 +96,8 @@ Public Class AutoTags
         Public Property engine As Vblib.AutotaggerBase
         Public Property maxCount As Integer
         Public Property count As Integer
-        Public Property dymek As String
+        Public Property dymekCount As String
+        Public Property dymekAbout As String
+
     End Class
 End Class

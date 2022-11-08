@@ -1,34 +1,25 @@
+BROWSER: półprzezroczystosc Image, i "wygaszanie" w ten sposób już np przesłanych do Archiwum
+
+IMGW: cache tego, moze z datą ściągnięcia, moze sie uda caly plik sciagnac? geo dla ktorej sciagamy?
+TERYT: ?
 
 DEFAULTS: gdy nie ma żadnego Source, to robi Adhoc
 DOC: najpierw szybka ścieżka, bez ustawień: adhoc, browse, autosplit godzinowe, archive do adhoc
 	potem z wszystkimi bajerami opisywać ("wszystko moze być ustawione, zmodyfikowane, zautomatyzowane")
 DOC: "zbierz ze wszystkich źródeł przed sortowaniem - tak, aby autopodział był poprawny"
-DOC: gdy zdjęcie nie ma GeoTag, przyjmujemy że jest tam gdzie poprzednie
+
 ARCHIVE, TARGET:
 	1) lista paths
 	2) zakres dat - nie modyfikowalne potem?   - ale o co mi chodziło?
-SETT - MISC - ARCHIVEDIRSTRUCT (albo per archive?)
-	[ ] 198x
-	[x]  + 1981
-	[ ]  |  + 1981.01
-	( )  |  |   + 1981.01.23
-	(*)  |  |   + 1981.01.23.sb (sprawdzic jaki to byl dzien)
-	dwa ostatnie to radio, z dniem tygodnia bądź bez
-	ale i tak zawsze znajduje, bo sobie sprawdza czy przypadkiem nie trzeba wejść głębiej
-	po dacie - podkreslenie, badz spacja, i cokolwiek, i to cokolwiek moze byc zmieniane potem poza programem
-
-ARCHIVE: zmiana filename na yyyymmddhhmmss , a moze nie, bo moze lepsze sortowanie by name (rozdziela zrodla) oraz by date (jest po kolei)
 
 BROWSE - SELECT - SENDTO ARCH, pyta o nazwę:
   TextBlock 1981.01.23.sb , TextBox [..]
   przy autoarch nie pyta (nazwa = tylko data)
 
-CONFIG: backup settings, SaveAs zip z nazwą = data
-
 DIRTREE: nie ma oddzielnego do setup, nie ma sensu, jest tylko "dir selector" przy SendTo Arch
-JedenDir: id (1981.01.23), name (1981.01.23.sb_wyjazd), opis (wyjazd do Wieliczki z dziadkami, pociągiem i psem), [datemin, datemax, geomin, geomax] [keywords]
+JedenDir: id (1981.01.23), name (1981.01.23.sb_wyjazd), opis (wyjazd do Wieliczki z dziadkami, pociągiem i psem), [datemin, datemax, geomin, geomax] [keywords - wspólne dla wszystkich pic? ustalane potem jakimiś sprawdzaniami, np wlasnie mingeo/maxgeo na geoname]
 
-ARCHIVE: ADHOC oraz FOLDER, analogicznie do Source (zawsze sprawdza vollabel), includemask, excludemask, pending As Bool - gdy czeka na odesłanie (taki sam pending dla Publish)
+ARCHIVE: pending As Bool - gdy czeka na odesłanie (taki sam pending dla Publish) - tyle ze per plik, nie per archiwum
 
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Jak tak, to dołączyć do default includemask
 
@@ -48,7 +39,9 @@ KEYWORDS: export/import z podanego węzła (np. mogę wysłać tacie - rodzinę)
 
 BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
 
-BIGPIC: DEL do kasowania, PGUP/PGDWN, SPACE do next
+BIGPIC: DEL do kasowania, PGUP/PGDWN, SPACE do next - da się tak? Czy BigPic widzi Parent-Browser?
+(wtedy Browser moze miec 'GetNextPic(oPic) as oPic')
+SETT MISC: BigPic - czy kasowanie z potwierdzeniem czy bez
 
 BROWSER: combo pokazywania / filtrowania (albo guzik od tego), filtry do pokazywania: bez tagów X (lista autotagów)
 
@@ -57,11 +50,26 @@ MAIN: publish: count to co jest juz do localarch wyslane - albo to co ma pending
 
 BROWSER: sub new(lista) i do tej listy potem, a nie do Buffer
 
-DBASE: obsługa jakiejś bazy danych
+DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
 
 SEARCH: tagtree, z checkbox MUSI_BYC i NIE_MOZE
 TAGTREE: dodac -no, -n1, -n2 - albo to z zewnetrznego serwisu
 TAGTREE DOC: może być *, oznaczające wszystko (default/deny publish)
+
+INNE min/maxGeo zamieniać na listę nazw (IMGW), jeśli jakiś wpis istnieje i dla min i dla max, to go uwzględnia - najlepiej ten najmniejszy terytorialnie
+	robić cache tego webservice / processing, i każdy z nich ma do settings CACHE_USED, CACHE_ENABLE (może używać, oraz używa), ewentualnie jeszcze cache-size i cache-time
+
+BROWSER: dymek: ..., vbcrlf geoname
+
+DIRopis: nazwa miejsca z IMGW wedle opisu powyżej, chyba nie robić dla każdego zdjęcia niezależnie?
+
+
+
+
+
+
+
+
 
 ============================================================================================================
 ==================	rozne web serwisy		rozne web serwisy		==========================================

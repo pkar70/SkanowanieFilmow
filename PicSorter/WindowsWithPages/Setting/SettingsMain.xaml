@@ -7,18 +7,20 @@
       Title="SettingsMain" Loaded="Page_Loaded">
     <StackPanel Width="170">
         <TextBlock HorizontalAlignment="Center" Text="" Name="uiVersion"/>
-        <Button Content="Global settings" Margin="5,15,5,25" FontSize="18" Click="uiGlobalSett_Click"/>
+        <Button Content="Global settings" Margin="5,10,5,20" FontSize="18" Click="uiGlobalSett_Click"/>
 
-        <Button Content="Sources" Margin="5,15,5,5" FontSize="18" Click="uiSettSources_Click"/>
-        <Button Content="Local arch" IsEnabled="false" Margin="5,10,5,5" FontSize="18"/>
+        <Button Content="Sources" Margin="5,10,5,5" FontSize="18" Click="uiSettSources_Click"/>
+        <Button Content="Local arch" Margin="5,10,5,5" FontSize="18" Click="uiArchives_Click"/>
         <Button Content="Cloud storage" IsEnabled="false" Margin="5,10,5,5" FontSize="18"/>
-        <Button Content="Publishing" IsEnabled="false" Margin="5,10,5,25" FontSize="18"/>
+        <Button Content="Publishing" IsEnabled="false" Margin="5,10,5,20" FontSize="18"/>
 
         <Button Content="Dir tree" IsEnabled="false" Margin="5,10,5,5" FontSize="18"/>
         <Button Content="Tag tree" Margin="5,10,5,5" FontSize="18" Click="uiKeywords_Click"/>
-        <Button Content="Autotags" IsEnabled="false" Margin="5,10,5,5" FontSize="18"/>
+        <Button Content="Autotags" IsEnabled="false" Margin="5,10,5,20" FontSize="18"/>
 
-        <Button Content="Listy" Margin="5,35,5,5" FontSize="18" Click="uiListSett_Click"/>
+        <Button Content="Listy" Margin="5,10,5,5" FontSize="18" Click="uiListSett_Click"/>
         <Button Content="Misc" Margin="5,5,5,5" FontSize="18" Click="uiMiscSett_Click"/>
+        <Button Content="Backup as ZIP" Margin="5,15,5,5" FontSize="18" Click="uiBackup_Click"/>
+
     </StackPanel>
 </Page>

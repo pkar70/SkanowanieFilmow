@@ -17,6 +17,9 @@
 ' EXIF per oglądany obrazek, oraz per zaznaczone (EXIFSource: MANUAL & yyMMdd-HHmmss)
 
 
+Imports System.Globalization
+Imports Microsoft.Windows.Themes
+Imports Newtonsoft.Json.Linq
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
@@ -272,7 +275,7 @@ Public Class ProcessBrowse
             Dim sCurrDate As String = oItem.dateMin.ToString("yyyyMMdd")
             If sCurrDate <> sLastDate Then
                 sLastDate = sCurrDate
-                oItem.splitBefore = True
+                oItem.splitBefore = SplitBeforeEnum.czas
             End If
         Next
     End Sub
@@ -282,7 +285,7 @@ Public Class ProcessBrowse
         Dim lastDate As New Date(1970, 1, 1) ' yyyyMMddHHmmss
 
         For Each oItem As ThumbPicek In _thumbsy
-            If lastDate < oItem.dateMin Then oItem.splitBefore = True
+            If lastDate < oItem.dateMin Then oItem.splitBefore = SplitBeforeEnum.czas
             lastDate = oItem.dateMin.AddHours(hours)
         Next
     End Sub
@@ -294,7 +297,7 @@ Public Class ProcessBrowse
         For Each oItem As ThumbPicek In _thumbsy
             Dim geoExif As Vblib.MyBasicGeoposition = oItem.oPic.GetGeoTag
             If geoExif IsNot Nothing Then
-                If lastGeo.DistanceTo(geoExif) > kiloms Then oItem.splitBefore = True
+                If lastGeo.DistanceTo(geoExif) > kiloms Then oItem.splitBefore = SplitBeforeEnum.geo
                 lastGeo = geoExif
             End If
         Next
@@ -306,7 +309,7 @@ Public Class ProcessBrowse
         Dim iCurr As Integer = 1
 
         For Each oItem As ThumbPicek In _thumbsy
-            If oItem.splitBefore Then
+            If oItem.splitBefore <> SplitBeforeEnum.none  Then
                 If iCurr > iMax Then iMax = iCurr
                 iCurr = 1
             Else
@@ -323,9 +326,17 @@ Public Class ProcessBrowse
 
     Private Sub ApplyAutoSplit()
 
-        If vb14.GetSettingsBool("uiDayChange") Then ApplyAutoSplitDaily()
-        If vb14.GetSettingsBool("uiHourGapOn", True) Then ApplyAutoSplitHours(vb14.GetSettingsInt("uiHourGapInt", 18))
+        ' najpierw usuwamy splittery
+        For Each oItem As ThumbPicek In _thumbsy
+            oItem.splitBefore = SplitBeforeEnum.none
+        Next
+
+        ' split mniej ważny
         If vb14.GetSettingsBool("uiGeoGapOn", True) Then ApplyAutoSplitGeo(vb14.GetSettingsInt("uiGeoGapInt", 20))
+
+        ' split ważniejszy
+        If vb14.GetSettingsBool("uiDayChange") Then ApplyAutoSplitDaily()
+        If vb14.GetSettingsBool("uiHourGapOn", True) Then ApplyAutoSplitHours(vb14.GetSettingsInt("uiHourGapInt", 36))
 
         _iMaxRun = PoliczMaxRun()
 
@@ -390,6 +401,21 @@ Public Class ProcessBrowse
         oWnd.Top = oPoint.Y + 10
         oWnd.Left = oPoint.X - 10
         oWnd.ShowDialog()
+
+        If vb14.GetSettingsBool("uiGeoGapOn", True) Then
+            Dim iCnt As Integer = 0
+            Dim iTotal As Integer = 0
+            For Each oItem As ThumbPicek In _thumbsy
+                iTotal += 1
+                If oItem.oPic.GetExifOfType(Vblib.ExifSource.FileExif) IsNot Nothing Then iCnt += 1
+            Next
+
+            If iCnt <> iTotal Then
+                vb14.DialogBox("Nie wszystkie pliki mają znane położenie - sugeruję AUTO_EXIF")
+            End If
+
+        End If
+
 
         RefreshMiniaturki(True)
     End Sub
@@ -464,18 +490,28 @@ Public Class ProcessBrowse
 
     Public Class ThumbPicek
         Public Property oPic As Vblib.OnePic
-        Public Property sDymek As String 'XAML dymek
+        Public Property sDymek As String 'XAML dymekCount
         Public Property oImageSrc As BitmapImage = Nothing ' XAML image
         Public Property iDuzoscH As Integer ' XAML height
         Public Property bVisible As Boolean = True
         Public Property dateMin As Date ' kopiowane z oPic.Exifs(..)
-        Public Property splitBefore As Boolean
+        Public Property splitBefore As Integer
         Public Property widthPaskow As Integer
 
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek
-            sDymek = oPic.sSuggestedFilename
             iDuzoscH = iMaxBok
+
+            sDymek = oPic.sSuggestedFilename
+            Dim oExifTag As Vblib.ExifTag = picek.GetExifOfType(Vblib.ExifSource.FileExif)
+            If oExifTag IsNot Nothing Then
+                sDymek = sDymek & vbCrLf & oExifTag.DateTimeOriginal
+            Else
+                oExifTag = picek.GetExifOfType(Vblib.ExifSource.SourceFile)
+                sDymek = sDymek & vbCrLf & "(" & oExifTag.DateMin & ")"
+            End If
+
+
         End Sub
 
     End Class
@@ -483,3 +519,73 @@ Public Class ProcessBrowse
 
 End Class
 
+Public Class KonwersjaPasekKolor
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+        Dim temp As Integer = CType(value, Integer)
+
+        If temp = SplitBeforeEnum.czas Then Return New SolidColorBrush(Colors.SkyBlue)
+        If temp = SplitBeforeEnum.geo Then Return New SolidColorBrush(Colors.OrangeRed)
+
+        ' i tak będzie niewidoczny, więc w sumie nie jest takie ważne, ale po co robić nowe obiekty
+        Return ThemeColor.NormalColor
+    End Function
+
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+Public Class KonwersjaPasekWysok
+    Implements IMultiValueConverter
+
+    Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IMultiValueConverter.Convert
+
+        Dim splitBefore As Integer = CType(values.ElementAt(0), Integer)
+        Dim height As Integer = CType(values.ElementAt(1), Integer)
+
+        Select Case splitBefore
+            Case SplitBeforeEnum.geo
+                Return height / 2
+            Case Else
+                Return height
+        End Select
+
+    End Function
+
+
+    Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+
+
+Public Class KonwersjaPasekVisibility
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+        Dim bTemp As Boolean = CType(value, Integer) > 0
+
+        If parameter IsNot Nothing Then
+            Dim sParam As String = CType(parameter, String)
+            If sParam.ToUpperInvariant = "NEG" Then bTemp = Not bTemp
+        End If
+        If bTemp Then Return Visibility.Visible
+
+        Return Visibility.Collapsed
+    End Function
+
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+Public Enum SplitBeforeEnum
+    none
+    czas
+    geo
+End Enum

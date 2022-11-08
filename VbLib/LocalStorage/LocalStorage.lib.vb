@@ -1,4 +1,21 @@
 ﻿Public Class LocalStorage
+	Public Property StorageName As String
+	Public Property enabled As Boolean = True
+	Public Property Path As String  ' znaczenie zmienne w zależności od Type
+	Public Property VolLabel As String  ' device MTP, albo vollabel dysku do sprawdzania
+	Public Property includeMask As String = "*.jpg;*.tif;*.png" ' maski regexp
+	Public Property excludeMask As String  ' maski regexp
+	Public Property lastSave As DateTime
+
+	Public Property jsonInDir As Boolean = True
+	Public Property saveToExif As Boolean = True
+
+	Public Property tree0Dekada As Boolean = False
+	Public Property tree1Rok As Boolean = True
+	Public Property tree2Miesiac As Boolean = True
+	Public Property tree3Dzien As Boolean
+	Public Property tree3DzienWeekDay As Boolean = True
+	Public Property tree4Geo As Boolean = True
 
 End Class
 

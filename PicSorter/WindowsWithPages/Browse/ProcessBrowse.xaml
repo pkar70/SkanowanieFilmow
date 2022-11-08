@@ -8,7 +8,9 @@
         Title="ProcessBrowse" Height="400" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" SizeChanged="Window_SizeChanged">
 
     <Window.Resources>
-        <local:KonwersjaVisibility x:Key="KonwersjaVisibility"/>
+        <local:KonwersjaPasekKolor x:Key="KonwersjaPasekKolor"/>
+        <local:KonwersjaPasekVisibility x:Key="KonwersjaPasekVisibility"/>
+        <local:KonwersjaPasekWysok x:Key="KonwersjaPasekWysok"/>
     </Window.Resources>
     
     <Grid Margin="5,5,5,5">
@@ -74,8 +76,15 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <StackPanel Orientation="Horizontal" >
-                        <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaVisibility}}" Background="SkyBlue" Height="{Binding iDuzoscH, Mode=OneWay }" Width="{Binding widthPaskow}" />
-                        <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaVisibility}, ConverterParameter=NEG}" Height="{Binding iDuzoscH, Mode=OneWay }" Width="{Binding widthPaskow}" />
+                        <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}}" Background="{Binding splitBefore, Converter={StaticResource KonwersjaPasekKolor}}" Width="{Binding widthPaskow}" >
+                            <Grid.Height>
+                                <MultiBinding Converter="{StaticResource KonwersjaPasekWysok}" >
+                                    <Binding Path="splitBefore"/>
+                                    <Binding Path="iDuzoscH" />
+                                </MultiBinding>
+                            </Grid.Height>
+                        </Grid>
+                        <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}, ConverterParameter=NEG}" Height="{Binding iDuzoscH, Mode=OneWay }" Width="{Binding widthPaskow}" />
                         <Grid Height="{Binding iDuzoscH, Mode=OneWay }" Width="4" />
                         <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" >
                             <Image.ContextMenu>

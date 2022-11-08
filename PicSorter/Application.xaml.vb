@@ -63,6 +63,17 @@ Partial Class Application
         Return gBuffer
     End Function
 
+    Private Shared gArchiveList As Vblib.MojaLista(Of Vblib.LocalStorage)
+    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of Vblib.LocalStorage)
+
+        If gArchiveList Is Nothing OrElse gArchiveList.Count < 1 Then
+            gArchiveList = New Vblib.MojaLista(Of Vblib.LocalStorage)(Application.GetDataFolder, "archives.json")
+            gArchiveList.Load()
+        End If
+        Return gArchiveList
+    End Function
+
+
     Private Shared gKeywords As Vblib.KeywordsList
 
     Public Shared Function GetKeywords() As Vblib.KeywordsList
@@ -74,7 +85,7 @@ Partial Class Application
     End Function
 
 
-    Public Shared gAutoTagery As Vblib.AutotaggerBase() = {New Vblib.AutoTag_EXIF, New Taggers_OCR.AutoTag_OCR}
+    Public Shared gAutoTagery As Vblib.AutotaggerBase() = {New Vblib.AutoTag_EXIF, New Taggers_OCR.AutoTag_WinOCR, New Auto_WinFace.Auto_WinFace}
 
 
 

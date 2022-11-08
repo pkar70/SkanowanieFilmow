@@ -20,13 +20,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Auto_WinFace\Auto_WinFace.vbproj" />
     <ProjectReference Include="..\ClassLibrary2\Taggers_OCR_lib.vbproj" />
-    <ProjectReference Include="..\Taggers_OCR\Taggers_OCR_lib.vbproj" />
+    <ProjectReference Include="..\Taggers_OCR\Auto_WinOCR_lib.vbproj" />
     <ProjectReference Include="..\VbLib20\VbLib20.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Autotags\" />
     <Folder Include="WindowsWithPages\HashTags\" />
     <Folder Include="WindowsWithPages\SlideShow\" />
     <Folder Include="WindowsWithPages\Search\" />

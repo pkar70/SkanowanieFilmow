@@ -19,7 +19,7 @@ Public Class OnePic
     ''' </summary>
     ''' <returns></returns>
     Public Property sInSourceID As String    ' usually pathname
-    Public Property sSuggestedFilename As String ' z Source: suggested file
+    Public Property sSuggestedFilename As String ' miało być że np. scinanie WP_. ale jednak tego nie robię (bo moge posortowac po dacie, albo po nazwach - i w tym drugim przypadku mam rozdział na np. telefon i aparat)
 
     Public Property descriptions As List(Of OneDescription)
     Public Property TagsChanged As Boolean = False

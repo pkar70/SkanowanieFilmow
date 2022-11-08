@@ -7,7 +7,7 @@ Public Class AutoTag_EXIF
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
     Public Overrides ReadOnly Property Nazwa As String = "AUTO_EXIF"
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
-
+    Public Overrides ReadOnly Property DymekAbout As String = "Wczytuje znaczniki EXIF z pliku zdjęcia"
     'Public Shared Function GetJSONDump(oFile As Vblib.OnePic) As String
     '    Dim oRdr As New CompactExifLib.ExifData(oFile.InBufferPathName)
     '    Dim sJson As String = Newtonsoft.Json.JsonConvert.SerializeObject(oRdr.tagta, Newtonsoft.Json.Formatting.Indented)

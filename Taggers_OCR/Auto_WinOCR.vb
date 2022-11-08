@@ -5,11 +5,12 @@ Imports Windows.Media.Ocr
 Imports Windows.Graphics.Imaging
 Imports System.IO
 
-Public Class AutoTag_OCR
+Public Class AutoTag_WinOCR
     Inherits Vblib.AutotaggerBase
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
-    Public Overrides ReadOnly Property Nazwa As String = "AUTO_OCR"
+    Public Overrides ReadOnly Property Nazwa As String = "AUTO_WINOCR"
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
+    Public Overrides ReadOnly Property DymekAbout As String = "Próbuje zrobiæ OCR u¿ywaj¹c Windows." & vbCrLf & "U¿ywa pola UserComment"
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
         Dim teksty As String = Await ZrobOCR(oFile)
 

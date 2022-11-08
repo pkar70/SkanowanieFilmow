@@ -1,0 +1,114 @@
+﻿<Page x:Class="SettingsArchive"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d" 
+      Title="Archiwa" Loaded="Page_Loaded">
+    <Grid Margin="5,5,5,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" x:Name="uiRowTitle"/>
+            <RowDefinition Height="*" x:Name="uiRowSrcList" />
+            <RowDefinition Height="2*" x:Name="uiRowSrcProp" />
+            <RowDefinition Height="Auto" x:Name="uiRowOK"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Archiwa (dysk)" HorizontalAlignment="Center" FontSize="18" />
+
+        <Grid Grid.Row="1" Margin="2,2,2,2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" x:Name="uiRowListaHdr"/>
+                <RowDefinition Height="*" x:Name="uiRowListaItems" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="Lista archiwów:" FontWeight="Bold" />
+            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddSource_Click" Name="uiAddSource" Margin="2,2,2,2"/>
+
+            <ListView Name="uiLista" Grid.Row="1">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0"  >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox IsChecked="{Binding enabled}" />
+                            <TextBlock Grid.Column="1" Text="{Binding StorageName}" />
+                            <Button Grid.Column="2" Content="EDIT" Margin="5,0,5,0" Click="uiEdit_Click" HorizontalAlignment="Center"  />
+                            <Button Grid.Column="3" Content="DEL" Margin="5,0,5,0" Click="uiDel_Click" HorizontalAlignment="Center"  />
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+
+
+
+        <Grid Grid.Row="2" Name="uiEditSource" Visibility="Hidden" Margin="2,2,2,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="Nazwa:" />
+            <TextBox Grid.Row="0" Grid.Column="1" Name="uiSrcName" />
+
+            <TextBlock Grid.Row="1" Text="Volume:" />
+            <ComboBox Grid.Row="1" Grid.Column="1" Name="uiSrcVolume" />
+
+            <TextBlock Grid.Row="2" Text="Path:" />
+            <TextBox Grid.Row="2" Grid.Column="1" Name="uiSrcPath" Margin="0,0,15,0"/>
+            <Button Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" Content=" ... " Click="uiSrcBrowse_Click" Name="uiSrcBrowse"/>
+
+            <TextBlock Grid.Row="3" Text="Include mask:" />
+            <TextBox Grid.Row="3" Grid.Column="1" Name="uiSrcInclude" />
+
+            <TextBlock Grid.Row="4" Text="Exclude mask:" />
+            <TextBox Grid.Row="4" Grid.Column="1" Name="uiSrcExclude" />
+
+            <TextBlock Grid.Row="5" Text="Katalog:" VerticalAlignment="Top" />
+            <StackPanel Grid.Row="5" Grid.Column="1" Margin="0,5,0,5" >
+                <CheckBox Name="uiTree0Dekada" Content="198x" />
+                <CheckBox Name="uiTree1Rok" Content=" + 1981" />
+                <CheckBox Name="uiTree2Miesiac" Content=" | + 1981.01" />
+                <RadioButton Name="uiTree3Dzien" Content=" | | + 1981.01.24" />
+                <RadioButton Name="uiTree3DzienWeekDay" Content=" | | + 1981.01.24.sb" />
+                <CheckBox Name="uiTree4geo" Content=" | | + 1981.01.24.sb.gdzie" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="6" Text="Save to EXIF:" />
+            <CheckBox Grid.Row="6" Grid.Column="1" Name="uiSrcSaveToExif" />
+
+            <TextBlock Grid.Row="7" Text="JSON w katalogu:" />
+            <CheckBox Grid.Row="7" Grid.Column="1" Name="uiSrcJSONinside" />
+
+            <TextBlock Grid.Row="8" Text="Ostatni zapis:" />
+            <TextBlock Grid.Row="8" Grid.Column="1" Name="uiSrcLastSave" />
+
+
+            <Button Grid.Row="10" Content=" OK " Click="uiEditOk_Click" Width="80" Height="Auto" Margin="5,10,5,5"  Grid.ColumnSpan="2"/>
+        </Grid>
+
+        <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Width="Auto" Click="uiOk_Click" Name="uiOK"/>
+    </Grid>
+</Page>

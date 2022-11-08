@@ -725,6 +725,18 @@ Module Extensions
         Vblib.SetSettingsBool(sName, oItem.IsChecked, bRoam)
     End Sub
 
+    <Runtime.CompilerServices.Extension()>
+    Public Sub GetSettingsBool(ByVal oItem As RadioButton, Optional sName As String = "", Optional bDefault As Boolean = False)
+        If sName = "" Then sName = oItem.Name
+        Dim bBool As Boolean = Vblib.GetSettingsBool(sName, bDefault)
+        oItem.IsChecked = bBool
+    End Sub
+    <Runtime.CompilerServices.Extension()>
+    Public Sub SetSettingsBool(ByVal oItem As RadioButton, Optional sName As String = "", Optional bRoam As Boolean = False)
+        If sName = "" Then sName = oItem.Name
+        Vblib.SetSettingsBool(sName, oItem.IsChecked, bRoam)
+    End Sub
+
     '<Extension()>
     'Public Sub GetSettingsBool(ByVal oItem As ToggleSwitch, Optional sName As String = "", Optional bDefault As Boolean = False)
     '    If sName = "" Then sName = oItem.SourceName
