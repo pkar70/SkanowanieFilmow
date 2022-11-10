@@ -1,4 +1,6 @@
 ﻿
+Imports Newtonsoft.Json
+
 Public Class OneKeyword
     Inherits MojaStruct
 
@@ -22,6 +24,14 @@ Public Class OneKeyword
     ' *TODO* można dodać Exif narzucany (chyba)
 
     Public Property SubItems As List(Of OneKeyword)
+
+#Region "na potrzeby pokazywania do wyboru przy oznaczaniu"
+
+    <JsonIgnore>
+    Public Property bEnabled As Boolean
+    <JsonIgnore>
+    Public Property bChecked As Boolean
+#End Region
 End Class
 
 Public Class KeywordsList
@@ -43,6 +53,14 @@ Public Class KeywordsList
 
         Return False
 
+    End Function
+
+    Public Function GetKeyword(sKey As String) As OneKeyword
+        For Each oItem As OneKeyword In _lista
+            If oItem.sTagId = sKey Then Return oItem
+        Next
+
+        Return Nothing
     End Function
 
     ''' <summary>
@@ -98,6 +116,8 @@ Public Class KeywordsList
 
         Return oRet
     End Function
+
+
 
 End Class
 

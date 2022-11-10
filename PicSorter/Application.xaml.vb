@@ -85,7 +85,14 @@ Partial Class Application
     End Function
 
 
-    Public Shared gAutoTagery As Vblib.AutotaggerBase() = {New Vblib.AutoTag_EXIF, New Taggers_OCR.AutoTag_WinOCR, New Auto_WinFace.Auto_WinFace}
+    Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
+        New Vblib.AutoTag_EXIF,
+        New Taggers_OCR.AutoTag_WinOCR,
+        New Auto_WinFace.Auto_WinFace,
+        New Vblib.Auto_GeoNamePl(Application.GetDataFolder),
+        New Vblib.Auto_OSM_POI(Application.GetDataFolder),
+        New Vblib.Auto_AzureTest
+    }
 
 
 

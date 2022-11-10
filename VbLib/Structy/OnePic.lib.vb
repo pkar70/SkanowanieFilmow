@@ -5,8 +5,9 @@ Imports Newtonsoft.Json
 Public Class OnePic
     Inherits MojaStruct
 
-    Public Property Archived As New List(Of String)
-    Public Property Published As New List(Of String)
+    Public Property Archived As List(Of String)
+    Public Property Published As List(Of String)
+    Public Property TargetDir As String
     Public Property Exifs As New List(Of ExifTag) ' ExifSource.SourceFile ..., )
     Public Property InBufferPathName As String
     ''' <summary>
@@ -45,6 +46,18 @@ Public Class OnePic
 
         Return Nothing
     End Function
+
+    ''' <summary>
+    ''' podmień (lub dodaj nowy) ExifTag, wedle ExifTag.Source
+    ''' </summary>
+    ''' <param name="oExifTag"></param>
+    Public Sub ReplaceOrAddExif(oExifTag As ExifTag)
+        Dim oOldExif As ExifTag = GetExifOfType(oExifTag.ExifSource)
+        If oOldExif IsNot Nothing Then Exifs.Remove(oOldExif)
+
+        Exifs.Add(oExifTag)
+    End Sub
+
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         sSourceName = sourceName
         sInSourceID = inSourceId
@@ -61,6 +74,46 @@ Public Class OnePic
         descriptions.Add(opis)
 
         TagsChanged = True
+    End Sub
+
+    ''' <summary>
+    ''' usuwa wszystkie Description, które mają tagi podane na wejściu
+    ''' </summary>
+    ''' <param name="sTagList"></param>
+    Public Sub RemoveFromDescriptions(sTagList As String, oKeywords As KeywordsList)
+        If descriptions Is Nothing Then Return
+
+        Dim aTags As String() = sTagList.Split(" ")
+
+        Dim lToRemove As New List(Of OneDescription)
+
+        For Each oDescr As OneDescription In descriptions
+
+            For Each sTag As String In aTags
+
+                If oDescr.keywords.Contains(sTag & " ") Then
+                    Dim oKwd As OneKeyword = oKeywords.GetKeyword(sTag)
+                    If oKwd IsNot Nothing Then
+                        oDescr.keywords = oDescr.keywords.Replace(oKwd.sTagId, "")
+                        oDescr.comment = oDescr.comment.Replace(oKwd.sDisplayName, "")
+                    End If
+                End If
+
+            Next
+
+            oDescr.keywords = oDescr.keywords.Replace("  ", " ")
+            oDescr.comment = oDescr.comment.Replace("  ", " ")
+
+            If String.IsNullOrWhiteSpace(oDescr.keywords) AndAlso
+                    String.IsNullOrWhiteSpace(oDescr.comment) Then
+                lToRemove.Add(oDescr)
+            End If
+        Next
+
+        For Each oItem As OneDescription In lToRemove
+            descriptions.Remove(oItem)
+        Next
+
     End Sub
 
 End Class

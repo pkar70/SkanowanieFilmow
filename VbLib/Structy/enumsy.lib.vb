@@ -45,7 +45,10 @@ Public Class ExifSource
     Public Const SourceDefault As String = "SOURCE_DEFAULT"
     Public Const SourceFile As String = "SOURCE_FILEATTR"
     Public Const SourceDescriptIon As String = "SOURCE_DESCRIPT.ION"
-    Public Const FileExif As String = "FILE_EXIF"
+    Public Const FileExif As String = "AUTO_EXIF"
+    Public Const ManualGeo As String = "MANUAL_GEO"
+    Public Const ManualTag As String = "MANUAL_TAG"
+    Public Const ManualDate As String = "MANUAL_DATE"
 End Class
 
 Public Enum AutoTaggerType

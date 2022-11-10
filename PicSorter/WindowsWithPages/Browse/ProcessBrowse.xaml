@@ -33,8 +33,22 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">
-                <Button Content=" Split " Height="Auto" Width="Auto" Click="uiSplitMode_Click" Margin="0,0,15,0" />
-                <ComboBox Name="uiComboSize" >
+                <Button Content="Filters" Click="uiFilter_Click" Name="uiFilters"/>
+                <Popup IsOpen="False" Name="uiFilterPopup" PlacementTarget="{Binding ElementName=uiFilters}">
+                    <Menu Name="uiMenuFilters">
+                        <Menu.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </Menu.ItemsPanel>
+                        <MenuItem Header="all" Click="uiFilterAll_Click" />
+                        <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" />
+                        <MenuItem Header="bez AZURE" Click="uiFilterNoAzure_Click" />
+                        <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" />
+                    </Menu>
+                </Popup>
+                
+                <ComboBox Name="uiComboSize" Margin="15,0,15,0">
                     <ComboBoxItem Content="fit all" IsSelected="true" />
                     <ComboBoxItem Content="fit run"/>
                     <ComboBoxItem Content="400" />
@@ -43,9 +57,12 @@
                     <ComboBoxItem Content="160" />
                     <ComboBoxItem Content="100" />
                 </ComboBox>
+                <Button Content=" Split " Height="Auto" Width="Auto" Click="uiSplitMode_Click" />
             </StackPanel>
 
-            <Button Name="uiAction" Content=" Action " Grid.Column="2" HorizontalAlignment="Right" Height="Auto" Width="Auto" Click="uiActionOpen_Click" />
+            <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" >
+                <Button Name="uiKeywords" Content=" # Wnd " Height="Auto" Width="Auto" Click="uiKeywords_Click"  Margin="0,0,10,0"/>
+                <Button Name="uiAction" Content=" Action " Height="Auto" Width="Auto" Click="uiActionOpen_Click" />
             <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}">
                 <Menu >
                     <Menu.ItemsPanel>
@@ -55,12 +72,13 @@
                     </Menu.ItemsPanel>
                     <MenuItem Header="Delete" Click="uiDeleteSelected_Click" />
                     <MenuItem Header="Autotags" Name="uiMenuAutotags" IsEnabled="False" />
-                    <MenuItem Header="Describe" Click="uiDescribeSelected_Click" />
+                        <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
+                        <MenuItem Header="Describe" Click="uiDescribeSelected_Click" />
                     <MenuItem Header="Archive" Name="uiMenuArchive" IsEnabled="False" />
                     <MenuItem Header="Publish" Name="uiMenuPublish" IsEnabled="False"  />
                 </Menu>
             </Popup>
-
+            </StackPanel>
         </Grid>
         
 
@@ -86,7 +104,7 @@
                         </Grid>
                         <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}, ConverterParameter=NEG}" Height="{Binding iDuzoscH, Mode=OneWay }" Width="{Binding widthPaskow}" />
                         <Grid Height="{Binding iDuzoscH, Mode=OneWay }" Width="4" />
-                        <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" >
+                        <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" Opacity="{Binding opacity}" MouseLeftButtonDown="uiImage_LeftClick">
                             <Image.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>

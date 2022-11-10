@@ -17,7 +17,10 @@
 ' EXIF per oglądany obrazek, oraz per zaznaczone (EXIFSource: MANUAL & yyMMdd-HHmmss)
 
 
+Imports System.Collections.ObjectModel
+Imports System.Data
 Imports System.Globalization
+Imports System.Windows.Automation.Peers
 Imports Microsoft.Windows.Themes
 Imports Newtonsoft.Json.Linq
 Imports Vblib
@@ -27,7 +30,7 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class ProcessBrowse
 
-    Private _thumbsy As New List(Of ThumbPicek)
+    Private _thumbsy As New ObservableCollection(Of ThumbPicek)
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć
 
 #Region "called on init"
@@ -63,20 +66,22 @@ Public Class ProcessBrowse
 
         Dim iMaxBok As Integer = GetMaxBok(_iMaxRun)
 
-        ' Dim iLimit As Integer = 16
+        Dim iLimit As Integer = 16
 
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
 
             Dim oNew As New ThumbPicek(oItem, iMaxBok)
-            oNew.oImageSrc = Await SkalujObrazek(oItem.InBufferPathName, 400)
+
+            ' *TODO* tu moze byc obracanie, zob. BigPicture
+            oNew.oImageSrc = Await SkalujObrazek(oItem.InBufferPathName, 400, Rotation.Rotate0)
 
             oNew.dateMin = DataDoSortowania(oItem)
             uiProgBar.Value += 1
             _thumbsy.Add(oNew)
 
-            'iLimit -= 1
-            'If iLimit < 0 Then Exit For
+            iLimit -= 1
+            If iLimit < 0 Then Exit For
         Next
 
         uiProgBar.Visibility = Visibility.Hidden
@@ -109,6 +114,8 @@ Public Class ProcessBrowse
 
 #End Region
 
+#Region "górny toolbox"
+
     Private Sub PokazThumbsy()
         uiPicList.ItemsSource = Nothing
         uiPicList.ItemsSource = From c In _thumbsy Where c.bVisible Order By c.dateMin
@@ -119,6 +126,9 @@ Public Class ProcessBrowse
         Dim oWnd As New HistogramWindow
         oWnd.Show()
     End Sub
+#End Region
+
+#Region "Thumb ContexMenu"
 
     Private Sub uiShowExifs_Click(sender As Object, e As RoutedEventArgs)
         Dim oItem As FrameworkElement = sender
@@ -127,6 +137,56 @@ Public Class ProcessBrowse
         Dim oWnd As New ShowExifs(oPicek.oPic)
         oWnd.Show()
     End Sub
+
+    Private Sub uiCopyPath_Click(sender As Object, e As RoutedEventArgs)
+        Dim oItem As FrameworkElement = sender
+        Dim oPicek As ThumbPicek = oItem.DataContext
+        vb14.ClipPut(oPicek.oPic.InBufferPathName)
+    End Sub
+
+#Region "menu actions"
+    Private Sub uiMenuCopyGeoTag_Click(sender As Object, e As RoutedEventArgs)
+
+        If uiPicList.SelectedItems.Count < 2 Then
+            vb14.DialogBox("Funkcja kopiowania GeoTag wymaga zaznaczenia przynajmniej dwu zdjęć")
+            Return
+        End If
+
+        ' step 1: znajdź pierwszy geotag
+        Dim oGeoTag As New Vblib.ExifTag(ExifSource.ManualGeo)
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            Dim oGeo As MyBasicGeoposition = oItem.oPic.GetGeoTag
+            If oGeo Is Nothing Then Continue For
+            oGeoTag.GeoTag = oGeo
+        Next
+
+        ' step 2: sprawdź czy wszystkie zaznaczone zdjęcia, jeśl mają geotagi, to z tych samych okolic
+        Dim iMaxOdl As Integer = 0
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            Dim oCurrGeo As MyBasicGeoposition = oItem.oPic.GetGeoTag
+            If oCurrGeo IsNot Nothing Then iMaxOdl = Math.Max(iMaxOdl, oGeoTag.GeoTag.DistanceTo(oCurrGeo))
+        Next
+
+        If iMaxOdl > 1000 Then
+            vb14.DialogBox($"Wybrane zdjęcia mają między sobą odległość {iMaxOdl} metrów")
+            Return
+        End If
+
+
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            oItem.oPic.ReplaceOrAddExif(oGeoTag)
+            If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
+        Next
+
+        ' pokaz na nowo obrazki
+        RefreshMiniaturki(True)
+
+    End Sub
+#End Region
+
+#End Region
+
+#Region "Describe"
 
     Private Sub uiDescribeSelected_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AddDescription(Nothing)
@@ -153,6 +213,7 @@ Public Class ProcessBrowse
 
         Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
     End Sub
+#End Region
 
 
     ''' <summary>
@@ -161,23 +222,45 @@ Public Class ProcessBrowse
     ''' </summary>
     ''' <param name="sPathName"></param>
     ''' <returns></returns>
-    Public Shared Async Function SkalujObrazek(sPathName As String, iMaxSize As Integer) As Task(Of BitmapImage)
+    Public Shared Async Function SkalujObrazek(sPathName As String, iMaxSize As Integer, iRotation As Rotation) As Task(Of BitmapImage)
         Dim bitmap = New BitmapImage()
         bitmap.BeginInit()
         If iMaxSize > 0 Then bitmap.DecodePixelHeight = iMaxSize
         bitmap.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+        bitmap.Rotation = iRotation
         bitmap.UriSource = New Uri(sPathName)
         bitmap.EndInit()
-        Await Task.Delay(1)
+        Await Task.Delay(1) ' na potrzeby ProgressBara
 
         Return bitmap
     End Function
 
-    Private Sub uiCopyPath_Click(sender As Object, e As RoutedEventArgs)
+
+
+#Region "ShowBig i callbacki z niego"
+
+#Region "double click dla ShowBig"
+
+    Private _DblClickLastPicek As String
+    Private _DblClickLastDate As Date
+
+    Private Sub uiImage_LeftClick(sender As Object, e As MouseButtonEventArgs)
         Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem.DataContext
-        vb14.ClipPut(oPicek.oPic.InBufferPathName)
+        Dim oPicek As ThumbPicek = oItem?.DataContext
+
+        If oPicek Is Nothing Then Return
+
+        If oPicek.oPic.InBufferPathName = _DblClickLastPicek Then
+            If _DblClickLastDate.AddSeconds(1) > Date.Now Then
+                uiShowBig_Click(sender, e)
+            End If
+        End If
+        _DblClickLastPicek = oPicek.oPic.InBufferPathName
+        _DblClickLastDate = Date.Now
     End Sub
+
+#End Region
+
 
     Private Sub uiShowBig_Click(sender As Object, e As RoutedEventArgs)
         Dim oItem As FrameworkElement = sender
@@ -186,9 +269,43 @@ Public Class ProcessBrowse
         If oPicek Is Nothing Then Return
 
         Dim oWnd As New ShowBig(oPicek)
+        oWnd.Owner = Me
         oWnd.Show()
 
     End Sub
+
+    Public Function FromBig_Delete(oPic As ThumbPicek) As ThumbPicek
+        ' skasować plik, zwróć następny
+        Dim oNext As ThumbPicek = FromBig_Next(oPic, False)
+        DeletePicture(oPic)
+        Return oNext
+    End Function
+
+    Public Function FromBig_Next(oPic As ThumbPicek, bGoBack As Boolean) As ThumbPicek
+
+        For iLP = 0 To _thumbsy.Count - 1
+            If _thumbsy.ElementAt(iLP).oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
+                If bGoBack Then
+                    If iLP = 0 Then
+                        Return Nothing
+                    Else
+                        Return _thumbsy.ElementAt(iLP - 1)
+                    End If
+                Else
+                    If iLP = _thumbsy.Count - 1 Then
+                        Return Nothing
+                    Else
+                        Return _thumbsy.ElementAt(iLP + 1)
+                    End If
+                End If
+            End If
+        Next
+
+    End Function
+
+#End Region
+
+
 
 #Region "delete"
 
@@ -218,9 +335,13 @@ Public Class ProcessBrowse
 
     End Sub
 
-    Private Sub uiDelOne_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiDelOne_Click(sender As Object, e As RoutedEventArgs)
         Dim oItem As FrameworkElement = sender
         Dim oPicek As ThumbPicek = oItem?.DataContext
+
+        If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
+            If Not Await vb14.DialogBoxYNAsync("Skasować zdjęcie?") Then Return
+        End If
 
         _ReapplyAutoSplit = False
         DeletePicture(oPicek)
@@ -231,7 +352,7 @@ Public Class ProcessBrowse
         RefreshMiniaturki(_ReapplyAutoSplit)
     End Sub
 
-    Private Sub uiDeleteSelected_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiDeleteSelected_Click(sender As Object, e As RoutedEventArgs)
         ' delete selected
         If uiPicList.SelectedItems Is Nothing Then Return
 
@@ -239,6 +360,10 @@ Public Class ProcessBrowse
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             lLista.Add(oItem)
         Next
+
+        If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
+            If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcia? ({lLista.Count}") Then Return
+        End If
 
         _ReapplyAutoSplit = False
 
@@ -292,7 +417,7 @@ Public Class ProcessBrowse
 
     Private Sub ApplyAutoSplitGeo(kiloms As Integer)
 
-        Dim lastGeo As New Vblib.MyBasicGeoposition(0, -150)    ' raczej tam nie będę, środek oceanu
+        Dim lastGeo As Vblib.MyBasicGeoposition = MyBasicGeoposition.EmptyGeoPos ' (0, -150)    ' raczej tam nie będę, środek oceanu
 
         For Each oItem As ThumbPicek In _thumbsy
             Dim geoExif As Vblib.MyBasicGeoposition = oItem.oPic.GetGeoTag
@@ -309,7 +434,7 @@ Public Class ProcessBrowse
         Dim iCurr As Integer = 1
 
         For Each oItem As ThumbPicek In _thumbsy
-            If oItem.splitBefore <> SplitBeforeEnum.none  Then
+            If oItem.splitBefore <> SplitBeforeEnum.none Then
                 If iCurr > iMax Then iMax = iCurr
                 iCurr = 1
             Else
@@ -420,6 +545,81 @@ Public Class ProcessBrowse
         RefreshMiniaturki(True)
     End Sub
 
+#Region "filtry"
+    ' na przyszłość, pewnie z jakichś automatów by to było
+    'Private Sub WypelnMenuFiltrow()
+    '    uiMenuFilters.Items.Clear()
+    'End Sub
+
+    Private _isGeoFilterApplied As Boolean = False
+    Private _OpacityWygas As Double = 0.3
+
+    Private Sub uiFilterAll_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+
+        For Each oItem In _thumbsy
+            oItem.opacity = 1
+        Next
+
+        _isGeoFilterApplied = False
+
+        RefreshMiniaturki(False)
+    End Sub
+    Private Sub uiFilterNoGeo_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+
+        For Each oItem In _thumbsy
+            If oItem.oPic.GetGeoTag IsNot Nothing Then
+                oItem.opacity = _OpacityWygas
+            Else
+                oItem.opacity = 1
+            End If
+        Next
+
+        _isGeoFilterApplied = True
+
+        RefreshMiniaturki(False)
+    End Sub
+
+    Private Sub uiFilterNoAzure_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+
+        For Each oItem In _thumbsy
+            If oItem.oPic.GetExifOfType("AUTO_AZURE") IsNot Nothing Then
+                oItem.opacity = _OpacityWygas
+            Else
+                oItem.opacity = 1
+            End If
+        Next
+
+        _isGeoFilterApplied = False
+
+        RefreshMiniaturki(False)
+    End Sub
+
+
+    Private Sub uiFilterNoTarget_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+
+        For Each oItem In _thumbsy
+            If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then
+                oItem.opacity = 1
+            Else
+                oItem.opacity = _OpacityWygas
+            End If
+        Next
+
+        _isGeoFilterApplied = False
+
+        RefreshMiniaturki(False)
+    End Sub
+
+    Private Sub uiFilter_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = Not uiFilterPopup.IsOpen
+    End Sub
+
+#End Region
+
     Private Sub uiPicList_SelChanged(sender As Object, e As SelectionChangedEventArgs)
         Dim ile As Integer = uiPicList.SelectedItems.Count
         If ile < 1 Then
@@ -429,6 +629,12 @@ Public Class ProcessBrowse
             uiAction.IsEnabled = True
             uiAction.Content = $" Action ({ile})"
         End If
+
+        If ile = 1 Then
+            Dim oItem As ThumbPicek = uiPicList.SelectedItems(0)
+            ShowKwdForPic(oItem)
+        End If
+
     End Sub
 
 
@@ -473,9 +679,11 @@ Public Class ProcessBrowse
 
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             If oItem.oPic.GetExifOfType(oEngine.Nazwa) Is Nothing Then
-                oItem.oPic.Exifs.Add(Await oEngine.GetForFile(oItem.oPic))
-                oItem.oPic.TagsChanged = True
-
+                Dim oExif As Vblib.ExifTag = Await oEngine.GetForFile(oItem.oPic)
+                If oExif IsNot Nothing Then
+                    oItem.oPic.Exifs.Add(oExif)
+                    oItem.oPic.TagsChanged = True
+                End If
                 Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
             End If
             uiProgBar.Value += 1
@@ -497,6 +705,7 @@ Public Class ProcessBrowse
         Public Property dateMin As Date ' kopiowane z oPic.Exifs(..)
         Public Property splitBefore As Integer
         Public Property widthPaskow As Integer
+        Public Property opacity As Double = 1   ' czyli normalnie pokazany
 
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek
@@ -511,11 +720,61 @@ Public Class ProcessBrowse
                 sDymek = sDymek & vbCrLf & "(" & oExifTag.DateMin & ")"
             End If
 
+            For Each oExif As Vblib.ExifTag In picek.Exifs
+                If oExif.GeoName <> "" Then
+                    sDymek = sDymek & vbCrLf & oExif.GeoName
+                    Exit For
+                End If
+            Next
 
         End Sub
 
     End Class
 
+#Region "Keywords window"
+
+    Private Function GetKwdWnd() As Window
+        For Each oWnd As Window In Me.OwnedWindows
+            If oWnd.Name = "BrowseKeywords" Then Return oWnd
+        Next
+        Return Nothing
+    End Function
+
+    Private Sub uiKeywords_Click(sender As Object, e As RoutedEventArgs)
+
+        ' step 1: sprawdzenie czy nie ma takiego już otwartego
+        Dim oWnd As Window = GetKwdWnd()
+        If oWnd IsNot Nothing Then
+            oWnd.BringIntoView()
+            Return
+        End If
+
+        ' step 2: pokaż takie okno
+        oWnd = New BrowseKeywordsWindow
+        oWnd.Owner = Me
+        oWnd.Name = "BrowseKeywords"
+        oWnd.Show()
+
+        ' step 3: pokaż w nim selected pic
+        If uiPicList.SelectedItems.Count = 1 Then
+            Dim oItem As ThumbPicek = uiPicList.SelectedItems(0)
+            ShowKwdForPic(oItem)
+        End If
+    End Sub
+
+    Private Sub ShowKwdForPic(oPic As ThumbPicek)
+        Dim oWnd As BrowseKeywordsWindow = GetKwdWnd()
+        If oWnd IsNot Nothing Then
+            oWnd.InitForPic(oPic)
+        End If
+    End Sub
+
+    Public Shared Sub ChangedKeywords()
+        ' *TODO* jeśli byłoby potrzebne jako callback z BrowseKeywordsWindow
+    End Sub
+
+
+#End Region
 
 End Class
 
@@ -548,9 +807,9 @@ Public Class KonwersjaPasekWysok
 
         Select Case splitBefore
             Case SplitBeforeEnum.geo
-                Return height / 2
+                Return height / 2.0
             Case Else
-                Return height
+                Return height * 1.0
         End Select
 
     End Function

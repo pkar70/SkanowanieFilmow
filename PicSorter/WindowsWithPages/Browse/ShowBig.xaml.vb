@@ -1,4 +1,8 @@
 ﻿
+
+Imports System.IO
+Imports System.Reflection.Metadata
+Imports System.Security.Policy
 Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class ShowBig
@@ -44,13 +48,17 @@ Public Class ShowBig
     End Sub
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
-        Me.Title = _picek.sDymek
-        _bitmap = Await ProcessBrowse.SkalujObrazek(_picek.oPic.InBufferPathName, 0)
+        Me.Title = _picek.sDymek.Replace(vbCrLf, " ")
+
+        Dim iObrot As Rotation = Poobracaj(_picek.oPic.GetExifOfType(Vblib.ExifSource.FileExif)?.Orientation)
+        _bitmap = Await ProcessBrowse.SkalujObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
+
         uiFullPicture.Source = _bitmap
 
         ' skalowanie okna
         Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * 0.9
         Dim scrHeight As Double = SystemParameters.FullPrimaryScreenHeight * 0.9
+
 
         If scrHeight > _bitmap.PixelHeight AndAlso scrWidth > _bitmap.PixelWidth Then
             Me.Height = _bitmap.PixelHeight + 60
@@ -73,6 +81,27 @@ Public Class ShowBig
         ' MenuAutoTaggerow()
 
     End Sub
+
+    Private Function Poobracaj(v As Vblib.OrientationEnum?) As Rotation
+        If Not v.HasValue Then Return Rotation.Rotate0
+
+        Select Case v.Value
+            Case Vblib.OrientationEnum.topLeft
+                Return Rotation.Rotate0
+            Case Vblib.OrientationEnum.bottomRight
+                Return Rotation.Rotate180
+            Case Vblib.OrientationEnum.rightTop
+                Return Rotation.Rotate90
+            Case Vblib.OrientationEnum.leftBottom
+                Return Rotation.Rotate270
+                'Case Vblib.OrientationEnum.rightBottom = 7
+                'Case Vblib.OrientationEnum.topRight = 2
+                'Case Vblib.OrientationEnum.bottomLeft = 4
+                'Case Vblib.OrientationEnum.leftTop = 5
+        End Select
+
+        Return Rotation.Rotate0
+    End Function
 
     Private Sub OnOffMap()
         Dim oGps As Vblib.MyBasicGeoposition = _picek.oPic.GetGeoTag
@@ -106,8 +135,11 @@ Public Class ShowBig
         Dim oSrc As Vblib.AutotaggerBase = oFE?.DataContext
         If oSrc Is Nothing Then Return
 
-        _picek.oPic.Exifs.Add(Await oSrc.GetForFile(_picek.oPic))
-        _picek.oPic.TagsChanged = True
+        Dim oExif As Vblib.ExifTag = Await oSrc.GetForFile(_picek.oPic)
+        If oExif IsNot Nothing Then
+            _picek.oPic.Exifs.Add(oExif)
+            _picek.oPic.TagsChanged = True
+        End If
         Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
 
         OnOffMap()    ' bo moze juz bedzie mozna to pokazać
@@ -163,5 +195,49 @@ Public Class ShowBig
 
         Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
         _picek.oPic.AddDescription(oDesc)
+    End Sub
+
+    Private Sub ChangePicture(bGoBack As Boolean)
+        Dim oBrowserWnd As ProcessBrowse = Me.Owner
+        If oBrowserWnd Is Nothing Then Return
+
+        _picek = oBrowserWnd.FromBig_Next(_picek, bGoBack)
+        If _picek Is Nothing Then
+            Me.Close()  ' koniec obrazków
+        Else
+            Window_Loaded(Nothing, Nothing)
+        End If
+
+    End Sub
+
+    Private Async Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
+        Select Case e.Key
+            Case Key.Space, Key.PageDown
+                ChangePicture(False)
+            Case Key.PageUp
+                ChangePicture(True)
+            Case Key.Delete
+                If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
+                    If Not Await vb14.DialogBoxYNAsync("Skasować zdjęcie?") Then Return
+                End If
+
+                Dim oBrowserWnd As ProcessBrowse = Me.Parent
+                If oBrowserWnd Is Nothing Then Return
+
+                _picek = oBrowserWnd.FromBig_Delete(_picek)
+                If _picek Is Nothing Then
+                    Me.Close()  ' koniec obrazków
+                Else
+                    Window_Loaded(Nothing, Nothing)
+                End If
+
+            'Case Key.Enter
+            '    ' full screen / mały screen
+            Case Key.Escape
+                Me.Close()
+            Case Else
+                System.Media.SystemSounds.Beep.Play()
+        End Select
+
     End Sub
 End Class

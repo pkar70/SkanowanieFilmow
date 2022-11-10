@@ -2,6 +2,7 @@
 
 ' ma pokazać listę autotag engines, dla każdego policzyć ile zdjęc jest nieotagowanych
 
+Imports Windows.ApplicationModel.Activation
 Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class AutoTags
@@ -11,7 +12,12 @@ Public Class AutoTags
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
         If Not Await vb14.DialogBoxYNAsync("Aplikować wszystkie zaznaczone mechanizmy?") Then Return
 
-        uiProgBarEngines.Maximum = _lista.Count
+        Dim iSelected As Integer = 0
+        For Each oSrc As JedenEngine In _lista
+            If oSrc.enabled Then iSelected += 1
+        Next
+
+        uiProgBarEngines.Maximum = iSelected
         uiProgBarEngines.Value = 0
         uiProgBarEngines.Visibility = Visibility.Visible
 
@@ -28,6 +34,7 @@ Public Class AutoTags
         uiProgBarEngines.Visibility = Visibility.Collapsed
         uiGetAll.IsEnabled = True
 
+        Window_Loaded(Nothing, Nothing)
     End Sub
 
     Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
@@ -37,6 +44,7 @@ Public Class AutoTags
 
         Await ApplyOne(oSrc)
         Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+        Window_Loaded(Nothing, Nothing)
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -76,13 +84,17 @@ Public Class AutoTags
         uiProgBarInEngine.Visibility = Visibility.Visible
 
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
-            If oItem.GetExifOfType(oSrc.nazwa) Is Nothing Then
-                oItem.Exifs.Add(Await oSrc.engine.GetForFile(oItem))
-                oItem.TagsChanged = True
+            If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
 
+            If oItem.GetExifOfType(oSrc.nazwa) Is Nothing Then
+                Dim oExif As Vblib.ExifTag = Await oSrc.engine.GetForFile(oItem)
+                If oExif IsNot Nothing Then
+                    oItem.Exifs.Add(oExif)
+                    oItem.TagsChanged = True
+                End If
                 Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
-            End If
-            uiProgBarInEngine.Value += 1
+                End If
+                uiProgBarInEngine.Value += 1
         Next
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed

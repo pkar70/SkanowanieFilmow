@@ -108,7 +108,7 @@ Public Class AddDescription
         Dim oKeyword As Vblib.OneKeyword = oMI?.DataContext
         If oKeyword Is Nothing Then Return
 
-        uiKeywords.Text = (uiKeywords.Text & " " & oKeyword.sTagId).Trim
+        uiKeywords.Text = (uiKeywords.Text & " " & oKeyword.sTagId).Trim & " "
         uiDescription.Text = (uiDescription.Text & vbCrLf & oKeyword.sDisplayName).Trim
 
     End Sub

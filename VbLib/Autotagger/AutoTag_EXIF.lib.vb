@@ -93,7 +93,7 @@ Partial Public Module Extensions
         If oExifData.GetTagValue(tag, temp, CompactExifLib.StrCoding.UsAscii) Then
             Return temp
         Else
-            Return ""
+            Return Nothing
         End If
     End Function
 
@@ -104,7 +104,7 @@ Partial Public Module Extensions
         If oExifData.GetTagValue(tag, temp, CompactExifLib.StrCoding.Utf16Le_Byte) Then
             Return temp
         Else
-            Return ""
+            Return Nothing
         End If
     End Function
 

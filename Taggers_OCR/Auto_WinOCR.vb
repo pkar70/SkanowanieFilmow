@@ -26,7 +26,7 @@ Public Class AutoTag_WinOCR
     Private Async Function ZrobOCR(oFile As Vblib.OnePic) As Task(Of String)
 
         ' jakby Create zajmowa³o wiêcej czasu - a przecie¿ moze byæ setki zdjêæ do OCR po kolei
-        If _OcrEngine Is Nothing Then _OcrEngine = OcrEngine.TryCreateFromUserProfileLanguages
+        If _OcrEngine Is Nothing Then _OcrEngine = OcrEngine.TryCreateFromLanguage(New Windows.Globalization.Language("pl-PL"))
 
         Dim rOCR As OcrResult
 

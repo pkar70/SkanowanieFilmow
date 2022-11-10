@@ -1,7 +1,6 @@
-BROWSER: półprzezroczystosc Image, i "wygaszanie" w ten sposób już np przesłanych do Archiwum
 
-IMGW: cache tego, moze z datą ściągnięcia, moze sie uda caly plik sciagnac? geo dla ktorej sciagamy?
-TERYT: ?
+
+BROWSER: combo zmieniające dymek? przygasza obrazki które nie mają danego EXIF, a dla pozostałych robi dymek z danego EXIF (funkcja AUTO.GetDymek(oPic), bo czasem UserComment a czasem GeoLoc)
 
 DEFAULTS: gdy nie ma żadnego Source, to robi Adhoc
 DOC: najpierw szybka ścieżka, bez ustawień: adhoc, browse, autosplit godzinowe, archive do adhoc
@@ -23,8 +22,6 @@ ARCHIVE: pending As Bool - gdy czeka na odesłanie (taki sam pending dla Publish
 
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Jak tak, to dołączyć do default includemask
 
-ARCHIVE autosplit: szybkie sprawdzenie czy są EXIFy, jesli nie, to sugeruje najpierw puszczenie autoexif (dla geo)
-
 BROWSER: dodać "security" (że ukrywany, taki nie idzie do PUBLISH - choć to też można zrobić przez TAG=private)
 BROWSER: przerobić na new(lista), i na niej tylko operacje, a nie na całym buforze
 		- potem się przyda, przy otwieraniu Browser na katalogu
@@ -35,13 +32,7 @@ BROWSER: dodać akcje:
 	* resize
 	- ale sprawdzac zachowanie metadata - bo nie mozna ich tracic! (szczegolnie tych spoza PicSorter)
 
-KEYWORDS: export/import z podanego węzła (np. mogę wysłać tacie - rodzinę)
-
 BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
-
-BIGPIC: DEL do kasowania, PGUP/PGDWN, SPACE do next - da się tak? Czy BigPic widzi Parent-Browser?
-(wtedy Browser moze miec 'GetNextPic(oPic) as oPic')
-SETT MISC: BigPic - czy kasowanie z potwierdzeniem czy bez
 
 BROWSER: combo pokazywania / filtrowania (albo guzik od tego), filtry do pokazywania: bez tagów X (lista autotagów)
 
@@ -56,51 +47,81 @@ SEARCH: tagtree, z checkbox MUSI_BYC i NIE_MOZE
 TAGTREE: dodac -no, -n1, -n2 - albo to z zewnetrznego serwisu
 TAGTREE DOC: może być *, oznaczające wszystko (default/deny publish)
 
-INNE min/maxGeo zamieniać na listę nazw (IMGW), jeśli jakiś wpis istnieje i dla min i dla max, to go uwzględnia - najlepiej ten najmniejszy terytorialnie
-	robić cache tego webservice / processing, i każdy z nich ma do settings CACHE_USED, CACHE_ENABLE (może używać, oraz używa), ewentualnie jeszcze cache-size i cache-time
-
-BROWSER: dymek: ..., vbcrlf geoname
-
 DIRopis: nazwa miejsca z IMGW wedle opisu powyżej, chyba nie robić dla każdego zdjęcia niezależnie?
 
+WEBARCHIVE: shutterfly, wstawianie wedle katalogu
+
+BROWSER/TAGS: okienko z tagami, na górze Combo wyboru podkategorii, na dole ListView wszystkich z checkboxami; zmiana w browser pokazuje tagi dla zaznaczonego, zmiana checkboxa dodaje do MANUAL_TAGS
+
+AUTO_AZUREFACE
+* rozpoznawanie twarzy Azure: 20 per minute, 30k trans per month free
+* grupa(myfriends), milion osob (Anna), 248 twarzy
+	"Computer vision Image Analysis 4.0": The new API includes image captioning, image tagging, object detection people detection, and Read OCR functionality, available in the same Analyze Image operation. 
+	https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/quickstarts-sdk/identity-client-library?pivots=programming-language-csharp?pivots=programming-language-csharp
+
+tags, objects, description, read, people
+max: 4 MB
+
+SETTINGSMISC: OCR language, combobox, i w Taggers_OCR\Auto_WinOCR.vb zmieniać (na razie jest PL)
+
+To jest trochę jak (Microsoft) Windows Photo Gallery
+Tam było też export Flicker
+Microsoft Photos (jego następca) ma do FB, Twitter, Instagram, GroupMe
 
 
 
+' https://cloud.google.com/vision?&gclsrc=3p.ds&
+' https://cloud.google.com/vision/pricing - 1000 każdego detection miesięcznie darmowe
+' https://cloud.google.com/vision/docs/detecting-logos
+' https://cloud.google.com/vision/docs/detecting-landmarks 
+' https://cloud.google.com/vision/docs/labels - czyli psy itp.
+' https://cloud.google.com/vision/docs/detecting-faces - emocje rozpoznaje ponoć
+
+'	reguły rename? np. dir\file z karty SD na dir_file?, DSCF1234 na yymmddhhmmss? dla latwiejszego uniqID 
 
 
+'*) TRAINFACE - albo to w ramach TAGS?
+'	name
+'listof(piclink)
 
+'rozpoznawanie twarzy Azure: 20 per minute, 30k trans per month free
+'grupa(myfriends), milion osob (Anna), 248 twarzy
+'"Computer vision Image Analysis 4.0": The New API includes image captioning, image tagging, Object detection people detection, And Read OCR functionality, available in the same Analyze Image operation. 
+'https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/quickstarts-sdk/identity-client-library?pivots=programming-language-csharp?pivots=programming-language-csharp
+
+'Do unicode decore mozna dodac link
+'https://util.unicode.org/UnicodeJsps/character.jsp?a=FE0F
+'czyli pelne dane jednego znaku
+
+'szczegolnie rozpoznawanie twarzy i autotagowanie powinno byc dostepne takze pozniej
 
 
 ============================================================================================================
 ==================	rozne web serwisy		rozne web serwisy		==========================================
 ============================================================================================================
 
-
-geografia na miejsce (w Polsce)
-
-Jakby więc wziąć zamienić współrzędne na miejsce:
-https://meteo.imgw.pl/api/geo/v2/revers/search/50.05/19.95
-[
-{"identifier":"Kazimierz gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Kazimierz","lat":"50.04972222","lon":"19.945","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"0.35834118398788","synoptic":false},
-{"identifier":"Krak\u00f3w gm. Krak\u00f3w","name":"Krak\u00f3w","lat":"50.049686","lon":"19.955626","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Krak\u00f3w","rank":"100000","dist":"0.40321027550083","synoptic":true},
-{"identifier":"Podg\u00f3rze gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Podg\u00f3rze","lat":"50.04527778","lon":"19.95555556","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"0.65808619496068","synoptic":false},
-{"identifier":"Stradom gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Stradom","lat":"50.05333333","lon":"19.94083333","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"0.75214838818782","synoptic":false},
-{"identifier":"\u015ar\u00f3dmie\u015bcie gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"\u015ar\u00f3dmie\u015bcie","lat":"50.05555556","lon":"19.94277778","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"0.80467498016457","synoptic":false},
-{"identifier":"Wawel gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Wawel","lat":"50.05416667","lon":"19.93472222","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.1851162881051","synoptic":false},
-{"identifier":"Ludwin\u00f3w gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Ludwin\u00f3w","lat":"50.04361111","lon":"19.93666667","catchment":"O_RZ_K_232","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.187909655312","synoptic":false},
-{"identifier":"Osiedle Podwawelskie gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Osiedle Podwawelskie","lat":"50.04388889","lon":"19.93111111","catchment":"O_Z_K_92_1","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.5102744759965","synoptic":false},
-{"identifier":"Krak\u00f3w - Grzeg\u00f3rzki gm. Krak\u00f3w","name":"Krak\u00f3w - Grzeg\u00f3rzki","lat":"50.062","lon":"19.961","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Krak\u00f3w","rank":"10000","dist":"1.548277288214","synoptic":"false"},
-{"identifier":"Krak\u00f3w gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Krak\u00f3w","lat":"50.06166667","lon":"19.9375","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.5745788205846","synoptic":false},
-{"identifier":"Weso\u0142a gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Weso\u0142a","lat":"50.06416667","lon":"19.95166667","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.5797487985277","synoptic":false},
-{"identifier":"Grzeg\u00f3rzki gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Grzeg\u00f3rzki","lat":"50.05861111","lon":"19.96777778","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.5898936776719","synoptic":false},
-{"identifier":"Krak\u00f3w - Stare Miasto gm. Krak\u00f3w","name":"Krak\u00f3w - Stare Miasto","lat":"50.062","lon":"19.937","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Krak\u00f3w","rank":"10000","dist":"1.625367043024","synoptic":"false"},
-{"identifier":"Stare Miasto gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Stare Miasto","lat":"50.06305556","lon":"19.93888889","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.6542931159185","synoptic":false},
-{"identifier":"Bonarka gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Bonarka","lat":"50.03472222","lon":"19.9425","catchment":"O_Z_K_92_1","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.7812456498563","synoptic":false},
-{"identifier":"Nowy \u015awiat gm. \u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Nowy \u015awiat","lat":"50.05916667","lon":"19.92861111","catchment":"O_Z_K_52","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"\u015ar\u00f3dmie\u015bcie-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.8359669703687","synoptic":false},
-{"identifier":"Mateczny gm. Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","name":"Mateczny","lat":"50.03527778","lon":"19.93583333","catchment":"O_Z_K_92_1","teryt":"1261","province":"ma\u0142opolskie","district":"Krak\u00f3w","commune":"Podg\u00f3rze-cz\u0119\u015b\u0107 miasta Krak\u00f3w","rank":"1000","dist":"1.9244131715993","synoptic":false}
-]
-
-
+' https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/quickstarts-sdk/image-analysis-client-library?tabs=visual-studio%2C3-2&pivots=programming-language-csharp
+'grass 0.99575436115264893
+'dog 0.99391579627990723
+'mammal 0.9928356409072876
+'animal 0.99180018901824951
+'dog breed 0.9890419244766235
+'pet 0.974603533744812
+'outdoor 0.969241738319397
+'companion dog 0.906731367111206
+'small greek domestic dog 0.8965123891830444
+'golden retriever 0.8877675533294678
+'labrador retriever 0.8746421337127686
+'puppy 0.872604250907898
+'ancient dog breeds 0.8508287668228149
+'field 0.80177485942840576
+'retriever 0.6837497353553772
+'brown 0.6581960916519165
+' czyli definiowany próg pewności? albo wszystko, i dopiero podczas opisywania slider ile ma być
+' https://learn.microsoft.com/en-us/dotnet/api/microsoft.azure.cognitiveservices.vision.computervision.computervisionclient?view=azure-dotnet
+' https://learn.microsoft.com/en-us/dotnet/api/microsoft.azure.cognitiveservices.vision.computervision.computervisionclientextensions.describeimageasync?view=azure-dotnet
+' https://learn.microsoft.com/en-us/dotnet/api/microsoft.azure.cognitiveservices.vision.computervision.models.visualfeaturetypes?view=azure-dotnet
+' https://azurelessons.com/extract-text-from-image-azure-cognitive-services/#:~:text=The%20Computer%20Vision%20API%20of%20Azure%20includes%20the,values%20that%20you%20got%20it%20from%20the%20image.
 
 ============================================================================================================
 ============================== o EXIF	 o EXIF	 o EXIF	 o EXIF	 o EXIF	 o EXIF	================================
@@ -571,16 +592,6 @@ MAUI tylko Windows 10, więc dla Taty niet.
 
 OBIEKTY:
 
-*) LOCALSTORAGE : INTERNAL|EXTERNAL (podłącz dysk...) 
-	typ/name
-	root-path (dla EXT - wewnatrz EXT, bo litera dysku nieznana)
-	vollabel: (wazne dla EXT, bo po tym rozpoznaje istnienie)
-	include:List(Of string), exclude:List(of string) (np. tylko JPG)
-	delayed:List(of picture) ?
-	IMPLEMENT: vblib, JSON na config, kopia w root-path
-	UI: dodaj, in_use yes/no
-	FUNKCJONALNOSC: permanent storage, Save, ApplyTags, Find/Search, GetById (Id na pathname - w srodku STORAGE, app tego nie widzi), GetTagsById, GetPathForId (do AcdSee itp.)
-
 *) CLOUDSTORAGE : 
 	typ/name
 	username/password
@@ -609,12 +620,6 @@ OBIEKTY:
 	może być dir przestawiany w drzewie, ale ID się nie zmienia? i w filesystem cos jak IDIDIDID_nazwa, nazwa[IDIDIDID], czyli inaczej NODE inaczej LEAF?
 	ID moze byc datą (parowozjada np., czy inny event), ale moze byc kilka z tą samą datą, więc nie tylko data. Przy skanach data nie zadziała (nie jest znana).
 	historia zmian katalogów - zeby byo latwiej dosjc do tego skąd ID itp
-
-*) TAGTREE
-	level0: grupa (osoby, miejsca...) zwierzeta, transport, pora roku (snieg, morze, ...)
-	level1 i w głąb: np. Kraków - Widok - mieszkanie, rodzina-aska, 8a-wz
-	(...)
-	STRUCT z używanymi TAGami, i LoadFromFile(filename), SaveToFIle(filename), zmiana tagów to również reapply tagów w serwisach! resave pliku do storage (external disk)
 
 *) PUBLISHED
 	ptr-publishplace
@@ -656,10 +661,6 @@ App która ma browse audio file, send, i pokazuje tekst
 plus pilnuje ze tylko 5 godzin miesiecznie
 niby jest polski
 
-rozpoznawanie twarzy Azure: 20 per minute, 30k trans per month free
-grupa(myfriends), milion osob (Anna), 248 twarzy
-"Computer vision Image Analysis 4.0": The new API includes image captioning, image tagging, object detection people detection, and Read OCR functionality, available in the same Analyze Image operation. 
-https://learn.microsoft.com/en-us/azure/cognitive-services/computer-vision/quickstarts-sdk/identity-client-library?pivots=programming-language-csharp?pivots=programming-language-csharp
 
 Do unicode decode mozna dodac link
 https://util.unicode.org/UnicodeJsps/character.jsp?a=FE0F

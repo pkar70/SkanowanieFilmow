@@ -52,6 +52,7 @@ Public Class ExifTag
 
     'Public Property AlienTags As List(Of String)    ' importowane z różnych miejsc, autorozpoznawanie -> ExifSource
 
+    Public Property AzureAnalysis As MojeAzure
 
     Public Sub New(sSource As String)
         ExifSource = sSource
