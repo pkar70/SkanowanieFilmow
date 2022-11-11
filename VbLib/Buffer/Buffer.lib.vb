@@ -25,6 +25,22 @@ Public Class Buffer
         Return _pliki.GetList
     End Function
 
+    Public Function BakDelete(iDays As Integer, bRealDelete As Boolean) As Boolean
+        Dim oDate As Date = Date.Now.AddDays(-iDays)
+
+        Dim aFiles As String() = IO.Directory.GetFiles(_rootPictures, "*.bak")
+
+        Dim iOutdatedCnt As Integer = 0
+        For Each sFile As String In aFiles
+            If IO.File.GetCreationTime(sFile) < oDate Then
+                iOutdatedCnt += 1
+                If bRealDelete Then IO.File.Delete(sFile)
+            End If
+        Next
+
+        Return iOutdatedCnt
+    End Function
+
     ''' <summary>
     ''' tu nie ma Save - bo jeśli kasujemy serię, to zapis lepiej zrobić tylko raz
     ''' nie usuwa też ze źródła (AddToPurge), gdyż VbLib nie widzi SourceList - użyj PicSourceList.AddToPurge

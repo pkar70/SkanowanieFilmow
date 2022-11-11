@@ -5,6 +5,7 @@
 ' Facebook
 ' Chomikuj
 
+' dla niektórych byłoby skasowanie Exif/Tags. poza wyznaczonymi - czyli ExifEditor, "-" usuwa? 
 Public Class CloudStorage
     Public Property defaultPostprocess As List(Of String)
     Public Property afterTagsChange As Integer ' ignoruj, upload photo, upload metatada

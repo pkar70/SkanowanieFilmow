@@ -7,21 +7,76 @@
         mc:Ignorable="d"
         Title="ShowBig" Height="450" Width="800" Loaded="Window_Loaded" SizeChanged="Window_SizeChanged" KeyUp="Window_KeyUp">
     <Grid>
-        <ScrollViewer Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <!-- dla CROP -->
+        <Slider Name="uiCropUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiCropUp_ValueChanged" Minimum="0" Maximum="1"/>
+        <Slider Name="uiCropDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiCropUp_ValueChanged"  Minimum="0" Maximum="1"/>
+        <Slider Name="uiCropLeft" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" Orientation="Vertical" Visibility="Collapsed" ValueChanged="uiCropUp_ValueChanged"  Minimum="0" Maximum="1" RenderTransformOrigin="0.5,0.5">
+            <Slider.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="180"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Slider.RenderTransform>
+        </Slider>
+        <Slider Name="uiCropRight" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Orientation="Vertical" Visibility="Collapsed" ValueChanged="uiCropUp_ValueChanged"  Minimum="0" Maximum="1" RenderTransformOrigin="0.5,0.5">
+            <Slider.RenderTransform>
+                <!-- obie wersje transform dają to samo w efekcie -->
+                <TransformGroup>
+                    <ScaleTransform ScaleY="-1"/>
+                    <SkewTransform/>
+                    <RotateTransform/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Slider.RenderTransform>
+        </Slider>
+
+        <RadioButton Name="uiRotateUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" />
+        <RadioButton Name="uiRotateDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" />
+        <RadioButton Name="uiRotateLeft" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"  />
+        <RadioButton Name="uiRotateRight" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Visibility="Collapsed"  />
+
+        <Slider Name="uiSizingDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiSizing_ValueChanged"  Minimum="0" Maximum="1"/>
+
+
+        <ScrollViewer Grid.Row="1" Grid.Column="1" Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click">
+            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid Name="uiUsunLeft" HorizontalAlignment="Left" Opacity="0.5" VerticalAlignment="Stretch" />
             <!-- ZoomMode="Enabled" -->
             <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center" >
                 <Image.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
                         <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
-                        <MenuItem Header="Delete" IsEnabled="False" />
+                        <MenuItem Header="Delete" Click="uiDelPic_Click" />
                         <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
+                        <MenuItem Header="Pic process">
+                            <MenuItem Header="Crop" Click="uiCrop_Click" />
+                            <MenuItem Header="Resize" Click="uiResize_Click" />
+                            <MenuItem Header="Rotate" Click="uiRotate_Click" />
+                                <Separator/>
+                                <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
+                                <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
+                            </MenuItem>
                         <MenuItem Header="Describe" Click="uiDescribe_Click" />
                         <!--<MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />-->
                         <MenuItem Header="On map" Name="uiOnMap" />
                     </ContextMenu>
                 </Image.ContextMenu>
             </Image>
+            </Grid>
         </ScrollViewer>
     </Grid>
 </Window>

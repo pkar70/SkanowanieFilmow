@@ -803,17 +803,17 @@ Module Extensions
         oItem.Text = dTmp
     End Sub
 
-    '<Extension()>
-    'Public Sub SetSettingsInt(ByVal oItem As Windows.UI.Xaml.Controls.Slider, Optional sName As String = "", Optional bRoam As Boolean = False)
-    '    If sName = "" Then sName = oItem.SourceName
-    '    Vblib.SetSettingsInt(sName, oItem.Value, bRoam)
-    'End Sub
+    <Runtime.CompilerServices.Extension()>
+    Public Sub SetSettingsInt(ByVal oItem As Slider, Optional sName As String = "", Optional bRoam As Boolean = False)
+        If sName = "" Then sName = oItem.Name
+        Vblib.SetSettingsInt(sName, oItem.Value, bRoam)
+    End Sub
 
-    '<Extension()>
-    'Public Sub GetSettingsInt(ByVal oItem As Windows.UI.Xaml.Controls.Slider, Optional sName As String = "")
-    '    If sName = "" Then sName = oItem.SourceName
-    '    oItem.Value = Vblib.GetSettingsInt(sName)
-    'End Sub
+    <Runtime.CompilerServices.Extension()>
+    Public Sub GetSettingsInt(ByVal oItem As Slider, Optional sName As String = "", Optional iDefault As Integer = 0)
+        If sName = "" Then sName = oItem.Name
+        oItem.Value = Vblib.GetSettingsInt(sName, iDefault)
+    End Sub
 
     '<Extension()>
     'Public Sub SetSettingsDate(ByVal oItem As CalendarDatePicker, Optional sName As String = "", Optional bRoam As Boolean = False)

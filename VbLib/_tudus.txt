@@ -1,4 +1,14 @@
 
+BROWSER: dodać akcje:
+	* rotate - z kasowaniem Exif.Orientation
+	* crop
+	* resize
+	- ale sprawdzac zachowanie metadata - bo nie mozna ich tracic! (szczegolnie tych spoza PicSorter)
+https://stackoverflow.com/questions/3531855/resize-and-save-image-while-preserving-metadata
+
+CROP: slider po 4 stronach, nasuwanie opacity
+
+BROWSER: dymek z podaniem destDir? Że auto-destDir, i potem sobie można pooglądać co z tym zrobił? I dopiero kolejny etap "kopiujDoArchiwum?"
 
 BROWSER: combo zmieniające dymek? przygasza obrazki które nie mają danego EXIF, a dla pozostałych robi dymek z danego EXIF (funkcja AUTO.GetDymek(oPic), bo czasem UserComment a czasem GeoLoc)
 
@@ -26,11 +36,6 @@ BROWSER: dodać "security" (że ukrywany, taki nie idzie do PUBLISH - choć to t
 BROWSER: przerobić na new(lista), i na niej tylko operacje, a nie na całym buforze
 		- potem się przyda, przy otwieraniu Browser na katalogu
 
-BROWSER: dodać akcje:
-	* rotate - z kasowaniem Exif.Orientation
-	* crop
-	* resize
-	- ale sprawdzac zachowanie metadata - bo nie mozna ich tracic! (szczegolnie tych spoza PicSorter)
 
 BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
 
@@ -47,11 +52,7 @@ SEARCH: tagtree, z checkbox MUSI_BYC i NIE_MOZE
 TAGTREE: dodac -no, -n1, -n2 - albo to z zewnetrznego serwisu
 TAGTREE DOC: może być *, oznaczające wszystko (default/deny publish)
 
-DIRopis: nazwa miejsca z IMGW wedle opisu powyżej, chyba nie robić dla każdego zdjęcia niezależnie?
-
 WEBARCHIVE: shutterfly, wstawianie wedle katalogu
-
-BROWSER/TAGS: okienko z tagami, na górze Combo wyboru podkategorii, na dole ListView wszystkich z checkboxami; zmiana w browser pokazuje tagi dla zaznaczonego, zmiana checkboxa dodaje do MANUAL_TAGS
 
 AUTO_AZUREFACE
 * rozpoznawanie twarzy Azure: 20 per minute, 30k trans per month free

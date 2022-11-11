@@ -1,8 +1,17 @@
 ﻿
 
+Imports System.Drawing
+Imports System.Drawing.Imaging
 Imports System.IO
+Imports System.Reflection.Emit
 Imports System.Reflection.Metadata
 Imports System.Security.Policy
+Imports System.Text
+Imports CompactExifLib
+Imports Microsoft.Azure.CognitiveServices
+Imports Windows.Devices.Spi
+Imports Windows.Graphics.Imaging
+Imports Windows.Security
 Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class ShowBig
@@ -51,27 +60,39 @@ Public Class ShowBig
         Me.Title = _picek.sDymek.Replace(vbCrLf, " ")
 
         Dim iObrot As Rotation = Poobracaj(_picek.oPic.GetExifOfType(Vblib.ExifSource.FileExif)?.Orientation)
-        _bitmap = Await ProcessBrowse.SkalujObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
+        _bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
+
+        ' *TODO* obsługa tych dwu
+        uiSave.IsEnabled = False
+        uiRevert.IsEnabled = False
+        If IO.File.Exists(_picek.oPic.InBufferPathName & ".bak") Then uiRevert.IsEnabled = True
 
         uiFullPicture.Source = _bitmap
+        UpdateClipRegion()
 
         ' skalowanie okna
         Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * 0.9
         Dim scrHeight As Double = SystemParameters.FullPrimaryScreenHeight * 0.9
 
+        Dim dScaleX As Double = _bitmap.PixelWidth / scrWidth
+        Dim dScaleY As Double = _bitmap.PixelHeight / scrHeight
+        Dim dDesiredScale As Double = Math.Max(dScaleX, dScaleY)
 
         If scrHeight > _bitmap.PixelHeight AndAlso scrWidth > _bitmap.PixelWidth Then
             Me.Height = _bitmap.PixelHeight + 60
             Me.Width = _bitmap.PixelWidth + 10
         Else
-            Me.Height = scrHeight
-            Me.Width = scrWidth
-            Dim dScaleX As Double = _bitmap.PixelWidth / scrWidth
-            Dim dScaleY As Double = _bitmap.PixelHeight / scrHeight
-            Dim dDesiredScale As Double = Math.Max(dScaleX, dScaleY)
+            If iObrot = Rotation.Rotate90 OrElse iObrot = Rotation.Rotate270 Then
+                Me.Height = _bitmap.PixelHeight / dDesiredScale ' scrHeight
+                Me.Width = _bitmap.PixelWidth / dDesiredScale ' scrWidth
+            Else
+                Me.Height = scrHeight + 30
+                Me.Width = scrWidth + 10
+            End If
             uiFullPicture.Width = _bitmap.PixelWidth / dDesiredScale
             uiFullPicture.Height = _bitmap.PixelHeight / dDesiredScale
         End If
+
 
         ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
 
@@ -210,26 +231,14 @@ Public Class ShowBig
 
     End Sub
 
-    Private Async Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
+    Private Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
         Select Case e.Key
             Case Key.Space, Key.PageDown
                 ChangePicture(False)
             Case Key.PageUp
                 ChangePicture(True)
             Case Key.Delete
-                If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
-                    If Not Await vb14.DialogBoxYNAsync("Skasować zdjęcie?") Then Return
-                End If
-
-                Dim oBrowserWnd As ProcessBrowse = Me.Parent
-                If oBrowserWnd Is Nothing Then Return
-
-                _picek = oBrowserWnd.FromBig_Delete(_picek)
-                If _picek Is Nothing Then
-                    Me.Close()  ' koniec obrazków
-                Else
-                    Window_Loaded(Nothing, Nothing)
-                End If
+                uiDelPic_Click(Nothing, Nothing)
 
             'Case Key.Enter
             '    ' full screen / mały screen
@@ -240,4 +249,258 @@ Public Class ShowBig
         End Select
 
     End Sub
+
+    Private Async Sub uiDelPic_Click(sender As Object, e As RoutedEventArgs)
+        If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
+            If Not Await vb14.DialogBoxYNAsync("Skasować zdjęcie?") Then Return
+        End If
+
+        Dim oBrowserWnd As ProcessBrowse = Me.Parent
+        If oBrowserWnd Is Nothing Then Return
+
+        _picek = oBrowserWnd.FromBig_Delete(_picek)
+        If _picek Is Nothing Then
+            Me.Close()  ' koniec obrazków
+        Else
+            Window_Loaded(Nothing, Nothing)
+        End If
+    End Sub
+
+#Region "picture edits"
+
+    Private Enum EditModeEnum
+        none
+        crop
+        resize
+        rotate
+    End Enum
+
+    Private _editMode As EditModeEnum = EditModeEnum.none
+
+    Private Async Function SprawdzCzyJestEdycja(editMode As EditModeEnum) As Task(Of Boolean)
+        If _editMode = EditModeEnum.none Then Return True
+
+        If _editMode = editMode Then Return True ' jeśli włączamy to samo, to może być
+
+        Dim bSave As Boolean = Await vb14.DialogBoxYNAsync("Jest już edycja, zapisać zmiany?")
+
+        If bSave Then Await SaveChanges()
+
+        _editMode = editMode
+
+        Return True
+    End Function
+
+    Private Async Function SaveChanges() As Task
+
+        Dim transf As New BitmapTransform
+
+        Select Case _editMode
+            Case EditModeEnum.none
+                Return
+            Case EditModeEnum.crop
+                Dim oRect As Rect = ConvertSlidersToPicRect()
+                Dim bnds As New BitmapBounds
+                bnds.X = oRect.X
+                bnds.Y = oRect.Y
+                bnds.Width = oRect.Width
+                bnds.Height = oRect.Height
+                transf.Bounds = bnds
+            Case EditModeEnum.resize
+                ' *TODO* resize
+            Case EditModeEnum.rotate
+                ' *TODO* uwzglednij istniejący ExifTag (czyli już obecny obrót) oraz RadioButton
+                'Dim oExif As Vblib.ExifTag = _picek.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+                'Dim eRotate As Vblib.OrientationEnum = Vblib.OrientationEnum.topLeft
+
+                'If oExif IsNot Nothing Then eRotate = oExif.Orientation
+
+                'uiRotateUp.IsChecked = (eRotate = Vblib.OrientationEnum.topLeft)
+                'uiRotateDown.IsChecked = (eRotate = Vblib.OrientationEnum.bottomRight)
+                'uiRotateLeft.IsChecked = (eRotate = Vblib.OrientationEnum.leftBottom)
+                'uiRotateRight.IsChecked = (eRotate = Vblib.OrientationEnum.rightTop)
+                ' *TODO* rotate
+        End Select
+
+        Await ZapiszZmianyObrazka(transf)
+
+    End Function
+
+#Region "crop"
+
+    Private Sub ShowHideCropSliders(bShow As Boolean)
+        Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
+
+        uiCropUp.Visibility = visib
+        uiCropDown.Visibility = visib
+        uiCropLeft.Visibility = visib
+        uiCropRight.Visibility = visib
+
+        If Not bShow Then Return
+
+        If uiCropUp.Value = 0 Then uiCropUp.Value = 0.1
+        If uiCropDown.Value = 0 Then uiCropDown.Value = 0.9
+        If uiCropLeft.Value = 0 Then uiCropLeft.Value = 0.1
+        If uiCropRight.Value = 0 Then uiCropRight.Value = 0.9
+
+        UpdateClipRegion()
+    End Sub
+
+    Private Sub ShowHideRotateBoxes(bShow As Boolean)
+        Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
+
+        uiRotateUp.Visibility = visib
+        uiRotateDown.Visibility = visib
+        uiRotateLeft.Visibility = visib
+        uiRotateRight.Visibility = visib
+
+    End Sub
+
+    Public Sub ShowHideSizeSlider(bShow As Boolean)
+        Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
+
+        uiSizingDown.Visibility = visib
+
+        ' *TODO* inital skalowanie
+
+    End Sub
+
+    Private Sub ShowHideEditControls(iMode As EditModeEnum)
+        ShowHideCropSliders(iMode = EditModeEnum.crop)
+        ShowHideRotateBoxes(iMode = EditModeEnum.rotate)
+        ShowHideSizeSlider(iMode = EditModeEnum.resize)
+    End Sub
+
+    Private Function ConvertSlidersToPicRect() As Rect
+        Dim oRect As New Rect
+        oRect.X = uiFullPicture.Width * (Math.Min(uiCropUp.Value, uiCropDown.Value))
+        oRect.Width = uiFullPicture.Width * (Math.Abs(uiCropDown.Value - uiCropUp.Value))
+
+        oRect.Y = uiFullPicture.Height * (Math.Min(uiCropLeft.Value, uiCropRight.Value))
+        oRect.Height = uiFullPicture.Height * (Math.Abs(uiCropRight.Value - uiCropLeft.Value))
+
+        Return oRect
+    End Function
+
+    Private Sub UpdateClipRegion()
+
+        If Double.IsNaN(uiFullPicture.Width) OrElse Double.IsNaN(uiFullPicture.Height) Then
+            uiFullPicture.Clip = Nothing
+            Return
+        End If
+
+        Dim oRect As Rect = ConvertSlidersToPicRect()
+        Dim rectGeom As New RectangleGeometry(oRect)
+        uiFullPicture.Clip = rectGeom
+
+    End Sub
+    Private Async Sub uiCrop_Click(sender As Object, e As RoutedEventArgs)
+
+        If Not Await SprawdzCzyJestEdycja(EditModeEnum.crop) Then Return
+
+        If uiCropUp.Visibility = Visibility.Visible Then
+            ShowHideEditControls(EditModeEnum.none)
+            Await SaveChanges()
+
+            uiFullPicture.Clip = Nothing
+            Return
+        End If
+
+        ShowHideEditControls(EditModeEnum.crop)
+        UpdateClipRegion()
+    End Sub
+    Private Sub uiCropUp_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double))
+        UpdateClipRegion()
+    End Sub
+
+#End Region
+    Private Async Function ZapiszZmianyObrazka(bmpTrans As BitmapTransform) As Task(Of Boolean)
+        If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
+
+        Dim orgFileName As String = _picek.oPic.InBufferPathName
+        Dim bakFileName As String = _picek.oPic.InBufferPathName & ".bak"
+
+        If Not IO.File.Exists(bakFileName) Then
+            IO.File.Move(orgFileName, bakFileName)
+            IO.File.SetCreationTime(bakFileName, Date.Now)
+        End If
+
+        ' *TODO* konwersja bitmapy
+        '' save oBmp jako JPG, ewentualne ustawianie jakości wedle settings
+        'Dim oFrame As BitmapFrame() = BitmapFrame
+        'Dim mSoftBot As SoftwareBitmap()
+        'mSoftBot
+        'Dim oEnc As New JpegBitmapEncoder
+        'oEnc.QualityLevel = vb14.GetSettingsInt("uiJpgQuality", 80)
+        'Dim osft As SoftwareBitmap BitmapFrame
+        'oEnc.Frames.Add(BitmapFrame.Create(Image))
+        'oEnc.Save(Stream)
+
+        '*TODO* kopiuj metadatane z bak do org
+        'ExifData.Save()
+
+        _editMode = EditModeEnum.none
+
+        Return True
+    End Function
+
+
+    Private Async Sub uiResize_Click(sender As Object, e As RoutedEventArgs)
+        If Not Await SprawdzCzyJestEdycja(EditModeEnum.resize) Then Return
+
+        ShowHideEditControls(EditModeEnum.resize)
+        ' *TODO* zapytanie o rozmiar, albo coś tego typu
+
+        '    Public void ResizeImage(String sImageFile, Decimal dWidth, Decimal dHeight, String sOutputFile)
+        '{
+        '    Image oImg = Bitmap.FromFile(sImageFile);
+        '    Bitmap oBMP = New Bitmap(Decimal.ToInt16(dWidth), Decimal.ToInt16(dHeight));
+
+        '    Graphics g = Graphics.FromImage(oBMP);
+        '    g.PageUnit = pgUnits;
+        '    g.SmoothingMode = psMode;
+        '    g.InterpolationMode = piMode;
+        '    g.PixelOffsetMode = ppOffsetMode;
+
+        '    g.DrawImage(oImg, 0, 0, Decimal.ToInt16(dWidth), Decimal.ToInt16(dHeight));
+
+        '    ImageCodecInfo oEncoder = GetEncoder();
+        '    EncoderParameters oENC = New EncoderParameters(1);
+
+        '    oENC.Param[0] = New EncoderParameter(System.Drawing.Imaging.Encoder.Quality, plEncoderQuality);
+
+        '    oImg.Dispose();
+
+        '    oBMP.Save(sOutputFile, oEncoder, oENC);
+        '    g.Dispose();
+
+        '}
+    End Sub
+    Private Sub uiSizing_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double))
+        ' *TODO* pokaż zmianę
+    End Sub
+
+    Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
+        If Not Await SprawdzCzyJestEdycja(EditModeEnum.rotate) Then Return
+
+        ShowHideEditControls(EditModeEnum.rotate)
+
+        uiRotateUp.IsChecked = True
+        uiRotateDown.IsChecked = False
+        uiRotateLeft.IsChecked = False
+        uiRotateRight.IsChecked = False
+
+    End Sub
+
+    Private Async Sub uiSave_Click(sender As Object, e As RoutedEventArgs)
+        Await SaveChanges()
+        ShowHideEditControls(EditModeEnum.none)
+    End Sub
+
+    Private Sub uiRevert_Click(sender As Object, e As RoutedEventArgs)
+        ' *TODO* rename bak do oryginału
+    End Sub
+
+#End Region
+
 End Class

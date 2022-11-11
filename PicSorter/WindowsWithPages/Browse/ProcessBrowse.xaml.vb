@@ -42,8 +42,23 @@ Public Class ProcessBrowse
 
         WypelnMenuAutotagerami(uiMenuAutotags, AddressOf AutoTagRun)
 
+        Await EwentualneKasowanieBak()
+
     End Sub
 
+
+    Private Async Function EwentualneKasowanieBak() As Task
+
+        Dim iDelay As Integer = vb14.GetSettingsInt("uiBakDelayDays", 7)
+
+        Dim iOutdated As Integer = Application.GetBuffer.BakDelete(iDelay, False)
+        If iOutdated < 1 Then Return
+
+        If Await vb14.DialogBoxYNAsync($"Skasować stare pliki BAK? ({iOutdated})") Then Return
+
+        Application.GetBuffer.BakDelete(iDelay, True)
+
+    End Function
 
     ''' <summary>
     ''' zmiana rozmiaru Window na prawie cały ekran
@@ -74,7 +89,7 @@ Public Class ProcessBrowse
             Dim oNew As New ThumbPicek(oItem, iMaxBok)
 
             ' *TODO* tu moze byc obracanie, zob. BigPicture
-            oNew.oImageSrc = Await SkalujObrazek(oItem.InBufferPathName, 400, Rotation.Rotate0)
+            oNew.oImageSrc = Await WczytajObrazek(oItem.InBufferPathName, 400, Rotation.Rotate0)
 
             oNew.dateMin = DataDoSortowania(oItem)
             uiProgBar.Value += 1
@@ -221,8 +236,10 @@ Public Class ProcessBrowse
     ''' (SzukajPicka tu ma błąd, olbrzymie ilości pamięci zjada - bo nie ma skalowania)
     ''' </summary>
     ''' <param name="sPathName"></param>
+    ''' <param name="iMaxSize">ograniczenie wielkości (skalowanie), 0: bez skalowania</param>
+    ''' <param name="iRotation">obrót obrazka</param>
     ''' <returns></returns>
-    Public Shared Async Function SkalujObrazek(sPathName As String, iMaxSize As Integer, iRotation As Rotation) As Task(Of BitmapImage)
+    Public Shared Async Function WczytajObrazek(sPathName As String, Optional iMaxSize As Integer = 0, Optional iRotation As Rotation = Rotation.Rotate0) As Task(Of BitmapImage)
         Dim bitmap = New BitmapImage()
         bitmap.BeginInit()
         If iMaxSize > 0 Then bitmap.DecodePixelHeight = iMaxSize

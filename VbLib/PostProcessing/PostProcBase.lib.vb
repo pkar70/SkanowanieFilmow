@@ -1,7 +1,9 @@
-﻿' postprocessing
+﻿' postprocessing:
 ' znak wodny
 ' podpis widoczny na zdjęciu - narzucony, bądź z (c) brany (z EXIF)
-' może tu dać zmniejszanie
+' może tu dać zmniejszanie, obracanie?
+
+
 
 Public MustInherit Class PostProcBase
 	Public Property Name As String  ' c:\xxxx, MTP\Lumia435, MTP\Lumia650 - per instance
