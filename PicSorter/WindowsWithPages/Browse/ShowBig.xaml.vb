@@ -1,17 +1,6 @@
 ﻿
 
-Imports System.Drawing
-Imports System.Drawing.Imaging
-Imports System.IO
-Imports System.Reflection.Emit
-Imports System.Reflection.Metadata
-Imports System.Security.Policy
-Imports System.Text
-Imports CompactExifLib
-Imports Microsoft.Azure.CognitiveServices
-Imports Windows.Devices.Spi
 Imports Windows.Graphics.Imaging
-Imports Windows.Security
 Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class ShowBig
@@ -56,13 +45,28 @@ Public Class ShowBig
         End If
     End Sub
 
+    Private Function DetermineOrientation(oPic As Vblib.OnePic) As Rotation
+        Dim oExif As Vblib.ExifTag
+
+        oExif = oPic.GetExifOfType(Vblib.ExifSource.ManualRotate)
+        If oExif Is Nothing Then oExif = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+
+        If oExif Is Nothing Then Return Rotation.Rotate0
+
+        Return OrientationToRotation(oExif.Orientation)
+
+    End Function
+
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.Title = _picek.sDymek.Replace(vbCrLf, " ")
 
-        Dim iObrot As Rotation = Poobracaj(_picek.oPic.GetExifOfType(Vblib.ExifSource.FileExif)?.Orientation)
+        Dim iObrot As Rotation = DetermineOrientation(_picek.oPic)
+
         _bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
 
-        ' *TODO* obsługa tych dwu
+        ' tylko JPG może być edytowany
+        uiEditModes.IsEnabled = _picek.oPic.InBufferPathName.ToLowerInvariant.EndsWith("jpg")
+
         uiSave.IsEnabled = False
         uiRevert.IsEnabled = False
         If IO.File.Exists(_picek.oPic.InBufferPathName & ".bak") Then uiRevert.IsEnabled = True
@@ -103,7 +107,7 @@ Public Class ShowBig
 
     End Sub
 
-    Private Function Poobracaj(v As Vblib.OrientationEnum?) As Rotation
+    Private Function OrientationToRotation(v As Vblib.OrientationEnum?) As Rotation
         If Not v.HasValue Then Return Rotation.Rotate0
 
         Select Case v.Value
@@ -291,6 +295,53 @@ Public Class ShowBig
         Return True
     End Function
 
+    Private Function RotateToDegree(iRot As Rotation) As Integer
+        Select Case iRot
+            Case Rotation.Rotate0
+                Return 0
+            Case Rotation.Rotate90
+                Return 90
+            Case Rotation.Rotate180
+                Return 180
+            Case Rotation.Rotate270
+                Return 270
+        End Select
+        ' tego nie powinno być, bo nie ma innej mozliwosci
+        Return 0
+    End Function
+
+    Private Function DegreeToBitmapRotate(iKat As Integer) As BitmapRotation
+        Select Case iKat
+            Case 0
+                Return BitmapRotation.None
+            Case 90
+                Return BitmapRotation.Clockwise90Degrees
+            Case 180
+                Return BitmapRotation.Clockwise180Degrees
+            Case 270
+                Return BitmapRotation.Clockwise270Degrees
+        End Select
+        ' tego nie powinno być, bo nie ma innej mozliwosci
+        Return BitmapRotation.None
+    End Function
+
+
+    Public Function KatToOrientationEnum(iKat) As Vblib.OrientationEnum
+        If iKat > 359 Then iKat -= 360
+        Select Case iKat
+            Case 0
+                Return Vblib.OrientationEnum.topLeft
+            Case 90
+                Return Vblib.OrientationEnum.rightTop
+            Case 180
+                Return Vblib.OrientationEnum.bottomRight
+            Case 270
+                Return Vblib.OrientationEnum.leftBottom
+        End Select
+        ' tego nie powinno być, bo nie ma innej mozliwosci
+        Return Vblib.OrientationEnum.topLeft
+    End Function
+
     Private Async Function SaveChanges() As Task
 
         Dim transf As New BitmapTransform
@@ -309,21 +360,30 @@ Public Class ShowBig
             Case EditModeEnum.resize
                 ' *TODO* resize
             Case EditModeEnum.rotate
-                ' *TODO* uwzglednij istniejący ExifTag (czyli już obecny obrót) oraz RadioButton
-                'Dim oExif As Vblib.ExifTag = _picek.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
-                'Dim eRotate As Vblib.OrientationEnum = Vblib.OrientationEnum.topLeft
 
-                'If oExif IsNot Nothing Then eRotate = oExif.Orientation
+                If Not uiRotateUp.IsChecked Then
 
-                'uiRotateUp.IsChecked = (eRotate = Vblib.OrientationEnum.topLeft)
-                'uiRotateDown.IsChecked = (eRotate = Vblib.OrientationEnum.bottomRight)
-                'uiRotateLeft.IsChecked = (eRotate = Vblib.OrientationEnum.leftBottom)
-                'uiRotateRight.IsChecked = (eRotate = Vblib.OrientationEnum.rightTop)
-                ' *TODO* rotate
+                    Dim preRotation As Rotation = DetermineOrientation(_picek.oPic)
+                    Dim iKat As Integer = RotateToDegree(preRotation)
+
+                    If uiRotateRight.IsChecked Then iKat += 270
+                    If uiRotateDown.IsChecked Then iKat += 180
+                    If uiRotateLeft.IsChecked Then iKat += 90
+
+                    Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.ManualRotate)
+                    oExif.Orientation = KatToOrientationEnum(iKat)
+                    _picek.oPic.ReplaceOrAddExif(oExif)
+
+                End If
+
+                transf = Nothing ' tego nie robimy zapisem
+
         End Select
 
-        Await ZapiszZmianyObrazka(transf)
+        If transf IsNot Nothing Then Await ZapiszZmianyObrazka(transf)
 
+        _editMode = EditModeEnum.none
+        ShowHideEditControls(_editMode)
     End Function
 
 #Region "crop"
@@ -436,10 +496,9 @@ Public Class ShowBig
         'oEnc.Frames.Add(BitmapFrame.Create(Image))
         'oEnc.Save(Stream)
 
-        '*TODO* kopiuj metadatane z bak do org
-        'ExifData.Save()
-
-        _editMode = EditModeEnum.none
+        ' kopiuj metadatane z bak do org
+        Dim oExifLib As New CompactExifLib.ExifData(bakFileName)
+        oExifLib.Save(orgFileName)
 
         Return True
     End Function
@@ -498,7 +557,22 @@ Public Class ShowBig
     End Sub
 
     Private Sub uiRevert_Click(sender As Object, e As RoutedEventArgs)
-        ' *TODO* rename bak do oryginału
+
+        Dim sJpgFilename As String = _picek.oPic.InBufferPathName
+        Dim sBakFileName As String = sJpgFilename & ".bak"
+
+        If Not IO.File.Exists(sBakFileName) Then
+            vb14.DialogBox("Nie istnieje plik backup?" & vbCrLf & $"({sBakFileName})")
+            Return
+        End If
+
+        IO.File.Delete(sJpgFilename)
+        IO.File.Move(sBakFileName, sJpgFilename)
+        IO.File.SetCreationTime(sJpgFilename, IO.File.GetLastWriteTime(sJpgFilename))
+
+        ' no i przerysowujemy wszystko
+        Window_Loaded(Nothing, Nothing)
+
     End Sub
 
 #End Region

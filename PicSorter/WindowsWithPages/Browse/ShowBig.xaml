@@ -62,7 +62,7 @@
                         <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
                         <MenuItem Header="Delete" Click="uiDelPic_Click" />
                         <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
-                        <MenuItem Header="Pic process">
+                        <MenuItem Header="Pic process" Name="uiEditModes">
                             <MenuItem Header="Crop" Click="uiCrop_Click" />
                             <MenuItem Header="Resize" Click="uiResize_Click" />
                             <MenuItem Header="Rotate" Click="uiRotate_Click" />

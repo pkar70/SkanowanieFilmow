@@ -1,12 +1,13 @@
 
+może odwrotnie w sekwencji? publish przed archive?
+liczenie objetosci plików w archiwum, by "jak duży flash potrzebuję"?
+
 BROWSER: dodać akcje:
 	* rotate - z kasowaniem Exif.Orientation
 	* crop
 	* resize
 	- ale sprawdzac zachowanie metadata - bo nie mozna ich tracic! (szczegolnie tych spoza PicSorter)
 https://stackoverflow.com/questions/3531855/resize-and-save-image-while-preserving-metadata
-
-CROP: slider po 4 stronach, nasuwanie opacity
 
 BROWSER: dymek z podaniem destDir? Że auto-destDir, i potem sobie można pooglądać co z tym zrobił? I dopiero kolejny etap "kopiujDoArchiwum?"
 
