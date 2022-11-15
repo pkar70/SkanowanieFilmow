@@ -63,7 +63,7 @@ Class SettingsSources
 
         ' ADHOC może być dodany tylko raz
         For Each oSource As Vblib.PicSourceBase In Application.GetSourcesList().GetList
-            If oSource.Typ = Vblib.PicSourceType.AdHoc Then Return
+            If oSource.Typ = Vblib.PicSourceType.AdHOC Then Return
         Next
 
         uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("ADHOC"))
@@ -76,11 +76,11 @@ Class SettingsSources
         Dim oMI As MenuItem = sender
         Select Case oMI.Header.ToString.Trim.ToLowerInvariant
             Case "folder"
-                oNewSrc = New VbLib20.PicSourceImplement(Vblib.PicSourceType.Folder, Application.GetDataFolder)
+                oNewSrc = New VbLib20.PicSourceImplement(Vblib.PicSourceType.FOLDER, Application.GetDataFolder)
             Case "mtp"
                 oNewSrc = New VbLib20.PicSourceImplement(Vblib.PicSourceType.MTP, Application.GetDataFolder)
             Case "adhoc"
-                oNewSrc = New VbLib20.PicSourceImplement(Vblib.PicSourceType.AdHoc, Application.GetDataFolder)
+                oNewSrc = New VbLib20.PicSourceImplement(Vblib.PicSourceType.AdHOC, Application.GetDataFolder)
             Case Else
                 Return
         End Select
@@ -112,14 +112,15 @@ Class SettingsSources
 
         If iSrcType = Vblib.PicSourceType.MTP Then
             ' telefony
-            For Each oMD As MediaDevices.MediaDevice In MediaDevices.MediaDevice.GetDevices
-                If oMD.DeviceId.ToLower.StartsWith("\\?\usb#") Then
-                    iInd = uiSrcVolume.Items.Add(oMD.FriendlyName & " (" & oMD.Description & ")")
-                    If oMD.FriendlyName.ToLowerInvariant = sCurrentVolLabel Then
-                        uiSrcVolume.SelectedIndex = iInd
-                    End If
-                End If  ' if(po USB)
+
+            Dim lLista As List(Of String) = MediaDevicesLib.Helper.GetDevicesList
+            For Each sDevice As String In lLista
+                iInd = uiSrcVolume.Items.Add(sDevice)
+                If sDevice.ToLower.StartsWith(sCurrentVolLabel & " (") Then
+                    uiSrcVolume.SelectedIndex = iInd
+                End If
             Next
+
         Else
             ' dyski
             Dim oDrives = IO.DriveInfo.GetDrives()
@@ -194,8 +195,7 @@ Class SettingsSources
                 sPath = VbLib20.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
                 SettingsGlobal.FolderBrowser(uiSrcPath, sPath)
             Case Vblib.PicSourceType.MTP
-                Dim oMD As MediaDevices.MediaDevice = VbLib20.PicSourceImplement.GetDeviceFromLabel_MTP(sVolLabel)
-                Dim oWnd As New BrowseMtpDevice(oMD, sPath)
+                Dim oWnd As New BrowseMtpDevice(sVolLabel, sPath)
                 oWnd.ShowDialog()
                 uiSrcPath.Text = oWnd.currentPath
             Case Vblib.PicSourceType.AdHOC

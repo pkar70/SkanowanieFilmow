@@ -86,7 +86,7 @@ Public MustInherit Class PicSourceBase
 	Public Function Count(Optional sinceDate As DateTime = Nothing) As Integer
 		If _listaPlikow Is Nothing Then Return -1
 
-		If sinceDate < New Date(1800, 1, 1) Then sinceDate = lastDownload
+		If Not sinceDate.IsDateValid Then sinceDate = lastDownload
 
 		Dim iCnt As Integer = 0
 		For Each oFile As OnePic In _listaPlikow
@@ -160,7 +160,7 @@ Public MustInherit Class PicSourceBase
 	Public Function GetFirst(Optional sinceDate As DateTime = Nothing) As OnePic
 		If _listaPlikow Is Nothing Then Return Nothing
 
-		If sinceDate < New Date(1800, 1, 1) Then sinceDate = lastDownload
+		If Not sinceDate.IsDateValid Then sinceDate = lastDownload
 
 		For iLp = 0 To _listaPlikow.Count - 1
 			Dim oFile As OnePic = _listaPlikow.ElementAt(iLp)
@@ -235,13 +235,23 @@ Public MustInherit Class PicSourceBase
 	End Function
 #End Region
 
-	Protected Function MatchesMasks(sFilenameNoPath As String) As Boolean
+	Public Shared Function MatchesMasks(sFilenameNoPath As String, sIncludeMasks As String, sExcludeMasks As String) As Boolean
+
 		' https://stackoverflow.com/questions/725341/how-to-determine-if-a-file-matches-a-file-mask
 		Dim aMaski As String()
-		If String.IsNullOrWhiteSpace(includeMask) Then
+
+		If Not String.IsNullOrWhiteSpace(sExcludeMasks) Then
+			aMaski = sExcludeMasks.Split(";")
+			For Each maska As String In aMaski
+				Dim regExMaska As Regex = New Regex(maska.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."))
+				If regExMaska.IsMatch(sFilenameNoPath) Then Return False
+			Next
+		End If
+
+		If String.IsNullOrWhiteSpace(sIncludeMasks) Then
 			aMaski = "*.jpg;*.tif;*.png".Split(";")
 		Else
-			aMaski = includeMask.Split(";")
+			aMaski = sIncludeMasks.Split(";")
 		End If
 
 		Dim bMatch As Boolean = False
@@ -252,17 +262,12 @@ Public MustInherit Class PicSourceBase
 				Exit For
 			End If
 		Next
-		If Not bMatch Then Return False
 
-		If String.IsNullOrWhiteSpace(excludeMask) Then Return True
-		aMaski = excludeMask.Split(";")
-		For Each maska As String In aMaski
-			Dim regExMaska As Regex = New Regex(maska.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."))
-			If regExMaska.IsMatch(sFilenameNoPath) Then Return False
-		Next
+		Return bMatch
+	End Function
 
-		Return True
-
+	Protected Function MatchesMasks(sFilenameNoPath As String) As Boolean
+		Return MatchesMasks(sFilenameNoPath, includeMask, excludeMask)
 	End Function
 
 #Region "Purging"

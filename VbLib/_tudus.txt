@@ -1,13 +1,14 @@
 
+new Publish, new Archive:
+ pole Postprocess, i [+], do wyboru z listy postprocesów
+
+PUBLISH dummy, który tylko pakuje do podkatalogu postprocesowane, i można samemu wysyłać (np do Skyscraper)
+PUBLISH tworzy sobie podkatalog (w data? w bufor?) o swojej nazwie, tam pakuje zdjecia postprocesowane, plik JSON z listą (do jakiego podkatalogu ma trafic zdjecie), i po odeslaniu - kasuje. Tez moze byc PurgeDelay time.
+
 może odwrotnie w sekwencji? publish przed archive?
 liczenie objetosci plików w archiwum, by "jak duży flash potrzebuję"?
 
-BROWSER: dodać akcje:
-	* rotate - z kasowaniem Exif.Orientation
-	* crop
-	* resize
-	- ale sprawdzac zachowanie metadata - bo nie mozna ich tracic! (szczegolnie tych spoza PicSorter)
-https://stackoverflow.com/questions/3531855/resize-and-save-image-while-preserving-metadata
+PUBLISH: email?
 
 BROWSER: dymek z podaniem destDir? Że auto-destDir, i potem sobie można pooglądać co z tym zrobił? I dopiero kolejny etap "kopiujDoArchiwum?"
 
@@ -16,7 +17,6 @@ BROWSER: combo zmieniające dymek? przygasza obrazki które nie mają danego EXI
 DEFAULTS: gdy nie ma żadnego Source, to robi Adhoc
 DOC: najpierw szybka ścieżka, bez ustawień: adhoc, browse, autosplit godzinowe, archive do adhoc
 	potem z wszystkimi bajerami opisywać ("wszystko moze być ustawione, zmodyfikowane, zautomatyzowane")
-DOC: "zbierz ze wszystkich źródeł przed sortowaniem - tak, aby autopodział był poprawny"
 
 ARCHIVE, TARGET:
 	1) lista paths
@@ -36,7 +36,6 @@ SOURCE: czy browse potrafi pokazać RAF z Fuji? Jak tak, to dołączyć do defau
 BROWSER: dodać "security" (że ukrywany, taki nie idzie do PUBLISH - choć to też można zrobić przez TAG=private)
 BROWSER: przerobić na new(lista), i na niej tylko operacje, a nie na całym buforze
 		- potem się przyda, przy otwieraniu Browser na katalogu
-
 
 BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
 

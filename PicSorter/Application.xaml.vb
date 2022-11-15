@@ -94,6 +94,14 @@ Partial Class Application
         New Vblib.Auto_AzureTest
     }
 
+    Public Shared gPostProcesory As Vblib.PostProcBase() = {
+        New Process_AutoRotate,
+        New Process_Resize800,
+        New Process_Resize1024,
+        New Process_Resize1280,
+        New Process_Resize1600,
+        New Process_EmbedExif
+    }
 
 
 End Class

@@ -5,10 +5,10 @@ Imports vb14 = Vblib.pkarlibmodule14
 Public Class AutoSplitWindow
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         uiDayChange.GetSettingsBool
-        uiHourGapOn.GetSettingsBool(bDefault:=True)
-        uiHourGapInt.GetSettingsInt(iDefault:=36)
-        uiGeoGapOn.GetSettingsBool(bDefault:=True)
-            uiGeoGapInt.GetSettingsInt(iDefault:=20)
+        uiHourGapOn.GetSettingsBool()
+        uiHourGapInt.GetSettingsInt()
+        uiGeoGapOn.GetSettingsBool()
+        uiGeoGapInt.GetSettingsInt()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)

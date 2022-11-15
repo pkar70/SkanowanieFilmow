@@ -51,8 +51,8 @@ Public Class AutoTag_EXIF
         oNewExif.GeoName = oRdr.GetString(CompactExifLib.ExifTag.GpsAreaInformation)
 
         ' spoza EXIF
-        oNewExif.Restrictions = oRdr.GetString(&H9212) ' 0x9212 SecurityClassification string ExifIFD (C/R/S/T/U), do "tajne" :) (ale jest tez non-writable, 0xa212)
-        oNewExif.ReelName = oRdr.GetString(&HC789)
+        oNewExif.Restrictions = oRdr.GetString(CompactExifLib.ExifTag.PkarRestriction) ' 0x9212 SecurityClassification string ExifIFD (C/R/S/T/U), do "tajne" :) (ale jest tez non-writable, 0xa212)
+        oNewExif.ReelName = oRdr.GetString(CompactExifLib.ExifTag.PkarReelName)
 
         ' oraz wersja Windows, tagi które nie występują "normalnie"
 
@@ -66,7 +66,7 @@ Public Class AutoTag_EXIF
         oNewExif.UserComment = AddSecondTagString(oNewExif.UserComment, oRdr.GetStringMicrosoft(CompactExifLib.ExifTag.XpSubject))
 
         ' no i nie Microsoftowe
-        oNewExif.OriginalRAW = oRdr.GetString(&HC68B) ' OriginalRawFileName
+        oNewExif.OriginalRAW = oRdr.GetString(CompactExifLib.ExifTag.PkarOriginalRAW) ' OriginalRawFileName
         oNewExif.CameraModel = AddSecondTagString(oNewExif.CameraModel, oRdr.GetString(&HC614)) ' UniqueCameraModel = Certo SL110
 
 

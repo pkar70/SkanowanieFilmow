@@ -41,6 +41,7 @@ Public Class ProcessBrowse
         RefreshMiniaturki(True)
 
         WypelnMenuAutotagerami(uiMenuAutotags, AddressOf AutoTagRun)
+        WypelnMenuBatchProcess(uiBatchProcessors, AddressOf PostProcessRun)
 
         Await EwentualneKasowanieBak()
 
@@ -49,7 +50,7 @@ Public Class ProcessBrowse
 
     Private Async Function EwentualneKasowanieBak() As Task
 
-        Dim iDelay As Integer = vb14.GetSettingsInt("uiBakDelayDays", 7)
+        Dim iDelay As Integer = vb14.GetSettingsInt("uiBakDelayDays")
 
         Dim iOutdated As Integer = Application.GetBuffer.BakDelete(iDelay, False)
         If iOutdated < 1 Then Return
@@ -81,7 +82,7 @@ Public Class ProcessBrowse
 
         Dim iMaxBok As Integer = GetMaxBok(_iMaxRun)
 
-        Dim iLimit As Integer = 16
+        Dim iLimit As Integer = 9999
 
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
@@ -474,11 +475,11 @@ Public Class ProcessBrowse
         Next
 
         ' split mniej ważny
-        If vb14.GetSettingsBool("uiGeoGapOn", True) Then ApplyAutoSplitGeo(vb14.GetSettingsInt("uiGeoGapInt", 20))
+        If vb14.GetSettingsBool("uiGeoGapOn", True) Then ApplyAutoSplitGeo(vb14.GetSettingsInt("uiGeoGapInt"))
 
         ' split ważniejszy
         If vb14.GetSettingsBool("uiDayChange") Then ApplyAutoSplitDaily()
-        If vb14.GetSettingsBool("uiHourGapOn", True) Then ApplyAutoSplitHours(vb14.GetSettingsInt("uiHourGapInt", 36))
+        If vb14.GetSettingsBool("uiHourGapOn", True) Then ApplyAutoSplitHours(vb14.GetSettingsInt("uiHourGapInt"))
 
         _iMaxRun = PoliczMaxRun()
 
@@ -683,6 +684,22 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Public Shared Sub WypelnMenuBatchProcess(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
+        oMenuItem.Items.Clear()
+        ' _UImenuOnClick = oEventHandler
+
+        For Each oEngine As Vblib.PostProcBase In Application.gPostProcesory
+            Dim oNew As New MenuItem
+            oNew.Header = oEngine.Nazwa.Replace("_", "__")
+            oNew.DataContext = oEngine
+            AddHandler oNew.Click, oEventHandler
+            oMenuItem.Items.Add(oNew)
+        Next
+
+        oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
+
+    End Sub
+
 #End Region
     Private Async Sub AutoTagRun(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
@@ -712,6 +729,27 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Private Async Sub PostProcessRun(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        Dim oFE As FrameworkElement = sender
+        Dim oEngine As Vblib.PostProcBase = oFE?.DataContext
+        If oEngine Is Nothing Then Return
+
+        uiProgBar.Maximum = uiPicList.SelectedItems.Count
+        uiProgBar.Visibility = Visibility.Visible
+
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            Await oEngine.Apply(oItem.oPic)
+            Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
+            uiProgBar.Value += 1
+        Next
+
+        uiProgBar.Visibility = Visibility.Collapsed
+
+        Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+
+    End Sub
 
     Public Class ThumbPicek
         Public Property oPic As Vblib.OnePic

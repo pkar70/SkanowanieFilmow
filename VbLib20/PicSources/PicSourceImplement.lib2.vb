@@ -45,8 +45,7 @@ Public Class PicSourceImplement
     Protected Overrides Function OpenFile(oPic As OnePic) As Boolean
         Select Case Typ
             Case Vblib.PicSourceType.MTP
-                Dim oFI As MediaDevices.MediaFileInfo = _MediaDevice.GetFileInfo(oPic.sInSourceID)
-                oPic.Content = oFI.OpenRead()
+                oPic.Content = _MediaDeviceHelper.GetStream(oPic.sInSourceID)
                 Return True
             Case Else
                 If Not IO.File.Exists(oPic.sInSourceID) Then Return False
@@ -149,96 +148,34 @@ Public Class PicSourceImplement
 #End Region
 
 #Region "MTP"
-    Private Function ReadDirectory_MTP_Recursion(sSrcPath As String) As Boolean
 
-        If _MediaDevice Is Nothing Then Return False    ' nie powinno się zdarzyć, chyba że będzie błąd w programowaniu
-
-        For Each sDir As String In _MediaDevice.EnumerateDirectories(Path)
-            If Not ReadDirectory_MTP_Recursion(sDir) Then Return False
-        Next
-
-        For Each sFilePathName As String In _MediaDevice.EnumerateFiles(sSrcPath)
-            Dim sFileName As String = IO.Path.GetFileName(sFilePathName)
-
-            If MatchesMasks(sFileName) Then
-
-                Dim oNew As New Vblib.OnePic(SourceName, sFilePathName, sFileName)
-                oNew.Exifs.Add(currentExif)
-
-                ' i teraz daty sprobuj sciagnac
-                Dim oFI As MediaDevices.MediaFileInfo = _MediaDevice.GetFileInfo(sFilePathName)
-
-                Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.SourceFile)
-                Dim createDate = oFI.CreationTime
-                Dim writeDate = oFI.LastWriteTime
-                If createDate < writeDate Then
-                    oExif.DateMax = writeDate
-                    oExif.DateMin = createDate
-                Else
-                    oExif.DateMin = writeDate
-                    oExif.DateMax = createDate
-                End If
-                oNew.Exifs.Add(oExif)
-
-                _listaPlikow.Add(oNew)
-            End If
-
-        Next
-
-        Return True
-
-    End Function
-
+    ' ale to właściwie tylko proxy do ClassLib Std 2.0 z nugetem, żeby ten nuget był tylko tam
 
     Private Function ReadDirectory_MTP() As Integer
         If Not IsPresent_MTP() Then Return -1
 
-        Dim iCnt As Integer = 0
-        If _listaPlikow Is Nothing Then
-            _listaPlikow = New List(Of OnePic)
-        Else
-            _listaPlikow.Clear()
-        End If
-
-        If Not ReadDirectory_MTP_Recursion(Path) Then Return -1
-
-        '_MediaDevice.Disconnect()
-        '_MediaDevice.Dispose()
-        '_MediaDevice = Nothing
+        _listaPlikow = _MediaDeviceHelper.ReadDirectory(Path, SourceName, includeMask, excludeMask, currentExif)
+        If _listaPlikow Is Nothing Then Return -1
 
         Return _listaPlikow.Count
     End Function
 
     Private Function DeleteFile_MTP(sId As String) As Boolean
-        If _MediaDevice Is Nothing Then Return False    ' nie powinno się zdarzyć, chyba że będzie błąd w programowaniu
-
-        _MediaDevice.DeleteFile(sId)
-        Return True
+        Return _MediaDeviceHelper.Delete(sId)
     End Function
 
 
     <Newtonsoft.Json.JsonIgnore>
-    Private _MediaDevice As MediaDevices.MediaDevice
+    Private _MediaDeviceHelper As MediaDevicesLib.Helper
 
-    Public Shared Function GetDeviceFromLabel_MTP(sVolLabel As String) As MediaDevices.MediaDevice
-        sVolLabel = sVolLabel.ToLowerInvariant
-        If String.IsNullOrWhiteSpace(sVolLabel) Then Return Nothing
-        Dim iInd As Integer = sVolLabel.IndexOf("(")
-        If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd - 1).Trim
 
-        For Each oMD As MediaDevices.MediaDevice In MediaDevices.MediaDevice.GetDevices
-            If oMD.FriendlyName.ToLowerInvariant = sVolLabel Then Return oMD
-        Next
-
-        Return Nothing
-    End Function
 
     Private Function CheckDeviceFromVolLabel_MTP(sVolLabel As String) As Boolean
 
-        Dim oMD As MediaDevices.MediaDevice = GetDeviceFromLabel_MTP(sVolLabel)
-        If oMD Is Nothing Then Return False
-        _MediaDevice = oMD
-        oMD.Connect(MediaDevices.MediaDeviceAccess.GenericRead Or MediaDevices.MediaDeviceAccess.GenericWrite)
+        Dim oMD As New MediaDevicesLib.Helper(sVolLabel)
+        If Not oMD.IsValid Then Return False
+        _MediaDeviceHelper = oMD
+        _MediaDeviceHelper.Connect()
 
         Return True
     End Function

@@ -9,13 +9,12 @@ Class ProcessPic
         Dim counter As Integer = Application.GetBuffer.Count
         uiBrowse.Content = $"Browse ({counter})"
         uiAutotag.Content = $"Try autotag ({counter})"
-        uiApplyTag.Content = $"Apply tags ({counter})"
         uiLocalArch.Content = $"Local arch ({counter})"
         uiPublish.Content = $"Publish ({counter})"
 
         If counter = 0 Then
             uiAutotag.IsEnabled = False
-            uiApplyTag.IsEnabled = False
+            uiBatchEdit.IsEnabled = False
             uiLocalArch.IsEnabled = False
             uiPublish.IsEnabled = False
         End If
@@ -31,6 +30,11 @@ Class ProcessPic
 
     Private Sub uiAutotag_Click(sender As Object, e As RoutedEventArgs) Handles uiAutotag.Click
         Dim oWnd As New AutoTags
+        oWnd.ShowDialog()
+    End Sub
+
+    Private Sub uiBatchEdit_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New BatchEdit
         oWnd.ShowDialog()
     End Sub
 End Class

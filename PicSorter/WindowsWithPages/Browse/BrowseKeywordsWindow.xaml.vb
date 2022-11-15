@@ -40,18 +40,20 @@ Public Class BrowseKeywordsWindow
                 _oNewExif.Keywords = _oNewExif.Keywords & " " & oItem.sTagId
                 _oNewExif.UserComment = _oNewExif.UserComment & " | " & oItem.sDisplayName
 
-                If oItem.minDate.Year > 1800 Then
-                    If oItem.minDate < oMinDate Then oMinDate = oItem.minDate
-                End If
+                oMinDate = oMinDate.DateMin(oItem.minDate)
+                'If oItem.minDate.Year > 1800 Then
+                '    If oItem.minDate < oMinDate Then oMinDate = oItem.minDate
+                'End If
 
-                If oItem.maxDate.Year > 1800 Then
-                    If oItem.maxDate > oMaxDate Then oMaxDate = oItem.maxDate
-                End If
+                'If oItem.maxDate.Year > 1800 Then
+                '    If oItem.maxDate > oMaxDate Then oMaxDate = oItem.maxDate
+                'End If
+                oMaxDate = oMaxDate.DateMax(oItem.maxDate)
 
             End If
         Next
 
-        If oMaxDate.Year < 1800 Then oMaxDate = Date.Now
+        If Not oMaxDate.Date.IsDateValid Then oMaxDate = Date.Now
 
         _oNewExif.DateMin = oMinDate
         _oNewExif.DateMax = oMaxDate
@@ -235,36 +237,30 @@ Public Class BrowseKeywordsWindow
         Dim oExifTag As Vblib.ExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.SourceDefault)
         If oExifTag IsNot Nothing Then
             vb14.DumpMessage("mam EXIF SOURCE")
-            If oExifTag.DateMin.Year > 1800 Then
-                If minDate < oExifTag.DateMin Then minDate = oExifTag.DateMin
-            End If
-            If oExifTag.DateMax.Year > 1800 AndAlso oExifTag.DateMax.Year < 2100 Then
-                If maxDate > oExifTag.DateMax Then maxDate = oExifTag.DateMax
-            End If
+            minDate = minDate.DateMax(oExifTag.DateMin)
+            'If oExifTag.DateMin.IsDateValid Then
+            '    If minDate < oExifTag.DateMin Then minDate = oExifTag.DateMin
+            'End If
+            'If oExifTag.DateMax.IsDateValid Then
+            '    If maxDate > oExifTag.DateMax Then maxDate = oExifTag.DateMax
+            'End If
+            maxDate = minDate.DateMin(oExifTag.DateMax)
             vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
         End If
 
         oExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
         If oExifTag IsNot Nothing Then
             vb14.DumpMessage("mam EXIF EXIF")
-            If oExifTag.DateMin.Year > 1800 Then
-                If minDate < oExifTag.DateMin Then minDate = oExifTag.DateMin
-            End If
-            If oExifTag.DateMax.Year > 1800 AndAlso oExifTag.DateMax.Year < 2100 Then
-                If maxDate > oExifTag.DateMax Then maxDate = oExifTag.DateMax
-            End If
+            minDate = minDate.DateMax(oExifTag.DateMin)
+            maxDate = minDate.DateMin(oExifTag.DateMax)
             vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
         End If
 
         oExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualDate)
         If oExifTag IsNot Nothing Then
             'vb14.DumpMessage("mam EXIF MANUAL")
-            If oExifTag.DateMin.Year > 1800 Then
-                If minDate < oExifTag.DateMin Then minDate = oExifTag.DateMin
-            End If
-            If oExifTag.DateMax.Year > 1800 AndAlso oExifTag.DateMax.Year < 2100 Then
-                If maxDate > oExifTag.DateMax Then maxDate = oExifTag.DateMax
-            End If
+            minDate = minDate.DateMax(oExifTag.DateMin)
+            maxDate = minDate.DateMin(oExifTag.DateMax)
             vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
         End If
 
@@ -315,9 +311,10 @@ Public Class BrowseKeywordsWindow
         If oItem.SubItems IsNot Nothing Then
             For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
                 Dim currMinDate As Date = SzukajMinDatyRecursive(oSubItem, minDate)
-                If currMinDate.Year > 1800 Then
-                    If currMinDate < minDate Then minDate = currMinDate
-                End If
+                minDate = minDate.DateMin(currMinDate)
+                'If currMinDate.Year > 1800 Then
+                '    If currMinDate < minDate Then minDate = currMinDate
+                'End If
             Next
         End If
 
@@ -347,14 +344,15 @@ Public Class BrowseKeywordsWindow
         If oItem.SubItems IsNot Nothing Then
             For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
                 Dim currMaxDate As Date = SzukajMaxDatyRecursive(oSubItem, maxDate)
-                If currMaxDate.Year > 1800 AndAlso currMaxDate.Year < 2100 Then
-                    If currMaxDate > maxDate Then maxDate = currMaxDate
-                End If
+                maxDate = maxDate.DateMax(currMaxDate)
+                'If currMaxDate.Year > 1800 AndAlso currMaxDate.Year < 2100 Then
+                '    If currMaxDate > maxDate Then maxDate = currMaxDate
+                'End If
             Next
         End If
 
-        If oItem.maxDate < maxDate AndAlso oItem.maxDate.Year > 1800 Then Return oItem.maxDate
-        If maxDate.Year > 2100 Then Return Date.MinValue
+        If oItem.maxDate < maxDate AndAlso oItem.maxDate.IsDateValid Then Return oItem.maxDate
+        If Not maxDate.IsDateValid Then Return Date.MinValue
 
         Return maxDate
     End Function
@@ -365,14 +363,14 @@ Public Class BrowseKeywordsWindow
 
         ' step 1: czy węzeł ma limit dat?
 
-        If minDate.Year > 1800 Then
-            If oItem.maxDate.Year > 1800 AndAlso oItem.maxDate.Year < 2100 Then
+        If minDate.IsDateValid Then
+            If oItem.maxDate.IsDateValid Then
                 If oItem.maxDate < minDate Then oItem.bEnabled = False
             End If
         End If
 
-        If maxDate.Year > 1800 AndAlso maxDate.Year < 2100 Then
-            If oItem.minDate.Year > 1800 Then
+        If maxDate.IsDateValid Then
+            If oItem.minDate.IsDateValid Then
                 If oItem.minDate > maxDate Then oItem.bEnabled = False
             End If
         End If

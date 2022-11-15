@@ -2,15 +2,17 @@
 
 Public Class BrowseMtpDevice
 
-    Private _oMD As MediaDevices.MediaDevice
-    Public currentPath As String
 
-    Public Sub New(oMD As MediaDevices.MediaDevice, sDefaultPath As String)
+    Public currentPath As String
+    Private _oMDH As MediaDevicesLib.Helper
+
+    Public Sub New(sVolLabel As String, sDefaultPath As String)
 
         ' This call is required by the designer.
         InitializeComponent()
 
-        _oMD = oMD
+        _oMDH = New MediaDevicesLib.Helper(sVolLabel)
+
         currentPath = sDefaultPath
     End Sub
 
@@ -20,7 +22,7 @@ Public Class BrowseMtpDevice
 
     Private Sub PokazDir(sPath As String)
 
-        If _oMD Is Nothing Then Return ' nie powinno się zdarzyć, chyba że będzie błąd w programowaniu
+        If _oMDH Is Nothing Then Return ' nie powinno się zdarzyć, chyba że będzie błąd w programowaniu
 
         If String.IsNullOrWhiteSpace(sPath) Then sPath = "\"
         If sPath.Substring(0, 1) <> "\" Then sPath = "\" & sPath
@@ -34,27 +36,11 @@ Public Class BrowseMtpDevice
             lista.Add(oNew)
         End If
 
-        _oMD.Connect()
+        Dim namesList As List(Of String) = _oMDH.GetDirList(sPath)
 
-        If sPath = "\" Then
-            ' z MTPget , bo inaczej pokazuje np. \Apps i tak dalej
-            Dim oDrives As MediaDevices.MediaDriveInfo() = _oMD.GetDrives()
-            For Each oDrive As MediaDevices.MediaDriveInfo In oDrives
-                Dim oNew As New OneMTPdirToShow(IO.Path.GetFileName(oDrive.Name))
-                lista.Add(oNew)
-            Next
-
-            '    For Each oSubDir In oDir.EnumerateDirectories
-            '        RecurFillCombo(oSubDir)
-            '    Next
-        Else
-                For Each sDir As String In _oMD.EnumerateDirectories(sPath)
-                Dim oNew As New OneMTPdirToShow(IO.Path.GetFileName(sDir))
-                lista.Add(oNew)
-            Next
-        End If
-
-        _oMD.Disconnect()
+        For Each sName As String In namesList
+            lista.Add(New OneMTPdirToShow(sName))
+        Next
 
         uiLista.ItemsSource = lista
     End Sub

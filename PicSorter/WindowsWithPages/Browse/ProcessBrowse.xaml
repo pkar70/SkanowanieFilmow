@@ -72,9 +72,10 @@
                     </Menu.ItemsPanel>
                     <MenuItem Header="Delete" Click="uiDeleteSelected_Click" />
                     <MenuItem Header="Autotags" Name="uiMenuAutotags" IsEnabled="False" />
-                        <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
                         <MenuItem Header="Describe" Click="uiDescribeSelected_Click" />
-                    <MenuItem Header="Archive" Name="uiMenuArchive" IsEnabled="False" />
+                        <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
+                        <MenuItem Header="Batch process" Name="uiBatchProcessors" />
+                        <MenuItem Header="Archive" Name="uiMenuArchive" IsEnabled="False" />
                     <MenuItem Header="Publish" Name="uiMenuPublish" IsEnabled="False"  />
                 </Menu>
             </Popup>

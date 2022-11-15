@@ -75,13 +75,9 @@ Public Class EditExifTag
         uiDateMax.DisplayDateStart = dateStart
         uiDateMin.DisplayDateStart = dateStart
 
-        If dateMax > New DateTime(1800, 1, 1) Then
-            uiDateMax.SelectedDate = dateMax
-        End If
+        If dateMax.IsDateValid Then uiDateMax.SelectedDate = dateMax
 
-        If dateMin > New DateTime(1800, 1, 1) Then
-            uiDateMin.SelectedDate = dateMin
-        End If
+        If dateMin.IsDateValid Then uiDateMin.SelectedDate = dateMin
 
     End Sub
 

@@ -7,7 +7,13 @@ Public Class IniLikeDefaults
 
     Public Const sIniContent As String = "
 [main]
-key=value 
+uiBakDelayDays=7
+uiJpgQuality=90
+uiBakDelayDays=7
+uiGeoGapInt=20
+uiHourGapInt=36
+uiGeoGapOn=True
+uiHourGapOn=True
 
 # remark
 ' remark

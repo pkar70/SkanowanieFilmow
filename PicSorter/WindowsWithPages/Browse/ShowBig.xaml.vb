@@ -1,7 +1,14 @@
 ﻿
 
-Imports Windows.Graphics.Imaging
+Imports System.IO   ' for AsRandomAccess
+'Imports System.Text
+'Imports Windows.Foundation.Collections
+Imports wingraph = Windows.Graphics.Imaging
+'Imports Windows.Security
+Imports winstreams = Windows.Storage.Streams
 Imports vb14 = Vblib.pkarlibmodule14
+Imports Windows.Storage.Streams
+Imports CompactExifLib
 
 Public Class ShowBig
 
@@ -48,8 +55,9 @@ Public Class ShowBig
     Private Function DetermineOrientation(oPic As Vblib.OnePic) As Rotation
         Dim oExif As Vblib.ExifTag
 
-        oExif = oPic.GetExifOfType(Vblib.ExifSource.ManualRotate)
-        If oExif Is Nothing Then oExif = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+        'oExif = oPic.GetExifOfType(Vblib.ExifSource.ManualRotate)
+        'If oExif Is Nothing Then
+        oExif = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
 
         If oExif Is Nothing Then Return Rotation.Rotate0
 
@@ -99,6 +107,7 @@ Public Class ShowBig
 
 
         ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
+        ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
 
         OnOffMap()
         SettingsMapsy.WypelnMenuMapami(uiOnMap, AddressOf uiOnMap_Click)
@@ -134,26 +143,7 @@ Public Class ShowBig
 
     End Sub
 
-    'Private Sub MenuAutoTaggerow()
 
-    '    uiMenuTaggers.Items.Clear()
-
-    '    For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
-    '        Dim oNew As New MenuItem
-    '        oNew.Header = oEngine.Nazwa.Replace("_", "__")
-    '        oNew.DataContext = oEngine
-    '        AddHandler oNew.Click, AddressOf ApplyTagger
-    '        uiMenuTaggers.Items.Add(oNew)
-    '    Next
-
-    '    If uiMenuTaggers.Items.Count > 0 Then
-    '        uiMenuTaggers.IsEnabled = True
-    '    Else
-    '        uiMenuTaggers.IsEnabled = False
-    '    End If
-
-
-    'End Sub
 
     Private Async Sub ApplyTagger(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
@@ -168,6 +158,15 @@ Public Class ShowBig
         Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
 
         OnOffMap()    ' bo moze juz bedzie mozna to pokazać
+    End Sub
+
+    Private Async Sub ApplyBatchProcess(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oSrc As Vblib.PostProcBase = oFE?.DataContext
+        If oSrc Is Nothing Then Return
+
+        Await oSrc.Apply(_picek.oPic)
+
     End Sub
 
     'Private Sub uiFullPicture_MouseRightButtonDown(sender As Object, e As MouseButtonEventArgs) Handles uiFullPicture.MouseRightButtonDown
@@ -220,6 +219,7 @@ Public Class ShowBig
 
         Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
         _picek.oPic.AddDescription(oDesc)
+        Application.GetBuffer.SaveData()
     End Sub
 
     Private Sub ChangePicture(bGoBack As Boolean)
@@ -282,13 +282,16 @@ Public Class ShowBig
     Private _editMode As EditModeEnum = EditModeEnum.none
 
     Private Async Function SprawdzCzyJestEdycja(editMode As EditModeEnum) As Task(Of Boolean)
-        If _editMode = EditModeEnum.none Then Return True
+        If _editMode <> EditModeEnum.none Then
 
-        If _editMode = editMode Then Return True ' jeśli włączamy to samo, to może być
+            If _editMode <> editMode Then ' jeśli włączamy to samo, to nie ma powodu pytać o zapis
 
-        Dim bSave As Boolean = Await vb14.DialogBoxYNAsync("Jest już edycja, zapisać zmiany?")
+                Dim bSave As Boolean = Await vb14.DialogBoxYNAsync("Jest już edycja, zapisać zmiany?")
 
-        If bSave Then Await SaveChanges()
+                If bSave Then Await SaveChanges()
+            End If
+
+        End If
 
         _editMode = editMode
 
@@ -310,19 +313,19 @@ Public Class ShowBig
         Return 0
     End Function
 
-    Private Function DegreeToBitmapRotate(iKat As Integer) As BitmapRotation
+    Private Function DegreeToBitmapRotate(iKat As Integer) As wingraph.BitmapRotation
         Select Case iKat
             Case 0
-                Return BitmapRotation.None
+                Return wingraph.BitmapRotation.None
             Case 90
-                Return BitmapRotation.Clockwise90Degrees
+                Return wingraph.BitmapRotation.Clockwise90Degrees
             Case 180
-                Return BitmapRotation.Clockwise180Degrees
+                Return wingraph.BitmapRotation.Clockwise180Degrees
             Case 270
-                Return BitmapRotation.Clockwise270Degrees
+                Return wingraph.BitmapRotation.Clockwise270Degrees
         End Select
         ' tego nie powinno być, bo nie ma innej mozliwosci
-        Return BitmapRotation.None
+        Return wingraph.BitmapRotation.None
     End Function
 
 
@@ -344,43 +347,61 @@ Public Class ShowBig
 
     Private Async Function SaveChanges() As Task
 
-        Dim transf As New BitmapTransform
+        Dim transf As New wingraph.BitmapTransform
+        Dim sHistory As String = ""
 
         Select Case _editMode
             Case EditModeEnum.none
                 Return
             Case EditModeEnum.crop
-                Dim oRect As Rect = ConvertSlidersToPicRect()
-                Dim bnds As New BitmapBounds
+                ' jesli jest rotate, to moze byc odwrocenie width/height
+                Dim oRect As Rect = ConvertSlidersToPicRect(_bitmap.Width, _bitmap.Height)
+                Dim bnds As New wingraph.BitmapBounds
                 bnds.X = oRect.X
                 bnds.Y = oRect.Y
                 bnds.Width = oRect.Width
                 bnds.Height = oRect.Height
                 transf.Bounds = bnds
+
+                sHistory = "Cropped to " &
+                 $"({Math.Min(uiCropUp.Value, uiCropDown.Value)} .. {Math.Max(uiCropUp.Value, uiCropDown.Value)} × " &
+                 $"({Math.Min(uiCropLeft.Value, uiCropRight.Value)} .. {Math.Max(uiCropLeft.Value, uiCropRight.Value)})"
+
             Case EditModeEnum.resize
                 ' *TODO* resize
             Case EditModeEnum.rotate
 
-                If Not uiRotateUp.IsChecked Then
+                If uiRotateUp.IsChecked Then
+                    transf = Nothing ' czyli bez zmian, ale trzeba zakończyć
+                Else
+                    sHistory = "Rotated "
+                    If uiRotateRight.IsChecked Then
+                        sHistory += "270"
+                        transf.Rotation = wingraph.BitmapRotation.Clockwise270Degrees
+                    End If
+                    If uiRotateDown.IsChecked Then
+                        sHistory += "180"
+                        transf.Rotation = wingraph.BitmapRotation.Clockwise180Degrees
+                    End If
+                    If uiRotateLeft.IsChecked Then
+                        sHistory += "90"
+                        transf.Rotation = wingraph.BitmapRotation.Clockwise90Degrees
+                    End If
 
-                    Dim preRotation As Rotation = DetermineOrientation(_picek.oPic)
-                    Dim iKat As Integer = RotateToDegree(preRotation)
-
-                    If uiRotateRight.IsChecked Then iKat += 270
-                    If uiRotateDown.IsChecked Then iKat += 180
-                    If uiRotateLeft.IsChecked Then iKat += 90
-
-                    Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.ManualRotate)
-                    oExif.Orientation = KatToOrientationEnum(iKat)
-                    _picek.oPic.ReplaceOrAddExif(oExif)
-
+                    sHistory = " degrees"
                 End If
-
-                transf = Nothing ' tego nie robimy zapisem
 
         End Select
 
-        If transf IsNot Nothing Then Await ZapiszZmianyObrazka(transf)
+        If transf IsNot Nothing Then
+            Dim oDesc As New Vblib.OneDescription(sHistory, "")
+            _picek.oPic.AddDescription(oDesc)
+            Application.GetBuffer.SaveData()
+
+            Await ZapiszZmianyObrazka(transf)
+        End If
+
+
 
         _editMode = EditModeEnum.none
         ShowHideEditControls(_editMode)
@@ -429,15 +450,17 @@ Public Class ShowBig
         ShowHideCropSliders(iMode = EditModeEnum.crop)
         ShowHideRotateBoxes(iMode = EditModeEnum.rotate)
         ShowHideSizeSlider(iMode = EditModeEnum.resize)
+
+        uiSave.IsEnabled = (iMode <> EditModeEnum.none)
     End Sub
 
-    Private Function ConvertSlidersToPicRect() As Rect
+    Private Function ConvertSlidersToPicRect(dWidth As Double, dHeight As Double) As Rect
         Dim oRect As New Rect
-        oRect.X = uiFullPicture.Width * (Math.Min(uiCropUp.Value, uiCropDown.Value))
-        oRect.Width = uiFullPicture.Width * (Math.Abs(uiCropDown.Value - uiCropUp.Value))
+        oRect.X = dWidth * (Math.Min(uiCropUp.Value, uiCropDown.Value))
+        oRect.Width = dWidth * (Math.Abs(uiCropDown.Value - uiCropUp.Value))
 
-        oRect.Y = uiFullPicture.Height * (Math.Min(uiCropLeft.Value, uiCropRight.Value))
-        oRect.Height = uiFullPicture.Height * (Math.Abs(uiCropRight.Value - uiCropLeft.Value))
+        oRect.Y = dHeight * (Math.Min(uiCropLeft.Value, uiCropRight.Value))
+        oRect.Height = dHeight * (Math.Abs(uiCropRight.Value - uiCropLeft.Value))
 
         Return oRect
     End Function
@@ -449,7 +472,7 @@ Public Class ShowBig
             Return
         End If
 
-        Dim oRect As Rect = ConvertSlidersToPicRect()
+        Dim oRect As Rect = ConvertSlidersToPicRect(uiFullPicture.Width, uiFullPicture.Height)
         Dim rectGeom As New RectangleGeometry(oRect)
         uiFullPicture.Clip = rectGeom
 
@@ -474,31 +497,33 @@ Public Class ShowBig
     End Sub
 
 #End Region
-    Private Async Function ZapiszZmianyObrazka(bmpTrans As BitmapTransform) As Task(Of Boolean)
+
+
+    Private Async Function ZapiszZmianyObrazka(bmpTrans As wingraph.BitmapTransform) As Task(Of Boolean)
         If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
 
-        Dim orgFileName As String = _picek.oPic.InBufferPathName
-        Dim bakFileName As String = _picek.oPic.InBufferPathName & ".bak"
+        Dim srcFilename As String = _picek.oPic.InitEdit
 
-        If Not IO.File.Exists(bakFileName) Then
-            IO.File.Move(orgFileName, bakFileName)
-            IO.File.SetCreationTime(bakFileName, Date.Now)
-        End If
+        Using oStream As New InMemoryRandomAccessStream
 
-        ' *TODO* konwersja bitmapy
-        '' save oBmp jako JPG, ewentualne ustawianie jakości wedle settings
-        'Dim oFrame As BitmapFrame() = BitmapFrame
-        'Dim mSoftBot As SoftwareBitmap()
-        'mSoftBot
-        'Dim oEnc As New JpegBitmapEncoder
-        'oEnc.QualityLevel = vb14.GetSettingsInt("uiJpgQuality", 80)
-        'Dim osft As SoftwareBitmap BitmapFrame
-        'oEnc.Frames.Add(BitmapFrame.Create(Image))
-        'oEnc.Save(Stream)
+            Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
 
-        ' kopiuj metadatane z bak do org
-        Dim oExifLib As New CompactExifLib.ExifData(bakFileName)
-        oExifLib.Save(orgFileName)
+            ' kopiujemy informacje o tym co jest do zrobienia
+            oEncoder.BitmapTransform.Bounds = bmpTrans.Bounds
+            oEncoder.BitmapTransform.Rotation = bmpTrans.Rotation   ' na razie to jest nieużywane
+            oEncoder.BitmapTransform.ScaledHeight = bmpTrans.ScaledHeight ' na razie to jest nieużywane
+            oEncoder.BitmapTransform.ScaledWidth = bmpTrans.ScaledWidth ' na razie to jest nieużywane
+
+            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(srcFilename))
+
+            ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
+            Await oEncoder.FlushAsync()
+
+            Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.InBufferPathName, srcFilename)
+
+            _picek.oPic.EndEdit()
+
+        End Using
 
         Return True
     End Function

@@ -49,7 +49,8 @@ Public Class ExifSource
     Public Const ManualGeo As String = "MANUAL_GEO"
     Public Const ManualTag As String = "MANUAL_TAG"
     Public Const ManualDate As String = "MANUAL_DATE"
-    Public Const ManualRotate As String = "MANUAL_ROTATE"
+    ' Public Const ManualRotate As String = "MANUAL_ROTATE"
+    Public Const Flattened As String = "INTERNAL_FLATTENED"
 End Class
 
 Public Enum AutoTaggerType

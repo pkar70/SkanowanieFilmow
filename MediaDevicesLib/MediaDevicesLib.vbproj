@@ -1,16 +1,15 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>VbLib20</RootNamespace>
+    <RootNamespace>MediaDevicesLib</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="MediaDevices" Version="1.9.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MediaDevicesLib\MediaDevicesLib.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>
 

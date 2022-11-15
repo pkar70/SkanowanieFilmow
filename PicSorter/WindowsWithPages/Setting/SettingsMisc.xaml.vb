@@ -9,8 +9,8 @@ Class SettingsMisc
         uiAzureSubscriptionKey.GetSettingsString
         uiAzurePaid.GetSettingsBool
         uiNoDelConfirm.GetSettingsBool
-        uiBakDelayDays.GetSettingsInt(iDefault:=7)
-        uiJpgQuality.GetSettingsInt(iDefault:=80)
+        uiBakDelayDays.GetSettingsInt()
+        uiJpgQuality.GetSettingsInt()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)

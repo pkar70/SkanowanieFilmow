@@ -62,15 +62,16 @@
                         <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
                         <MenuItem Header="Delete" Click="uiDelPic_Click" />
                         <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
-                        <MenuItem Header="Pic process" Name="uiEditModes">
+                            <MenuItem Header="Describe" Click="uiDescribe_Click" />
+                            <MenuItem Header="Pic edit" Name="uiEditModes">
                             <MenuItem Header="Crop" Click="uiCrop_Click" />
-                            <MenuItem Header="Resize" Click="uiResize_Click" />
+                            <MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>
                             <MenuItem Header="Rotate" Click="uiRotate_Click" />
                                 <Separator/>
                                 <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
                                 <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
                             </MenuItem>
-                        <MenuItem Header="Describe" Click="uiDescribe_Click" />
+                            <MenuItem Header="Batch process" Name="uiBatchProcessors" />
                         <!--<MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />-->
                         <MenuItem Header="On map" Name="uiOnMap" />
                     </ContextMenu>

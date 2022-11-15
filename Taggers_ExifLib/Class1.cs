@@ -3787,6 +3787,13 @@ namespace CompactExifLib
     // Tag specification constants: Composition of IFD and tag ID.
     public enum ExifTag
     {
+        // PKAR dodatek
+        // IFD0: ExifIfd.PrimaryData
+        // ExifIFD, IFD0, IFD0
+        PkarRestriction = (ExifIfd.PrimaryData << ExifData.IfdShift) | ExifTagId.PkarRestriction,
+        PkarReelName = (ExifIfd.PrimaryData << ExifData.IfdShift) | ExifTagId.PkarReelName,
+        PkarOriginalRAW = (ExifIfd.PrimaryData << ExifData.IfdShift) | ExifTagId.PkarOriginalRAW,
+
         // IFD Primary Data
         NewSubfileType = (ExifIfd.PrimaryData << ExifData.IfdShift) | ExifTagId.NewSubfileType,
         SubfileType = (ExifIfd.PrimaryData << ExifData.IfdShift) | ExifTagId.SubfileType,
@@ -3995,6 +4002,15 @@ namespace CompactExifLib
     // Tag ID constants.
     public enum ExifTagId
     {
+        // PKAR addition
+        PkarRestriction = 0x9212,
+        PkarReelName = 0xC789,
+        PkarOriginalRAW = 0xC68B,
+        // oNewExif.Restrictions = oRdr.GetString(&H9212) ' 0x9212 SecurityClassification string ExifIFD (C/R/S/T/U), do "tajne" :) (ale jest tez non-writable, 0xa212)
+        //oNewExif.ReelName = oRdr.GetString(&HC789)
+        //oNewExif.OriginalRAW = oRdr.GetString(&HC68B) ' OriginalRawFileName
+
+
         // IFD Primary Data, some tags are also used in IFD Thumbnail Data
         NewSubfileType = 0x00FE,
         SubfileType = 0x00FF,

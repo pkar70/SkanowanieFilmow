@@ -116,6 +116,128 @@ Public Class OnePic
 
     End Sub
 
+    ''' <summary>
+    ''' przygotuj plik źródłowy do edycji, robiąc bak/tmp
+    ''' </summary>
+    ''' <returns>filepathname pliku źródłowego (do otwierania jako readonly)</returns>
+    Public Function InitEdit() As String
+        Dim bakFileName As String = InBufferPathName & ".bak"
+
+        If Not IO.File.Exists(bakFileName) Then
+            IO.File.Move(InBufferPathName, bakFileName)
+            IO.File.SetCreationTime(bakFileName, Date.Now)
+            Return bakFileName
+        End If
+
+        bakFileName = InBufferPathName & ".tmp"
+
+        If IO.File.Exists(bakFileName) Then IO.File.Delete(bakFileName)
+
+        IO.File.Move(InBufferPathName, bakFileName)
+        IO.File.SetCreationTime(bakFileName, Date.Now)
+
+        Return bakFileName
+
+    End Function
+
+    ''' <summary>
+    ''' skasuj ewentualny plik tmp (gdy było kilka edycji)
+    ''' </summary>
+    Public Sub EndEdit()
+        Dim bakFileName As String = InBufferPathName & ".tmp"
+        If Not IO.File.Exists(bakFileName) Then Return
+
+        IO.File.Delete(bakFileName)
+    End Sub
+
+    ''' <summary>
+    ''' sprowadza wszystkie EXIFy do jednego - ale dalej jeszcze z dodatkowymi polami!
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function FlattenExifs() As ExifTag
+
+
+        ' defaulty mamy z FileSourceDeviceType
+        Dim oNew As New ExifTag(ExifSource.Flattened)
+        Dim oExif_SourceDefault As ExifTag = GetExifOfType(ExifSource.SourceDefault)
+        If oExif_SourceDefault IsNot Nothing Then
+            oNew = oExif_SourceDefault.Clone
+            oNew.ExifSource = ExifSource.Flattened
+        Else
+            oNew = New ExifTag(ExifSource.Flattened)
+        End If
+
+        ' dla nich bierzemy ostatni wpis - pewnie zwykle będzie to ustawiane gdy w loop będzie miał SourceDefault - ale może to nie będzie pierwszy...
+        For Each oExif As ExifTag In Exifs
+            If oExif.FileSourceDeviceType <> 0 Then oNew.FileSourceDeviceType = oExif.FileSourceDeviceType
+            If Not String.IsNullOrWhiteSpace(oExif.Author) Then oNew.Author = oExif.Author
+            If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then oNew.Copyright = oExif.Copyright
+            If Not String.IsNullOrWhiteSpace(oExif.CameraModel) Then oNew.CameraModel = oExif.CameraModel
+            If Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then oNew.DateTimeOriginal = oExif.DateTimeOriginal
+            If Not String.IsNullOrWhiteSpace(oExif.DateTimeScanned) Then oNew.DateTimeScanned = oExif.DateTimeScanned
+
+            If Not String.IsNullOrWhiteSpace(oExif.Restrictions) Then oNew.Restrictions = oExif.Restrictions
+            If Not String.IsNullOrWhiteSpace(oExif.PicGuid) Then oNew.PicGuid = oExif.PicGuid
+
+            If Not String.IsNullOrWhiteSpace(oExif.ReelName) Then oNew.ReelName = oExif.ReelName
+            If Not String.IsNullOrWhiteSpace(oExif.OriginalRAW) Then oNew.OriginalRAW = oExif.OriginalRAW
+            If Not String.IsNullOrWhiteSpace(oExif.PicGuid) Then oNew.PicGuid = oExif.PicGuid
+        Next
+
+        ' sklejamy - concatenate, więc musimy najpierw wyciąć to co było z SourceDefault
+        oNew.Keywords = ""
+        oNew.UserComment = ""
+        oNew.GeoName = ""
+        For Each oExif As ExifTag In Exifs
+            oNew.Keywords = oNew.Keywords.ConcatenateWithComma(oExif.Keywords)
+            oNew.UserComment = oNew.UserComment.ConcatenateWithComma(oExif.UserComment)
+            oNew.GeoName = oNew.GeoName.ConcatenateWithPipe(oExif.GeoName)
+        Next
+
+        ' te przeliczamy (min/max)
+        Dim dMax As Date = Date.MaxValue
+        Dim dMin As Date = Date.MinValue
+
+        For Each oExif As ExifTag In Exifs
+            dMax = dMax.DateMin(oExif.DateMax)
+            dMin = dMin.DateMax(oExif.DateMin)
+        Next
+
+        oNew.DateMin = dMin
+        oNew.DateMax = dMax
+
+        ' dwa przypadki szczególne
+
+        ' geotag ma MANUAL jako override, i wtedy nie sprawdzamy innych, inaczej: ostatni znaleziony
+        Dim oExif1 As ExifTag = GetExifOfType(ExifSource.ManualGeo)
+        If oExif1 IsNot Nothing Then
+            oNew.GeoTag = oExif1.GeoTag
+        Else
+            For Each oExif As ExifTag In Exifs
+                If oExif.GeoTag IsNot Nothing Then
+                    If Not oExif.GeoTag.IsEmpty Then oNew.GeoTag = oExif.GeoTag
+                End If
+            Next
+        End If
+
+        ' description z PIC do Exif.UserComment
+        If descriptions IsNot Nothing Then
+            For Each oDesc As OneDescription In descriptions
+                oNew.Keywords = oNew.Keywords.ConcatenateWithPipe(oDesc.keywords)
+                oNew.UserComment = oNew.UserComment.ConcatenateWithPipe(oDesc.comment)
+            Next
+        End If
+
+        ' azure analysis - doklejamy jako usercomment
+        For Each oExif As ExifTag In Exifs
+            If oExif.AzureAnalysis IsNot Nothing Then
+                oNew.UserComment = oNew.UserComment.ConcatenateWithPipe(oExif.AzureAnalysis.DumpAsText)
+            End If
+        Next
+
+        Return oNew
+    End Function
+
 End Class
 
 

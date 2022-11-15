@@ -1,0 +1,18 @@
+﻿
+Line 3780
+public enum ExifTag
+        // IFD0: ExifIfd.PrimaryData
+        // ExifIFD, IFD0, IFD0
+        PkarRestriction = (ExifIfd.PrimaryData << ExifData.IfdShift) | ExifTagId.PkarRestriction,
+        PkarReelName = (ExifIfd.PrimaryData << ExifData.IfdShift) | ExifTagId.PkarReelName,
+        PkarOriginalRAW = (ExifIfd.PrimaryData << ExifData.IfdShift) | ExifTagId.PkarOriginalRAW,
+
+
+
+Line 4000
+
+public enum ExifTagId
+
+        PkarRestriction = 0x9212,
+        PkarReelName = 0xC789,
+        PkarOriginalRAW = 0xC68B,

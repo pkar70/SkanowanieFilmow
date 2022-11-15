@@ -96,9 +96,7 @@ Public Class KeywordsList
         Dim oRet As Date = Date.MaxValue
 
         For Each oSubItem As OneKeyword In oItem.SubItems
-            If oSubItem.minDate.Year < 1800 Then Return Date.MinValue
-
-            If oRet > oSubItem.minDate Then oRet = oSubItem.minDate
+            oRet = oRet.DateMin(oSubItem.minDate)
         Next
 
         Return oRet
@@ -109,9 +107,10 @@ Public Class KeywordsList
         Dim oRet As Date = Date.MinValue
 
         For Each oSubItem As OneKeyword In oItem.SubItems
-            If oSubItem.maxDate.Year < 1800 Then Return Date.MaxValue
+            oRet = oRet.DateMax(oSubItem.maxDate)
+            'If oSubItem.maxDate.Year < 1800 Then Return Date.MaxValue
 
-            If oRet < oSubItem.maxDate Then oRet = oSubItem.maxDate
+            'If oRet < oSubItem.maxDate Then oRet = oSubItem.maxDate
         Next
 
         Return oRet

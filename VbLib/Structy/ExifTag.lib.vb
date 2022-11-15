@@ -66,7 +66,66 @@ Public Class ExifTag
 
 End Class
 
+Partial Public Module Extensions
 
+    ''' <summary>
+    ''' sprawdza czy data jest z zakresu 1800..2100 (resztę do zdjęć uznaję za błędne)
+    ''' </summary>
+    ''' <returns></returns>
+    <Runtime.CompilerServices.Extension()>
+    Public Function IsDateValid(ByVal oDate1 As Date) As Boolean
+        If oDate1.Year < 1800 Then Return False
+        If oDate1.Year > 2100 Then Return False
+        Return True
+    End Function
+
+
+    ''' <summary>
+    ''' porównuje dwie daty, uznając za "poprawniejszą" pierwszą, a drugą za valid tylko gdy rok 1800..2100
+    ''' </summary>
+    ''' <param name="oDate1"></param>
+    ''' <param name="oDate2"></param>
+    ''' <returns></returns>
+    <Runtime.CompilerServices.Extension()>
+    Public Function DateMin(ByVal oDate1 As Date, oDate2 As Date) As Date
+        If Not oDate2.IsDateValid Then Return oDate1
+
+        If oDate2 < oDate1 Then Return oDate2
+        Return oDate2
+    End Function
+
+    ''' <summary>
+    ''' porównuje dwie daty, uznając za "poprawniejszą" pierwszą, a drugą za valid tylko gdy rok 1800..2100
+    ''' </summary>
+    ''' <param name="oDate1"></param>
+    ''' <param name="oDate2"></param>
+    ''' <returns></returns>
+    <Runtime.CompilerServices.Extension()>
+    Public Function DateMax(ByVal oDate1 As Date, oDate2 As Date) As Date
+        If Not oDate2.IsDateValid Then Return oDate1
+
+        If oDate2 > oDate1 Then Return oDate2
+        Return oDate2
+    End Function
+
+    <Runtime.CompilerServices.Extension()>
+    Public Function ConcatenateWithComma(ByVal sFirstString As String, sSecondString As String)
+        Return sFirstString.ConcatenateWithSeparator(sSecondString, ", ")
+    End Function
+
+    <Runtime.CompilerServices.Extension()>
+    Public Function ConcatenateWithPipe(ByVal sFirstString As String, sSecondString As String)
+        Return sFirstString.ConcatenateWithSeparator(sSecondString, " | ")
+    End Function
+
+    <Runtime.CompilerServices.Extension()>
+    Public Function ConcatenateWithSeparator(ByVal sFirstString As String, sSecondString As String, sSeparator As String)
+        If String.IsNullOrWhiteSpace(sSecondString) Then Return sFirstString
+        If sFirstString = "" Then Return sSecondString
+        Return sFirstString & sSeparator & sSecondString
+    End Function
+
+End Module
 
 'Image title	ImageDescription ASCII(any)
 'Person who created the image	Artist	ASCII(any)

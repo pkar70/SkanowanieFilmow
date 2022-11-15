@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Taggers_ExifDataLib", "Tagg
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Auto_WinOCR_lib", "Taggers_OCR\Auto_WinOCR_lib.vbproj", "{6AD728E6-FDE5-49DD-8819-7F69582B9404}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Auto_WinFace", "Auto_WinFace\Auto_WinFace.vbproj", "{CD4ABCEE-1297-4945-A66F-307AD8812418}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Auto_WinFace", "Auto_WinFace\Auto_WinFace.vbproj", "{CD4ABCEE-1297-4945-A66F-307AD8812418}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "MediaDevicesLib", "MediaDevicesLib\MediaDevicesLib.vbproj", "{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -181,6 +183,26 @@ Global
 		{CD4ABCEE-1297-4945-A66F-307AD8812418}.Release|x64.Build.0 = Release|Any CPU
 		{CD4ABCEE-1297-4945-A66F-307AD8812418}.Release|x86.ActiveCfg = Release|Any CPU
 		{CD4ABCEE-1297-4945-A66F-307AD8812418}.Release|x86.Build.0 = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|ARM.Build.0 = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|x64.Build.0 = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Debug|x86.Build.0 = Debug|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|ARM.ActiveCfg = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|ARM.Build.0 = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|ARM64.Build.0 = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|x64.ActiveCfg = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|x64.Build.0 = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|x86.ActiveCfg = Release|Any CPU
+		{A921EC0D-463E-4008-9CF5-96B5ADD7F74C}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
