@@ -68,7 +68,7 @@ Public Class PicSourceImplement
         For Each sFilePathName As String In allfiles
             ' uwzględnianie masek include oraz exclude
             Dim sFileName As String = IO.Path.GetFileName(sFilePathName)
-            If MatchesMasks(sFileName) Then
+            If OnePic.MatchesMasks(sFileName, includeMask, excludeMask) Then
                 Dim oNew As New Vblib.OnePic(SourceName, sFilePathName, sFileName)
                 oNew.Exifs.Add(currentExif)
 
@@ -100,9 +100,15 @@ Public Class PicSourceImplement
         If Not IsPresent_Main() Then Return False
         If Not sId.ToLower.StartsWith(Path.ToLower) Then Return False
         If Not IO.Directory.Exists(Path) Then Return False
-        IO.File.Delete(sId)
 
-        Return True
+        Try
+            IO.File.Delete(sId)
+            Return True
+        Catch ex As Exception
+
+        End Try
+
+        Return False
     End Function
 
 

@@ -5,6 +5,7 @@ Imports Vblib
 Imports Windows.Graphics.Imaging
 Imports Windows.Media
 Imports Windows.Media.FaceAnalysis
+Imports Windows.Security.Authentication.Identity.Core
 Imports Windows.UI.Xaml.Controls
 Imports Windows.UI.Xaml.Media
 
@@ -12,16 +13,13 @@ Imports Windows.UI.Xaml.Media
 Public Class Auto_WinFace
     Inherits Vblib.AutotaggerBase
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
-    Public Overrides ReadOnly Property Nazwa As String = "AUTO_WINFACE"
+    Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoWinFace
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje policzyæ twarze u¿ywaj¹c Windows." & vbCrLf & "U¿ywa keyword -fN, gdzie n to liczba twarzy"
 
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
-        Dim licznik As Integer = Await ZrobMain(oFile)
+        Return Await ZrobMain(oFile)
 
-        Dim oExif As New Vblib.ExifTag(Nazwa)
-        oExif.Keywords = "-f" & licznik
-        Return oExif
     End Function
 
     Private Shared _FaceEngine As FaceAnalysis.FaceDetector = Nothing
@@ -34,18 +32,17 @@ Public Class Auto_WinFace
     ' In the current version, the FaceDetector class only supports images in Gray8 or Nv12.
     Private Const faceDetectionPixelFormat As BitmapPixelFormat = BitmapPixelFormat.Gray8
 
-    Private Async Function ZrobMain(oFile As Vblib.OnePic) As Task(Of Integer)
+    Private Async Function ZrobMain(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
 
         ' jakby Create zajmowa³o wiêcej czasu - a przecie¿ moze byæ setki zdjêæ do OCR po kolei
         If _FaceEngine Is Nothing Then _FaceEngine = Await FaceDetector.CreateAsync
-
-        Dim facesCount As Integer = 0
 
         ' na bitmape i OCR
         Using oStream As IO.Stream = IO.File.OpenRead(oFile.InBufferPathName)
             Dim oDecoder As BitmapDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
 
             Dim oTransform As New BitmapTransform()
+
             If oDecoder.PixelHeight > sourceImageHeightLimit Then
                 Dim scalingFactor As Double = sourceImageHeightLimit / oDecoder.PixelHeight
                 oTransform.ScaledWidth = Math.Floor(oDecoder.PixelWidth * scalingFactor)
@@ -65,12 +62,38 @@ Public Class Auto_WinFace
                 End If
 
                 Dim detectedFacesList = Await _FaceEngine.DetectFacesAsync(convertedBitmap)
-                If detectedFacesList IsNot Nothing Then facesCount = detectedFacesList.Count
+
+                Dim oAzure As MojeAzure = AzureFromFacesList(detectedFacesList, convertedBitmap.PixelWidth, convertedBitmap.PixelHeight)
                 convertedBitmap.Dispose()
+
+                If detectedFacesList Is Nothing Then Return Nothing
+
+                Dim oExif As New Vblib.ExifTag(Nazwa)
+                oExif.Keywords = "-f" & oAzure.Faces.lista.Count
+                oExif.AzureAnalysis = oAzure
+
+                Return oExif
             End Using
         End Using
 
-        Return facesCount
     End Function
 
+    Private Function AzureFromFacesList(detectedFacesList As IList(Of DetectedFace), iWidth As Integer, iHeight As Integer) As MojeAzure
+        Dim oRet As New MojeAzure
+        oRet.Faces = New ListTextWithProbabAndBox
+        If detectedFacesList Is Nothing Then Return oRet
+        If detectedFacesList.Count < 1 Then Return oRet
+
+        For Each oFace As DetectedFace In detectedFacesList
+            Dim oNew As New TextWithProbAndBox
+            oNew.tekst = "face"
+            oNew.X = 100.0 * oFace.FaceBox.X / iWidth
+            oNew.Y = 100.0 * oFace.FaceBox.Y / iHeight
+            oNew.Width = 100.0 * oFace.FaceBox.Width / iWidth
+            oNew.Height = 100.0 * oFace.FaceBox.Height / iHeight
+            oRet.Faces.Add(oNew)
+        Next
+
+        Return oRet
+    End Function
 End Class

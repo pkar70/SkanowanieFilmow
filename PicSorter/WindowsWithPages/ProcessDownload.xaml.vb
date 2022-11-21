@@ -16,7 +16,7 @@ Public Class ProcessDownload
 
         If oSrc.Typ = Vblib.PicSourceType.AdHOC Then
             ' troche bardziej skomplikowane, zeby w oSrc.Path był ostatni naprawdę użyty katalog
-            Dim dirToGet As String = SettingsGlobal.FolderBrowser(oSrc.Path)
+            Dim dirToGet As String = SettingsGlobal.FolderBrowser(oSrc.Path, "Select source folder")
             If dirToGet = "" Then Return
             oSrc.Path = dirToGet
         End If
@@ -59,17 +59,19 @@ Public Class ProcessDownload
 
         Dim oSrcFile As Vblib.OnePic = oSrc.GetFirst
         If oSrcFile Is Nothing Then Return
-        Await Application.GetBuffer.AddFile(oSrcFile)
 
         Do
+            Await Application.GetBuffer.AddFile(oSrcFile)
+
             oSrcFile = oSrc.GetNext
             If oSrcFile Is Nothing Then Exit Do
-            Await Application.GetBuffer.AddFile(oSrcFile)
             uiProgBar.Value += 1
         Loop
 
         Application.GetBuffer.SaveData()
         oSrc.lastDownload = Date.Now
+        Application.GetSourcesList.Save()   ' zmieniona data
+
         uiProgBar.Visibility = Visibility.Collapsed
 
     End Function

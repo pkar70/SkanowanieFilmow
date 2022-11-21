@@ -28,6 +28,13 @@ Public Class AutoTag_EXIF
         oNewExif.UserComment = oRdr.GetString(CompactExifLib.ExifTag.UserComment) ' ANY(ANY)
         ' table 7, F
         oNewExif.DateTimeOriginal = oRdr.GetDate(CompactExifLib.ExifTag.DateTimeOriginal) ' ASCII(20)?
+
+        'If Not String.IsNullOrWhiteSpace(oNewExif.DateTimeOriginal) AndAlso oNewExif.DateTimeOriginal.Length > 15 Then
+        '    ' 2022.05.06 12:27:47
+        '    oFile.sortOrder = oNewExif.DateTimeOriginal
+        'End If
+
+
         oNewExif.DateTimeScanned = oRdr.GetDate(CompactExifLib.ExifTag.DateTimeDigitized) ' ASCII(20)?
         ' table 7, H
         oNewExif.PicGuid = oRdr.GetString(CompactExifLib.ExifTag.ImageUniqueId) ' 0xA420, ASCII(33)

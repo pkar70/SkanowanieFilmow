@@ -12,31 +12,31 @@ Public Class Process_EmbedExif
 
     Public Overrides Property dymekAbout As String = "Wklejenie znaczników EXIF do zdjęcia"
 
-
+#If SUPPORT_CALL_WITH_EXIF Then
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, oExif As Vblib.ExifTag, sNewName As String) As Task(Of Boolean)
         ' oExif tutaj jest ignorowany
         Return Await ApplyMain(oPic, sNewName)
     End Function
+#End If
 
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, sNewName As String) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
 
         Dim bRet As Boolean = False
 
-        Dim srcFilename As String = oPic.InitEdit
+        oPic.InitEdit(bPipeline)
 
         Using oStream As New winstreams.InMemoryRandomAccessStream
 
             Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
 
-            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(srcFilename))
+            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(oPic.sFilenameEditSrc))
 
             ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
             Await oEncoder.FlushAsync()
             oStream.Seek(0)
 
-            Using oFileStream As Stream = IO.File.Open(oPic.InBufferPathName, IO.FileMode.Create)
-                Dim oExifLib As New CompactExifLib.ExifData(srcFilename)
-                oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
+            Dim oExifLib As New CompactExifLib.ExifData(oPic.sFilenameEditSrc)
+            oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
 
                 ' dane z EXIF
                 Dim oExif As Vblib.ExifTag = oPic.FlattenExifs
@@ -108,7 +108,7 @@ Public Class Process_EmbedExif
 
                 End If
 
-
+            Using oFileStream As Stream = IO.File.Open(oPic.sFilenameEditDst, IO.FileMode.Create)
                 oExifLib.Save(oStream.AsStream, oFileStream, 0) ' (orgFileName)
             End Using
 

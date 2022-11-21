@@ -34,7 +34,7 @@ Partial Class Application
 
     End Function
 
-    Public Shared Function GetDataFile(sSubfolder As String, sFilename As String, Optional bThrowNotExist As Boolean = True)
+    Public Shared Function GetDataFile(sSubfolder As String, sFilename As String, Optional bThrowNotExist As Boolean = True) As String
         Dim sFolder As String = GetDataFolder(sSubfolder, bThrowNotExist)
 
         Dim sFile As String = IO.Path.Combine(sFolder, sFilename)
@@ -63,11 +63,11 @@ Partial Class Application
         Return gBuffer
     End Function
 
-    Private Shared gArchiveList As Vblib.MojaLista(Of Vblib.LocalStorage)
-    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of Vblib.LocalStorage)
+    Private Shared gArchiveList As Vblib.MojaLista(Of VbLib20.LocalStorage)
+    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of VbLib20.LocalStorage)
 
         If gArchiveList Is Nothing OrElse gArchiveList.Count < 1 Then
-            gArchiveList = New Vblib.MojaLista(Of Vblib.LocalStorage)(Application.GetDataFolder, "archives.json")
+            gArchiveList = New Vblib.MojaLista(Of VbLib20.LocalStorage)(Application.GetDataFolder, "archives.json")
             gArchiveList.Load()
         End If
         Return gArchiveList
@@ -91,7 +91,7 @@ Partial Class Application
         New Auto_WinFace.Auto_WinFace,
         New Vblib.Auto_GeoNamePl(Application.GetDataFolder),
         New Vblib.Auto_OSM_POI(Application.GetDataFolder),
-        New Vblib.Auto_AzureTest
+        New Vblib.Auto_AzureTest(New Process_ResizeHalf)
     }
 
     Public Shared gPostProcesory As Vblib.PostProcBase() = {
@@ -100,7 +100,9 @@ Partial Class Application
         New Process_Resize1024,
         New Process_Resize1280,
         New Process_Resize1600,
-        New Process_EmbedExif
+        New Process_EmbedExif,
+        New Process_Watermark,
+        New Process_Signature.Process_Signature
     }
 
 

@@ -35,8 +35,13 @@ Public Class Helper
 
     Public Function Delete(sPathname As String)
         If _oMD Is Nothing Then Return False
-        _oMD.DeleteFile(sPathname)
-        Return True
+        Try
+            _oMD.DeleteFile(sPathname)
+            Return True
+        Catch ex As Exception
+
+        End Try
+        Return False
     End Function
 
     Public Function GetStream(sPathname As String) As IO.Stream
@@ -103,7 +108,7 @@ Public Class Helper
         For Each sFilePathName As String In _oMD.EnumerateFiles(sSrcPath)
             Dim sFileName As String = IO.Path.GetFileName(sFilePathName)
 
-            If Vblib.PicSourceBase.MatchesMasks(sFileName, sIncludeMask, sExcludeMask) Then
+            If Vblib.OnePic.MatchesMasks(sFileName, sIncludeMask, sExcludeMask) Then
 
                 Dim oNew As New Vblib.OnePic(sSourceName, sFilePathName, sFileName)
                 oNew.Exifs.Add(oCurrentExif)

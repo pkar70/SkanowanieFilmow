@@ -7,41 +7,69 @@
 ' OCR tutaj nie ma!
 
 
-Imports System.Xml
 Imports Microsoft.Azure.CognitiveServices.Vision
 Imports Microsoft.Azure.CognitiveServices.Vision.ComputerVision.ComputerVisionClientExtensions
 
-Imports Newtonsoft.Json.Linq
 
 Public Class Auto_AzureTest
-    Inherits AutotaggerBase
+    Inherits Vblib.AutotaggerBase
 
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.WebAccount
-    Public Overrides ReadOnly Property Nazwa As String = "AUTO_AZURE"
+    Public Overrides ReadOnly Property Nazwa As String = ExifSource.AutoAzure
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próba co można wyciągnąć, 20 na minutę"
 
+    Public Overrides ReadOnly Property MaxSize As Integer = 3800
 
 
-    Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
+    Private _oClient As ComputerVision.ComputerVisionClient
+    Private _resizeEngine As Vblib.PostProcBase
+
+    Public Sub New(resizeEngine As Vblib.PostProcBase)
+        _resizeEngine = resizeEngine
+    End Sub
+
+
+    Private Function EnsureClient() As Boolean
+        If _oClient IsNot Nothing Then Return True
+
+        Dim sEndPoint As String = Vblib.GetSettingsString("uiAzureEndpoint")
+        Dim sSubscriptionKey As String = Vblib.GetSettingsString("uiAzureSubscriptionKey")
+
+        _oClient = AzureLogin(sEndPoint, sSubscriptionKey)
+        If _oClient Is Nothing Then Return False
+
+        Return True
+    End Function
+    Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+
+        Dim sFilename As String = oFile.InBufferPathName
+        Dim sTempFileName As String = ""
 
         ' zabezpieczenie wielkościowe (limit Azure)
-        ' *TODO* skalowanie plików gdyby były zbyt duże?
-        Dim oFileInfo As IO.FileInfo = New IO.FileInfo(oFile.InBufferPathName)
-        If oFileInfo.Length > 3.9 * 1024 * 1024 Then Return Nothing
+        Dim oFileInfo As IO.FileInfo = New IO.FileInfo(sFilename)
+        If oFileInfo.Length > MaxSize * 1024 Then
+            ' przeskalujemy
+            sTempFileName = IO.Path.GetTempFileName
+            If Not Await _resizeEngine.Apply(oFile, sTempFileName) Then Return Nothing
+            sFilename = sTempFileName
+
+            ' *TODO* można byłoby zrobić zapętlenie, kilka kolejnych poziomów zmniejszania obrazka
+            oFileInfo = New IO.FileInfo(sFilename)
+            If oFileInfo.Length > MaxSize * 1024 Then Return Nothing
+
+        End If
+
+        If Not EnsureClient() Then Return Nothing
 
 
-        Dim sEndPoint As String = GetSettingsString("uiAzureEndpoint")
-        Dim sSubscriptionKey As String = GetSettingsString("uiAzureSubscriptionKey")
+        If Not Vblib.GetSettingsBool("uiAzurePaid") Then Await Task.Delay(3000)  ' 20/min, 20/60, raz na 3 sekundy
 
-        Dim oClient As ComputerVision.ComputerVisionClient = AzureLogin(sEndPoint, sSubscriptionKey)
-        If oClient Is Nothing Then Return Nothing
-
-        If Not GetSettingsBool("uiAzurePaid") Then Await Task.Delay(3000)  ' 20/min, 20/60, raz na 3 sekundy
-
-        Dim oNew As New ExifTag(Nazwa)
-        oNew.AzureAnalysis = Await AnalyzeImageLocal(oClient, oFile.InBufferPathName)
+        Dim oNew As New Vblib.ExifTag(Nazwa)
+        oNew.AzureAnalysis = Await AnalyzeImageLocal(sFilename)
         If oNew.AzureAnalysis IsNot Nothing Then oNew.UserComment = oNew.AzureAnalysis.ToComment
+
+        If sTempFileName <> "" Then IO.File.Delete(sTempFileName)
 
         Return oNew
 
@@ -55,7 +83,7 @@ Public Class Auto_AzureTest
 
     End Function
 
-    Public Shared Function AzureLogin(endpoint As String, key As String) As ComputerVision.ComputerVisionClient
+    Private Shared Function AzureLogin(endpoint As String, key As String) As ComputerVision.ComputerVisionClient
         If String.IsNullOrWhiteSpace(endpoint) Then Return Nothing
         If String.IsNullOrWhiteSpace(key) Then Return Nothing
 
@@ -66,7 +94,7 @@ Public Class Auto_AzureTest
         Return client
     End Function
 
-    Public Shared Async Function AnalyzeImageLocal(client As ComputerVision.ComputerVisionClient, localImage As String) As Task(Of MojeAzure)
+    Private Async Function AnalyzeImageLocal(localImage As String) As Task(Of MojeAzure)
 
         Dim features As New List(Of ComputerVision.Models.VisualFeatureTypes?)() From {
             ComputerVision.Models.VisualFeatureTypes.Categories,
@@ -82,7 +110,7 @@ Public Class Auto_AzureTest
 
         Dim results As ComputerVision.Models.ImageAnalysis
         Using analyzeImageStream As IO.Stream = IO.File.OpenRead(localImage)
-            results = Await client.AnalyzeImageInStreamAsync(analyzeImageStream, features)
+            results = Await _oClient.AnalyzeImageInStreamAsync(analyzeImageStream, features)
         End Using
 
         Return New MojeAzure(results)
@@ -204,18 +232,24 @@ Public Class TextWithProbAndBox
 
     Public Property X As Integer
     Public Property Y As Integer
+    Public Property Width As Integer
+    Public Property Height As Integer
 
     Private Sub SetXY(oRect As ComputerVision.Models.BoundingRect, oMeta As ComputerVision.Models.ImageMetadata)
         X = 100.0 * oRect.X / oMeta.Width
         Y = 100.0 * oRect.Y / oMeta.Height
+        Width = 100.0 * oRect.W / oMeta.Width
+        Height = 100.0 * oRect.H / oMeta.Height
     End Sub
     Private Sub SetXY(oRect As ComputerVision.Models.FaceRectangle, oMeta As ComputerVision.Models.ImageMetadata)
         X = 100.0 * oRect.Left / oMeta.Width
         Y = 100.0 * oRect.Top / oMeta.Height
+        Width = oRect.Width
+        Height = oRect.Height
     End Sub
 
     Public Overloads Function ToDisplay() As String
-        Return MyBase.ToDisplay() & $" @[{X}%, {Y}%]"
+        Return MyBase.ToDisplay() & $" @[{X}..{X + Width}%, {Y}..{Y + Height}%]"
     End Function
 
     Public Sub New(oItem As ComputerVision.Models.DetectedBrand, oMeta As ComputerVision.Models.ImageMetadata)
@@ -300,7 +334,7 @@ End Class
 
 
 Public Class MojeAzure
-    Inherits MojaStruct
+    Inherits Vblib.MojaStruct
 
     Public Property Captions As ListTextWithProbability
     Public Property Categories As ListTextWithProbability

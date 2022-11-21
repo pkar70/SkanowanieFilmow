@@ -1,11 +1,35 @@
 
+
+
+* PicBrowse: układanie czasowe zdjęć? ale przecież to już niby jest zrobione od dawna... z daty pliku
+
+* Source: property IDprefix, i to wraz z datą jako ID pliku; default dla MTP: WP_, ale może byc i L5_, L9_ żeby rozdzielić telefony
+* PUBLISH: może byc kilka tego samego typu, np. dwa konta Instagram (czy można mieć dwa konta? nr telefonu już jest użyty), albo dwa podkatalogi (AdHoc), do każdego inna sekwencja pipeline
+* przed Publish powinien byc przydział katalogu
+* Publish: ale do Instagram nie ma katalogu, więc można ćwiczyć już teraz
+* indeks plików w Storage - sprawdzic ile pamięci schodzi teraz, na 1000 plików, ×3 (bo Azure nie ma)
+* indeks plików w Storage: raczej jako plik JSON ale bez ']' kończącego, i Append nowych elementów - plik na dysku zawsze nie byłby JSONem, bo zawsze bez ']', ale działałoby append bez czytania calego pliku
+* PUBLISH: property Exif, w nim "-" jako usuwanie pola (bo niektóre są składane, a nie replacement robione przy Flatten)
+
+Przerobic InitEdit, EndEdit, tak by ApplyMain posługiwało się STREAM, a EndEdit zapisywało do pliku gdy nie-pipeline; zas dla pipeline cały czas operacje na stream bez zapisywania do pliku
+
+SETTINGS: weryfikacja podpisu (czy jest czy nie ma), oraz browser by File.Copy(browsedFile) do DataFolder, moze ze sprawdzeniem czy cz/b i rozmiar
+
+dodać fotki z telefonu - wszystkie WP_ które są w digital; dodać do nich aparat, copyright, artist
+picsort miałby dodać do nich ID (datetime zdjęcia, resztę danych z filename do tagów)
+suggestedfilename - dla Apple, jak bedzie wiadomo jakos ze to apple, to z tych losowych nazw - nazwy typu ios_yyyyMMddHHmmss
+
+https://www.tomshardware.com/how-to/move-from-twitter-to-mastodon
+
+czemu Resize obróciło o 180 stopni?
+
 new Publish, new Archive:
- pole Postprocess, i [+], do wyboru z listy postprocesów
+ pole Postprocess, i [+], do wyboru z listy postprocesów - zamiast checkbox embedEXIF?
+new PUBLISH/ARCHIVE: ExifTag, który miałby usuwać/dodawać?
 
 PUBLISH dummy, który tylko pakuje do podkatalogu postprocesowane, i można samemu wysyłać (np do Skyscraper)
 PUBLISH tworzy sobie podkatalog (w data? w bufor?) o swojej nazwie, tam pakuje zdjecia postprocesowane, plik JSON z listą (do jakiego podkatalogu ma trafic zdjecie), i po odeslaniu - kasuje. Tez moze byc PurgeDelay time.
 
-może odwrotnie w sekwencji? publish przed archive?
 liczenie objetosci plików w archiwum, by "jak duży flash potrzebuję"?
 
 PUBLISH: email?
@@ -25,9 +49,6 @@ ARCHIVE, TARGET:
 BROWSE - SELECT - SENDTO ARCH, pyta o nazwę:
   TextBlock 1981.01.23.sb , TextBox [..]
   przy autoarch nie pyta (nazwa = tylko data)
-
-DIRTREE: nie ma oddzielnego do setup, nie ma sensu, jest tylko "dir selector" przy SendTo Arch
-JedenDir: id (1981.01.23), name (1981.01.23.sb_wyjazd), opis (wyjazd do Wieliczki z dziadkami, pociągiem i psem), [datemin, datemax, geomin, geomax] [keywords - wspólne dla wszystkich pic? ustalane potem jakimiś sprawdzaniami, np wlasnie mingeo/maxgeo na geoname]
 
 ARCHIVE: pending As Bool - gdy czeka na odesłanie (taki sam pending dla Publish) - tyle ze per plik, nie per archiwum
 
@@ -49,7 +70,6 @@ BROWSER: sub new(lista) i do tej listy potem, a nie do Buffer
 DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
 
 SEARCH: tagtree, z checkbox MUSI_BYC i NIE_MOZE
-TAGTREE: dodac -no, -n1, -n2 - albo to z zewnetrznego serwisu
 TAGTREE DOC: może być *, oznaczające wszystko (default/deny publish)
 
 WEBARCHIVE: shutterfly, wstawianie wedle katalogu

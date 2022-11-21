@@ -20,6 +20,7 @@
 Imports System.Collections.ObjectModel
 Imports System.Data
 Imports System.Globalization
+Imports System.Security.Policy
 Imports System.Windows.Automation.Peers
 Imports Microsoft.Windows.Themes
 Imports Newtonsoft.Json.Linq
@@ -84,8 +85,14 @@ Public Class ProcessBrowse
 
         Dim iLimit As Integer = 9999
 
+        Dim lDeleted As New List(Of Vblib.OnePic)
+
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
-            If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
+            If Not IO.File.Exists(oItem.InBufferPathName) Then
+                ' zabezpieczenie przed samoznikaniem - nie ma, to kasujemy z listy naszych plikow
+                lDeleted.Add(oItem)
+                Continue For
+            End If
 
             Dim oNew As New ThumbPicek(oItem, iMaxBok)
 
@@ -102,6 +109,19 @@ Public Class ProcessBrowse
 
         uiProgBar.Visibility = Visibility.Hidden
 
+        If lDeleted.Count > 0 Then
+
+            If Await Vblib.DialogBoxYNAsync($"Niektóre pliki są zniknięte ({lDeleted.Count}, usunąć je z indeksu?") Then
+
+                For Each oItem As Vblib.OnePic In lDeleted
+                    Application.GetBuffer.GetList.Remove(oItem)
+                Next
+                Application.GetBuffer.SaveData()
+
+            End If
+        End If
+
+
     End Function
 
     ''' <summary>
@@ -109,13 +129,15 @@ Public Class ProcessBrowse
     ''' </summary>
     ''' <param name="dlaZdjecia"></param>
     ''' <returns></returns>
-    Private Function DataDoSortowania(dlaZdjecia As Vblib.OnePic) As Date
-        Dim oExif As Vblib.ExifTag = dlaZdjecia.GetExifOfType(Vblib.ExifSource.SourceFile)
-        ' jakby co, ale zakładam że jest ten ExifSource... data potrzebna do sortowania plików
-        If oExif Is Nothing Then Return Date.Now
+    Private Function DataDoSortowania(dlaZdjecia As Vblib.OnePic) As String
 
-        Return oExif.DateMin
+        Dim oExif As Vblib.ExifTag = dlaZdjecia.GetExifOfType(Vblib.ExifSource.SourceFile)
+            ' jakby co, ale zakładam że jest ten ExifSource... data potrzebna do sortowania plików
+            If oExif Is Nothing Then Return Date.Now
+
+            Return oExif.DateMin
     End Function
+
 
     Private Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
         uiPicList.ItemsSource = Nothing
@@ -241,6 +263,7 @@ Public Class ProcessBrowse
     ''' <param name="iRotation">obrót obrazka</param>
     ''' <returns></returns>
     Public Shared Async Function WczytajObrazek(sPathName As String, Optional iMaxSize As Integer = 0, Optional iRotation As Rotation = Rotation.Rotate0) As Task(Of BitmapImage)
+        If Not IO.File.Exists(sPathName) Then Return Nothing
         Dim bitmap = New BitmapImage()
         bitmap.BeginInit()
         If iMaxSize > 0 Then bitmap.DecodePixelHeight = iMaxSize
@@ -289,13 +312,14 @@ Public Class ProcessBrowse
         Dim oWnd As New ShowBig(oPicek)
         oWnd.Owner = Me
         oWnd.Show()
-
+        oWnd.Focus()
     End Sub
 
     Public Function FromBig_Delete(oPic As ThumbPicek) As ThumbPicek
         ' skasować plik, zwróć następny
         Dim oNext As ThumbPicek = FromBig_Next(oPic, False)
         DeletePicture(oPic)
+        Application.GetBuffer.SaveData()
         Return oNext
     End Function
 
@@ -319,6 +343,7 @@ Public Class ProcessBrowse
             End If
         Next
 
+        Return Nothing
     End Function
 
 #End Region

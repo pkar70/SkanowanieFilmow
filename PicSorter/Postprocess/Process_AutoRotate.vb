@@ -11,14 +11,14 @@ Public Class Process_AutoRotate
 
     Public Overrides Property dymekAbout As String = "Obracanie zdjęć wedle EXIF"
 
-
+#If SUPPORT_CALL_WITH_EXIF Then
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, oExif As Vblib.ExifTag, sNewName As String) As Task(Of Boolean)
         ' oExif tutaj jest ignorowany
         Return Await ApplyMain(oPic, sNewName)
     End Function
+#End If
 
-
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, sNewName As String) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
 
         Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
         If oExif Is Nothing Then Return False
@@ -26,18 +26,18 @@ Public Class Process_AutoRotate
 
         Dim bRet As Boolean = False
 
-        Dim srcFilename As String = oPic.InitEdit
+        oPic.InitEdit(bPipeline)
 
         Using oStream As New winstreams.InMemoryRandomAccessStream
 
             Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
 
-            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(srcFilename))
+            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(oPic.sFilenameEditSrc))
 
             ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
             Await oEncoder.FlushAsync()
 
-            bRet = Process_AutoRotate.SaveSoftBitmap(oStream, oPic.InBufferPathName, srcFilename)
+            bRet = Process_AutoRotate.SaveSoftBitmap(oStream, oPic.sFilenameEditDst, oPic.sFilenameEditSrc)
 
         End Using
 

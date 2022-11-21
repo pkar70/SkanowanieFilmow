@@ -19,9 +19,9 @@
         </Grid.ColumnDefinitions>
 
         <!-- dla CROP -->
-        <Slider Name="uiCropUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiCropUp_ValueChanged" Minimum="0" Maximum="1"/>
-        <Slider Name="uiCropDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiCropUp_ValueChanged"  Minimum="0" Maximum="1"/>
-        <Slider Name="uiCropLeft" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" Orientation="Vertical" Visibility="Collapsed" ValueChanged="uiCropUp_ValueChanged"  Minimum="0" Maximum="1" RenderTransformOrigin="0.5,0.5">
+        <Slider Name="uiCropUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiCrop_ValueChanged" Minimum="0" Maximum="1"/>
+        <Slider Name="uiCropDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiCrop_ValueChanged"  Minimum="0" Maximum="1"/>
+        <Slider Name="uiCropLeft" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch" Orientation="Vertical" Visibility="Collapsed" ValueChanged="uiCrop_ValueChanged"  Minimum="0" Maximum="1" RenderTransformOrigin="0.5,0.5">
             <Slider.RenderTransform>
                 <TransformGroup>
                     <ScaleTransform/>
@@ -31,7 +31,7 @@
                 </TransformGroup>
             </Slider.RenderTransform>
         </Slider>
-        <Slider Name="uiCropRight" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Orientation="Vertical" Visibility="Collapsed" ValueChanged="uiCropUp_ValueChanged"  Minimum="0" Maximum="1" RenderTransformOrigin="0.5,0.5">
+        <Slider Name="uiCropRight" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" Orientation="Vertical" Visibility="Collapsed" ValueChanged="uiCrop_ValueChanged"  Minimum="0" Maximum="1" RenderTransformOrigin="0.5,0.5">
             <Slider.RenderTransform>
                 <!-- obie wersje transform dają to samo w efekcie -->
                 <TransformGroup>

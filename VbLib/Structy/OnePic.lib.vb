@@ -1,5 +1,6 @@
 ﻿
 
+Imports System.Text.RegularExpressions
 Imports Newtonsoft.Json
 
 Public Class OnePic
@@ -25,8 +26,18 @@ Public Class OnePic
     Public Property descriptions As List(Of OneDescription)
     Public Property TagsChanged As Boolean = False
 
+    'Public Property sortOrder As String
+
     <Newtonsoft.Json.JsonIgnore>
     Public Property Content As IO.Stream
+
+    Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
+        sSourceName = sourceName
+        sInSourceID = inSourceId
+        sSuggestedFilename = suggestedFilename
+    End Sub
+
+#Region "operacje na ExifTags"
 
     Public Function GetExifOfType(sType As String) As ExifTag
         If Exifs Is Nothing Then Return Nothing
@@ -57,12 +68,50 @@ Public Class OnePic
 
         Exifs.Add(oExifTag)
     End Sub
+#End Region
 
-    Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
-        sSourceName = sourceName
-        sInSourceID = inSourceId
-        sSuggestedFilename = suggestedFilename
-    End Sub
+#Region "operacje na maskach"
+    Public Function MatchesMasks(sIncludeMasks As String, sExcludeMasks As String) As Boolean
+
+        Dim sFilenameNoPath As String = IO.Path.GetFileName(GetSourceFilename)
+        Return MatchesMasks(sFilenameNoPath, sIncludeMasks, sExcludeMasks)
+    End Function
+
+
+    Public Shared Function MatchesMasks(sFilenameNoPath As String, sIncludeMasks As String, sExcludeMasks As String) As Boolean
+
+        ' https://stackoverflow.com/questions/725341/how-to-determine-if-a-file-matches-a-file-mask
+        Dim aMaski As String()
+
+        If Not String.IsNullOrWhiteSpace(sExcludeMasks) Then
+            aMaski = sExcludeMasks.Split(";")
+            For Each maska As String In aMaski
+                Dim regExMaska As Regex = New Regex(maska.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."))
+                If regExMaska.IsMatch(sFilenameNoPath) Then Return False
+            Next
+        End If
+
+        If String.IsNullOrWhiteSpace(sIncludeMasks) Then
+            aMaski = "*.jpg;*.tif;*.png".Split(";")
+        Else
+            aMaski = sIncludeMasks.Split(";")
+        End If
+
+        Dim bMatch As Boolean = False
+        For Each maska As String In aMaski
+            Dim regExMaska As Regex = New Regex(maska.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."))
+            If regExMaska.IsMatch(sFilenameNoPath) Then
+                bMatch = True
+                Exit For
+            End If
+        Next
+
+        Return bMatch
+    End Function
+
+#End Region
+
+#Region "descriptionsy"
 
     ''' <summary>
     ''' dodaje jeden description, gdy nie ma daty to go datuje na Now
@@ -115,40 +164,127 @@ Public Class OnePic
         Next
 
     End Sub
+#End Region
+
+
+#Region "start/end edycji"
+
+    ' *TODO* ewentualnie operacje na STREAM w PostProcess, a tutaj wrapper stream/filename
+
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sFilenameEditSrc As String
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sFilenameEditDst As String
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property bEditPipeline As Boolean = True
+
+    ''' <summary>
+    ''' do używania PRZED InitEdit, na potrzeby masek
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function GetSourceFilename()
+        If String.IsNullOrWhiteSpace(sFilenameEditSrc) Then Return InBufferPathName
+        Return sFilenameEditSrc
+    End Function
+
+    Public Sub CancelEdit()
+
+        If bEditPipeline Then
+
+            If IO.File.Exists(sFilenameEditDst) Then IO.File.Delete(sFilenameEditDst)
+            sFilenameEditDst = ""
+
+        Else
+
+            If IO.File.Exists(InBufferPathName) Then Return
+
+            If IO.File.Exists(InBufferPathName & ".tmp") Then
+                IO.File.Move(InBufferPathName & ".tmp", InBufferPathName)
+                Return
+            End If
+
+            If IO.File.Exists(InBufferPathName & ".bak") Then
+                IO.File.Move(InBufferPathName & ".bak", InBufferPathName)
+                Return
+            End If
+
+            ' to jest dziwna sytuacja, której nie powinno być - nie ma się z czego wycofać
+            Throw New Exception("CancelEdit, ale nie ma ani pliku, ani .tmp, ani .bak")
+
+        End If
+
+    End Sub
+
+
 
     ''' <summary>
     ''' przygotuj plik źródłowy do edycji, robiąc bak/tmp
     ''' </summary>
-    ''' <returns>filepathname pliku źródłowego (do otwierania jako readonly)</returns>
-    Public Function InitEdit() As String
+    Public Sub InitEdit(bPipeline As Boolean)
+
+        If bPipeline Then
+            InitEditPipeline()
+        Else
+            InitEditInPlace()
+        End If
+    End Sub
+
+    Private Sub InitEditPipeline()
+
+        If String.IsNullOrWhiteSpace(sFilenameEditSrc) Then
+            sFilenameEditSrc = InBufferPathName
+        End If
+
+        sFilenameEditDst = IO.Path.GetTempFileName
+
+    End Sub
+
+
+    Private Sub InitEditInPlace()
+
         Dim bakFileName As String = InBufferPathName & ".bak"
 
         If Not IO.File.Exists(bakFileName) Then
             IO.File.Move(InBufferPathName, bakFileName)
             IO.File.SetCreationTime(bakFileName, Date.Now)
-            Return bakFileName
+        Else
+            bakFileName = InBufferPathName & ".tmp"
+
+            If IO.File.Exists(bakFileName) Then IO.File.Delete(bakFileName)
+
+            IO.File.Move(InBufferPathName, bakFileName)
+            IO.File.SetCreationTime(bakFileName, Date.Now)
         End If
 
-        bakFileName = InBufferPathName & ".tmp"
+        sFilenameEditSrc = bakFileName
+        sFilenameEditDst = InBufferPathName
 
-        If IO.File.Exists(bakFileName) Then IO.File.Delete(bakFileName)
-
-        IO.File.Move(InBufferPathName, bakFileName)
-        IO.File.SetCreationTime(bakFileName, Date.Now)
-
-        Return bakFileName
-
-    End Function
+    End Sub
 
     ''' <summary>
-    ''' skasuj ewentualny plik tmp (gdy było kilka edycji)
+    ''' skasuj ewentualny plik tmp (gdy było kilka edycji) / zmień dst -> src w pipeline
     ''' </summary>
     Public Sub EndEdit()
-        Dim bakFileName As String = InBufferPathName & ".tmp"
-        If Not IO.File.Exists(bakFileName) Then Return
 
-        IO.File.Delete(bakFileName)
+        If bEditPipeline Then
+            If InBufferPathName <> sFilenameEditSrc Then
+                IO.File.Delete(sFilenameEditSrc)
+            End If
+
+            sFilenameEditSrc = sFilenameEditDst
+            sFilenameEditDst = ""
+
+        Else
+            Dim bakFileName As String = InBufferPathName & ".tmp"
+            If Not IO.File.Exists(bakFileName) Then Return
+            IO.File.Delete(bakFileName)
+
+        End If
+
+
     End Sub
+
+#End Region
 
     ''' <summary>
     ''' sprowadza wszystkie EXIFy do jednego - ale dalej jeszcze z dodatkowymi polami!

@@ -41,6 +41,7 @@ Class SettingsSources
     End Sub
 
     Private Sub ShowSourcesList()
+        uiLista.ItemsSource = Nothing
         uiLista.ItemsSource = Application.GetSourcesList().GetList
     End Sub
 
@@ -193,7 +194,7 @@ Class SettingsSources
         Select Case _item.Typ
             Case Vblib.PicSourceType.Folder
                 sPath = VbLib20.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
-                SettingsGlobal.FolderBrowser(uiSrcPath, sPath)
+                SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaz folder na archiwum")
             Case Vblib.PicSourceType.MTP
                 Dim oWnd As New BrowseMtpDevice(sVolLabel, sPath)
                 oWnd.ShowDialog()
@@ -245,6 +246,8 @@ Class SettingsSources
         _item.includeMask = uiSrcInclude.Text
         _item.excludeMask = uiSrcExclude.Text
 
+
+        ShowSourcesList()
     End Sub
 
 

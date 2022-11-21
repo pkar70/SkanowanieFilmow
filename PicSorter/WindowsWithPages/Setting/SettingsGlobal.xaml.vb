@@ -4,9 +4,10 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 Class SettingsGlobal
 
-    Public Shared Function FolderBrowser(sDefaultDir As String) As String
+    Public Shared Function FolderBrowser(sDefaultDir As String, sTitle As String) As String
         Dim oPicker As New Microsoft.Win32.SaveFileDialog
         oPicker.FileName = "none" ' Default file name
+        oPicker.Title = sTitle
         oPicker.CheckPathExists = True
         oPicker.InitialDirectory = sDefaultDir
 
@@ -20,7 +21,7 @@ Class SettingsGlobal
         Return IO.Path.GetDirectoryName(filename)
     End Function
 
-    Public Shared Sub FolderBrowser(oBox As TextBox, sDefaultDir As String)
+    Public Shared Sub FolderBrowser(oBox As TextBox, sDefaultDir As String, sTitle As String)
 
         Dim sDir As String
         If IO.Directory.Exists(oBox.Text) Then
@@ -29,7 +30,7 @@ Class SettingsGlobal
             sDir = sDefaultDir
         End If
 
-        sDir = FolderBrowser(sDir)
+        sDir = FolderBrowser(sDir, sTitle)
         If String.IsNullOrWhiteSpace(sDir) Then Return
 
         oBox.Text = sDir
@@ -44,7 +45,7 @@ Class SettingsGlobal
             sPathLocal = IO.Path.Combine(sLocalAppData, sAppName)
             IO.Directory.CreateDirectory(sPathLocal)
         End If
-        FolderBrowser(uiFolderData, sPathLocal)
+        FolderBrowser(uiFolderData, sPathLocal, "Select folder for program data")
     End Sub
 
     Private Sub uiBrowseBufferFolder(sender As Object, e As RoutedEventArgs)
@@ -64,7 +65,7 @@ Class SettingsGlobal
             Return
         End If
 
-        FolderBrowser(uiFolderBuffer, sPath)
+        FolderBrowser(uiFolderBuffer, sPath, "Select folder for buffering photos")
     End Sub
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)

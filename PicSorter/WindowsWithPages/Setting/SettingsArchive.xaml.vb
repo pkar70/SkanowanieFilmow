@@ -1,12 +1,13 @@
 ﻿
 
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
 ' pierwszy był Sources, to jest jego przeróbka
 
 Class SettingsArchive
 
-    Private _item As Vblib.LocalStorage
+    Private _item As VbLib20.LocalStorage
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         ShowSourcesList()
@@ -16,7 +17,7 @@ Class SettingsArchive
     End Sub
 
     Private Sub uiAddSource_Click(sender As Object, e As RoutedEventArgs)
-        Dim oNewSrc As New Vblib.LocalStorage
+        Dim oNewSrc As New VbLib20.LocalStorage
         oNewSrc.StorageName = "(" & DateTime.Now.ToString("yy-MM-dd") & ")"
         oNewSrc.enabled = False
         Application.GetArchivesList.Add(oNewSrc)
@@ -25,14 +26,14 @@ Class SettingsArchive
 
     Private Sub uiEdit_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        Dim oItem As Vblib.LocalStorage = oFE?.DataContext
+        Dim oItem As VbLib20.LocalStorage = oFE?.DataContext
 
         PokazDoEdycji(oItem)
     End Sub
 
     Private Async Sub uiDel_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        Dim oItem As Vblib.LocalStorage = oFE?.DataContext
+        Dim oItem As VbLib20.LocalStorage = oFE?.DataContext
 
         If Not Await vb14.DialogBoxYNAsync("Na pewno usunąć, a nie tylko zablokować?") Then Return
 
@@ -70,7 +71,7 @@ Class SettingsArchive
 
     End Sub
 
-    Private Sub PokazDoEdycji(oItem As Vblib.LocalStorage)
+    Private Sub PokazDoEdycji(oItem As VbLib20.LocalStorage)
         uiOK.IsEnabled = False
         uiEditSource.Visibility = Visibility.Visible
         _item = oItem
@@ -85,7 +86,7 @@ Class SettingsArchive
         uiSrcExclude.Text = _item.excludeMask
 
         uiSrcLastSave.Text = "-"
-        If _item.lastSave > New Date(2000, 1, 1) Then uiSrcLastSave.Text = _item.lastSave.ToString("yyyy-MM-dd HH:mm")
+        If _item.lastSave.IsDateValid Then uiSrcLastSave.Text = _item.lastSave.ToString("yyyy-MM-dd HH:mm")
 
         uiTree0Dekada.IsChecked = _item.tree0Dekada
         uiTree1Rok.IsChecked = _item.tree1Rok
@@ -110,7 +111,7 @@ Class SettingsArchive
         If String.IsNullOrWhiteSpace(sPath) Then sPath = "" ' nie chcemy NULLa
 
         sPath = VbLib20.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
-        SettingsGlobal.FolderBrowser(uiSrcPath, sPath)
+        SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaz folder na archiwum")
 
     End Sub
 

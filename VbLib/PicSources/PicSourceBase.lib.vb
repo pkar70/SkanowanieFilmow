@@ -235,6 +235,7 @@ Public MustInherit Class PicSourceBase
 	End Function
 #End Region
 
+#If TUTAJ_MASKI Then
 	Public Shared Function MatchesMasks(sFilenameNoPath As String, sIncludeMasks As String, sExcludeMasks As String) As Boolean
 
 		' https://stackoverflow.com/questions/725341/how-to-determine-if-a-file-matches-a-file-mask
@@ -269,6 +270,7 @@ Public MustInherit Class PicSourceBase
 	Protected Function MatchesMasks(sFilenameNoPath As String) As Boolean
 		Return MatchesMasks(sFilenameNoPath, includeMask, excludeMask)
 	End Function
+#End If
 
 #Region "Purging"
 

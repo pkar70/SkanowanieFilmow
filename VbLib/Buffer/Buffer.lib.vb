@@ -10,8 +10,34 @@ Public Class Buffer
         _RootDataPath = sRootDataPath
         _pliki = New FilesInBuffer(_RootDataPath)
         _pliki.Load()
+        ' AddSortBy
         _rootPictures = GetSettingsString("uiFolderBuffer")
     End Sub
+
+#If False Then
+    ' *TODO* to później można wyłączyć, bo to uzupełnia to co się powinno zrobić wcześniej
+    Private Sub AddSortBy()
+        Dim bBylyZmiany As Boolean = False
+        For Each oItem As OnePic In _pliki.GetList
+            If Not String.IsNullOrWhiteSpace(oItem.sortOrder) Then Continue For
+
+            bBylyZmiany = True
+            Dim oExif As ExifTag = oItem.GetExifOfType(ExifSource.FileExif)
+            If oExif IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then
+                ' 2022.05.06 12:27:47
+                oItem.sortOrder = oExif.DateTimeOriginal
+            Else
+                oExif = oItem.GetExifOfType(ExifSource.SourceFile)
+                ' 2022-05-06T12:27:48
+                If oExif IsNot Nothing AndAlso oExif.DateMax.IsDateValid Then
+                    oItem.sortOrder = oExif.DateMax.ToString("yyyy.MM.dd HH.mm.ss")
+                End If
+            End If
+        Next
+
+        If bBylyZmiany Then SaveData()
+    End Sub
+#End If
 
     Public Sub SaveData()
         _pliki.Save(True)
@@ -87,12 +113,12 @@ Public Class Buffer
         Await oWriteStream.FlushAsync
         oWriteStream.Dispose()
 
-
-        IO.File.SetCreationTime(sDstPathName, oPic.GetExifOfType(ExifSource.SourceFile).DateMin)
-        IO.File.SetLastWriteTime(sDstPathName, oPic.GetExifOfType(ExifSource.SourceFile).DateMax)
+        Dim oExif As ExifTag = oPic.GetExifOfType(ExifSource.SourceFile)
+        IO.File.SetCreationTime(sDstPathName, oExif.DateMin)
+        IO.File.SetLastWriteTime(sDstPathName, oExif.DateMax)
 
         oPic.InBufferPathName = sDstPathName
-
+        ' oPic.sortOrder = oExif.DateMax.ToString("yyyy.MM.dd HH.mm.ss")
         _pliki.Add(oPic)
 
         Return True

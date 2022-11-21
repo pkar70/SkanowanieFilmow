@@ -39,41 +39,72 @@ Public Class Process_Resize1600
     Public Overrides Property dymekAbout As String = $"Zmniejszanie do 1600 px na dłuższym boku (~UXGA)"
 End Class
 
+' 1600 + 28 %
+Public Class Process_Resize2048
+    Inherits Process_ResizeBase
+
+    Protected Overrides Property _iMaxSize As Integer = 2048
+    Public Overrides Property Nazwa As String = $"Resize2048"
+    Public Overrides Property dymekAbout As String = $"Zmniejszanie do 2048 px na dłuższym boku (~QXGA)"
+End Class
+
+
+Public Class Process_ResizeHalf
+    Inherits Process_ResizeBase
+
+    Protected Overrides Property _iMaxSize As Integer = -2
+    Public Overrides Property Nazwa As String = $"ResizeHalf"
+    Public Overrides Property dymekAbout As String = $"Zmniejszanie dwukrotne"
+End Class
+
 
 Public MustInherit Class Process_ResizeBase
     Inherits Vblib.PostProcBase
 
     Protected MustOverride Property _iMaxSize As Integer
 
+#If SUPPORT_CALL_WITH_EXIF Then
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, oExif As Vblib.ExifTag, sNewName As String) As Task(Of Boolean)
         ' oExif tutaj jest ignorowany
         Return Await ApplyMain(oPic, sNewName)
     End Function
+#End If
 
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
 
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, sNewName As String) As Task(Of Boolean)
+        oPic.InitEdit(bPipeline)
 
-        Dim srcFilename As String = oPic.InitEdit
-
-        Dim oSoftBitmap As wingraph.SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(srcFilename)
+        Dim oSoftBitmap As wingraph.SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(oPic.sFilenameEditSrc)
 
         ' przelicz jaką skalę należy przyjąć
         Dim iHeight As Integer = oSoftBitmap.PixelHeight
         Dim iWidth As Integer = oSoftBitmap.PixelWidth
         Dim dScale As Double
-        If iHeight > iWidth Then
-            dScale = _iMaxSize / iHeight
+
+        If _iMaxSize > 0 Then
+            ' mamy podany maxsize
+            If iHeight > iWidth Then
+                dScale = _iMaxSize / iHeight
+            Else
+                dScale = _iMaxSize / iWidth
+            End If
+
+            If dScale >= 1 Then
+                oPic.CancelEdit()
+                Return False ' nie skalujemy, bo plik jest mniejszy
+            End If
         Else
-            dScale = _iMaxSize / iWidth
+            ' mamy podany współczynnik skalowania
+            dScale = 1 / -1 * _iMaxSize
         End If
 
-        If dScale < 1 Then Return False ' nie skalujemy, bo plik jest mniejszy
 
         Using oStream As New Windows.Storage.Streams.InMemoryRandomAccessStream
 
             Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
 
             ' kopiujemy informacje o tym co jest do zrobienia
+            'oEncoder.BitmapTransform.Rotation
             oEncoder.BitmapTransform.ScaledHeight = iHeight * dScale
             oEncoder.BitmapTransform.ScaledWidth = iWidth * dScale
 
@@ -82,7 +113,7 @@ Public MustInherit Class Process_ResizeBase
             ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
             Await oEncoder.FlushAsync()
 
-            Process_AutoRotate.SaveSoftBitmap(oStream, oPic.InBufferPathName, srcFilename)
+            Process_AutoRotate.SaveSoftBitmap(oStream, oPic.sFilenameEditDst, oPic.sFilenameEditSrc)
 
         End Using
 

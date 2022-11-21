@@ -33,4 +33,8 @@ Class SettingsMisc
     Private Sub uiSettMaps_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsMapsy)
     End Sub
+
+    Private Sub uiWatermark_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsWatermark)
+    End Sub
 End Class

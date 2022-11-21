@@ -1,12 +1,12 @@
 ﻿' postprocessing:
-' *) znak wodny - https://github.com/mchall/HiddenWatermark , https://www.nuget.org/packages/HiddenWatermark/
-' *) podpis widoczny na zdjęciu - narzucony, bądź z (c) brany (z EXIF)
-' *) scaling
-' *) rozmywanie twarzy
+' *) rozmywanie twarzy - korzysta z Azure twarz procenty miejsce
 
 ' Juz zrobione:
 ' *) autorotate
 ' *) embedExif
+' *) scaling
+' *) znak wodny - https://github.com/mchall/HiddenWatermark , https://www.nuget.org/packages/HiddenWatermark/
+' *) podpis widoczny na zdjęciu - narzucony, bądź z (c) brany (z EXIF) https://imageprocessor.org/imageprocessor/imagefactory/watermark/
 
 
 
@@ -21,8 +21,9 @@ Public MustInherit Class PostProcBase
     'Public Property exclude As List(Of String)  ' maski regexp
     'Public Property lastDownload As DateTime
 
-    Protected MustOverride Async Function ApplyMain(oPic As OnePic, sNewName As String) As Task(Of Boolean)
-    Protected MustOverride Async Function ApplyMain(oPic As OnePic, oExif As ExifTag, sNewName As String) As Task(Of Boolean)
+    Protected MustOverride Async Function ApplyMain(oPic As OnePic, bPipeline As Boolean) As Task(Of Boolean)
+
+
 
 
     ''' <summary>
@@ -31,11 +32,17 @@ Public MustInherit Class PostProcBase
     ''' <param name="oPic"></param>
     ''' <param name="sNewName"></param>
     ''' <returns></returns>
-    Public Async Function Apply(oPic As OnePic, Optional sNewName As String = "") As Task(Of Boolean)
-        If Not Vblib.PicSourceBase.MatchesMasks(oPic.InBufferPathName, include, "") Then Return False
+    Public Async Function Apply(oPic As OnePic, Optional bPipeline As Boolean = False) As Task(Of Boolean)
+        If Not OnePic.MatchesMasks(oPic.GetSourceFilename, include, "") Then Return False
 
-        Return Await ApplyMain(oPic, sNewName)
+        Return Await ApplyMain(oPic, bPipeline)
     End Function
+
+#If SUPPORT_CALL_WITH_EXIF Then
+
+    Protected MustOverride Async Function ApplyMain(oPic As OnePic, oExif As ExifTag, sNewName As String) As Task(Of Boolean)
+
+
     ''' <summary>
     ''' przetwórz plik, na ten sam bądź do nowego pliku
     ''' </summary>
@@ -47,7 +54,9 @@ Public MustInherit Class PostProcBase
 
         Return Await ApplyMain(oPic, oExif, sNewName)
     End Function
+#End If
 
+#If SUPPORT_LOOPS_HERE Then
     Public Async Function Apply(oLista As List(Of OnePic)) As Task(Of Boolean)
         Dim bAllOk As Boolean = True
 
@@ -59,6 +68,7 @@ Public MustInherit Class PostProcBase
 
     End Function
 
+#If SUPPORT_CALL_WITH_EXIF Then
     Public Async Function Apply(oLista As List(Of OnePic), oExif As ExifTag) As Task(Of Boolean)
         Dim bAllOk As Boolean = True
 
@@ -68,7 +78,8 @@ Public MustInherit Class PostProcBase
 
         Return bAllOk
     End Function
+#End If
 
-
+#End If
 
 End Class

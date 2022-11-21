@@ -31,6 +31,7 @@ Class SettingsMain
     Private Sub uiBackup_Click(sender As Object, e As RoutedEventArgs)
 
         Dim oPicker As New Microsoft.Win32.SaveFileDialog
+        oPicker.Title = "Select directory for backup"
         oPicker.FileName = "picsorter." & Date.Now.ToString("yyyyMMdd") & ".zip"
         oPicker.CheckPathExists = True
         oPicker.InitialDirectory = Application.GetDataFolder

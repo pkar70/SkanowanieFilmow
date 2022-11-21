@@ -9,6 +9,7 @@ Imports winstreams = Windows.Storage.Streams
 Imports vb14 = Vblib.pkarlibmodule14
 Imports Windows.Storage.Streams
 Imports CompactExifLib
+Imports Vblib
 
 Public Class ShowBig
 
@@ -71,6 +72,7 @@ Public Class ShowBig
         Dim iObrot As Rotation = DetermineOrientation(_picek.oPic)
 
         _bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
+        If _bitmap Is Nothing Then Return
 
         ' tylko JPG może być edytowany
         uiEditModes.IsEnabled = _picek.oPic.InBufferPathName.ToLowerInvariant.EndsWith("jpg")
@@ -80,7 +82,7 @@ Public Class ShowBig
         If IO.File.Exists(_picek.oPic.InBufferPathName & ".bak") Then uiRevert.IsEnabled = True
 
         uiFullPicture.Source = _bitmap
-        UpdateClipRegion()
+        ' UpdateClipRegion()
 
         ' skalowanie okna
         Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * 0.9
@@ -259,7 +261,7 @@ Public Class ShowBig
             If Not Await vb14.DialogBoxYNAsync("Skasować zdjęcie?") Then Return
         End If
 
-        Dim oBrowserWnd As ProcessBrowse = Me.Parent
+        Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
 
         _picek = oBrowserWnd.FromBig_Delete(_picek)
@@ -355,7 +357,7 @@ Public Class ShowBig
                 Return
             Case EditModeEnum.crop
                 ' jesli jest rotate, to moze byc odwrocenie width/height
-                Dim oRect As Rect = ConvertSlidersToPicRect(_bitmap.Width, _bitmap.Height)
+                Dim oRect As Rect = ConvertSlidersToPicRect(_bitmap.PixelWidth, _bitmap.PixelHeight)
                 Dim bnds As New wingraph.BitmapBounds
                 bnds.X = oRect.X
                 bnds.Y = oRect.Y
@@ -396,9 +398,18 @@ Public Class ShowBig
         If transf IsNot Nothing Then
             Dim oDesc As New Vblib.OneDescription(sHistory, "")
             _picek.oPic.AddDescription(oDesc)
+
+            Dim oExif As Vblib.ExifTag = _picek.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+            If oExif IsNot Nothing Then
+                ' reset orientation, bo loadbitmap i tak obraca
+                oExif.Orientation = Vblib.OrientationEnum.topLeft
+            End If
+
+
             Application.GetBuffer.SaveData()
 
             Await ZapiszZmianyObrazka(transf)
+
         End If
 
 
@@ -417,7 +428,10 @@ Public Class ShowBig
         uiCropLeft.Visibility = visib
         uiCropRight.Visibility = visib
 
-        If Not bShow Then Return
+        If Not bShow Then
+            uiFullPicture.Clip = Nothing
+            Return
+        End If
 
         If uiCropUp.Value = 0 Then uiCropUp.Value = 0.1
         If uiCropDown.Value = 0 Then uiCropDown.Value = 0.9
@@ -492,7 +506,7 @@ Public Class ShowBig
         ShowHideEditControls(EditModeEnum.crop)
         UpdateClipRegion()
     End Sub
-    Private Sub uiCropUp_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double))
+    Private Sub uiCrop_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double))
         UpdateClipRegion()
     End Sub
 
@@ -502,7 +516,7 @@ Public Class ShowBig
     Private Async Function ZapiszZmianyObrazka(bmpTrans As wingraph.BitmapTransform) As Task(Of Boolean)
         If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
 
-        Dim srcFilename As String = _picek.oPic.InitEdit
+        _picek.oPic.InitEdit(False)
 
         Using oStream As New InMemoryRandomAccessStream
 
@@ -514,12 +528,12 @@ Public Class ShowBig
             oEncoder.BitmapTransform.ScaledHeight = bmpTrans.ScaledHeight ' na razie to jest nieużywane
             oEncoder.BitmapTransform.ScaledWidth = bmpTrans.ScaledWidth ' na razie to jest nieużywane
 
-            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(srcFilename))
+            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(_picek.oPic.sFilenameEditSrc))
 
             ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
             Await oEncoder.FlushAsync()
 
-            Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.InBufferPathName, srcFilename)
+            Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.sFilenameEditDst, _picek.oPic.sFilenameEditSrc)
 
             _picek.oPic.EndEdit()
 
