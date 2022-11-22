@@ -1,4 +1,6 @@
 ﻿
+Imports System.Text.RegularExpressions
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
 
@@ -76,4 +78,60 @@ Class SettingsMapsy
         initLista()
         uiLista.ItemsSource = _lista.GetList
     End Sub
+
+    ''' <summary>
+    ''' zamień link do mapy na współrzędne
+    ''' </summary>
+    ''' <param name="sLink"></param>
+    ''' <returns></returns>
+    Public Shared Function Link2Geo(sLink As String) As MyBasicGeoposition
+        initLista()
+
+        If sLink.Length < 15 Then Return MyBasicGeoposition.EmptyGeoPos
+
+        ' https://www.openstreetmap.org/way/830020459#map=18/50.01990/19.97866
+        Dim iInd As Integer = sLink.IndexOf("/", 10)
+        Dim sPrefix As String = sLink.Substring(0, iInd).ToLowerInvariant
+
+        For Each oMapService As Vblib.JednaMapa In _lista.GetList
+            If Not oMapService.link.ToLowerInvariant.StartsWith(sPrefix) Then Continue For
+
+            Dim iLat As Integer = oMapService.link.IndexOf("%lat")
+            Dim iLon As Integer = oMapService.link.IndexOf("%lon")
+
+            Dim sRegMask As String = oMapService.link.Replace("%lon", "([\.0-9]*)").Replace("%lat", "([\.0-9]*)")
+
+            Dim result As Match = Regex.Match(sLink, sRegMask, RegexOptions.IgnoreCase)
+
+            If Not result.Success Then Return MyBasicGeoposition.EmptyGeoPos
+
+            Try
+                If iLat < iLon Then
+                    Return New MyBasicGeoposition(result.Groups(1).Value, result.Groups(2).Value)
+                Else
+                    Return New MyBasicGeoposition(result.Groups(2).Value, result.Groups(1).Value)
+                End If
+
+            Catch ex As Exception
+                Return MyBasicGeoposition.EmptyGeoPos
+            End Try
+
+            ' ok, to już mamy
+            ' https://www.openstreetmap.org/#map=16/%lat/%lon
+            '  no właśnie, jest inaczej :)
+        Next
+
+        Return MyBasicGeoposition.EmptyGeoPos
+
+        'If Not sPrefix.Contains("openstreetmap") Then Return MyBasicGeoposition.EmptyGeoPos
+        'iInd = sLink.IndexOf("map=")
+        'If iInd < 10 Then Return MyBasicGeoposition.EmptyGeoPos
+        'Dim result As Match = Regex.Match(sLink.Substring(iInd + 4), "(\d+)/([\.0-9]*)/([\.0-9]*)", RegexOptions.IgnoreCase)
+
+        'If Not result.Success Then Return MyBasicGeoposition.EmptyGeoPos
+
+        'Dim oPos As New MyBasicGeoposition(result.Groups(2).Value, result.Groups(3).Value)
+
+        'Return oPos
+    End Function
 End Class

@@ -35,20 +35,23 @@ Public Class BrowseKeywordsWindow
         Dim oMinDate As Date = Date.MaxValue
         Dim oMaxDate As Date = Date.MinValue
 
+        Dim iMinRadius As Integer = Integer.MaxValue
+
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
             If oItem.bChecked Then
                 _oNewExif.Keywords = _oNewExif.Keywords & " " & oItem.sTagId
                 _oNewExif.UserComment = _oNewExif.UserComment & " | " & oItem.sDisplayName
 
                 oMinDate = oMinDate.DateMin(oItem.minDate)
-                'If oItem.minDate.Year > 1800 Then
-                '    If oItem.minDate < oMinDate Then oMinDate = oItem.minDate
-                'End If
-
-                'If oItem.maxDate.Year > 1800 Then
-                '    If oItem.maxDate > oMaxDate Then oMaxDate = oItem.maxDate
-                'End If
                 oMaxDate = oMaxDate.DateMax(oItem.maxDate)
+
+                ' geo: na najbardziej ograniczony zakres (najmniejszy radius)
+                If oItem.iGeoRadius > 0 Then
+                    If oItem.iGeoRadius > iMinRadius Then Continue For
+                    _oNewExif.GeoTag = oItem.oGeo
+                    _oNewExif.GeoName = oItem.sDisplayName
+                    iMinRadius = oItem.iGeoRadius
+                End If
 
             End If
         Next
@@ -58,11 +61,10 @@ Public Class BrowseKeywordsWindow
         _oNewExif.DateMin = oMinDate
         _oNewExif.DateMax = oMaxDate
 
-        _oPic.oPic.ReplaceOrAddExif(_oNewExif)
+        Dim oBrowserWnd As ProcessBrowse = Me.Owner
+        If oBrowserWnd Is Nothing Then Return
+        oBrowserWnd.ChangedKeywords(_oNewExif)
 
-        _oPic.oPic.RemoveFromDescriptions(_oNewExif.Keywords, Application.GetKeywords)
-
-        Application.GetBuffer.SaveData()
     End Sub
 
     Private Sub uiGrupy_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)

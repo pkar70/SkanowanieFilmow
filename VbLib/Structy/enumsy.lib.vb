@@ -47,7 +47,9 @@ Public Class ExifSource
     Public Const SourceDescriptIon As String = "SOURCE_DESCRIPT.ION"
     Public Const FileExif As String = "AUTO_EXIF"
     Public Const AutoWinFace As String = "AUTO_WINFACE"
-    Public Const ManualGeo As String = "MANUAL_GEO"
+    Public Const AutoOSM As String = "AUTO_OSM_POI"
+    Public Const AutoImgw As String = "AUTO_GEONAME_PL"
+    Public Const ManualGeo As String = "MANUAL_GEO" ' kopiowanie GeoTag pomiędzy zdjęciami
     Public Const ManualTag As String = "MANUAL_TAG"
     Public Const ManualDate As String = "MANUAL_DATE"
     Public Const AutoAzure As String = "AUTO_AZURE"

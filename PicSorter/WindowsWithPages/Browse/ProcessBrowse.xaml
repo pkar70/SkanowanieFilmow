@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="ProcessBrowse" Height="400" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" SizeChanged="Window_SizeChanged">
+        Title="ProcessBrowse" Height="400" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" SizeChanged="Window_SizeChanged" GotFocus="Window_GotFocus">
 
     <Window.Resources>
         <local:KonwersjaPasekKolor x:Key="KonwersjaPasekKolor"/>
@@ -71,7 +71,9 @@
                         </ItemsPanelTemplate>
                     </Menu.ItemsPanel>
                     <MenuItem Header="Delete" Click="uiDeleteSelected_Click" />
-                    <MenuItem Header="Autotags" Name="uiMenuAutotags" IsEnabled="False" />
+                        <MenuItem Header="Autotags" Name="uiMenuAutotags" IsEnabled="False">
+                            <MenuItem Header="empty" />
+                        </MenuItem>
                         <MenuItem Header="Describe" Click="uiDescribeSelected_Click" />
                         <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
                         <MenuItem Header="Batch process" Name="uiBatchProcessors" />

@@ -40,7 +40,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <CheckBox IsChecked="{Binding enabled}" />
-                            <TextBlock Grid.Column="1" Text="{Binding StorageName}" />
+                            <TextBlock Grid.Column="1" Text="{Binding StorageName}" Margin="3,0,0,0"/>
                             <Button Grid.Column="2" Content="EDIT" Margin="5,0,5,0" Click="uiEdit_Click" HorizontalAlignment="Center"  />
                             <Button Grid.Column="3" Content="DEL" Margin="5,0,5,0" Click="uiDel_Click" HorizontalAlignment="Center"  />
                         </Grid>

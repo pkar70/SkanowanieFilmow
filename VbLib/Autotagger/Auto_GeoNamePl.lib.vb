@@ -11,7 +11,7 @@ Public Class Auto_GeoNamePl
     Inherits AutotaggerBase
 
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.WebPublic
-    Public Overrides ReadOnly Property Nazwa As String = "AUTO_GEONAME_PL"
+    Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoImgw
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Zamienia współrzędne na nazwę miejscowości (tylko pierwszy znacznik)"
 

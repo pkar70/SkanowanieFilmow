@@ -2,7 +2,7 @@
     Inherits AutotaggerBase
 
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.WebPublic
-    Public Overrides ReadOnly Property Nazwa As String = "AUTO_OSM_POI"
+    Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoOSM
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Zamienia współrzędne na nazwę miejsca (tylko pierwszy znacznik), używając OpenStreetMap." & vbCrLf & "Limit 1 szukanie na sekundę!"
 

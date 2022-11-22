@@ -8,6 +8,7 @@
       Title="Keywords" Loaded="Page_Loaded">
     <Page.Resources>
         <local:KonwersjaDaty x:Key="KonwersjaDaty"/>
+        <local:KonwersjaGeo x:Key="KonwersjaGeo"/>
     </Page.Resources>
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
@@ -32,6 +33,7 @@
                             <ColumnDefinition Width="*" Name="naName" />
                             <ColumnDefinition Width="Auto" Name="naMinDate" />
                             <ColumnDefinition Width="Auto" Name="naMaxDate" />
+                            <ColumnDefinition Width="Auto" Name="naGeo" />
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="{Binding sTagId}" />
@@ -39,6 +41,7 @@
                         <!--<DatePicker SelectedDate="{Binding minDate}" SelectedDateFormat="Short"  Grid.Column="2" />-->
                         <TextBlock Text="{Binding minDate, Converter={StaticResource KonwersjaDaty}}" Grid.Column="2"/>
                         <TextBlock Text="{Binding maxDate, Converter={StaticResource KonwersjaDaty}}" Grid.Column="3" Margin="5,0,0,0"/>
+                        <TextBlock Text="{Binding oGeo, Converter={StaticResource KonwersjaGeo}}" Grid.Column="4" Margin="5,0,0,0"/>
 
                         <Grid.ContextMenu>
                             <ContextMenu>
@@ -87,7 +90,7 @@
             <TextBox Grid.Row="1" Name="uiDisplayName" Grid.Column="1"/>
             <DatePicker Grid.Row="2" Name="uiMinDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01"/>
             <DatePicker Grid.Row="3" Name="uiMaxDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01"/>
-            <TextBox Grid.Row="4" Name="uiLatitude" Grid.Column="1" InputScope="Number"/>
+            <TextBox Grid.Row="4" Name="uiLatitude" Grid.Column="1" />
             <TextBox Grid.Row="5" Name="uiLongitude" Grid.Column="1" InputScope="Number"/>
             <TextBox Grid.Row="6" Name="uiRadius" Grid.Column="1"  InputScope="Digits" />
             <TextBox Grid.Row="7" Name="uiDefPublish" Grid.Column="1"/>

@@ -1,4 +1,6 @@
 ﻿
+
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
 
@@ -68,6 +70,10 @@ Class SettingsKeywords
             uiLatitude.Text = oItem.oGeo.Latitude
             uiLongitude.Text = oItem.oGeo.Longitude
             uiRadius.Text = oItem.iGeoRadius
+        Else
+            uiLatitude.Text = ""
+            uiLongitude.Text = ""
+            uiRadius.Text = ""
         End If
 
         uiDefPublish.Text = oItem.defaultPublish
@@ -148,4 +154,36 @@ Class SettingsKeywords
 
         End Try
     End Sub
+
+    Private Sub uiLatitude_TextChanged(sender As Object, e As TextChangedEventArgs) Handles uiLatitude.TextChanged
+        ' https://www.openstreetmap.org/way/830020459#map=18/50.01990/19.97866
+        If Not uiLatitude.Text.StartsWith("http") Then Return
+
+        Dim oPos As MyBasicGeoposition = SettingsMapsy.Link2Geo(uiLatitude.Text)
+        If oPos.IsEmpty Then Return
+
+        _editingItem.oGeo = oPos
+        uiLatitude.Text = oPos.Latitude
+        uiLongitude.Text = oPos.Longitude
+        uiRadius.Text = "100"
+    End Sub
+End Class
+
+Public Class KonwersjaGeo
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+        Dim temp As MyBasicGeoposition = CType(value, MyBasicGeoposition)
+
+        If temp Is Nothing Then Return ""
+        If temp.IsEmpty Then Return ""
+
+        Return "(geo)"
+
+    End Function
+
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
 End Class

@@ -18,4 +18,9 @@ Class SettingListy
         Dim oWnd As New EditEntryHist(App.GetDataFolder, "Cameras", "Dodaj model aparatu/skanera (lub producent # model)", "")
         oWnd.Show()
     End Sub
+
+    Private Sub uiGeoPlaces_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New SettingsGeoPlaces
+        oWnd.Show()
+    End Sub
 End Class

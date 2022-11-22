@@ -6,9 +6,9 @@ Imports Newtonsoft.Json
 Public Class OnePic
     Inherits MojaStruct
 
-    Public Property Archived As List(Of String)
-    Public Property Published As List(Of String)
-    Public Property TargetDir As String
+    Public Property Archived As String
+    Public Property Published As String
+    Public Property TargetDir As String ' OneDir.sId
     Public Property Exifs As New List(Of ExifTag) ' ExifSource.SourceFile ..., )
     Public Property InBufferPathName As String
     ''' <summary>
@@ -49,10 +49,39 @@ Public Class OnePic
         Return Nothing
     End Function
 
-    Public Function GetGeoTag() As MyBasicGeoposition
-        ' *TEMP* pierwsze ktore znajdzie, potem trzeba jakos inaczej?
+    ''' <summary>
+    ''' usuwa wszystkie zestawy o podanym typie (powinien być tylko jeden, ale...)
+    ''' </summary>
+    ''' <param name="sType"></param>
+    Public Sub RemoveExifOfType(sType As String)
+        If Exifs Is Nothing Then Return
+
+        Dim lLista As New List(Of ExifTag)
+
         For Each oExif As ExifTag In Exifs
-            If oExif.GeoTag IsNot Nothing Then Return oExif.GeoTag
+            If oExif.ExifSource.ToLower = sType.ToLower Then lLista.Add(oExif)
+        Next
+
+        For Each oExif As ExifTag In lLista
+            Exifs.Remove(oExif)
+        Next
+
+    End Sub
+
+
+    Public Function GetGeoTag() As MyBasicGeoposition
+        ' ważniejsze jest z keywords, potem manual_geo, potem - dowolny
+
+        Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualTag)
+        If oExif IsNot Nothing Then Return oExif.GeoTag
+
+        oExif = GetExifOfType(ExifSource.ManualGeo)
+        If oExif IsNot Nothing Then Return oExif.GeoTag
+
+        For Each oExif In Exifs
+            If oExif.GeoTag IsNot Nothing Then
+                If Not oExif.GeoTag.IsEmpty Then Return oExif.GeoTag
+            End If
         Next
 
         Return Nothing
@@ -344,17 +373,7 @@ Public Class OnePic
 
         ' dwa przypadki szczególne
 
-        ' geotag ma MANUAL jako override, i wtedy nie sprawdzamy innych, inaczej: ostatni znaleziony
-        Dim oExif1 As ExifTag = GetExifOfType(ExifSource.ManualGeo)
-        If oExif1 IsNot Nothing Then
-            oNew.GeoTag = oExif1.GeoTag
-        Else
-            For Each oExif As ExifTag In Exifs
-                If oExif.GeoTag IsNot Nothing Then
-                    If Not oExif.GeoTag.IsEmpty Then oNew.GeoTag = oExif.GeoTag
-                End If
-            Next
-        End If
+        oNew.GeoTag = GetGeoTag()   ' z priorytetem dla MANUAL
 
         ' description z PIC do Exif.UserComment
         If descriptions IsNot Nothing Then

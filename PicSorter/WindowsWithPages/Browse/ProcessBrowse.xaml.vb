@@ -25,6 +25,7 @@ Imports System.Windows.Automation.Peers
 Imports Microsoft.Windows.Themes
 Imports Newtonsoft.Json.Linq
 Imports Vblib
+Imports Windows.Media.Ocr
 Imports vb14 = Vblib.pkarlibmodule14
 
 
@@ -33,6 +34,7 @@ Public Class ProcessBrowse
 
     Private _thumbsy As New ObservableCollection(Of ThumbPicek)
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć
+    Private _redrawPending As Boolean = False
 
 #Region "called on init"
 
@@ -48,6 +50,13 @@ Public Class ProcessBrowse
 
     End Sub
 
+    ' to jest w związku z DEL w ShowBig
+    Private Sub Window_GotFocus(sender As Object, e As RoutedEventArgs)
+        If Not _redrawPending Then Return
+
+        _redrawPending = False
+        RefreshMiniaturki(True)
+    End Sub
 
     Private Async Function EwentualneKasowanieBak() As Task
 
@@ -132,8 +141,8 @@ Public Class ProcessBrowse
     Private Function DataDoSortowania(dlaZdjecia As Vblib.OnePic) As String
 
         Dim oExif As Vblib.ExifTag = dlaZdjecia.GetExifOfType(Vblib.ExifSource.SourceFile)
-            ' jakby co, ale zakładam że jest ten ExifSource... data potrzebna do sortowania plików
-            If oExif Is Nothing Then Return Date.Now
+        ' jakby co, ale zakładam że jest ten ExifSource... data potrzebna do sortowania plików
+        If oExif Is Nothing Then Return Date.Now
 
             Return oExif.DateMin
     End Function
@@ -184,6 +193,7 @@ Public Class ProcessBrowse
 
 #Region "menu actions"
     Private Sub uiMenuCopyGeoTag_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
 
         If uiPicList.SelectedItems.Count < 2 Then
             vb14.DialogBox("Funkcja kopiowania GeoTag wymaga zaznaczenia przynajmniej dwu zdjęć")
@@ -191,18 +201,27 @@ Public Class ProcessBrowse
         End If
 
         ' step 1: znajdź pierwszy geotag
-        Dim oGeoTag As New Vblib.ExifTag(ExifSource.ManualGeo)
+        Dim oNewGeoTag As New Vblib.ExifTag(ExifSource.ManualGeo)
+        Dim oExifOSM As Vblib.ExifTag = Nothing
+        Dim oExifImgw As Vblib.ExifTag = Nothing
+
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             Dim oGeo As MyBasicGeoposition = oItem.oPic.GetGeoTag
             If oGeo Is Nothing Then Continue For
-            oGeoTag.GeoTag = oGeo
+            oNewGeoTag.GeoTag = oGeo
+            oExifOSM = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
+            oExifImgw = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoImgw)
         Next
+        If oNewGeoTag.GeoTag Is Nothing OrElse Not oNewGeoTag.GeoTag.IsEmpty Then
+            vb14.DialogBox("Nie mogę znaleźć zdjęcia z GeoTag")
+            Return
+        End If
 
         ' step 2: sprawdź czy wszystkie zaznaczone zdjęcia, jeśl mają geotagi, to z tych samych okolic
         Dim iMaxOdl As Integer = 0
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             Dim oCurrGeo As MyBasicGeoposition = oItem.oPic.GetGeoTag
-            If oCurrGeo IsNot Nothing Then iMaxOdl = Math.Max(iMaxOdl, oGeoTag.GeoTag.DistanceTo(oCurrGeo))
+            If oCurrGeo IsNot Nothing Then iMaxOdl = Math.Max(iMaxOdl, oNewGeoTag.GeoTag.DistanceTo(oCurrGeo))
         Next
 
         If iMaxOdl > 1000 Then
@@ -212,7 +231,22 @@ Public Class ProcessBrowse
 
 
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            oItem.oPic.ReplaceOrAddExif(oGeoTag)
+
+            oItem.oPic.ReplaceOrAddExif(oNewGeoTag)
+
+            If oExifOSM Is Nothing Then
+                oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
+            Else
+                oItem.oPic.ReplaceOrAddExif(oExifOSM)
+            End If
+
+            If oExifImgw Is Nothing Then
+                oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
+            Else
+                oItem.oPic.ReplaceOrAddExif(oExifImgw)
+            End If
+
+
             If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
         Next
 
@@ -309,6 +343,7 @@ Public Class ProcessBrowse
 
         If oPicek Is Nothing Then Return
 
+        _redrawPending = False
         Dim oWnd As New ShowBig(oPicek)
         oWnd.Owner = Me
         oWnd.Show()
@@ -320,6 +355,7 @@ Public Class ProcessBrowse
         Dim oNext As ThumbPicek = FromBig_Next(oPic, False)
         DeletePicture(oPic)
         Application.GetBuffer.SaveData()
+        _redrawPending = True
         Return oNext
     End Function
 
@@ -830,7 +866,7 @@ Public Class ProcessBrowse
         End If
 
         ' step 2: pokaż takie okno
-        oWnd = New BrowseKeywordsWindow
+        oWnd = New BrowseKeywordsWindow()
         oWnd.Owner = Me
         oWnd.Name = "BrowseKeywords"
         oWnd.Show()
@@ -849,9 +885,55 @@ Public Class ProcessBrowse
         End If
     End Sub
 
-    Public Shared Sub ChangedKeywords()
-        ' *TODO* jeśli byłoby potrzebne jako callback z BrowseKeywordsWindow
+    Public Sub ChangedKeywords(oExif As Vblib.ExifTag)
+        ' callback z BrowseKeywordsWindow - do zaznaczonego (jednego bądź wielu)
+
+        If uiPicList.SelectedItems.Count < 1 Then Return
+
+        If uiPicList.SelectedItems.Count = 1 Then
+            Dim oPic As ThumbPicek = uiPicList.SelectedItems(0)
+            oPic.oPic.ReplaceOrAddExif(oExif)
+            oPic.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
+        Else
+            For Each oPic As ThumbPicek In uiPicList.SelectedItems
+
+                ' 1) jeśli mamy jakieś tagi, to nowe tylko dołączamy do tego (nie ma wtedy wyłączania tagów)
+                Dim oCurrExif As Vblib.ExifTag = oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualTag)
+                If oCurrExif IsNot Nothing Then
+                    oCurrExif.Keywords = oCurrExif.Keywords & " " & oExif.Keywords
+                    oCurrExif.UserComment = oCurrExif.UserComment & " | " & oExif.UserComment
+                    oCurrExif.DateMax = oCurrExif.DateMax.DateMax(oExif.DateMax)
+                    oCurrExif.DateMin = oCurrExif.DateMin.DateMin(oExif.DateMin)
+
+                    ' wygrywa nowo dodany tag z geo (radiusa już tu nie widać)
+                    If Not oExif.GeoTag.IsEmpty Then
+                        oCurrExif.GeoTag = oExif.GeoTag
+                        oCurrExif.GeoName = oExif.GeoName
+
+                        ' i skoro go mamy, to możemy skasować to z kopiowania GeoTag między zdjęciami
+                        oPic.oPic.RemoveExifOfType(Vblib.ExifSource.ManualGeo)
+                        ' a także te, które są zależne od GeoTag
+                        oPic.oPic.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
+                        oPic.oPic.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
+
+                    End If
+
+                Else
+                    ' 2) a jeśli nie mamy, to po prostu dodajemy tag
+                    oPic.oPic.ReplaceOrAddExif(oExif)
+                End If
+
+                oPic.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
+
+            Next
+
+        End If
+
+        Application.GetBuffer.SaveData()
+
     End Sub
+
+
 
 
 #End Region

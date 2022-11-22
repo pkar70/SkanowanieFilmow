@@ -63,11 +63,11 @@ Partial Class Application
         Return gBuffer
     End Function
 
-    Private Shared gArchiveList As Vblib.MojaLista(Of VbLib20.LocalStorage)
-    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of VbLib20.LocalStorage)
+    Private Shared gArchiveList As Vblib.MojaLista(Of VbLib20.LocalStorageMiddle)
+    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of VbLib20.LocalStorageMiddle)
 
         If gArchiveList Is Nothing OrElse gArchiveList.Count < 1 Then
-            gArchiveList = New Vblib.MojaLista(Of VbLib20.LocalStorage)(Application.GetDataFolder, "archives.json")
+            gArchiveList = New Vblib.MojaLista(Of VbLib20.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
             gArchiveList.Load()
         End If
         Return gArchiveList
@@ -102,7 +102,8 @@ Partial Class Application
         New Process_Resize1600,
         New Process_EmbedExif,
         New Process_Watermark,
-        New Process_Signature.Process_Signature
+        New Process_Signature.Process_Signature,
+        New Process_Signature.Process_FaceRemove
     }
 
 

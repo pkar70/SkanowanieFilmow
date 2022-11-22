@@ -10,5 +10,6 @@
         <Button Content="List of Authors" Margin="5,15,5,25" FontSize="18" Click="uiListAuthor_Click" Width="150"/>
         <!--<Button Content="List of camera makers" Margin="5,15,5,25" FontSize="18" Click="uiListCameraMakers_Click" Width="190"/>-->
         <Button Content="List of cameras" Margin="5,15,5,25" FontSize="18" Click="uiListCameraModels_Click" Width="150"/>
+        <!--<Button Content="List of Geo places" Margin="5,15,5,25" FontSize="18" Click="uiGeoPlaces_Click" Width="150"/>-->
     </StackPanel>
 </Page>

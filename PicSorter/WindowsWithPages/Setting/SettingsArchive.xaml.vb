@@ -7,17 +7,18 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 Class SettingsArchive
 
-    Private _item As VbLib20.LocalStorage
+    Private _item As Vblib.LocalStorage
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         ShowSourcesList()
     End Sub
     Private Sub ShowSourcesList()
+        uiLista.ItemsSource = Nothing
         uiLista.ItemsSource = Application.GetArchivesList().GetList
     End Sub
 
     Private Sub uiAddSource_Click(sender As Object, e As RoutedEventArgs)
-        Dim oNewSrc As New VbLib20.LocalStorage
+        Dim oNewSrc As New VbLib20.LocalStorageMiddle
         oNewSrc.StorageName = "(" & DateTime.Now.ToString("yy-MM-dd") & ")"
         oNewSrc.enabled = False
         Application.GetArchivesList.Add(oNewSrc)
@@ -26,19 +27,19 @@ Class SettingsArchive
 
     Private Sub uiEdit_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        Dim oItem As VbLib20.LocalStorage = oFE?.DataContext
+        Dim oItem As Vblib.LocalStorage = oFE?.DataContext
 
         PokazDoEdycji(oItem)
     End Sub
 
     Private Async Sub uiDel_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        Dim oItem As VbLib20.LocalStorage = oFE?.DataContext
+        Dim oItem As Vblib.LocalStorage = oFE?.DataContext
 
         If Not Await vb14.DialogBoxYNAsync("Na pewno usunąć, a nie tylko zablokować?") Then Return
 
         Application.GetArchivesList().Remove(oItem)
-
+        ShowSourcesList()
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
@@ -71,7 +72,7 @@ Class SettingsArchive
 
     End Sub
 
-    Private Sub PokazDoEdycji(oItem As VbLib20.LocalStorage)
+    Private Sub PokazDoEdycji(oItem As Vblib.LocalStorage)
         uiOK.IsEnabled = False
         uiEditSource.Visibility = Visibility.Visible
         _item = oItem
@@ -146,6 +147,7 @@ Class SettingsArchive
         _item.saveToExif = uiSrcSaveToExif.IsChecked
         _item.jsonInDir = uiSrcJSONinside.IsChecked
 
+        ShowSourcesList()
     End Sub
 
 
