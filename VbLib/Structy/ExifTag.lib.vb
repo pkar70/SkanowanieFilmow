@@ -81,6 +81,17 @@ Partial Public Module Extensions
 
 
     ''' <summary>
+    ''' zwraca datę tekstowo, w formacie Exif 2.3
+    ''' </summary>
+    ''' <param name="oDate"></param>
+    ''' <returns></returns>
+    <Runtime.CompilerServices.Extension()>
+    Public Function ToExifString(ByVal oDate As Date) As String
+        Return oDate.ToString("yyyy.MM.dd HH:MMM:ss")
+    End Function
+
+
+    ''' <summary>
     ''' porównuje dwie daty, uznając za "poprawniejszą" pierwszą, a drugą za valid tylko gdy rok 1800..2100
     ''' </summary>
     ''' <param name="oDate1"></param>

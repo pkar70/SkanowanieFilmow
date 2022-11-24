@@ -95,7 +95,7 @@ Public MustInherit Class Process_ResizeBase
             End If
         Else
             ' mamy podany współczynnik skalowania
-            dScale = 1 / -1 * _iMaxSize
+            dScale = 1 / (-1 * _iMaxSize)
         End If
 
 
@@ -118,6 +118,9 @@ Public MustInherit Class Process_ResizeBase
         End Using
 
         oPic.EndEdit()
+
+        Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+        If oExif IsNot Nothing Then oExif.Orientation = 1
 
         Return True
     End Function

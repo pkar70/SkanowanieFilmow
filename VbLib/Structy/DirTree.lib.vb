@@ -2,17 +2,31 @@
 
 
 
+Imports Microsoft.Rest.Azure
+
 Public Class OneDir
     Inherits MojaStruct
 
-    Public Property sId As String   ' 1981.01.23.sb
+    Public Property sId As String   ' 1981.01.23.sb_geo
     Public Property notes As String ' wyjazd do Wieliczki z dziadkami, pociągiem i psem
 
     Public Sub New(data As Date, sGeo As String, opis As String)
         notes = opis
 
-        sId = data.ToString("yyyy.MM.dd.")
-        Select Case data.DayOfWeek
+        sId = DateToDirId(data)
+
+        If sGeo <> "" Then sId = sId & "_" & sGeo
+
+    End Sub
+
+    ''' <summary>
+    ''' wydzielone żeby utrzymać spójność formatowania dat
+    ''' </summary>
+    ''' <param name="oDate"></param>
+    ''' <returns></returns>
+    Public Shared Function DateToDirId(oDate As Date) As String
+        Dim sId As String = oDate.ToString("yyyy.MM.dd.")
+        Select Case oDate.DayOfWeek
             Case DayOfWeek.Monday
                 sId &= "pn"
             Case DayOfWeek.Tuesday
@@ -29,9 +43,9 @@ Public Class OneDir
                 sId &= "nd"
         End Select
 
-        If sGeo <> "" Then sId = sId & "_" & sGeo
+        Return sId
+    End Function
 
-    End Sub
 
 #If False Then
     ' [datemin, datemax, geomin, geomax] [keywords - wspólne dla wszystkich pic? ustalane potem jakimiś sprawdzaniami, np wlasnie mingeo/maxgeo na geoname]

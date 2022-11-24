@@ -5,6 +5,33 @@
 * albo podział GEO robić przy zaznaczaniu serii - pakowanej do jednego DIR, i w nim autosplit lokalizacyjny?
 * albo okno (ShowDialog), w którym jest propozycja katalogu, wyszukiwarka katalogów, propozycja podziału wedle geo... coś tego typu
 
+* split geo: .sb.A_geo , znaczy autolicznik A..Z podkatalogów w ramach katalogu daty
+
+*POSTPROCESS: strip EXIF (wszystko z pliku)
+
+* kiedy dodawać OneDir do zestawu? (tak żeby było dodawanie na bieżąco, znaczy select/settarget, ale żeby niewykorzystane nie zużywało katalogów)
+
+* gdy nie ma w zaznaczonych podziału geo, to może nie być dolnej części okienka (radio: bez podziału geo)
+* IMPORT z googledrive (z Marcin Kurcz)
+
+* zdjęcia z tego samego czasu, ale np ja Bari, Aśka - gdzieś, i impreza u rodziców?
+* ONEDIR: jak okrajać sId (który powinien być z geo) do różnych serwisów, gdzie jest płytsze drzewo katalogów dostępne, ale jednak nie całkiem płaskie?
+
+* czy resize kasuje EXIF z pliku? jak tak, to poprawić to w tych zmienionych; i migrować do EndEdit ze Stream
+* do DOC: koniecznie resize/crop przed Azure
+* czy Azure rozpozna logo przy żarówkach? jedną sprawdzić
+* rotate bez konieczności Save, jak resize?
+* zle z rotate po lewej stronie góra? bo po prawej - jest ok
+* kolejnosc nie taka
+	20220707
+	...
+	20220209
+	...
+* przesuwanie na srodek ekranu showbig dla pionowych
+* jpg.thumb - tego nie ściągać (maska jest zła) - ściągać! bo nie ściąga wersji nie thumb?
+* ewentualnie dodać rename "jpg.thumb" -> "jpg" w Source, przed sprawdzaniem maski.
+
+* mam App.GetDirList
 
 * Source: property IDprefix, i to wraz z datą jako ID pliku; default dla MTP: WP_, ale może byc i L5_, L9_ żeby rozdzielić telefony
 * PUBLISH: może byc kilka tego samego typu, np. dwa konta Instagram (czy można mieć dwa konta? nr telefonu już jest użyty), albo dwa podkatalogi (AdHoc), do każdego inna sekwencja pipeline
@@ -18,8 +45,6 @@
 Przerobic InitEdit, EndEdit, tak by ApplyMain posługiwało się STREAM, a EndEdit zapisywało do pliku gdy nie-pipeline; zas dla pipeline cały czas operacje na stream bez zapisywania do pliku
 
 * po zapisaniu do archiwum - plik trafia jako PURGE ze źródła; ale uwaga: faktycznie trafia, czyli zgodny z maską
-
-SETTINGS: weryfikacja podpisu (czy jest czy nie ma), oraz browser by File.Copy(browsedFile) do DataFolder, moze ze sprawdzeniem czy cz/b i rozmiar
 
 dodać fotki z telefonu - wszystkie WP_ które są w digital; dodać do nich aparat, copyright, artist
 picsort miałby dodać do nich ID (datetime zdjęcia, resztę danych z filename do tagów)

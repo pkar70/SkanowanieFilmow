@@ -1,6 +1,8 @@
 ﻿
 
+Imports System.IO
 Imports System.Text.RegularExpressions
+Imports System.Threading
 Imports Newtonsoft.Json
 
 Public Class OnePic
@@ -97,13 +99,61 @@ Public Class OnePic
 
         Exifs.Add(oExifTag)
     End Sub
+
+    ''' <summary>
+    ''' Zwraca datę do sortowania tekstowego w formacie EXIF: 2022.05.06 12:27:47.
+    ''' Ważność: FileExif, ManualTag (min ze wszystkich), SourceFile
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function GetMostProbablyDate() As String
+        Dim oExif As ExifTag
+
+        oExif = GetExifOfType(ExifSource.FileExif)
+        If oExif IsNot Nothing Then
+            If Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then Return oExif.DateTimeOriginal
+        End If
+
+        Dim dDateMin As Date = Date.MaxValue
+        Dim dDateMax As Date = Date.MinValue
+
+        For Each oItem As ExifTag In Exifs
+            If oItem.ExifSource = ExifSource.ManualTag Then
+                dDateMin = dDateMin.DateMax(oItem.DateMin)
+                dDateMax = dDateMax.DateMin(oItem.DateMax)
+            End If
+        Next
+
+        If dDateMin.IsDateValid AndAlso Not dDateMax.IsDateValid Then Return dDateMin.ToExifString
+        If Not dDateMin.IsDateValid AndAlso dDateMax.IsDateValid Then Return dDateMax.ToExifString
+        If dDateMin.IsDateValid AndAlso dDateMax.IsDateValid Then
+            Dim oDateDiff As TimeSpan = dDateMax - dDateMin
+            Return dDateMin.AddMinutes(oDateDiff.TotalMinutes / 2).ToExifString
+        End If
+
+        oExif = GetExifOfType(Vblib.ExifSource.SourceFile)
+        If oExif IsNot Nothing Then
+            ' to właściwie na pewno jest, bo to data pliku
+            Return oExif.DateMin.ToExifString
+        End If
+
+        ' jakby co jendak nie było
+        Return Date.Now
+
+    End Function
+
 #End Region
 
 #Region "operacje na maskach"
     Public Function MatchesMasks(sIncludeMasks As String, sExcludeMasks As String) As Boolean
 
-        Dim sFilenameNoPath As String = IO.Path.GetFileName(GetSourceFilename)
+        Dim sFilenameNoPath As String = IO.Path.GetFileName(InBufferPathName)   ' dla edycji było GetSourceFilename, ale to poprzednia wersja
         Return MatchesMasks(sFilenameNoPath, sIncludeMasks, sExcludeMasks)
+    End Function
+
+    Private Shared Function DOSmask2regExp(dosMask As String) As String
+        Dim sRet As String = dosMask.Replace(".", "[.]").Replace("*", ".*").Replace("?", ".")
+        sRet = "^" & sRet & "$" ' w ten sposób nie będzie ściągało WP_20221119_10_41_12_Rich.jpg.thumb - ale co to za pliki?
+        Return sRet
     End Function
 
 
@@ -115,7 +165,7 @@ Public Class OnePic
         If Not String.IsNullOrWhiteSpace(sExcludeMasks) Then
             aMaski = sExcludeMasks.Split(";")
             For Each maska As String In aMaski
-                Dim regExMaska As Regex = New Regex(maska.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."))
+                Dim regExMaska As New Regex(DOSmask2regExp(maska))
                 If regExMaska.IsMatch(sFilenameNoPath) Then Return False
             Next
         End If
@@ -128,7 +178,7 @@ Public Class OnePic
 
         Dim bMatch As Boolean = False
         For Each maska As String In aMaski
-            Dim regExMaska As Regex = New Regex(maska.Replace(".", "[.]").Replace("*", ".*").Replace("?", "."))
+            Dim regExMaska As New Regex(DOSmask2regExp(maska))
             If regExMaska.IsMatch(sFilenameNoPath) Then
                 bMatch = True
                 Exit For
@@ -200,25 +250,30 @@ Public Class OnePic
 
     ' *TODO* ewentualnie operacje na STREAM w PostProcess, a tutaj wrapper stream/filename
 
+    '<Newtonsoft.Json.JsonIgnore>
+    'Public Property sFilenameEditSrc As String
+    '<Newtonsoft.Json.JsonIgnore>
+    'Public Property sFilenameEditDst As String
     <Newtonsoft.Json.JsonIgnore>
-    Public Property sFilenameEditSrc As String
+    Private Property _EditPipeline As Boolean = True
     <Newtonsoft.Json.JsonIgnore>
-    Public Property sFilenameEditDst As String
+    Private Property _PipelineInput As Stream
     <Newtonsoft.Json.JsonIgnore>
-    Public Property bEditPipeline As Boolean = True
+    Private Property _PipelineOutpu As Stream
 
-    ''' <summary>
-    ''' do używania PRZED InitEdit, na potrzeby masek
-    ''' </summary>
-    ''' <returns></returns>
-    Public Function GetSourceFilename()
-        If String.IsNullOrWhiteSpace(sFilenameEditSrc) Then Return InBufferPathName
-        Return sFilenameEditSrc
-    End Function
+
+    '''' <summary>
+    '''' do używania PRZED InitEdit, na potrzeby masek
+    '''' </summary>
+    '''' <returns></returns>
+    'Public Function GetSourceFilename()
+    '    If String.IsNullOrWhiteSpace(sFilenameEditSrc) Then Return InBufferPathName
+    '    Return sFilenameEditSrc
+    'End Function
 
     Public Sub CancelEdit()
 
-        If bEditPipeline Then
+        If _EditPipeline Then
 
             If IO.File.Exists(sFilenameEditDst) Then IO.File.Delete(sFilenameEditDst)
             sFilenameEditDst = ""
@@ -250,8 +305,8 @@ Public Class OnePic
     ''' przygotuj plik źródłowy do edycji, robiąc bak/tmp
     ''' </summary>
     Public Sub InitEdit(bPipeline As Boolean)
-
-        If bPipeline Then
+        _EditPipeline = bPipeline
+        If _EditPipeline Then
             InitEditPipeline()
         Else
             InitEditInPlace()
@@ -295,7 +350,7 @@ Public Class OnePic
     ''' </summary>
     Public Sub EndEdit()
 
-        If bEditPipeline Then
+        If _EditPipeline Then
             If InBufferPathName <> sFilenameEditSrc Then
                 IO.File.Delete(sFilenameEditSrc)
             End If

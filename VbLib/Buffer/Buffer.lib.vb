@@ -30,7 +30,7 @@ Public Class Buffer
                 oExif = oItem.GetExifOfType(ExifSource.SourceFile)
                 ' 2022-05-06T12:27:48
                 If oExif IsNot Nothing AndAlso oExif.DateMax.IsDateValid Then
-                    oItem.sortOrder = oExif.DateMax.ToString("yyyy.MM.dd HH.mm.ss")
+                    oItem.sortOrder = oExif.DateMax.ToExifString 'ToString("yyyy.MM.dd HH.mm.ss")
                 End If
             End If
         Next
@@ -118,7 +118,7 @@ Public Class Buffer
         IO.File.SetLastWriteTime(sDstPathName, oExif.DateMax)
 
         oPic.InBufferPathName = sDstPathName
-        ' oPic.sortOrder = oExif.DateMax.ToString("yyyy.MM.dd HH.mm.ss")
+        ' oPic.sortOrder = oExif.DateMax.ToExifString 'ToString("yyyy.MM.dd HH.mm.ss")
         _pliki.Add(oPic)
 
         Return True

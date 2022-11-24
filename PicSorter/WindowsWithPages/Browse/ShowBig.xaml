@@ -48,7 +48,7 @@
         <RadioButton Name="uiRotateLeft" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"  />
         <RadioButton Name="uiRotateRight" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Visibility="Collapsed"  />
 
-        <Slider Name="uiSizingDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiSizing_ValueChanged"  Minimum="0" Maximum="1"/>
+        <!--<Slider Name="uiSizingDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiSizing_ValueChanged"  Minimum="0" Maximum="1"/>-->
 
 
         <ScrollViewer Grid.Row="1" Grid.Column="1" Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click">
@@ -65,7 +65,7 @@
                             <MenuItem Header="Describe" Click="uiDescribe_Click" />
                             <MenuItem Header="Pic edit" Name="uiEditModes">
                             <MenuItem Header="Crop" Click="uiCrop_Click" />
-                            <MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>
+                            <!--<MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>-->
                             <MenuItem Header="Rotate" Click="uiRotate_Click" />
                                 <Separator/>
                                 <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />

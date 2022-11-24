@@ -10,6 +10,15 @@ Partial Class Application
         Return ""
     End Function
 
+    Public Shared Sub ShowWait(bShow As Boolean)
+        If bShow Then
+            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait
+        Else
+            Mouse.OverrideCursor = Nothing
+        End If
+    End Sub
+
+
     Public Shared Function GetDataFolder(Optional bThrowNotExist As Boolean = True) As String
         Dim sFolder As String = vb14.GetSettingsString("uiFolderData")
         If bThrowNotExist Then
@@ -84,6 +93,16 @@ Partial Class Application
         Return gKeywords
     End Function
 
+    Private Shared gDirList As Vblib.DirsList
+
+    Public Shared Function GetDirList() As Vblib.DirsList
+        If gDirList Is Nothing Then
+            gDirList = New Vblib.DirsList(Application.GetDataFolder)
+            gDirList.Load()
+        End If
+        Return gDirList
+    End Function
+
 
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
         New Vblib.AutoTag_EXIF,
@@ -100,6 +119,8 @@ Partial Class Application
         New Process_Resize1024,
         New Process_Resize1280,
         New Process_Resize1600,
+        New Process_Resize2048,
+        New Process_ResizeHalf,
         New Process_EmbedExif,
         New Process_Watermark,
         New Process_Signature.Process_Signature,

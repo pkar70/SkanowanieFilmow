@@ -12,6 +12,20 @@
         _cacheDataFolder = dataFolder
     End Sub
 
+
+    Public Shared Function FullGeoNameToFolderName(sFullGeoName As String) As String
+        Dim sNazwa As String = sFullGeoName
+        Dim iInd As Integer
+        For i As Integer = 1 To 3
+            iInd = sNazwa.LastIndexOf(",")
+            If iInd > 0 Then sNazwa = sNazwa.Substring(0, iInd)
+        Next
+        iInd = sNazwa.LastIndexOf(",")
+        If iInd > 0 Then sNazwa = sNazwa.Substring(iInd + 1).Trim
+        Return sNazwa
+    End Function
+
+
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
 
         If oFile.Exifs Is Nothing Then Return Nothing

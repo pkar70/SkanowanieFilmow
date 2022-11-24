@@ -1,6 +1,19 @@
-﻿Public Class HistogramWindow
+﻿Imports Vblib
+
+Public Class HistogramWindow
 
     Private _listaDni As New List(Of JedenDzien)
+
+    Private _oBufor As Vblib.Buffer
+
+    Public Sub New(pliki As Vblib.Buffer)
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        _oBufor = pliki
+    End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         PoliczPliki()
@@ -14,7 +27,7 @@
 
     Private Sub PoliczPliki()
 
-        Dim oLista As List(Of Vblib.OnePic) = Application.GetBuffer.GetList
+        Dim oLista As List(Of Vblib.OnePic) = _oBufor.GetList
 
         Dim sDataPrev As String = ""
         Dim oDzienItem As JedenDzien = Nothing

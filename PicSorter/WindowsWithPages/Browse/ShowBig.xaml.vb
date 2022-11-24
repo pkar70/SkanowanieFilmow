@@ -67,7 +67,7 @@ Public Class ShowBig
     End Function
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
-        Me.Title = _picek.sDymek.Replace(vbCrLf, " ")
+        Me.Title = _picek.oPic.InBufferPathName
 
         Dim iObrot As Rotation = DetermineOrientation(_picek.oPic)
 
@@ -83,6 +83,7 @@ Public Class ShowBig
 
         uiFullPicture.Source = _bitmap
         ' UpdateClipRegion()
+        uiFullPicture.ToolTip = _picek.sDymek & vbCrLf & $"Size: {_bitmap.PixelWidth}×{_bitmap.PixelHeight}"
 
         ' skalowanie okna
         Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * 0.9
@@ -157,7 +158,7 @@ Public Class ShowBig
             _picek.oPic.Exifs.Add(oExif)
             _picek.oPic.TagsChanged = True
         End If
-        Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+        SaveMetaData()  ' bo zmieniono EXIF
 
         OnOffMap()    ' bo moze juz bedzie mozna to pokazać
     End Sub
@@ -221,28 +222,56 @@ Public Class ShowBig
 
         Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
         _picek.oPic.AddDescription(oDesc)
-        Application.GetBuffer.SaveData()
+        SaveMetaData()
     End Sub
 
-    Private Sub ChangePicture(bGoBack As Boolean)
+    Private Sub SaveMetaData()
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
 
-        _picek = oBrowserWnd.FromBig_Next(_picek, bGoBack)
-        If _picek Is Nothing Then
+        oBrowserWnd.SaveMetaData()
+    End Sub
+
+    Private Sub ChangePicture(bGoBack As Boolean, bShifty As Boolean)
+        Dim oBrowserWnd As ProcessBrowse = Me.Owner
+        If oBrowserWnd Is Nothing Then Return
+
+        Dim picek As ProcessBrowse.ThumbPicek = oBrowserWnd.FromBig_Next(_picek, bGoBack)
+        If picek Is Nothing Then
             Me.Close()  ' koniec obrazków
         Else
-            Window_Loaded(Nothing, Nothing)
+
+            If bShifty Then
+                ' nowe okno
+                Dim oWnd As New ShowBig(picek)
+                oWnd.Owner = Me.Owner
+                oWnd.Show()
+                oWnd.Focus()
+            Else
+                ' to okno
+                _picek = picek
+                Window_Loaded(Nothing, Nothing)
+            End If
+
         End If
 
     End Sub
 
     Private Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
+
+        ' lepiej nie kasować z repeat klawisza
+        If e.IsRepeat Then
+            System.Media.SystemSounds.Beep.Play()
+            Return
+        End If
+
+        Dim bShifty As Boolean = Keyboard.IsKeyDown(Key.RightShift) Or Keyboard.IsKeyDown(Key.LeftShift)
+
         Select Case e.Key
             Case Key.Space, Key.PageDown
-                ChangePicture(False)
+                ChangePicture(False, bShifty)
             Case Key.PageUp
-                ChangePicture(True)
+                ChangePicture(True, bShifty)
             Case Key.Delete
                 uiDelPic_Click(Nothing, Nothing)
 
@@ -406,7 +435,7 @@ Public Class ShowBig
             End If
 
 
-            Application.GetBuffer.SaveData()
+            SaveMetaData()
 
             Await ZapiszZmianyObrazka(transf)
 
@@ -451,19 +480,11 @@ Public Class ShowBig
 
     End Sub
 
-    Public Sub ShowHideSizeSlider(bShow As Boolean)
-        Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
-
-        uiSizingDown.Visibility = visib
-
-        ' *TODO* inital skalowanie
-
-    End Sub
 
     Private Sub ShowHideEditControls(iMode As EditModeEnum)
         ShowHideCropSliders(iMode = EditModeEnum.crop)
         ShowHideRotateBoxes(iMode = EditModeEnum.rotate)
-        ShowHideSizeSlider(iMode = EditModeEnum.resize)
+        'ShowHideSizeSlider(iMode = EditModeEnum.resize)
 
         uiSave.IsEnabled = (iMode <> EditModeEnum.none)
     End Sub
@@ -542,12 +563,11 @@ Public Class ShowBig
         Return True
     End Function
 
-
+#If RESIZE_HERE Then
     Private Async Sub uiResize_Click(sender As Object, e As RoutedEventArgs)
         If Not Await SprawdzCzyJestEdycja(EditModeEnum.resize) Then Return
 
         ShowHideEditControls(EditModeEnum.resize)
-        ' *TODO* zapytanie o rozmiar, albo coś tego typu
 
         '    Public void ResizeImage(String sImageFile, Decimal dWidth, Decimal dHeight, String sOutputFile)
         '{
@@ -574,9 +594,19 @@ Public Class ShowBig
 
         '}
     End Sub
-    Private Sub uiSizing_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double))
-        ' *TODO* pokaż zmianę
-    End Sub
+    'Private Sub uiSizing_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double))
+    '    ' *TODO* pokaż zmianę
+    'End Sub
+
+        'Public Sub ShowHideSizeSlider(bShow As Boolean)
+    '    Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
+
+    '    'uiSizingDown.Visibility = visib
+
+    'End Sub
+
+
+#End If
 
     Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
         If Not Await SprawdzCzyJestEdycja(EditModeEnum.rotate) Then Return
@@ -592,7 +622,10 @@ Public Class ShowBig
 
     Private Async Sub uiSave_Click(sender As Object, e As RoutedEventArgs)
         Await SaveChanges()
-        ShowHideEditControls(EditModeEnum.none)
+
+        Window_Loaded(Nothing, Nothing)
+
+        ' ShowHideEditControls(EditModeEnum.none)
     End Sub
 
     Private Sub uiRevert_Click(sender As Object, e As RoutedEventArgs)

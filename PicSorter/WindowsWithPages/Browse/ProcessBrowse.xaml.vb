@@ -20,25 +20,38 @@
 Imports System.Collections.ObjectModel
 Imports System.Data
 Imports System.Globalization
-Imports System.Security.Policy
-Imports System.Windows.Automation.Peers
+Imports System.IO
 Imports Microsoft.Windows.Themes
-Imports Newtonsoft.Json.Linq
 Imports Vblib
-Imports Windows.Media.Ocr
 Imports vb14 = Vblib.pkarlibmodule14
 
 
 
 Public Class ProcessBrowse
 
+    Private Const THUMBS_LIMIT As Integer = 16
+
     Private _thumbsy As New ObservableCollection(Of ThumbPicek)
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć
     Private _redrawPending As Boolean = False
+    Private _oBufor As Vblib.Buffer
 
 #Region "called on init"
 
+    Public Sub New(bufor As Vblib.Buffer)
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        _oBufor = bufor
+    End Sub
+
+
+
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Application.ShowWait(True)
+
         Await Bufor2Thumbsy()
         SizeMe()
         RefreshMiniaturki(True)
@@ -48,6 +61,7 @@ Public Class ProcessBrowse
 
         Await EwentualneKasowanieBak()
 
+        Application.ShowWait(False)
     End Sub
 
     ' to jest w związku z DEL w ShowBig
@@ -62,12 +76,12 @@ Public Class ProcessBrowse
 
         Dim iDelay As Integer = vb14.GetSettingsInt("uiBakDelayDays")
 
-        Dim iOutdated As Integer = Application.GetBuffer.BakDelete(iDelay, False)
+        Dim iOutdated As Integer = _oBufor.BakDelete(iDelay, False)
         If iOutdated < 1 Then Return
 
         If Await vb14.DialogBoxYNAsync($"Skasować stare pliki BAK? ({iOutdated})") Then Return
 
-        Application.GetBuffer.BakDelete(iDelay, True)
+        _oBufor.BakDelete(iDelay, True)
 
     End Function
 
@@ -84,7 +98,7 @@ Public Class ProcessBrowse
     ''' </summary>
     Private Async Function Bufor2Thumbsy() As Task
 
-        _iMaxRun = Application.GetBuffer.Count
+        _iMaxRun = _oBufor.Count
 
         uiProgBar.Maximum = _iMaxRun
         uiProgBar.Value = 0
@@ -92,11 +106,11 @@ Public Class ProcessBrowse
 
         Dim iMaxBok As Integer = GetMaxBok(_iMaxRun)
 
-        Dim iLimit As Integer = 9999
+        Dim iLimit As Integer = THUMBS_LIMIT
 
         Dim lDeleted As New List(Of Vblib.OnePic)
 
-        For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
+        For Each oItem As Vblib.OnePic In _oBufor.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then
                 ' zabezpieczenie przed samoznikaniem - nie ma, to kasujemy z listy naszych plikow
                 lDeleted.Add(oItem)
@@ -108,7 +122,7 @@ Public Class ProcessBrowse
             ' *TODO* tu moze byc obracanie, zob. BigPicture
             oNew.oImageSrc = Await WczytajObrazek(oItem.InBufferPathName, 400, Rotation.Rotate0)
 
-            oNew.dateMin = DataDoSortowania(oItem)
+            oNew.dateMin = oItem.GetMostProbablyDate
             uiProgBar.Value += 1
             _thumbsy.Add(oNew)
 
@@ -123,9 +137,9 @@ Public Class ProcessBrowse
             If Await Vblib.DialogBoxYNAsync($"Niektóre pliki są zniknięte ({lDeleted.Count}, usunąć je z indeksu?") Then
 
                 For Each oItem As Vblib.OnePic In lDeleted
-                    Application.GetBuffer.GetList.Remove(oItem)
+                    _oBufor.GetList.Remove(oItem)
                 Next
-                Application.GetBuffer.SaveData()
+                SaveMetaData()
 
             End If
         End If
@@ -133,19 +147,26 @@ Public Class ProcessBrowse
 
     End Function
 
-    ''' <summary>
-    ''' data do wsortowania obrazka - dateMin z sourcefile, jako że to najpewniejsza (ustawiana przy import pic)
-    ''' </summary>
-    ''' <param name="dlaZdjecia"></param>
-    ''' <returns></returns>
-    Private Function DataDoSortowania(dlaZdjecia As Vblib.OnePic) As String
+    '''' <summary>
+    '''' data do wsortowania obrazka - dateMin z sourcefile, jako że to najpewniejsza (ustawiana przy import pic)
+    '''' </summary>
+    '''' <param name="dlaZdjecia"></param>
+    '''' <returns></returns>
+    'Private Function DataDoSortowania(dlaZdjecia As Vblib.OnePic) As String
 
-        Dim oExif As Vblib.ExifTag = dlaZdjecia.GetExifOfType(Vblib.ExifSource.SourceFile)
-        ' jakby co, ale zakładam że jest ten ExifSource... data potrzebna do sortowania plików
-        If oExif Is Nothing Then Return Date.Now
+    '    Dim oExif As Vblib.ExifTag
+    '    oExif = dlaZdjecia.GetExifOfType(Vblib.ExifSource.FileExif)
+    '    If oExif IsNot Nothing Then
+    '        If Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then Return oExif.DateTimeOriginal
+    '        ' 2022.05.06 12:27:47
+    '    End If
 
-            Return oExif.DateMin
-    End Function
+    '    oExif = dlaZdjecia.GetExifOfType(Vblib.ExifSource.SourceFile)
+    '    ' jakby co, ale zakładam że jest ten ExifSource... data potrzebna do sortowania plików
+    '    If oExif Is Nothing Then Return Date.Now
+
+    '    Return oExif.DateMin
+    'End Function
 
 
     Private Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
@@ -166,11 +187,11 @@ Public Class ProcessBrowse
     Private Sub PokazThumbsy()
         uiPicList.ItemsSource = Nothing
         uiPicList.ItemsSource = From c In _thumbsy Where c.bVisible Order By c.dateMin
-        Me.Title = $"Browse buffer ({_thumbsy.Count} images)"
+        Me.Title = $"Browse ({_thumbsy.Count} images)"
     End Sub
 
     Private Sub uiOpenHistoragam_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New HistogramWindow
+        Dim oWnd As New HistogramWindow(_oBufor)
         oWnd.Show()
     End Sub
 #End Region
@@ -246,6 +267,7 @@ Public Class ProcessBrowse
                 oItem.oPic.ReplaceOrAddExif(oExifImgw)
             End If
 
+            oItem.ZrobDymek()
 
             If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
         Next
@@ -254,6 +276,40 @@ Public Class ProcessBrowse
         RefreshMiniaturki(True)
 
     End Sub
+
+    Private Sub uiSetTargetDir_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        If uiPicList.SelectedItems.Count < 1 Then Return
+
+        Dim lSelected As New List(Of ThumbPicek)
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            lSelected.Add(oItem)
+        Next
+
+        Dim oWnd As New TargetDir(_thumbsy.ToList, lSelected)
+        If Not oWnd.ShowDialog Then Return
+
+        Dim sFolderCzas As String = oWnd.GetFolderCzas  ' = "" gdy ma być automat, else: tu jest folder
+        Dim sFolderGeo As String = oWnd.GetFolderGeo    ' = "" gdy ma być automat, else: tu jest folder
+
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+
+            Dim sCzas As String = Vblib.OneDir.DateToDirId(oItem.dateMin)
+
+            Dim sNazwa As String = ""
+            Dim oExif As Vblib.ExifTag = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
+            If oExif IsNot Nothing Then sNazwa = Vblib.Auto_OSM_POI.FullGeoNameToFolderName(oExif.GeoName)
+
+            ' *TODO* TUTAJ
+
+            ReDymkuj()
+
+        Next
+
+        SaveMetaData()
+    End Sub
+
 #End Region
 
 #End Region
@@ -270,7 +326,7 @@ Public Class ProcessBrowse
             oItem.oPic.AddDescription(oDesc)
         Next
 
-        Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+        SaveMetaData()  ' bo zmieniono EXIF
     End Sub
 
     Private Sub uiDescribe_Click(sender As Object, e As RoutedEventArgs)
@@ -283,7 +339,7 @@ Public Class ProcessBrowse
         Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
         oPicek.oPic.AddDescription(oDesc)
 
-        Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+        SaveMetaData()  ' bo zmieniono EXIF
     End Sub
 #End Region
 
@@ -354,7 +410,7 @@ Public Class ProcessBrowse
         ' skasować plik, zwróć następny
         Dim oNext As ThumbPicek = FromBig_Next(oPic, False)
         DeletePicture(oPic)
-        Application.GetBuffer.SaveData()
+        SaveMetaData()
         _redrawPending = True
         Return oNext
     End Function
@@ -382,6 +438,10 @@ Public Class ProcessBrowse
         Return Nothing
     End Function
 
+    Public Sub SaveMetaData()
+        _oBufor.SaveData()
+    End Sub
+
 #End Region
 
 
@@ -401,7 +461,7 @@ Public Class ProcessBrowse
         GC.Collect()    ' zabezpieczenie jakby tu był jeszcze otwarty plik jakiś
 
         ' usuń z bufora (z listy i z katalogu), ale nie zapisuj indeksu (jakby to była seria kasowania)
-        If Not Application.GetBuffer.DeleteFile(oPicek.oPic) Then Return   ' nieudane skasowanie
+        If Not _oBufor.DeleteFile(oPicek.oPic) Then Return   ' nieudane skasowanie
 
         ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
         Application.GetSourcesList.AddToPurgeList(oPicek.oPic.sSourceName, oPicek.oPic.sInSourceID)
@@ -425,7 +485,7 @@ Public Class ProcessBrowse
         _ReapplyAutoSplit = False
         DeletePicture(oPicek)
 
-        Application.GetBuffer.SaveData()
+        SaveMetaData()
 
         ' pokaz na nowo obrazki
         RefreshMiniaturki(_ReapplyAutoSplit)
@@ -450,7 +510,7 @@ Public Class ProcessBrowse
             DeletePicture(oItem)
         Next
 
-        Application.GetBuffer.SaveData()    ' tylko raz, po całej serii kasowania
+        SaveMetaData()    ' tylko raz, po całej serii kasowania
 
         ' pokaz na nowo obrazki
         RefreshMiniaturki(_ReapplyAutoSplit)
@@ -559,6 +619,13 @@ Public Class ProcessBrowse
         PokazThumbsy()
 
     End Sub
+
+    Private Sub ReDymkuj()
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            oItem.ZrobDymek()
+        Next
+    End Sub
+
 
     Private Sub SkalujRozmiarMiniaturek()
 
@@ -786,7 +853,7 @@ Public Class ProcessBrowse
 
         uiProgBar.Visibility = Visibility.Collapsed
 
-        Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+        SaveMetaData() ' bo zmieniono EXIF
 
     End Sub
 
@@ -808,7 +875,7 @@ Public Class ProcessBrowse
 
         uiProgBar.Visibility = Visibility.Collapsed
 
-        Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+        SaveMetaData()  ' bo zmieniono EXIF
 
     End Sub
 
@@ -826,22 +893,28 @@ Public Class ProcessBrowse
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek
             iDuzoscH = iMaxBok
+            ZrobDymek()
+        End Sub
 
+        Public Sub ZrobDymek()
             sDymek = oPic.sSuggestedFilename
-            Dim oExifTag As Vblib.ExifTag = picek.GetExifOfType(Vblib.ExifSource.FileExif)
+            If oPic.sSourceName.ToLower <> "adhoc" Then sDymek = sDymek & vbCrLf & "Src: " & oPic.sSourceName
+
+            Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
             If oExifTag IsNot Nothing Then
-                sDymek = sDymek & vbCrLf & oExifTag.DateTimeOriginal
+                sDymek = sDymek & vbCrLf & "Taken: " & oExifTag.DateTimeOriginal
             Else
-                oExifTag = picek.GetExifOfType(Vblib.ExifSource.SourceFile)
-                sDymek = sDymek & vbCrLf & "(" & oExifTag.DateMin & ")"
+                oExifTag = oPic.GetExifOfType(Vblib.ExifSource.SourceFile)
+                sDymek = sDymek & vbCrLf & "(file: " & oExifTag.DateMin.ToExifString & ")"
             End If
 
-            For Each oExif As Vblib.ExifTag In picek.Exifs
-                If oExif.GeoName <> "" Then
-                    sDymek = sDymek & vbCrLf & oExif.GeoName
-                    Exit For
-                End If
+            For Each oExif As Vblib.ExifTag In oPic.Exifs
+                If oExif.GeoName <> "" Then sDymek = sDymek & vbCrLf & oExif.GeoName
             Next
+
+            If Not String.IsNullOrWhiteSpace(oPic.TargetDir) Then
+                sDymek = sDymek & vbCrLf & "► " & oPic.TargetDir
+            End If
 
         End Sub
 
@@ -929,10 +1002,9 @@ Public Class ProcessBrowse
 
         End If
 
-        Application.GetBuffer.SaveData()
+        SaveMetaData()
 
     End Sub
-
 
 
 

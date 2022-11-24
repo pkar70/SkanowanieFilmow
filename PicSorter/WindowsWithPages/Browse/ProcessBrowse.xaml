@@ -77,7 +77,7 @@
                         <MenuItem Header="Describe" Click="uiDescribeSelected_Click" />
                         <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
                         <MenuItem Header="Batch process" Name="uiBatchProcessors" />
-                        <MenuItem Header="Archive" Name="uiMenuArchive" IsEnabled="False" />
+                        <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click"/>
                     <MenuItem Header="Publish" Name="uiMenuPublish" IsEnabled="False"  />
                 </Menu>
             </Popup>
