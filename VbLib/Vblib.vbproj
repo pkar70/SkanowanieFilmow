@@ -47,7 +47,6 @@
     <None Include="$(MSBuildThisFileDirectory)_tudus.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="LocalStorage\" />
     <Folder Include="TagTree\" />
   </ItemGroup>
   <ItemGroup>

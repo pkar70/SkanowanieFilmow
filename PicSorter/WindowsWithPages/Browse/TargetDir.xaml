@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="TargetDir" Height="300" Width="250" Loaded="Window_Loaded">
     <StackPanel Margin="5,5,5,5">
@@ -35,7 +34,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <RadioButton Name="uiManualGeoSplit" GroupName="wedlugGeo"/>
+            <RadioButton Name="uiManualGeoSplit" GroupName="wedlugGeo" Checked="uiManualGeoSplit_Checked" Unchecked="uiManualGeoSplit_Checked"/>
             <TextBox Grid.Column="1" Name="uiManualGeoName" TextChanged="uiGeoFolder_Changed"/>
 
         </Grid>

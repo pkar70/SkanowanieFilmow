@@ -102,7 +102,7 @@ Partial Public Module Extensions
         If Not oDate2.IsDateValid Then Return oDate1
 
         If oDate2 < oDate1 Then Return oDate2
-        Return oDate2
+        Return oDate1
     End Function
 
     ''' <summary>
@@ -116,7 +116,7 @@ Partial Public Module Extensions
         If Not oDate2.IsDateValid Then Return oDate1
 
         If oDate2 > oDate1 Then Return oDate2
-        Return oDate2
+        Return oDate1
     End Function
 
     <Runtime.CompilerServices.Extension()>

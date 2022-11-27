@@ -42,6 +42,39 @@ Class ProcessPic
 
     End Function
 
+    Private Function CountDoCloudArchiwizacji() As Integer
+
+        Dim currentArchs As New List(Of String)
+        For Each oArch As Vblib.LocalStorage In Application.GetArchivesList.GetList
+            If oArch.enabled Then currentArchs.Add(oArch.StorageName.ToLower)
+        Next
+
+        If currentArchs.Count < 1 Then Return 0
+
+        Dim iCnt As Integer = 0
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
+
+            If oPic.Archived Is Nothing Then
+                iCnt += 1
+            Else
+
+                Dim sArchiwa As String = oPic.Archived.ToLower
+
+                For Each sArch As String In currentArchs
+                    If Not sArchiwa.Contains(sArch) Then
+                        iCnt += 1
+                        Exit For
+                    End If
+                Next
+            End If
+
+        Next
+
+        Return iCnt
+
+    End Function
+
     Private Sub AktualizujGuziki()
 
         ' z licznika z bufora
@@ -57,6 +90,12 @@ Class ProcessPic
         counter = CountDoArchiwizacji()
         uiLocalArch.Content = $"Local arch ({counter})"
         uiLocalArch.IsEnabled = (counter > 0)
+
+        ' z licznika do web archiwizacji
+        counter = CountDoCloudArchiwizacji()
+        uiCloudArch.Content = $"Cloud arch ({counter})"
+        uiCloudArch.IsEnabled = (counter > 0)
+
 
         ' oraz bez licznika
         uiPublish.Content = $"Publish"

@@ -2,6 +2,7 @@
 
 Imports System.DirectoryServices.ActiveDirectory
 Imports System.Security.Cryptography
+Imports System.Security.Policy
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
@@ -27,39 +28,94 @@ Public Class BrowseKeywordsWindow
         WypelnCombo()
     End Sub
 
-    Private Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
 
-        _oNewExif.Keywords = ""
-        _oNewExif.UserComment = ""
+    Private Sub SetDatesByKeywords(inExif As Vblib.ExifTag, fromKeywords As List(Of Vblib.OneKeyword))
 
         Dim oMinDate As Date = Date.MaxValue
         Dim oMaxDate As Date = Date.MinValue
 
         Dim iMinRadius As Integer = Integer.MaxValue
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-            If oItem.bChecked Then
-                _oNewExif.Keywords = _oNewExif.Keywords & " " & oItem.sTagId
-                _oNewExif.UserComment = _oNewExif.UserComment & " | " & oItem.sDisplayName
+        For Each oItem As Vblib.OneKeyword In fromKeywords
+            inExif.Keywords = inExif.Keywords & " " & oItem.sTagId
+            inExif.UserComment = inExif.UserComment & " | " & oItem.sDisplayName
 
-                oMinDate = oMinDate.DateMin(oItem.minDate)
-                oMaxDate = oMaxDate.DateMax(oItem.maxDate)
+            oMinDate = oMinDate.DateMin(oItem.minDate)
+            oMaxDate = oMaxDate.DateMax(oItem.maxDate)
 
-                ' geo: na najbardziej ograniczony zakres (najmniejszy radius)
-                If oItem.iGeoRadius > 0 Then
-                    If oItem.iGeoRadius > iMinRadius Then Continue For
-                    _oNewExif.GeoTag = oItem.oGeo
-                    _oNewExif.GeoName = oItem.sDisplayName
-                    iMinRadius = oItem.iGeoRadius
+            ' geo: na najbardziej ograniczony zakres (najmniejszy radius)
+            If oItem.iGeoRadius > 0 Then
+                If oItem.iGeoRadius > iMinRadius Then Continue For
+                inExif.GeoTag = oItem.oGeo
+                inExif.GeoName = oItem.sDisplayName
+                iMinRadius = oItem.iGeoRadius
+            End If
+
+        Next
+
+        If oMaxDate.IsDateValid Then inExif.DateMax = oMaxDate
+        If oMinDate.IsDateValid Then inExif.DateMin = oMinDate
+
+    End Sub
+
+    Private Async Function SetTargetDirByKeywords(forPic As ProcessBrowse.ThumbPicek, fromKeywords As List(Of Vblib.OneKeyword)) As Task
+
+        For Each oItem As Vblib.OneKeyword In fromKeywords
+            If oItem.hasFolder Then
+                ' podkatalog _kwd\ zapewne, ale to też zależy od Archive przecież
+                Dim sTargetDir As String = oItem.sTagId
+                If Not String.IsNullOrEmpty(forPic.oPic.TargetDir) Then
+                    If Not Await vb14.DialogBoxYNAsync("Dotychczasowy katalog: " & forPic.oPic.TargetDir & vbCrLf & "Z keyword: " & sTargetDir) Then
+                        ' teoretycznie mogłoby być Continue, bo może kolejny już tak?
+                        Exit For
+                    End If
                 End If
 
+                forPic.oPic.TargetDir = sTargetDir
             End If
         Next
 
-        If Not oMaxDate.Date.IsDateValid Then oMaxDate = Date.Now
+    End Function
 
-        _oNewExif.DateMin = oMinDate
-        _oNewExif.DateMax = oMaxDate
+    Private Sub GetListOfSelectedKeywordsRecursive(oParent As Vblib.OneKeyword, lKeys As List(Of Vblib.OneKeyword))
+
+        If oParent.bChecked Then lKeys.Add(oParent)
+        If oParent.SubItems Is Nothing Then Return
+
+        For Each oItem As Vblib.OneKeyword In oParent.SubItems
+            If oItem.bChecked Then lKeys.Add(oItem)
+            If oItem.SubItems IsNot Nothing Then
+                For Each oChild As Vblib.OneKeyword In oItem.SubItems
+                    GetListOfSelectedKeywordsRecursive(oChild, lKeys)
+                Next
+            End If
+        Next
+
+    End Sub
+
+    Private Function GetListOfSelectedKeywords() As List(Of Vblib.OneKeyword)
+        Dim lKeys As New List(Of Vblib.OneKeyword)
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+            If oItem.SubItems IsNot Nothing Then
+                For Each oChild As Vblib.OneKeyword In oItem.SubItems
+                    GetListOfSelectedKeywordsRecursive(oChild, lKeys)
+                Next
+            End If
+        Next
+
+        Return lKeys
+
+    End Function
+
+    Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
+
+        _oNewExif.Keywords = ""
+        _oNewExif.UserComment = ""
+
+        Dim lKeys As List(Of Vblib.OneKeyword) = GetListOfSelectedKeywords()
+
+        SetDatesByKeywords(_oNewExif, lKeys)
+        Await SetTargetDirByKeywords(_oPic, lKeys)
 
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
@@ -295,18 +351,6 @@ Public Class BrowseKeywordsWindow
 
     End Sub
 
-    'Private Function SzukajMinDaty(oItem As OneKeyword, minDate As Date)
-
-    '    For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-    '        Dim currMinDate As Date = SzukajMinDatyRecursive(oItem)
-    '        If currMinDate.Year > 1800 Then
-    '            If currMinDate > minDate Then minDate = currMinDate
-    '        End If
-    '    Next
-
-    '    Return minDate
-    'End Function
-
     Private Function SzukajMinDatyRecursive(oItem As Vblib.OneKeyword, minDate As Date) As Date
         'vb14.DumpCurrMethod()
 
@@ -324,19 +368,7 @@ Public Class BrowseKeywordsWindow
         Return minDate
     End Function
 
-    'Private Function SzukajMaxDaty()
-    '    Dim maxDate As Date = Date.MinValue
 
-    '    For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-    '        Dim currMaxDate As Date = SzukajMaxDatyRecursive(oItem)
-    '        If currMaxDate.Year > 1800 Then
-    '            If currMaxDate > maxDate Then maxDate = currMaxDate
-    '        End If
-    '    Next
-
-    '    If maxDate.Year > 2100 Then Return Date.MinValue
-    '    Return maxDate
-    'End Function
 
     Private Function SzukajMaxDatyRecursive(oItem As Vblib.OneKeyword, maxDate As Date) As Date
         'vb14.DumpCurrMethod()

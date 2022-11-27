@@ -522,7 +522,7 @@ Public Module pkar
         Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
 
         Dim oStack As New StackPanel With {.Margin = New Thickness(5, 5, 5, 5)}
-        Dim oTxt As New TextBox With {.Text = sMsg}
+        Dim oTxt As New TextBlock With {.Text = sMsg}
         oStack.Children.Add(oTxt)
 
         Dim oBox As New TextBox With {.Text = sDefault, .Margin = New Thickness(5, 5, 5, 5)}

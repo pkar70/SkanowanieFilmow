@@ -104,6 +104,8 @@ Class SettingsSources
 
         If String.IsNullOrWhiteSpace(sCurrentVolLabel) Then sCurrentVolLabel = "#####"  ' taka nie wystąpi
 
+        vb14.DialogBox($"ComboVolLabels (...,{sCurrentVolLabel})")
+
         Dim iInd As Integer = sCurrentVolLabel.IndexOf("(")
         If iInd > 1 Then sCurrentVolLabel = sCurrentVolLabel.Substring(0, iInd - 1)
         sCurrentVolLabel = sCurrentVolLabel.ToLowerInvariant
@@ -227,15 +229,24 @@ Class SettingsSources
         End If
 
         Dim dPurgeDelay As Double
-        Try
-            dPurgeDelay = uiSrcPurge.Text
-        Catch ex As Exception
-            vb14.DialogBox("Niepoprawna liczba (purge delay)")
+        If _item.Typ = Vblib.PicSourceType.AdHOC Then
+            dPurgeDelay = 9999
+        Else
+            Try
+                dPurgeDelay = uiSrcPurge.Text
+            Catch ex As Exception
+                vb14.DialogBox("Niepoprawna liczba (purge delay)")
+                Return
+            End Try
+        End If
+
+        _item.VolLabel = uiSrcVolume.SelectedValue
+        If _item.VolLabel.Length < 2 Then
+            vb14.DialogBox("Błędny vollabel")
             Return
-        End Try
+        End If
 
         _item.SourceName = uiSrcName.Text
-        _item.VolLabel = uiSrcVolume.SelectedValue
         _item.Path = uiSrcPath.Text
         _item.Recursive = uiSrcRecursive.IsChecked
 

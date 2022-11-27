@@ -1,4 +1,5 @@
 ﻿
+Imports System.Security.Cryptography
 Imports Newtonsoft.Json
 
 Public Class OneKeyword
@@ -23,6 +24,8 @@ Public Class OneKeyword
     ' *TODO* upload behaviour ' można, nie można, skasować - o co to chodziło? :)
     ' *TODO* można dodać Exif narzucany (chyba)
 
+    Public Property hasFolder As Boolean
+
     Public Property SubItems As List(Of OneKeyword)
 
 #Region "na potrzeby pokazywania do wyboru przy oznaczaniu"
@@ -31,7 +34,18 @@ Public Class OneKeyword
     Public Property bEnabled As Boolean
     <JsonIgnore>
     Public Property bChecked As Boolean
+
 #End Region
+
+    Public Function ToComboDisplayName() As String
+        If String.IsNullOrWhiteSpace(sDisplayName) Then Return sTagId
+        Dim sRet As String = sTagId & " ("
+        If sDisplayName.Length < 24 Then Return sRet & sDisplayName & ")"
+
+        Return sRet & sDisplayName.Substring(0, 23) & "…)"
+
+    End Function
+
 End Class
 
 Public Class KeywordsList
@@ -62,6 +76,11 @@ Public Class KeywordsList
 
         Return Nothing
     End Function
+
+
+
+
+#Region "przeliczanie dat w drzewku"
 
     ''' <summary>
     '''  w drzewku ustawian dateMin i dateMax hierarchicznie, całość, idąc od dołu (parent zależy od dat w child)
@@ -96,6 +115,7 @@ Public Class KeywordsList
         Dim oRet As Date = Date.MaxValue
 
         For Each oSubItem As OneKeyword In oItem.SubItems
+            If Not oSubItem.minDate.IsDateValid Then Return Date.MaxValue
             oRet = oRet.DateMin(oSubItem.minDate)
         Next
 
@@ -107,6 +127,7 @@ Public Class KeywordsList
         Dim oRet As Date = Date.MinValue
 
         For Each oSubItem As OneKeyword In oItem.SubItems
+            If Not oSubItem.maxDate.IsDateValid Then Return Date.MinValue
             oRet = oRet.DateMax(oSubItem.maxDate)
             'If oSubItem.maxDate.Year < 1800 Then Return Date.MaxValue
 
@@ -116,6 +137,7 @@ Public Class KeywordsList
         Return oRet
     End Function
 
+#End Region
 
 
 End Class

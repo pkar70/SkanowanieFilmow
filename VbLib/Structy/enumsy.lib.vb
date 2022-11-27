@@ -62,3 +62,10 @@ Public Enum AutoTaggerType
     WebPublic = 2
     WebAccount = 3
 End Enum
+
+Public Enum AfterChangeBehaviour
+    ignore = 0
+    sendPhoto = 1
+    sendMetadata = 2
+    sendBoth = 3
+End Enum

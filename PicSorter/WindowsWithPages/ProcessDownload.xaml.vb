@@ -25,7 +25,9 @@ Public Class ProcessDownload
         Dim oWnd As New EditExifTag(oSrc.currentExif, oSrc.SourceName & " (chwilowe)", EditExifTagScope.LimitedToSourceDir, False)
         oWnd.ShowDialog()
 
+        Application.ShowWait(True)
         Await RetrieveFilesFromSource(oSrc)
+        Application.ShowWait(False)
 
         Dim iToPurge As Integer = oSrc.Purge(False)
         If iToPurge > 0 Then
@@ -42,15 +44,19 @@ Public Class ProcessDownload
         For Each oSrc As Vblib.PicSourceBase In Application.GetSourcesList.GetList
             If Not oSrc.enabled Then Continue For
 
+            Application.ShowWait(True)
             Await RetrieveFilesFromSource(oSrc)
+            Application.ShowWait(False)
             oSrc.Purge(True)
         Next
 
     End Sub
 
     Private Async Function RetrieveFilesFromSource(oSrc As Vblib.PicSourceBase) As Task
+        vb14.DumpCurrMethod(oSrc.VolLabel)
 
         Dim iCount As Integer = oSrc.ReadDirectory
+        'Await vb14.DialogBoxAsync($"read {iCount} files")
         If iCount < 1 Then Return
 
         uiProgBar.Maximum = iCount

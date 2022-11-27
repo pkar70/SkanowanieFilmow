@@ -41,11 +41,20 @@ Public Class Process_Watermark
 
         oPic.InitEdit(bPipeline)
 
-        Dim fileBytes As Byte() = File.ReadAllBytes(oPic.sFilenameEditSrc)
+        Dim fileBytes As Byte()
+
+        Using memoryStream As New MemoryStream
+            oPic._PipelineInput.CopyTo(memoryStream)
+            fileBytes = memoryStream.ToArray
+        End Using
+
+        ' Dim fileBytes As Byte() = File.ReadAllBytes(oPic.sFilenameEditSrc)
 
         Dim newFileBytes As Byte() = _watermark.EmbedWatermark(fileBytes)
 
-        File.WriteAllBytes(oPic.sFilenameEditDst, newFileBytes)
+        oPic._PipelineOutput.Write(newFileBytes)
+
+        ' File.WriteAllBytes(oPic.sFilenameEditDst, newFileBytes)
 
         oPic.EndEdit()
         Return True

@@ -1,9 +1,9 @@
 
 ' docelowo: wszystko co ma zwi¹zek z MediaDevices (¿eby ten nuget by³ tylko w tym jednym Project)
 
-
 Imports System.IO
 Imports MediaDevices
+Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class Helper
 
@@ -22,6 +22,7 @@ Public Class Helper
     Private _oMD As MediaDevices.MediaDevice
 
     Public Sub New(sVolLabel As String)
+        vb14.DumpCurrMethod(sVolLabel)
         _oMD = GetDeviceFromLabel_MTP(sVolLabel)
     End Sub
 
@@ -31,6 +32,7 @@ Public Class Helper
 
     Public Sub Connect()
         _oMD?.Connect(MediaDevices.MediaDeviceAccess.GenericRead Or MediaDevices.MediaDeviceAccess.GenericWrite)
+        '_oMD?.Connect(MediaDevices.MediaDeviceAccess.GenericRead)
     End Sub
 
     Public Function Delete(sPathname As String)
@@ -51,15 +53,19 @@ Public Class Helper
     End Function
 
     Public Shared Function GetDeviceFromLabel_MTP(sVolLabel As String) As MediaDevices.MediaDevice
+        vb14.DumpCurrMethod(sVolLabel)
         sVolLabel = sVolLabel.ToLowerInvariant
         If String.IsNullOrWhiteSpace(sVolLabel) Then Return Nothing
         Dim iInd As Integer = sVolLabel.IndexOf("(")
         If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd - 1).Trim
+        vb14.DumpMessage("searching for '" & sVolLabel & "'")
 
         For Each oMD As MediaDevices.MediaDevice In MediaDevices.MediaDevice.GetDevices
+            vb14.DumpMessage($"device: {oMD.FriendlyName.ToLowerInvariant}")
             If oMD.FriendlyName.ToLowerInvariant = sVolLabel Then Return oMD
         Next
 
+        vb14.DumpMessage("nie znalaz³em!")
         Return Nothing
     End Function
 
@@ -99,7 +105,7 @@ Public Class Helper
 
     Private Function ReadDirectory_Recursion(sSrcPath As String, sSourceName As String, sIncludeMask As String, sExcludeMask As String, oCurrentExif As Vblib.ExifTag) As Boolean
 
-        If _oMD Is Nothing Then Return Nothing    ' nie powinno siê zdarzyæ, chyba ¿e bêdzie b³¹d w programowaniu
+        If _oMD Is Nothing Then Return False    ' nie powinno siê zdarzyæ, chyba ¿e bêdzie b³¹d w programowaniu
 
         For Each sDir As String In _oMD.EnumerateDirectories(sSrcPath)
             If Not ReadDirectory_Recursion(sDir, sSourceName, sIncludeMask, sExcludeMask, oCurrentExif) Then Return Nothing
@@ -117,19 +123,34 @@ Public Class Helper
                 Dim oFI As MediaDevices.MediaFileInfo = _oMD.GetFileInfo(sFilePathName)
 
                 Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.SourceFile)
-                Dim createDate = oFI.CreationTime
-                Dim writeDate = oFI.LastWriteTime
-                If createDate < writeDate Then
-                    oExif.DateMax = writeDate
-                    oExif.DateMin = createDate
+                Dim createDate As Date? = oFI.CreationTime
+                Dim writeDate As Date? = oFI.LastWriteTime
+
+                If createDate.HasValue AndAlso writeDate.HasValue Then
+
+                    If createDate < writeDate Then
+                        oExif.DateMax = writeDate.Value
+                        oExif.DateMin = createDate.Value
+                    Else
+                        oExif.DateMin = writeDate.Value
+                        oExif.DateMax = createDate.Value
+                    End If
+                    oNew.Exifs.Add(oExif)
                 Else
-                    oExif.DateMin = writeDate
-                    oExif.DateMax = createDate
+                    ' czyli albo tylko jedno, albo ¿adno nie ma daty
+                    If createDate.HasValue Then
+                        oExif.DateMax = createDate.Value
+                        oExif.DateMin = createDate.Value
+                    End If
+
+                    If writeDate.HasValue Then
+                        oExif.DateMax = writeDate.Value
+                        oExif.DateMin = writeDate.Value
+                    End If
                 End If
-                oNew.Exifs.Add(oExif)
 
                 _listaPlikow.Add(oNew)
-            End If
+                End If
 
         Next
 

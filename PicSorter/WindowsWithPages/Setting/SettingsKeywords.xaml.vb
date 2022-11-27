@@ -1,5 +1,6 @@
 ﻿
 
+Imports System.Security.Policy
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
@@ -76,6 +77,8 @@ Class SettingsKeywords
             uiRadius.Text = ""
         End If
 
+        uiHasDir.IsChecked = oItem.hasFolder
+
         uiDefPublish.Text = oItem.defaultPublish
         uiDenyPublish.Text = oItem.denyPublish
 
@@ -108,6 +111,8 @@ Class SettingsKeywords
             End Try
             _editingItem.iGeoRadius = uiRadius.Text
         End If
+
+        _editingItem.hasFolder = uiHasDir.IsChecked
 
         _editingItem.defaultPublish = uiDefPublish.Text
         _editingItem.denyPublish = uiDenyPublish.Text

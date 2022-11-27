@@ -17,37 +17,37 @@ Public Class Process_Signature
 
         oPic.InitEdit(bPipeline)
 
-        Dim watermarkedStream As IO.Stream = IO.File.OpenWrite(oPic.sFilenameEditDst)
+        ' Dim watermarkedStream As IO.Stream = IO.File.OpenWrite(oPic.sFilenameEditDst)
 
         Dim signature As String = GetSignatureString(oPic)
 
-        Using oStream As IO.Stream = IO.File.OpenRead(oPic.sFilenameEditSrc)
+        ' Using oStream As IO.Stream = IO.File.OpenRead(oPic.sFilenameEditSrc)
 
-            Using img = Image.FromStream(oStream)
+        Using img = Image.FromStream(oPic._PipelineInput)   ' oStream
 
-                Dim fontSize As Integer = 20        ' minimalna wielkoœæ
-                fontSize = Math.Max(fontSize, img.Height * 0.05)    ' 5 % obrazka
-                fontSize = Math.Min(fontSize, 50)       ' ale nie wiêcej ni¿ 50 px
+            Dim fontSize As Integer = 20        ' minimalna wielkoœæ
+            fontSize = Math.Max(fontSize, img.Height * 0.05)    ' 5 % obrazka
+            fontSize = Math.Min(fontSize, 50)       ' ale nie wiêcej ni¿ 50 px
 
-                Using graphic = Graphics.FromImage(img)
-                    Dim oFont As New Font(FontFamily.GenericSansSerif, fontSize, FontStyle.Bold, GraphicsUnit.Pixel)
+            Using graphic = Graphics.FromImage(img)
+                Dim oFont As New Font(FontFamily.GenericSansSerif, fontSize, FontStyle.Bold, GraphicsUnit.Pixel)
 
-                    graphic.PageUnit = GraphicsUnit.Pixel
-                    Dim oMeasure As SizeF = graphic.MeasureString(signature, oFont)
+                graphic.PageUnit = GraphicsUnit.Pixel
+                Dim oMeasure As SizeF = graphic.MeasureString(signature, oFont)
 
-                    Dim iWhereX As Integer = img.Width - oMeasure.Height
-                    iWhereX = Math.Max(iWhereX, 10)
+                Dim iWhereX As Integer = img.Width - oMeasure.Height
+                iWhereX = Math.Max(iWhereX, 10)
 
 
-                    Dim oBrush As New SolidBrush(Color.Gray)
-                    Dim oPoint As New Point(iWhereX, img.Height - fontSize * 2)
+                Dim oBrush As New SolidBrush(Color.Gray)
+                Dim oPoint As New Point(iWhereX, img.Height - fontSize * 2)
 
-                    graphic.DrawString(signature, oFont, oBrush, oPoint)
-                    img.Save(watermarkedStream, Imaging.ImageFormat.Jpeg)
+                graphic.DrawString(signature, oFont, oBrush, oPoint)
+                img.Save(oPic._PipelineOutput, Imaging.ImageFormat.Jpeg)    '   watermarkedStream
 
-                End Using
             End Using
         End Using
+        ' End Using
 
 
         oPic.EndEdit()
@@ -62,7 +62,7 @@ Public Class Process_Signature
             If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then sSignature = oExif.Copyright
         Next
 
-        Dim iInd As Integer = sSignature.IndexOf(".")
+        Dim iInd As Integer = sSignature.IndexOfAny({".", ","})
         If iInd > 1 Then sSignature = sSignature.Substring(0, iInd)
 
         Return sSignature

@@ -56,8 +56,9 @@ Public Class PicSourceImplement
 
 #Region "Folder"
     Private Function ReadDirectory_Folder() As Integer
+        DumpCurrMethod()
         If Not IsPresent_Main() Then Return -1
-        If Not IO.Directory.Exists(Path) Then Return -1
+        If Not IO.Directory.Exists(Path) Then Return -2
 
         Dim iCnt As Integer = 0
         _listaPlikow.Clear()
@@ -65,10 +66,15 @@ Public Class PicSourceImplement
         Dim dateMin As Date = currentExif.DateMin
 
         Dim allfiles As String() = IO.Directory.GetFiles(Path, "*", IO.SearchOption.AllDirectories)
+        DumpMessage("got allfiles array, starting to iterate")
+
         For Each sFilePathName As String In allfiles
             ' uwzględnianie masek include oraz exclude
             Dim sFileName As String = IO.Path.GetFileName(sFilePathName)
+            DumpMessage("got file: " & sFileName)
+
             If OnePic.MatchesMasks(sFileName, includeMask, excludeMask) Then
+
                 Dim oNew As New Vblib.OnePic(SourceName, sFilePathName, sFileName)
                 oNew.Exifs.Add(currentExif)
 
@@ -158,10 +164,14 @@ Public Class PicSourceImplement
     ' ale to właściwie tylko proxy do ClassLib Std 2.0 z nugetem, żeby ten nuget był tylko tam
 
     Private Function ReadDirectory_MTP() As Integer
-        If Not IsPresent_MTP() Then Return -1
+        DumpCurrMethod()
+        Dim temp As Boolean = IsPresent_MTP()
+        DumpMessage($"zwrot z present: {temp}")
+        If Not temp Then Return -1
 
+        DumpMessage("mam MTP")
         _listaPlikow = _MediaDeviceHelper.ReadDirectory(Path, SourceName, includeMask, excludeMask, currentExif)
-        If _listaPlikow Is Nothing Then Return -1
+        If _listaPlikow Is Nothing Then Return -2
 
         Return _listaPlikow.Count
     End Function
@@ -177,17 +187,29 @@ Public Class PicSourceImplement
 
 
     Private Function CheckDeviceFromVolLabel_MTP(sVolLabel As String) As Boolean
+        Try
 
-        Dim oMD As New MediaDevicesLib.Helper(sVolLabel)
-        If Not oMD.IsValid Then Return False
-        _MediaDeviceHelper = oMD
-        _MediaDeviceHelper.Connect()
+            DumpCurrMethod(sVolLabel)
+            Dim oMD As New MediaDevicesLib.Helper(sVolLabel)
+            If Not oMD.IsValid Then Return False
+            _MediaDeviceHelper = oMD
+            DumpMessage("tuż przed Connect")
+            _MediaDeviceHelper.Connect()
+            DumpMessage("już po Connect")
 
-        Return True
+            Return True
+        Catch ex As Exception
+            DumpMessage($"catch error {ex.Message}")
+        End Try
+        Return False
     End Function
 
     Private Function IsPresent_MTP() As Boolean
-        Return CheckDeviceFromVolLabel_MTP(VolLabel)
+        DumpCurrMethod()
+        Dim temp As Boolean = CheckDeviceFromVolLabel_MTP(VolLabel)
+        DumpMessage("powrocilem")
+        DumpMessage($"ret from CheckDev: {temp}")
+        Return temp
     End Function
 
 

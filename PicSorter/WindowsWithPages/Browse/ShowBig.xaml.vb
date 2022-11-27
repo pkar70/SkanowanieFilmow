@@ -153,7 +153,9 @@ Public Class ShowBig
         Dim oSrc As Vblib.AutotaggerBase = oFE?.DataContext
         If oSrc Is Nothing Then Return
 
+        Application.ShowWait(True)
         Dim oExif As Vblib.ExifTag = Await oSrc.GetForFile(_picek.oPic)
+        Application.ShowWait(False)
         If oExif IsNot Nothing Then
             _picek.oPic.Exifs.Add(oExif)
             _picek.oPic.TagsChanged = True
@@ -168,7 +170,9 @@ Public Class ShowBig
         Dim oSrc As Vblib.PostProcBase = oFE?.DataContext
         If oSrc Is Nothing Then Return
 
+        Application.ShowWait(True)
         Await oSrc.Apply(_picek.oPic)
+        Application.ShowWait(False)
 
     End Sub
 
@@ -549,12 +553,13 @@ Public Class ShowBig
             oEncoder.BitmapTransform.ScaledHeight = bmpTrans.ScaledHeight ' na razie to jest nieużywane
             oEncoder.BitmapTransform.ScaledWidth = bmpTrans.ScaledWidth ' na razie to jest nieużywane
 
-            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(_picek.oPic.sFilenameEditSrc))
+            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(_picek.oPic))
 
             ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
             Await oEncoder.FlushAsync()
 
-            Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.sFilenameEditDst, _picek.oPic.sFilenameEditSrc)
+            Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic)
+            'Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.sFilenameEditDst, _picek.oPic.sFilenameEditSrc)
 
             _picek.oPic.EndEdit()
 

@@ -33,7 +33,8 @@ Public MustInherit Class PostProcBase
     ''' <param name="sNewName"></param>
     ''' <returns></returns>
     Public Async Function Apply(oPic As OnePic, Optional bPipeline As Boolean = False) As Task(Of Boolean)
-        If Not OnePic.MatchesMasks(oPic.GetSourceFilename, include, "") Then Return False
+        ' If Not OnePic.MatchesMasks(oPic.GetSourceFilename, include, "") Then Return False
+        If Not OnePic.MatchesMasks(oPic.InBufferPathName, include, "") Then Return False
 
         Return Await ApplyMain(oPic, bPipeline)
     End Function

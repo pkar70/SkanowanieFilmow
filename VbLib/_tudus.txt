@@ -1,4 +1,66 @@
 
+
+BROWSER: po wczytaniu, jeśli są pliki już w pełni w archiwum, to pyta czy je usunać (wraz z liczbą)
+
+nie dziala recursive, chyba po jednym katalogu jest problem (bo jeden katalog jakby wczytuje poprawnie)
+
+Shuterfly, degoo?
+Degoo sharing ma?
+(webdav)
+Degoo link: https://cloud.degoo.com/share/QAIPwkL8oLQO9YyvTgreNg
+degoo ma description oraz comment (komentów może być dużo)
+
+Archiwum: wszystko tam wysyła,lokalne czy cloud
+Publish: wysyła tylko wskazane
+w sumie to może być ten sam engine, i opcja "as archive / as publish" (że albo wszystko, albo tylko zaznaczane)
+
+
+postprocess: simple EXIF (dodawanie (C) oraz artist)
+
+dla Degoo, Shutterfly: postprocess: simpleEXIF, znak wodny, podpis?
+
+każdy PUBLISH/CLOUD ARCH jako oddzielny project.
+
+NAJBLIZSZE KROKI ZDJĘCIOWE:
+* w tle: przeglądać zdjęcia, kasować, obroty, crop, resize
+* w tle: Azure na zdjęciach
+* w tle: keywords
+
+
+
+* postprocess - remove all EXIF
+* archiwizacja - na dysk l:\ (jedno, żeby sprawdzić, ale jeszcze bez publikacji)
+* cloudarch, czyli shutterfly oraz może degoo?
+* archive vs publish: archive zachowuje nazwy plików oraz ich pełen content (w tym EXIF), żadno skalowanie
+* publikacje proste (płaskie), Instagram
+	* może być PUBLISH:deleteAfterDays ?
+	* wysłanie zdjęcia
+	* opisanie zdjęcia
+	* odczytanie stamtąd informacji - bo niby sam tworzy opis (2022.11.24 16:25, czekamy czy coś opisze)
+	* Instagram: caption 200 chars, location (nie czyta z EXIFa), accessibility (opis, albo automat albo ręcznie), like/counts yes/no, commenting yes/no
+	* instagram Saved oraz Posts
+	* z Instagramu może pójść do facebook, twitter, tumblr
+	* nie można ukryć kogo się followuje, więc trzeba mieć dwa accounty. Tyle że zdjęcie w jednym i drugim pozwoliłoby "namierzyć" to ukryte konto
+' https://github.com/ramtinak/InstagramApiSharp/ , InstaMon ma to w wersji 1.7.2, teraz jest 1.7.4
+https://github.com/ramtinak/InstagramApiSharp/blob/master/samples/Examples/Samples/UploadPhoto.cs
+        /// <summary>
+        ///     Upload photo [Supports user tags]
+        /// </summary>
+        /// <param name="image">Photo to upload</param>
+        /// <param name="caption">Caption</param>
+        /// <param name="location">Location => Optional (get it from <seealso cref="ILocationProcessor.SearchLocationAsync"/></param>
+        /// <param name="userTags">User tags => Optional</param>
+        Task<IResult<InstaMedia>> UploadPhotoAsync(InstaImageUpload image, string caption, InstaLocationShort location = null);
+
+		https://github.com/ramtinak/InstagramApiSharp/blob/f328e50fd3e01f8153c6dfa6990366228cb3aad4/src/InstagramApiSharp/Classes/Models/Media/InstaImageUpload.cs#L13
+
+ może mieć tagi, kto/gdzie, ale to raczej bez sensu (chyba że celebrity)
+
+* PUBLISH każdy ma swoje zmienne, saveAs JSON? Bo może być wiele instancji
+* czy PUBLISHreverse, czyli ściąganie czyjegoś, np. Marcina Kurcz, miałoby sens?
+
+* może Shutterfly zrobić jako normalny publish?
+
 * Buffer.property DelayAfterArchive - dni, ile należy odczekać po odesłaniu do archiwum? (czas na dodanie kolejnego archiwum)
 
 * może Browser, w menu action: ArchiveToDir, i robi DIRname z pierwszego zdjęcia. Wtedy może jakiś jeszcze inny podział (kreska splitu) pomiędzy DIRami?
@@ -17,7 +79,6 @@
 * zdjęcia z tego samego czasu, ale np ja Bari, Aśka - gdzieś, i impreza u rodziców?
 * ONEDIR: jak okrajać sId (który powinien być z geo) do różnych serwisów, gdzie jest płytsze drzewo katalogów dostępne, ale jednak nie całkiem płaskie?
 
-* czy resize kasuje EXIF z pliku? jak tak, to poprawić to w tych zmienionych; i migrować do EndEdit ze Stream
 * do DOC: koniecznie resize/crop przed Azure
 * czy Azure rozpozna logo przy żarówkach? jedną sprawdzić
 * rotate bez konieczności Save, jak resize?
@@ -40,15 +101,15 @@
 * indeks plików w Storage - sprawdzic ile pamięci schodzi teraz, na 1000 plików, ×3 (bo Azure nie ma)
 * indeks plików w Storage: raczej jako plik JSON ale bez ']' kończącego, i Append nowych elementów - plik na dysku zawsze nie byłby JSONem, bo zawsze bez ']', ale działałoby append bez czytania calego pliku
 * PUBLISH: property Exif, w nim "-" jako usuwanie pola (bo niektóre są składane, a nie replacement robione przy Flatten)
-* getGeo - słowo kluczowe jest ważniejsze niż geo
 
-Przerobic InitEdit, EndEdit, tak by ApplyMain posługiwało się STREAM, a EndEdit zapisywało do pliku gdy nie-pipeline; zas dla pipeline cały czas operacje na stream bez zapisywania do pliku
-
-* po zapisaniu do archiwum - plik trafia jako PURGE ze źródła; ale uwaga: faktycznie trafia, czyli zgodny z maską
+* po zapisaniu do archiwum - plik trafia jako PURGE ze źródła; ale uwaga: faktycznie zapisaniu czyli zgodny z maską
 
 dodać fotki z telefonu - wszystkie WP_ które są w digital; dodać do nich aparat, copyright, artist
 picsort miałby dodać do nich ID (datetime zdjęcia, resztę danych z filename do tagów)
 suggestedfilename - dla Apple, jak bedzie wiadomo jakos ze to apple, to z tych losowych nazw - nazwy typu ios_yyyyMMddHHmmss
+
+katalogi _kwd\key - AskYN gdy zdjecie juz ma przydzial z keyword, dodawanie keyword wstawia katalog,
+
 
 https://www.tomshardware.com/how-to/move-from-twitter-to-mastodon
 

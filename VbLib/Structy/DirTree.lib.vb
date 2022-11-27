@@ -10,14 +10,20 @@ Public Class OneDir
     Public Property sId As String   ' 1981.01.23.sb_geo
     Public Property notes As String ' wyjazd do Wieliczki z dziadkami, pociągiem i psem
 
-    Public Sub New(data As Date, sGeo As String, opis As String)
+    'Public Sub New(data As Date, sGeo As String, opis As String)
+    '    notes = opis
+
+    '    sId = DateToDirId(data)
+
+    '    If sGeo <> "" Then sId = sId & "_" & sGeo
+
+    'End Sub
+
+    Public Sub New(sKey As String, opis As String)
         notes = opis
-
-        sId = DateToDirId(data)
-
-        If sGeo <> "" Then sId = sId & "_" & sGeo
-
+        sId = sKey
     End Sub
+
 
     ''' <summary>
     ''' wydzielone żeby utrzymać spójność formatowania dat
@@ -46,6 +52,22 @@ Public Class OneDir
         Return sId
     End Function
 
+    Public Function ToComboDisplayName() As String
+        If String.IsNullOrWhiteSpace(notes) Then Return sId
+        Dim sRet As String = sId & " ("
+        If notes.Length < 24 Then Return sRet & notes & ")"
+
+        Return sRet & notes.Substring(0, 23) & "…)"
+
+    End Function
+
+    ''' <summary>
+    ''' zwraca True jeśli to jest DIR z keywordów
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function IsFromKeyword() As Boolean
+        Return (sId.IndexOfAny({"-", "#", "="}) = 0)
+    End Function
 
 #If False Then
     ' [datemin, datemax, geomin, geomax] [keywords - wspólne dla wszystkich pic? ustalane potem jakimiś sprawdzaniami, np wlasnie mingeo/maxgeo na geoname]
@@ -90,6 +112,11 @@ Public Class DirsList
         Return Nothing
     End Function
 
+    Public Sub TryAddFolder(sKey As String, sOpis As String)
+        If GetFolder(sKey) IsNot Nothing Then Return
+
+        _lista.Add(New OneDir(sKey, sOpis))
+    End Sub
 
 End Class
 

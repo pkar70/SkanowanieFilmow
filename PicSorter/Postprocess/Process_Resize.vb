@@ -74,7 +74,7 @@ Public MustInherit Class Process_ResizeBase
 
         oPic.InitEdit(bPipeline)
 
-        Dim oSoftBitmap As wingraph.SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(oPic.sFilenameEditSrc)
+        Dim oSoftBitmap As wingraph.SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(oPic)
 
         ' przelicz jaką skalę należy przyjąć
         Dim iHeight As Integer = oSoftBitmap.PixelHeight
@@ -113,7 +113,8 @@ Public MustInherit Class Process_ResizeBase
             ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
             Await oEncoder.FlushAsync()
 
-            Process_AutoRotate.SaveSoftBitmap(oStream, oPic.sFilenameEditDst, oPic.sFilenameEditSrc)
+            Process_AutoRotate.SaveSoftBitmap(oStream, oPic)
+            'Process_AutoRotate.SaveSoftBitmap(oStream, oPic.sFilenameEditDst, oPic.sFilenameEditSrc)
 
         End Using
 

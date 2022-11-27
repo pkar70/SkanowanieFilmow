@@ -7,6 +7,7 @@
 ' OCR tutaj nie ma!
 
 
+Imports System.IO
 Imports Microsoft.Azure.CognitiveServices.Vision
 Imports Microsoft.Azure.CognitiveServices.Vision.ComputerVision.ComputerVisionClientExtensions
 
@@ -41,35 +42,40 @@ Public Class Auto_AzureTest
 
         Return True
     End Function
-    Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
 
+    Private Async Function GetStreamForSending(oFile As Vblib.OnePic) As Task(Of Stream)
         Dim sFilename As String = oFile.InBufferPathName
-        Dim sTempFileName As String = ""
 
         ' zabezpieczenie wielkościowe (limit Azure)
         Dim oFileInfo As IO.FileInfo = New IO.FileInfo(sFilename)
         If oFileInfo.Length > MaxSize * 1024 Then
             ' przeskalujemy
-            sTempFileName = IO.Path.GetTempFileName
-            If Not Await _resizeEngine.Apply(oFile, sTempFileName) Then Return Nothing
-            sFilename = sTempFileName
+            If Not Await _resizeEngine.Apply(oFile, True) Then Return Nothing
 
             ' *TODO* można byłoby zrobić zapętlenie, kilka kolejnych poziomów zmniejszania obrazka
-            oFileInfo = New IO.FileInfo(sFilename)
-            If oFileInfo.Length > MaxSize * 1024 Then Return Nothing
-
+            If oFile._PipelineOutput.Length > MaxSize * 1024 Then Return Nothing
         End If
 
-        If Not EnsureClient() Then Return Nothing
+        oFile._PipelineOutput.Seek(0, SeekOrigin.Begin)
 
+        Return oFile._PipelineOutput
+
+    End Function
+
+    Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+
+        Dim oStream As Stream = Await GetStreamForSending(oFile)
+        If oStream Is Nothing Then Return Nothing
+
+        If Not EnsureClient() Then Return Nothing
 
         If Not Vblib.GetSettingsBool("uiAzurePaid") Then Await Task.Delay(3000)  ' 20/min, 20/60, raz na 3 sekundy
 
         Dim oNew As New Vblib.ExifTag(Nazwa)
-        oNew.AzureAnalysis = Await AnalyzeImageLocal(sFilename)
+        oNew.AzureAnalysis = Await AnalyzeImageLocal(oStream)
         If oNew.AzureAnalysis IsNot Nothing Then oNew.UserComment = oNew.AzureAnalysis.ToComment
 
-        If sTempFileName <> "" Then IO.File.Delete(sTempFileName)
+        oStream.Dispose()
 
         Return oNew
 
@@ -94,7 +100,7 @@ Public Class Auto_AzureTest
         Return client
     End Function
 
-    Private Async Function AnalyzeImageLocal(localImage As String) As Task(Of MojeAzure)
+    Private Async Function AnalyzeImageLocal(oStream As Stream) As Task(Of MojeAzure)
 
         Dim features As New List(Of ComputerVision.Models.VisualFeatureTypes?)() From {
             ComputerVision.Models.VisualFeatureTypes.Categories,
@@ -109,9 +115,7 @@ Public Class Auto_AzureTest
         }
 
         Dim results As ComputerVision.Models.ImageAnalysis
-        Using analyzeImageStream As IO.Stream = IO.File.OpenRead(localImage)
-            results = Await _oClient.AnalyzeImageInStreamAsync(analyzeImageStream, features)
-        End Using
+        results = Await _oClient.AnalyzeImageInStreamAsync(oStream, features)
 
         Return New MojeAzure(results)
 

@@ -20,31 +20,38 @@ Public Class Process_FaceRemove
 
         oPic.InitEdit(bPipeline)
 
-        Dim outputStream As IO.Stream = IO.File.OpenWrite(oPic.sFilenameEditDst)
+        'Dim outputStream As IO.Stream = IO.File.OpenWrite(oPic.sFilenameEditDst)
 
         Dim signature As String = GetSignatureString(oPic)
 
-        Using oStream As IO.Stream = IO.File.OpenRead(oPic.sFilenameEditSrc)
+        'Using oStream As IO.Stream = IO.File.OpenRead(oPic.sFilenameEditSrc)
 
-            Using img = Image.FromStream(oStream)
+        'Using img = Image.FromStream(oStream)
+        Using img = Image.FromStream(oPic._PipelineInput)
 
-                Using graphic = Graphics.FromImage(img)
+            Using graphic = Graphics.FromImage(img)
 
-                    For Each oFace As Vblib.TextWithProbAndBox In oExif.AzureAnalysis.Faces.lista
-                        ' wyliczamy środek
-                        Dim iX As Integer = img.Width * oFace.X
-                        Dim iW As Integer = img.Width * oFace.Width
-                        Dim iY As Integer = img.Height * oFace.Y
-                        Dim iH As Integer = img.Height * oFace.Height
-                        ' i robimy owal
-                        Dim oPen As New Pen(New SolidBrush(Color.Gray))
-                        graphic.DrawEllipse(oPen, iX, iY, iW, iH)
-                    Next
+                For Each oFace As Vblib.TextWithProbAndBox In oExif.AzureAnalysis.Faces.lista
 
-                    img.Save(outputStream, Imaging.ImageFormat.Jpeg)
-                End Using
+                    ' zabezpieczenie przed starszą wersją, gdy był point a nie było rozmiaru
+                    If oFace.Width + oFace.Height = 0 Then Continue For
+                    ' zabezpieczenie przed WinFace sprzed pamiętania box
+                    If oFace.X + oFace.Y = 0 Then Continue For
+
+                    ' wyliczamy środek
+                    Dim iX As Integer = img.Width * oFace.X
+                    Dim iW As Integer = img.Width * oFace.Width
+                    Dim iY As Integer = img.Height * oFace.Y
+                    Dim iH As Integer = img.Height * oFace.Height
+                    ' i robimy owal
+                    Dim oPen As New Pen(New SolidBrush(Color.Gray))
+                    graphic.DrawEllipse(oPen, iX, iY, iW, iH)
+                Next
+
+                img.Save(oPic._PipelineOutput, Imaging.ImageFormat.Jpeg)    ' outputStream
             End Using
         End Using
+        ' End Using
 
         oPic.EndEdit()
 

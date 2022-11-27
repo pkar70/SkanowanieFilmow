@@ -52,6 +52,8 @@ Public MustInherit Class LocalStorage
 		Dim sPath As String = GetConvertedPathForVol(VolLabel, Path)
 		If sPath = "" Then Return ""
 
+		If oOneDir.IsFromKeyword Then Return GetFolderForKeyword(sPath, oOneDir, bForRead)
+
 		' 1981.01.23.sb_geo -> 198x
 		If tree0Dekada Or bForRead Then
 			sPath = FindCreateRealDir(sPath, oOneDir.sId.Substring(0, 3) & "x", Not bForRead)
@@ -82,6 +84,13 @@ Public MustInherit Class LocalStorage
 			sPath = FindCreateRealDir(sPath, oOneDir.sId, Not bForRead)
 		End If
 
+		Return sPath
+	End Function
+
+	Private Function GetFolderForKeyword(sPath As String, oOneDir As OneDir, bForRead As Boolean) As String
+		sPath = FindCreateRealDir(sPath, "_kwd", True)  ' _kwd musi istnieć
+		sPath = FindCreateRealDir(sPath, oOneDir.sId.Substring(0, 1), False) ' podkatalog typu może istnieć, ale nie musi (i program nigdy go nie stworzy)
+		sPath = FindCreateRealDir(sPath, oOneDir.sId, Not bForRead) ' a konkretny - może
 		Return sPath
 	End Function
 

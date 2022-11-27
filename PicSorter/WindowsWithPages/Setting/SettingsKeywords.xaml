@@ -34,6 +34,7 @@
                             <ColumnDefinition Width="Auto" Name="naMinDate" />
                             <ColumnDefinition Width="Auto" Name="naMaxDate" />
                             <ColumnDefinition Width="Auto" Name="naGeo" />
+                            <ColumnDefinition Width="Auto" Name="naKwd" />
                         </Grid.ColumnDefinitions>
 
                         <TextBlock Text="{Binding sTagId}" />
@@ -73,6 +74,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="Id" />
@@ -82,9 +84,10 @@
             <TextBlock Grid.Row="4" Text="Latitude" />
             <TextBlock Grid.Row="5" Text="Longitude" />
             <TextBlock Grid.Row="6" Text="Radius (km)" />
-            <TextBlock Grid.Row="7" Text="DefPublish" />
-            <TextBlock Grid.Row="8" Text="DenyPublish" />
-            <TextBlock Grid.Row="9" Text="Notes" />
+            <TextBlock Grid.Row="7" Text="Own dir" />
+            <TextBlock Grid.Row="8" Text="DefPublish" />
+            <TextBlock Grid.Row="9" Text="DenyPublish" />
+            <TextBlock Grid.Row="10" Text="Notes" />
 
             <TextBox Grid.Row="0" Name="uiId" Grid.Column="1"/>
             <TextBox Grid.Row="1" Name="uiDisplayName" Grid.Column="1"/>
@@ -93,9 +96,10 @@
             <TextBox Grid.Row="4" Name="uiLatitude" Grid.Column="1" />
             <TextBox Grid.Row="5" Name="uiLongitude" Grid.Column="1" InputScope="Number"/>
             <TextBox Grid.Row="6" Name="uiRadius" Grid.Column="1"  InputScope="Digits" />
-            <TextBox Grid.Row="7" Name="uiDefPublish" Grid.Column="1"/>
-            <TextBox Grid.Row="8" Name="uiDenyPublish" Grid.Column="1"/>
-            <TextBox Grid.Row="9" Name="uiNotes" Grid.Column="1" AcceptsReturn="True" Height="40"/>
+            <CheckBox Grid.Row="7" Name="uiHasDir" Grid.Column="1" />
+            <TextBox Grid.Row="8" Name="uiDefPublish" Grid.Column="1" IsEnabled="false"/>
+            <TextBox Grid.Row="9" Name="uiDenyPublish" Grid.Column="1" IsEnabled="false"/>
+            <TextBox Grid.Row="10" Name="uiNotes" Grid.Column="1" AcceptsReturn="True" Height="40"/>
 
             <Button Content=" Done " HorizontalAlignment="Center" Grid.Row="10" Grid.ColumnSpan="2" Margin="5,10,5,15" Click="uiAddEditDone_Click"/>
         </Grid>

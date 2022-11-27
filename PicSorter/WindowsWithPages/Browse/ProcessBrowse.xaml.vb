@@ -29,7 +29,7 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class ProcessBrowse
 
-    Private Const THUMBS_LIMIT As Integer = 16
+    Private Const THUMBS_LIMIT As Integer = 9999
 
     Private _thumbsy As New ObservableCollection(Of ThumbPicek)
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć
@@ -93,16 +93,10 @@ Public Class ProcessBrowse
         Me.Height = SystemParameters.FullPrimaryScreenHeight * 0.9
     End Sub
 
-    ''' <summary>
-    ''' przetworzenie danych Bufor na własną listę (thumbsów)
-    ''' </summary>
-    Private Async Function Bufor2Thumbsy() As Task
 
-        _iMaxRun = _oBufor.Count
+    Private Async Function WczytajIndeks() As Task(Of List(Of ThumbPicek))
 
-        uiProgBar.Maximum = _iMaxRun
-        uiProgBar.Value = 0
-        uiProgBar.Visibility = Visibility.Visible
+        Dim lista As New List(Of ThumbPicek)
 
         Dim iMaxBok As Integer = GetMaxBok(_iMaxRun)
 
@@ -119,18 +113,13 @@ Public Class ProcessBrowse
 
             Dim oNew As New ThumbPicek(oItem, iMaxBok)
 
-            ' *TODO* tu moze byc obracanie, zob. BigPicture
-            oNew.oImageSrc = Await WczytajObrazek(oItem.InBufferPathName, 400, Rotation.Rotate0)
-
             oNew.dateMin = oItem.GetMostProbablyDate
             uiProgBar.Value += 1
-            _thumbsy.Add(oNew)
+            lista.Add(oNew)
 
             iLimit -= 1
             If iLimit < 0 Then Exit For
         Next
-
-        uiProgBar.Visibility = Visibility.Hidden
 
         If lDeleted.Count > 0 Then
 
@@ -144,6 +133,38 @@ Public Class ProcessBrowse
             End If
         End If
 
+        Return lista
+    End Function
+
+    Private Async Function DoczytajMiniaturki() As Task
+
+        uiProgBar.Value = 0
+        uiProgBar.Visibility = Visibility.Visible
+
+        For Each oItem As ThumbPicek In _thumbsy
+            oItem.oImageSrc = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
+            uiProgBar.Value += 1
+        Next
+
+    End Function
+
+    ''' <summary>
+    ''' przetworzenie danych Bufor na własną listę (thumbsów)
+    ''' </summary>
+    Private Async Function Bufor2Thumbsy() As Task
+
+        _iMaxRun = _oBufor.Count
+
+        uiProgBar.Maximum = _iMaxRun
+
+        _thumbsy.Clear()
+        Dim lista As List(Of ThumbPicek) = Await WczytajIndeks()   ' tu ewentualne kasowanie jest znikniętych, to wymaga YNAsync
+        For Each oItem As ThumbPicek In From c In lista Order By c.dateMin
+            _thumbsy.Add(oItem)
+        Next
+        lista.Clear()
+
+        Await DoczytajMiniaturki()
 
     End Function
 
@@ -289,23 +310,6 @@ Public Class ProcessBrowse
 
         Dim oWnd As New TargetDir(_thumbsy.ToList, lSelected)
         If Not oWnd.ShowDialog Then Return
-
-        Dim sFolderCzas As String = oWnd.GetFolderCzas  ' = "" gdy ma być automat, else: tu jest folder
-        Dim sFolderGeo As String = oWnd.GetFolderGeo    ' = "" gdy ma być automat, else: tu jest folder
-
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-
-            Dim sCzas As String = Vblib.OneDir.DateToDirId(oItem.dateMin)
-
-            Dim sNazwa As String = ""
-            Dim oExif As Vblib.ExifTag = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
-            If oExif IsNot Nothing Then sNazwa = Vblib.Auto_OSM_POI.FullGeoNameToFolderName(oExif.GeoName)
-
-            ' *TODO* TUTAJ
-
-            ReDymkuj()
-
-        Next
 
         SaveMetaData()
     End Sub
@@ -839,6 +843,7 @@ Public Class ProcessBrowse
         uiProgBar.Maximum = uiPicList.SelectedItems.Count
         uiProgBar.Visibility = Visibility.Visible
 
+        Application.ShowWait(True)
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             If oItem.oPic.GetExifOfType(oEngine.Nazwa) Is Nothing Then
                 Dim oExif As Vblib.ExifTag = Await oEngine.GetForFile(oItem.oPic)
@@ -850,6 +855,7 @@ Public Class ProcessBrowse
             End If
             uiProgBar.Value += 1
         Next
+        Application.ShowWait(False)
 
         uiProgBar.Visibility = Visibility.Collapsed
 
@@ -867,11 +873,13 @@ Public Class ProcessBrowse
         uiProgBar.Maximum = uiPicList.SelectedItems.Count
         uiProgBar.Visibility = Visibility.Visible
 
+        Application.ShowWait(True)
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             Await oEngine.Apply(oItem.oPic)
             Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
             uiProgBar.Value += 1
         Next
+        Application.ShowWait(False)
 
         uiProgBar.Visibility = Visibility.Collapsed
 
@@ -967,6 +975,8 @@ Public Class ProcessBrowse
             Dim oPic As ThumbPicek = uiPicList.SelectedItems(0)
             oPic.oPic.ReplaceOrAddExif(oExif)
             oPic.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
+            oPic.ZrobDymek()
+
         Else
             For Each oPic As ThumbPicek In uiPicList.SelectedItems
 
@@ -997,6 +1007,8 @@ Public Class ProcessBrowse
                 End If
 
                 oPic.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
+
+                oPic.ZrobDymek()
 
             Next
 

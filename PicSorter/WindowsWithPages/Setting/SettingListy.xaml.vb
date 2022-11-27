@@ -1,7 +1,7 @@
 ﻿
 Class SettingListy
     Private Sub uiListCopyr_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New EditEntryHist(App.GetDataFolder, "Copyrights", "Dodaj właściciela praw", "(c) KTO, All rights reserved.")
+        Dim oWnd As New EditEntryHist(App.GetDataFolder, "Copyrights", "Dodaj właściciela praw", "(c) KTO. All rights reserved.")
         oWnd.Show()
     End Sub
 

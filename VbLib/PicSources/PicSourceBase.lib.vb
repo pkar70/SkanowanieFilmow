@@ -45,6 +45,7 @@ Public MustInherit Class PicSourceBase
 	''' </summary>
 	''' <returns></returns>
 	Public Function IsPresent() As Boolean
+		DumpCurrMethod()
 		If Not enabled Then Return False
 		Return IsPresent_Main()
 	End Function
@@ -57,6 +58,7 @@ Public MustInherit Class PicSourceBase
 	''' </summary>
 	''' <returns>count(files), gdy = 0 wtedy nie ma sensu iterować</returns>
 	Public Function ReadDirectory() As Integer
+		DumpCurrMethod()
 		If Not IsPresent_Main() Then Return -1
 
 		' ale tego nie powinno być potrzebne, bo przed startem z UI powinno być modyfikowanie
@@ -71,6 +73,7 @@ Public MustInherit Class PicSourceBase
 		' jesli sobie przełączyliśmy, to teraz przełączamy na powrot
 		If bNoCurrentExif Then currentExif = Nothing
 
+		DumpMessage($"po readdirmain,ret={iRet}")
 		Return iRet
 
 	End Function
@@ -152,6 +155,9 @@ Public MustInherit Class PicSourceBase
 
 #End Region
 
+	<Newtonsoft.Json.JsonIgnore>
+	Private _sinceDate As DateTime
+
 	''' <summary>
 	''' get first file to download 
 	''' </summary>
@@ -161,6 +167,7 @@ Public MustInherit Class PicSourceBase
 		If _listaPlikow Is Nothing Then Return Nothing
 
 		If Not sinceDate.IsDateValid Then sinceDate = lastDownload
+		_sinceDate = sinceDate
 
 		For iLp = 0 To _listaPlikow.Count - 1
 			Dim oFile As OnePic = _listaPlikow.ElementAt(iLp)
@@ -191,17 +198,31 @@ Public MustInherit Class PicSourceBase
 		If _lastIDreturned = -1 Then Return Nothing
 		If _lastIDreturned > -1 Then _listaPlikow.ElementAt(_lastIDreturned)?.Content?.Dispose()
 
-		_lastIDreturned += 1
-		If _lastIDreturned > _listaPlikow.Count - 1 Then
-			_lastIDreturned = -1
-			Return Nothing
-		End If
 
-		Dim oFile As OnePic = _listaPlikow.ElementAt(_lastIDreturned)
-		OpenFile(oFile)
-		TryDescrptIon(oFile)
+		For iLp = _lastIDreturned + 1 To _listaPlikow.Count - 1
+			Dim oFile As OnePic = _listaPlikow.ElementAt(iLp)
+			Dim oExif As ExifTag = oFile.GetExifOfType(ExifSource.SourceFile)
+			If oExif Is Nothing Then Continue For
 
-		Return oFile
+			If oExif.DateMax > _sinceDate Then
+				_lastIDreturned = iLp
+				OpenFile(oFile)
+				TryDescrptIon(oFile)
+				Return oFile
+			End If
+		Next
+
+		'_lastIDreturned += 1
+		'If _lastIDreturned > _listaPlikow.Count - 1 Then
+		'	_lastIDreturned = -1
+		'	Return Nothing
+		'End If
+
+		'Dim oFile As OnePic = _listaPlikow.ElementAt(_lastIDreturned)
+		'OpenFile(oFile)
+		'TryDescrptIon(oFile)
+
+		'Return oFile
 
 		Return Nothing
 	End Function

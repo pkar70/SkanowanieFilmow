@@ -34,6 +34,7 @@ Public Class OnePic
     Public Property Content As IO.Stream
 
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
+        DumpCurrMethod()
         sSourceName = sourceName
         sInSourceID = inSourceId
         sSuggestedFilename = suggestedFilename
@@ -158,6 +159,7 @@ Public Class OnePic
 
 
     Public Shared Function MatchesMasks(sFilenameNoPath As String, sIncludeMasks As String, sExcludeMasks As String) As Boolean
+        DumpCurrMethod($"({sFilenameNoPath}, {sIncludeMasks}, {sExcludeMasks}")
 
         ' https://stackoverflow.com/questions/725341/how-to-determine-if-a-file-matches-a-file-mask
         Dim aMaski As String()
@@ -248,28 +250,25 @@ Public Class OnePic
 
 #Region "start/end edycji"
 
-    ' *TODO* ewentualnie operacje na STREAM w PostProcess, a tutaj wrapper stream/filename
-
-    '<Newtonsoft.Json.JsonIgnore>
-    'Public Property sFilenameEditSrc As String
-    '<Newtonsoft.Json.JsonIgnore>
-    'Public Property sFilenameEditDst As String
     <Newtonsoft.Json.JsonIgnore>
     Private Property _EditPipeline As Boolean = True
-    <Newtonsoft.Json.JsonIgnore>
-    Private Property _PipelineInput As Stream
-    <Newtonsoft.Json.JsonIgnore>
-    Private Property _PipelineOutpu As Stream
 
 
-    '''' <summary>
-    '''' do używania PRZED InitEdit, na potrzeby masek
-    '''' </summary>
-    '''' <returns></returns>
-    'Public Function GetSourceFilename()
-    '    If String.IsNullOrWhiteSpace(sFilenameEditSrc) Then Return InBufferPathName
-    '    Return sFilenameEditSrc
-    'End Function
+#If OLD_EDIT_MODE Then
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sFilenameEditSrc As String
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sFilenameEditDst As String
+
+
+    ''' <summary>
+    ''' do używania PRZED InitEdit, na potrzeby masek
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function GetSourceFilename()
+        If String.IsNullOrWhiteSpace(sFilenameEditSrc) Then Return InBufferPathName
+        Return sFilenameEditSrc
+    End Function
 
     Public Sub CancelEdit()
 
@@ -296,7 +295,6 @@ Public Class OnePic
             Throw New Exception("CancelEdit, ale nie ma ani pliku, ani .tmp, ani .bak")
 
         End If
-
     End Sub
 
 
@@ -306,11 +304,13 @@ Public Class OnePic
     ''' </summary>
     Public Sub InitEdit(bPipeline As Boolean)
         _EditPipeline = bPipeline
+
         If _EditPipeline Then
             InitEditPipeline()
         Else
             InitEditInPlace()
         End If
+
     End Sub
 
     Private Sub InitEditPipeline()
@@ -365,8 +365,79 @@ Public Class OnePic
 
         End If
 
+#Else
+
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property _PipelineInput As Stream
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property _PipelineOutput As Stream
+
+    Public Sub CancelEdit()
+        ' empty, bo po nowemu nic nie trzeba robić
+    End Sub
+
+
+    ''' <summary>
+    ''' przygotuj Stream do edycji
+    ''' </summary>
+    Public Sub InitEdit(bPipeline As Boolean)
+        _EditPipeline = bPipeline
+
+        If _EditPipeline Then
+            If _PipelineOutput.Length > 0 Then
+                _PipelineInput.Dispose()
+                _PipelineInput = _PipelineOutput
+                _PipelineOutput = New MemoryStream
+            End If
+        Else
+            _PipelineInput = IO.File.OpenRead(InBufferPathName)
+            _PipelineOutput = New MemoryStream
+        End If
+
+        _PipelineInput.Seek(0, SeekOrigin.Begin)
+        _PipelineOutput.Seek(0, SeekOrigin.Begin)
 
     End Sub
+
+
+    ''' <summary>
+    ''' zakończ edycje, ewentualnie zapisując plik (jak nie Pipeline)
+    ''' </summary>
+    Public Sub EndEdit()
+
+        ' *TODO* do sprawdzenia - czy zachowywane są EXIFy w pliku/strumieniu
+        If _EditPipeline Then
+            ' do nothing: w streamOut jest rezultat
+        Else
+            ' należy zapisać plik, czyli najpierw zwalniamy stream.source
+            _PipelineInput.Dispose()
+
+            ' najpierw robimy backup
+            Dim bakFileName As String = InBufferPathName & ".bak"
+
+            If Not IO.File.Exists(bakFileName) Then
+                IO.File.Move(InBufferPathName, bakFileName)
+                IO.File.SetCreationTime(bakFileName, Date.Now)
+            End If
+
+            ' bo Write zostawiłby śmieci na końcu (resztę dłuższego pliku)
+            If IO.File.Exists(InBufferPathName) Then IO.File.Delete(InBufferPathName)
+
+            Dim oNewFileStream As FileStream = IO.File.OpenWrite(InBufferPathName)
+            _PipelineOutput.Seek(0, SeekOrigin.Begin)
+            _PipelineOutput.CopyTo(oNewFileStream)
+            oNewFileStream.Flush()
+            oNewFileStream.Dispose()
+
+        End If
+    End Sub
+
+
+
+
+#End If
+
+
 
 #End Region
 
