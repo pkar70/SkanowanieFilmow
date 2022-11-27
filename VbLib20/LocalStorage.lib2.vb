@@ -1,9 +1,11 @@
 ﻿
 
+Imports Vblib
+
 Public Class LocalStorageMiddle
 	Inherits Vblib.LocalStorage
 
-	Public Overrides Function GetConvertedPathForVol(sVolLabel As String, sPath As String) As String
+	Protected Overrides Function GetConvertedPathForVol(sVolLabel As String, sPath As String) As String
 		Return PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path)
 	End Function
 
@@ -19,5 +21,28 @@ Public Class LocalStorageMiddle
 		Return True
 	End Function
 
+	Public Overrides Function Login() As String
+		Return ""   ' zawsze OK
+	End Function
+
+	Public Overrides Function SendFile(oPic As OnePic) As String
+		Throw New NotImplementedException()
+	End Function
+
+	Public Overrides Function GetFile(oPic As OnePic) As String
+		Throw New NotImplementedException()
+	End Function
+
+	Public Overrides Function GetRemoteTags(oPic As OnePic) As String
+		Throw New NotImplementedException()
+	End Function
+
+	Public Overrides Function Delete(oPic As OnePic) As String
+		Throw New NotImplementedException()
+	End Function
+
+	Public Overrides Function Logout() As String
+		Return ""
+	End Function
 End Class
 

@@ -8,8 +8,9 @@ Imports Newtonsoft.Json
 Public Class OnePic
     Inherits MojaStruct
 
-    Public Property Archived As String
-    Public Property Published As String
+    Public Property Archived As Dictionary(Of String, String)
+    Public Property CloudArchived As Dictionary(Of String, String)
+    Public Property Published As Dictionary(Of String, String)
     Public Property TargetDir As String ' OneDir.sId
     Public Property Exifs As New List(Of ExifTag) ' ExifSource.SourceFile ..., )
     Public Property InBufferPathName As String
@@ -31,7 +32,7 @@ Public Class OnePic
     'Public Property sortOrder As String
 
     <Newtonsoft.Json.JsonIgnore>
-    Public Property Content As IO.Stream
+    Public Property oContent As IO.Stream
 
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()
@@ -446,7 +447,6 @@ Public Class OnePic
     ''' </summary>
     ''' <returns></returns>
     Public Function FlattenExifs() As ExifTag
-
 
         ' defaulty mamy z FileSourceDeviceType
         Dim oNew As New ExifTag(ExifSource.Flattened)

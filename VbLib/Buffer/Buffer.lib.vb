@@ -85,9 +85,9 @@ Public Class Buffer
 
 
     ''' <summary>
-    ''' zabierz plik (skorzystaj z OnePic.Content - stream do pliku)
+    ''' zabierz plik (skorzystaj z OnePic.oContent - stream do pliku)
     ''' </summary>
-    ''' <param name="pic">tu jest wazne suggestedfileName oraz Content</param>
+    ''' <param name="pic">tu jest wazne suggestedfileName oraz oContent</param>
     ''' <returns>OnePic uzupelniony o BufferFileName, FALSE: error</returns>
     Public Async Function AddFile(oPic As OnePic) As Task(Of Boolean)
 
@@ -108,7 +108,7 @@ Public Class Buffer
         End If
 
         Dim oWriteStream = IO.File.Create(sDstPathName, 1024 * 1024)
-        Await oPic.Content.CopyToAsync(oWriteStream, 1024 * 1024)
+        Await oPic.oContent.CopyToAsync(oWriteStream, 1024 * 1024)
 
         Await oWriteStream.FlushAsync
         oWriteStream.Dispose()

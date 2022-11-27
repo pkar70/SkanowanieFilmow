@@ -48,19 +48,21 @@ Public Class Auto_AzureTest
 
         ' zabezpieczenie wielkościowe (limit Azure)
         Dim oFileInfo As IO.FileInfo = New IO.FileInfo(sFilename)
-        If oFileInfo.Length > MaxSize * 1024 Then
-            ' przeskalujemy
-            If Not Await _resizeEngine.Apply(oFile, True) Then Return Nothing
 
-            ' *TODO* można byłoby zrobić zapętlenie, kilka kolejnych poziomów zmniejszania obrazka
-            If oFile._PipelineOutput.Length > MaxSize * 1024 Then Return Nothing
-        End If
+        If oFileInfo.Length < MaxSize * 1024 Then Return IO.File.OpenRead(oFile.InBufferPathName)
+
+        ' przeskalujemy
+        If Not Await _resizeEngine.Apply(oFile, True) Then Return Nothing
+
+        ' *TODO* można byłoby zrobić zapętlenie, kilka kolejnych poziomów zmniejszania obrazka
+        If oFile._PipelineOutput.Length > MaxSize * 1024 Then Return Nothing
 
         oFile._PipelineOutput.Seek(0, SeekOrigin.Begin)
 
         Return oFile._PipelineOutput
 
     End Function
+
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
 

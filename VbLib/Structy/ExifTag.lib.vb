@@ -132,6 +132,8 @@ Partial Public Module Extensions
     <Runtime.CompilerServices.Extension()>
     Public Function ConcatenateWithSeparator(ByVal sFirstString As String, sSecondString As String, sSeparator As String)
         If String.IsNullOrWhiteSpace(sSecondString) Then Return sFirstString
+        If sSecondString = "-" Then Return ""
+
         If sFirstString = "" Then Return sSecondString
         Return sFirstString & sSeparator & sSecondString
     End Function

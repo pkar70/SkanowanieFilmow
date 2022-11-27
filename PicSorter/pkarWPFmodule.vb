@@ -888,9 +888,9 @@ Module Extensions
     '        ' 2020.11.24: dodaję force-off do ProgRing na Init
     '        _mProgRingShowCnt = 0   ' skoro inicjalizuje, to znaczy że na pewno trzeba wyłączyć
 
-    '        'Dim oFrame As Frame = Window.Current.Content
-    '        'Dim oPage As Page = oFrame.Content
-    '        Dim oGrid As Grid = TryCast(oPage.Content, Grid)
+    '        'Dim oFrame As Frame = Window.Current.oContent
+    '        'Dim oPage As Page = oFrame.oContent
+    '        Dim oGrid As Grid = TryCast(oPage.oContent, Grid)
     '        If oGrid Is Nothing Then
     '            ' skoro to nie Grid, to nie ma jak umiescic koniecznych elementow
     '            Debug.WriteLine("ProgRingInit wymaga Grid jako podstawy Page")

@@ -196,7 +196,7 @@ Public MustInherit Class PicSourceBase
 	''' <returns></returns>
 	Public Function GetNext() As OnePic
 		If _lastIDreturned = -1 Then Return Nothing
-		If _lastIDreturned > -1 Then _listaPlikow.ElementAt(_lastIDreturned)?.Content?.Dispose()
+		If _lastIDreturned > -1 Then _listaPlikow.ElementAt(_lastIDreturned)?.oContent?.Dispose()
 
 
 		For iLp = _lastIDreturned + 1 To _listaPlikow.Count - 1

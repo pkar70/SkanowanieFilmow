@@ -45,11 +45,11 @@ Public Class PicSourceImplement
     Protected Overrides Function OpenFile(oPic As OnePic) As Boolean
         Select Case Typ
             Case Vblib.PicSourceType.MTP
-                oPic.Content = _MediaDeviceHelper.GetStream(oPic.sInSourceID)
+                oPic.oContent = _MediaDeviceHelper.GetStream(oPic.sInSourceID)
                 Return True
             Case Else
                 If Not IO.File.Exists(oPic.sInSourceID) Then Return False
-                oPic.Content = IO.File.Open(oPic.sInSourceID, IO.FileMode.Open, IO.FileAccess.Read)
+                oPic.oContent = IO.File.Open(oPic.sInSourceID, IO.FileMode.Open, IO.FileAccess.Read)
                 Return True
         End Select
     End Function

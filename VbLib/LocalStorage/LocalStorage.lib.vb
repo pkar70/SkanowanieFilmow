@@ -1,6 +1,8 @@
 ﻿
 
 Public MustInherit Class LocalStorage
+	Implements AnyStorage
+
 	Public Property StorageName As String
 	Public Property enabled As Boolean = True
 	Public Property Path As String
@@ -27,7 +29,7 @@ Public MustInherit Class LocalStorage
 	''' <param name="oOneDir">do jakiego katalogu</param>
 	''' <param name="sGeo">string potrzebny przy dzieleniu wedle GEO</param>
 	''' <returns></returns>
-	Public Function GetWriteFolder(oOneDir As Vblib.OneDir) As String
+	Protected Function GetWriteFolder(oOneDir As Vblib.OneDir) As String
 		Return GetFolder(oOneDir, False)
 	End Function
 
@@ -36,7 +38,7 @@ Public MustInherit Class LocalStorage
 	''' </summary>
 	''' <param name="oItem"></param>
 	''' <returns></returns>
-	Public Function FindRealFolder(oOneDir As Vblib.OneDir) As String
+	Protected Function FindRealFolder(oOneDir As Vblib.OneDir) As String
 		Return GetFolder(oOneDir, True)
 	End Function
 
@@ -115,7 +117,19 @@ Public MustInherit Class LocalStorage
 	End Function
 
 	Public MustOverride Function IsPresent() As Boolean
-	Public MustOverride Function GetConvertedPathForVol(sVolLabel As String, sPath As String) As String
+	Protected MustOverride Function GetConvertedPathForVol(sVolLabel As String, sPath As String) As String
+
+	Public MustOverride Function Login() As String Implements AnyStorage.Login
+
+	Public MustOverride Function SendFile(oPic As OnePic) As String Implements AnyStorage.SendFile
+
+	Public MustOverride Function GetFile(oPic As OnePic) As String Implements AnyStorage.GetFile
+
+	Public MustOverride Function GetRemoteTags(oPic As OnePic) As String Implements AnyStorage.GetRemoteTags
+
+	Public MustOverride Function Delete(oPic As OnePic) As String Implements AnyStorage.Delete
+
+	Public MustOverride Function Logout() As String Implements AnyStorage.Logout
 End Class
 
 

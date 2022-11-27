@@ -121,7 +121,9 @@ Partial Class Application
         New Process_Resize1600,
         New Process_Resize2048,
         New Process_ResizeHalf,
+        New Process_EmbedBasicExif,
         New Process_EmbedExif,
+        New Process_RemoveExif,
         New Process_Watermark,
         New Process_Signature.Process_Signature,
         New Process_Signature.Process_FaceRemove

@@ -29,7 +29,7 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class ProcessBrowse
 
-    Private Const THUMBS_LIMIT As Integer = 9999
+    Private Const THUMBS_LIMIT As Integer = 99
 
     Private _thumbsy As New ObservableCollection(Of ThumbPicek)
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć

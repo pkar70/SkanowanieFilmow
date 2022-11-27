@@ -340,7 +340,7 @@ Public Class TargetDir
     '''' <returns></returns>
     'Public Function GetFolderCzas() As String
     '    If uiAutoDateSplit.IsChecked Then Return ""
-    '    Return (uiManualDateSplit.Content.ToString & " " & uiManualDateName.Text).Trim
+    '    Return (uiManualDateSplit.oContent.ToString & " " & uiManualDateName.Text).Trim
     'End Function
 
     '''' <summary>
@@ -351,7 +351,7 @@ Public Class TargetDir
     '    If uiNoGeoSplit.IsChecked Then Return Nothing
 
     '    If uiAutoGeoSplit.IsChecked Then Return ""
-    '    Return (uiManualGeoSplit.Content.ToString.Replace("__", "_") & " " & uiManualGeoName.Text).Trim
+    '    Return (uiManualGeoSplit.oContent.ToString.Replace("__", "_") & " " & uiManualGeoName.Text).Trim
     'End Function
 
     '''' <summary>

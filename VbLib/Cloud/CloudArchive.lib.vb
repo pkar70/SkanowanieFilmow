@@ -1,24 +1,13 @@
 ﻿Imports System.IO
 
 ' Shutterfly
-' Instagram
-' Facebook
+' Degoo
 ' Chomikuj
 
-' dla niektórych byłoby skasowanie Exif/Tags. poza wyznaczonymi - czyli ExifEditor, "-" usuwa? 
-Public MustInherit Class CloudStorage
+' Archiwum: zachowuje nazwy plików oraz ich pierwotny content (żadnego przetwarzania po ich stronie)
+Public MustInherit Class CloudArchiveData
 
-    Public MustOverride Property sTyp As String '   e.g. "Instagram"
-    Public MustOverride Property sNazwa As String '   e.g. "Insta imienne", "Insta ukryte"
-
-    Public Overridable Property defaultPostprocess As String    ' ";" separated nazwy
-    Public Overridable Property cloudExif As ExifTag    ' "-" jako kasowanik, reszta - jako override/doklejanie (np. minus jako usunięcie, i to co dalej - doklejane)
-
-    Public Overridable Property deleteAfterDays As Integer
-
-    ' ignoruj, upload photo, upload metatada
-    Public Overridable Property afterTagChangeBehaviour As AfterChangeBehaviour
-    Public Overridable Property afterPicChangeBehaviour As AfterChangeBehaviour
+    Public Property konfiguracja As CloudConfig
 
 End Class
 
