@@ -43,10 +43,10 @@
             </Slider.RenderTransform>
         </Slider>
 
-        <RadioButton Name="uiRotateUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" />
-        <RadioButton Name="uiRotateDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" />
-        <RadioButton Name="uiRotateLeft" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"  />
-        <RadioButton Name="uiRotateRight" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Visibility="Collapsed"  />
+        <RadioButton Name="uiRotateUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" Checked="uiRotate_Checked"/>
+        <RadioButton Name="uiRotateDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" Checked="uiRotate_Checked"/>
+        <RadioButton Name="uiRotateLeft" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"  Checked="uiRotate_Checked" />
+        <RadioButton Name="uiRotateRight" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Visibility="Collapsed"  Checked="uiRotate_Checked" />
 
         <!--<Slider Name="uiSizingDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiSizing_ValueChanged"  Minimum="0" Maximum="1"/>-->
 

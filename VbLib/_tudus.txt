@@ -8,21 +8,13 @@ CLOUDARCH: funkcja GetArchive, która znajduje Engine dla podanej nazwy?
 niby Cloud mogą zmieniać opisy - typu rozpoznawanie w Shutterfly, więc to by wymuszało aktualizację wszystkiego (w tym Shutterfly?)
 
 sprawdzic Azure rozpoznawanie ze zmniejszaniem obrazka
-sprobowac przenieść Exif.Save do EndEdit, tak zeby zawsze działało (takze watermarki itp.)
-(exif.open(inbuffer); exif.copy(outstream, instream)?
-od razu przygotowanie do nastepnego kroku, tylko wtedy do zmiany Azure.Send i tak dalej bo nie z outstream tylko instream; albo via tempstream).
-Bool resetOrientation?
 
 okienko Archive: na górze progressbar, ile ma zdefiniowany targetDir, i progressBar per Archive: wrzucone do Archiwum per max=zdefiniowany target
 
 sprawdzic autorotate?
 
 SETTINGS:MISC, autoremove from source after putting in one/all archives - ale jedno z innego drive niż ten z buforem
-[] autosave after manual rotate
-[] ask for confirm after Edit:Save (przy Crop tylko)
 Publish.Adhoc (do DIR), sprawdzic dzialanie pipeline. Zwykle byłby to watermark, BasicEmbedExif - takze do cloudarch?
-
-
 
 
 BROWSER: po wczytaniu, jeśli są pliki już w pełni w archiwum, to pyta czy je usunać (wraz z liczbą)
@@ -94,7 +86,6 @@ https://github.com/ramtinak/InstagramApiSharp/blob/master/samples/Examples/Sampl
 * ONEDIR: jak okrajać sId (który powinien być z geo) do różnych serwisów, gdzie jest płytsze drzewo katalogów dostępne, ale jednak nie całkiem płaskie?
 
 * czy Azure rozpozna logo przy żarówkach? jedną sprawdzić
-* rotate bez konieczności Save, jak resize?
 * zle z rotate po lewej stronie góra? bo po prawej - jest ok
 * kolejnosc nie taka
 	20220707
@@ -104,8 +95,6 @@ https://github.com/ramtinak/InstagramApiSharp/blob/master/samples/Examples/Sampl
 * przesuwanie na srodek ekranu showbig dla pionowych
 * jpg.thumb - tego nie ściągać (maska jest zła) - ściągać! bo nie ściąga wersji nie thumb?
 * ewentualnie dodać rename "jpg.thumb" -> "jpg" w Source, przed sprawdzaniem maski.
-
-* mam App.GetDirList
 
 * Source: property IDprefix, i to wraz z datą jako ID pliku; default dla MTP: WP_, ale może byc i L5_, L9_ żeby rozdzielić telefony
 * PUBLISH: może byc kilka tego samego typu, np. dwa konta Instagram (czy można mieć dwa konta? nr telefonu już jest użyty), albo dwa podkatalogi (AdHoc), do każdego inna sekwencja pipeline

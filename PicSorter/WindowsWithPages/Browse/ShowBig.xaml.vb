@@ -539,7 +539,9 @@ Public Class ShowBig
 
 
     Private Async Function ZapiszZmianyObrazka(bmpTrans As wingraph.BitmapTransform) As Task(Of Boolean)
-        If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
+
+        ' *TODO* (może) do Settings:Misc, [] ask for confirm after EditSave (przy Crop, i ew. Rotate)
+        ' If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
 
         _picek.oPic.InitEdit(False)
 
@@ -625,6 +627,14 @@ Public Class ShowBig
 
     End Sub
 
+    Private Sub uiRotate_Checked(sender As Object, e As RoutedEventArgs)
+        ' równoważne Save - wybór góry zdjęcia automatycznie kończy operację, nie trzeba SAVE
+        ' *TODO* (może) do Settings:Misc, [] autosave after manual rotate
+
+        uiSave_Click(sender, e)
+    End Sub
+
+
     Private Async Sub uiSave_Click(sender As Object, e As RoutedEventArgs)
         Await SaveChanges()
 
@@ -651,6 +661,7 @@ Public Class ShowBig
         Window_Loaded(Nothing, Nothing)
 
     End Sub
+
 
 #End Region
 
