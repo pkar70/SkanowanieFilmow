@@ -118,10 +118,10 @@ Public MustInherit Class Process_ResizeBase
 
         End Using
 
-        oPic.EndEdit()
+        oPic.EndEdit(True, True)
 
-        Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
-        If oExif IsNot Nothing Then oExif.Orientation = 1
+        'Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+        'If oExif IsNot Nothing Then oExif.Orientation = 1
 
         Return True
     End Function

@@ -8,8 +8,8 @@ Imports Newtonsoft.Json
 Public Class OnePic
     Inherits MojaStruct
 
-    Public Property Archived As Dictionary(Of String, String)
-    Public Property CloudArchived As Dictionary(Of String, String)
+    Public Property Archived As String
+    Public Property CloudArchived As String
     Public Property Published As Dictionary(Of String, String)
     Public Property TargetDir As String ' OneDir.sId
     Public Property Exifs As New List(Of ExifTag) ' ExifSource.SourceFile ..., )
@@ -404,9 +404,25 @@ Public Class OnePic
     ''' <summary>
     ''' zakończ edycje, ewentualnie zapisując plik (jak nie Pipeline)
     ''' </summary>
-    Public Sub EndEdit()
+    Public Sub EndEdit(bCopyExif As Boolean, bResetOrientation As Boolean)
 
-        ' *TODO* do sprawdzenia - czy zachowywane są EXIFy w pliku/strumieniu
+        If bCopyExif Then
+            ' próba przeniesienia kopiowania EXIF tutaj
+            Dim oExifLib As New CompactExifLib.ExifData(_PipelineInput)
+            If bResetOrientation Then
+                ' zarówno w pliku ma być bez obracania, jak i w naszych danych
+                oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
+                Dim oExif As ExifTag = GetExifOfType(ExifSource.FileExif)
+                If oExif IsNot Nothing Then oExif.Orientation = 1
+            End If
+            _PipelineOutput.Seek(0, SeekOrigin.Begin)
+            Dim tempStream As New MemoryStream
+            oExifLib.Save(_PipelineOutput, tempStream, 0) ' (orgFileName)
+            _PipelineOutput.Dispose()
+            _PipelineOutput = tempStream
+        End If
+
+        ' do sprawdzenia - czy zachowywane są EXIFy w pliku/strumieniu
         If _EditPipeline Then
             ' do nothing: w streamOut jest rezultat
         Else
@@ -431,6 +447,9 @@ Public Class OnePic
             oNewFileStream.Dispose()
 
         End If
+
+
+
     End Sub
 
 

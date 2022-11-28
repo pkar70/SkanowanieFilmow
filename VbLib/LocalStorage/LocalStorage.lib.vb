@@ -22,6 +22,12 @@ Public MustInherit Class LocalStorage
 	Public Property tree3DzienWeekDay As Boolean = True
 	Public Property tree4Geo As Boolean = True
 
+#Region "to co musi być w vblib 2.0"
+	Public MustOverride Function IsPresent() As Boolean
+	Protected MustOverride Function GetConvertedPathForVol(sVolLabel As String, sPath As String) As String
+#End Region
+
+#Region "folder ID na real"
 
 	''' <summary>
 	''' robi domyślną nazwę do zapisu
@@ -115,21 +121,47 @@ Public MustInherit Class LocalStorage
 		IO.Directory.CreateDirectory(sSubfolder)
 		Return sSubfolder
 	End Function
+#End Region
 
-	Public MustOverride Function IsPresent() As Boolean
-	Protected MustOverride Function GetConvertedPathForVol(sVolLabel As String, sPath As String) As String
+#Region "implementacja interface"
 
-	Public MustOverride Function Login() As String Implements AnyStorage.Login
+	Public Function Login() As String Implements AnyStorage.Login
+		Return ""
+	End Function
 
-	Public MustOverride Function SendFile(oPic As OnePic) As String Implements AnyStorage.SendFile
+	' tu może być implementacja, jak się uda.
+	Public Function SendFile(oPic As OnePic) As String Implements AnyStorage.SendFile
+		Throw New NotImplementedException()
+	End Function
 
-	Public MustOverride Function GetFile(oPic As OnePic) As String Implements AnyStorage.GetFile
+	Public Function GetFile(oPic As OnePic) As String Implements AnyStorage.GetFile
+		Throw New NotImplementedException()
+	End Function
 
-	Public MustOverride Function GetRemoteTags(oPic As OnePic) As String Implements AnyStorage.GetRemoteTags
+	Public Function GetRemoteTags(oPic As OnePic) As String Implements AnyStorage.GetRemoteTags
+		Throw New NotImplementedException()
+	End Function
 
-	Public MustOverride Function Delete(oPic As OnePic) As String Implements AnyStorage.Delete
+	Public Function Delete(oPic As OnePic) As String Implements AnyStorage.Delete
+		Throw New NotImplementedException()
+	End Function
 
-	Public MustOverride Function Logout() As String Implements AnyStorage.Logout
+	Public Function Logout() As String Implements AnyStorage.Logout
+		Return ""
+	End Function
+
+	Public Function GetShareLink(oPic As OnePic) As String Implements AnyStorage.GetShareLink
+		Return ""
+	End Function
+
+	Public Function GetShareLink(oOneDir As OneDir) As String Implements AnyStorage.GetShareLink
+		Return ""
+	End Function
+
+	Public Function SendFiles(oPicki As List(Of OnePic)) As String Implements AnyStorage.SendFiles
+		Throw New NotImplementedException()
+	End Function
+#End Region
 End Class
 
 

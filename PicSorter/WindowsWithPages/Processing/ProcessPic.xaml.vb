@@ -25,9 +25,9 @@ Class ProcessPic
             If oPic.Archived Is Nothing Then
                 iCnt += 1
             Else
-
+                Dim sArchiwa As String = oPic.Archived.ToLower
                 For Each sArch As String In currentArchs
-                    If Not oPic.Archived.ContainsKey(sArch) Then
+                    If Not sArchiwa.Contains(sArch) Then
                         iCnt += 1
                         Exit For
                     End If
@@ -43,8 +43,8 @@ Class ProcessPic
     Private Function CountDoCloudArchiwizacji() As Integer
 
         Dim currentArchs As New List(Of String)
-        For Each oArch As Vblib.LocalStorage In Application.GetArchivesList.GetList
-            If oArch.enabled Then currentArchs.Add(oArch.StorageName.ToLower)
+        For Each oArch As Vblib.CloudConfig In Application.GetCloudArchivesList.GetList
+            If oArch.enabled Then currentArchs.Add(oArch.sNazwa.ToLower)
         Next
 
         If currentArchs.Count < 1 Then Return 0
@@ -56,11 +56,11 @@ Class ProcessPic
             If oPic.Archived Is Nothing Then
                 iCnt += 1
             Else
-
+                Dim sArchiwa As String = oPic.CloudArchived.ToLower
                 For Each sArch As String In currentArchs
-                    If Not oPic.CloudArchived.ContainsKey(sArch) Then
-                        iCnt += 1
-                        Exit For
+                        If Not sArchiwa.Contains(sArch) Then
+                            iCnt += 1
+                            Exit For
                     End If
                 Next
             End If
@@ -73,19 +73,12 @@ Class ProcessPic
 
     Private Function CountDoPublishing() As Integer
 
-        Dim currentArchs As New List(Of String)
-        For Each oArch As Vblib.LocalStorage In Application.GetArchivesList.GetList
-            If oArch.enabled Then currentArchs.Add(oArch.StorageName.ToLower)
-        Next
-
-        If currentArchs.Count < 1 Then Return 0
-
         Dim iCnt As Integer = 0
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For  ' bo musimy wiedzieć gdzie wstawiać
-            If oPic.CloudArchived Is Nothing Then Continue For   ' bo wysyłamy do Cloud tylko te, które każemy wysyłać, a nie każdy
+            If oPic.Published Is Nothing Then Continue For   ' bo wysyłamy do Cloud tylko te, które każemy wysyłać, a nie każdy
 
-            For Each oPubl In oPic.CloudArchived
+            For Each oPubl In oPic.Published
                 ' jeśli value jest nonempty, to znaczy że mamy identyfikator wpisany - czyli wysłany
                 If String.IsNullOrWhiteSpace(oPubl.Value) Then iCnt += 1
             Next

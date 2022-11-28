@@ -561,7 +561,7 @@ Public Class ShowBig
             Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic)
             'Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.sFilenameEditDst, _picek.oPic.sFilenameEditSrc)
 
-            _picek.oPic.EndEdit()
+            _picek.oPic.EndEdit(True, True)
 
         End Using
 

@@ -116,7 +116,7 @@ Public Class Process_EmbedExif
         oExifLib.Save(oPic._PipelineInput, oPic._PipelineOutput) ' (orgFileName)
         'End Using
 
-        oPic.EndEdit()
+        oPic.EndEdit(False, False)
 
         'End Using
 
@@ -171,7 +171,7 @@ Public Class Process_EmbedBasicExif
         oExifLib.Save(oPic._PipelineInput, oPic._PipelineOutput) ' (orgFileName)
         'End Using
 
-        oPic.EndEdit()
+        oPic.EndEdit(False, False)
 
         'End Using
 
@@ -214,7 +214,7 @@ Public Class Process_RemoveExif
 
         oExifLib.Save(oPic._PipelineInput, oPic._PipelineOutput) ' (orgFileName)
 
-        oPic.EndEdit()
+        oPic.EndEdit(False, False)
 
 
         Return True

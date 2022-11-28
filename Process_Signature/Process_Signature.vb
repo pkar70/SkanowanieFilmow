@@ -50,7 +50,7 @@ Public Class Process_Signature
         ' End Using
 
 
-        oPic.EndEdit()
+        oPic.EndEdit(True, False)
 
         Return True
     End Function

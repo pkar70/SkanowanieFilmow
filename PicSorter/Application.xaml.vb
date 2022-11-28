@@ -82,6 +82,17 @@ Partial Class Application
         Return gArchiveList
     End Function
 
+    Private Shared gCloudArchiveList As Vblib.MojaLista(Of Vblib.CloudConfig)
+    Public Shared Function GetCloudArchivesList() As Vblib.MojaLista(Of Vblib.CloudConfig)
+
+        If gCloudArchiveList Is Nothing OrElse gCloudArchiveList.Count < 1 Then
+            gCloudArchiveList = New Vblib.MojaLista(Of Vblib.CloudConfig)(Application.GetDataFolder, "cloudArchives.json")
+            gCloudArchiveList.Load()
+        End If
+        Return gCloudArchiveList
+    End Function
+
+
 
     Private Shared gKeywords As Vblib.KeywordsList
 
@@ -92,6 +103,8 @@ Partial Class Application
         End If
         Return gKeywords
     End Function
+
+
 
     Private Shared gDirList As Vblib.DirsList
 

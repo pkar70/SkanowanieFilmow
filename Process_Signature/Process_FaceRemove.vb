@@ -53,7 +53,7 @@ Public Class Process_FaceRemove
         End Using
         ' End Using
 
-        oPic.EndEdit()
+        oPic.EndEdit(True, False)
 
         Return True
     End Function

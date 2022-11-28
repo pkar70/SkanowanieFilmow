@@ -41,7 +41,7 @@ Public Class Process_AutoRotate
 
         End Using
 
-        oPic.EndEdit()
+        oPic.EndEdit(True, True)
 
         Return True
     End Function
@@ -86,16 +86,19 @@ Public Class Process_AutoRotate
     Public Shared Sub SaveSoftBitmap(oStream As winstreams.InMemoryRandomAccessStream, oPic As Vblib.OnePic)
 
         oStream.Seek(0)
+        oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
+        oStream.AsStream.CopyTo(oPic._PipelineOutput)
 
+        ' oPic.EndEdit(True, True)
         'oStream.AsStream.CopyTo(oPic._PipelineOutput)
 
-        oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
+        'oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
 
-        ' *TODO* ten mechanizm dobrze byłoby przenieść do EndEdit
-        Dim oExifLib As New CompactExifLib.ExifData(oPic._PipelineInput)
-        oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
-        oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
-        oExifLib.Save(oStream.AsStream, oPic._PipelineOutput, 0) ' (orgFileName)
+        '' *TODO* ten mechanizm dobrze byłoby przenieść do EndEdit
+        'Dim oExifLib As New CompactExifLib.ExifData(oPic._PipelineInput)
+        'oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
+        'oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
+        'oExifLib.Save(oStream.AsStream, oPic._PipelineOutput, 0) ' (orgFileName)
 
     End Sub
 

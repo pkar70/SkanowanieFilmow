@@ -1,6 +1,7 @@
 ﻿
 ' Instagram
 ' Facebook
+' adhoc
 
 ' Publish, czyli po stronie serwisu są jakieś zmiany
 

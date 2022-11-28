@@ -56,7 +56,7 @@ Public Class Process_Watermark
 
         ' File.WriteAllBytes(oPic.sFilenameEditDst, newFileBytes)
 
-        oPic.EndEdit()
+        oPic.EndEdit(True, False)
         Return True
     End Function
 End Class
