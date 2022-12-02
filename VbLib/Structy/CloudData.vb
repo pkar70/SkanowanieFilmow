@@ -6,8 +6,8 @@ Public Class CloudConfig
     Inherits MojaStruct
 
     Public Property eTyp As CloudTyp    ' archiwum/publish
-    Public Property sTyp As String '   e.g. "Instagram"
-    Public Property sNazwa As String '   e.g. "Insta imienne", "Insta ukryte"
+    Public Property sProvider As String '   e.g. "Instagram"
+    Public Property nazwa As String '   e.g. "Insta imienne", "Insta ukryte"
 
     Public Property defaultPostprocess As String    ' ";" separated nazwy
     Public Property cloudExif As ExifTag    ' "-" jako kasowanik, reszta - jako override/doklejanie (np. minus jako usunięcie, i to co dalej - doklejane)

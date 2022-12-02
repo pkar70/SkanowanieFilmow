@@ -1,25 +1,21 @@
 
 
-
-czy po zmianie local storage odczyta z dysku ich listę?
+Facebook: special folders, typu "jaNaCyfrowo" dla zdjęć z -JA
+Instagram: reguły tworzenia description
 
 CLOUDARCH: funkcja GetArchive, która znajduje Engine dla podanej nazwy?
+
+SEaRCH: zdjęcia wedle opisu serii (katalogu) - "stare samochody, Anka, ale nie Aśka."
 
 niby Cloud mogą zmieniać opisy - typu rozpoznawanie w Shutterfly, więc to by wymuszało aktualizację wszystkiego (w tym Shutterfly?)
 
 sprawdzic Azure rozpoznawanie ze zmniejszaniem obrazka
 
-okienko Archive: na górze progressbar, ile ma zdefiniowany targetDir, i progressBar per Archive: wrzucone do Archiwum per max=zdefiniowany target
+może zrobić na koniec otwieranie dowolnego katalogu, bez zabierania do bufora, ale i bez EXIFów itp? A może i z "exifnij do lokalnego picsort.json"?
 
 sprawdzic autorotate?
 
-SETTINGS:MISC, autoremove from source after putting in one/all archives - ale jedno z innego drive niż ten z buforem
 Publish.Adhoc (do DIR), sprawdzic dzialanie pipeline. Zwykle byłby to watermark, BasicEmbedExif - takze do cloudarch?
-
-
-BROWSER: po wczytaniu, jeśli są pliki już w pełni w archiwum, to pyta czy je usunać (wraz z liczbą)
-
-nie dziala recursive, chyba po jednym katalogu jest problem (bo jeden katalog jakby wczytuje poprawnie)
 
 Shuterfly, degoo?
 Degoo sharing ma?
@@ -31,6 +27,7 @@ Archiwum: wszystko tam wysyła,lokalne czy cloud
 Publish: wysyła tylko wskazane
 w sumie to może być ten sam engine, i opcja "as archive / as publish" (że albo wszystko, albo tylko zaznaczane)
 
+OneDir, albo Archive: GetDirAsBuffer (później, przy Search, itp.)
 
 dla Degoo, Shutterfly: postprocess: simpleEXIF, znak wodny, podpis?
 
@@ -43,7 +40,6 @@ NAJBLIZSZE KROKI ZDJĘCIOWE:
 
 * jakoś już wymyślać jak zrobić SEARCH itp.
 
-* archiwizacja - na dysk l:\ (jedno, żeby sprawdzić, ale jeszcze bez publikacji)
 * cloudarch, czyli shutterfly oraz może degoo?
 * archive vs publish: archive zachowuje nazwy plików oraz ich pełen content (w tym EXIF), żadno skalowanie
 * publikacje proste (płaskie), Instagram
@@ -97,7 +93,7 @@ https://github.com/ramtinak/InstagramApiSharp/blob/master/samples/Examples/Sampl
 * ewentualnie dodać rename "jpg.thumb" -> "jpg" w Source, przed sprawdzaniem maski.
 
 * Source: property IDprefix, i to wraz z datą jako ID pliku; default dla MTP: WP_, ale może byc i L5_, L9_ żeby rozdzielić telefony
-* PUBLISH: może byc kilka tego samego typu, np. dwa konta Instagram (czy można mieć dwa konta? nr telefonu już jest użyty), albo dwa podkatalogi (AdHoc), do każdego inna sekwencja pipeline
+* PUBLISH: może byc kilka tego samego typu, np. dwa konta Instagram, albo dwa podkatalogi (AdHoc), do każdego inna sekwencja pipeline
 * przed Publish powinien byc przydział katalogu
 * indeks plików w Storage - sprawdzic ile pamięci schodzi teraz, na 1000 plików, ×3 (bo Azure nie ma)
 * indeks plików w Storage: raczej jako plik JSON ale bez ']' kończącego, i Append nowych elementów - plik na dysku zawsze nie byłby JSONem, bo zawsze bez ']', ale działałoby append bez czytania calego pliku

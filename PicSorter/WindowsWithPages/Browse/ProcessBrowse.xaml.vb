@@ -29,7 +29,7 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class ProcessBrowse
 
-    Private Const THUMBS_LIMIT As Integer = 99
+    Private Const THUMBS_LIMIT As Integer = 9999
 
     Private _thumbsy As New ObservableCollection(Of ThumbPicek)
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć
@@ -60,6 +60,7 @@ Public Class ProcessBrowse
         WypelnMenuBatchProcess(uiBatchProcessors, AddressOf PostProcessRun)
 
         Await EwentualneKasowanieBak()
+        ' *TODO* Await EwentualneKasowanieArchived() - uwaga: z przepisaniem danych z buffer.json do archived.json
 
         Application.ShowWait(False)
     End Sub

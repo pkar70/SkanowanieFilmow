@@ -5,46 +5,11 @@ Class ProcessPic
         AktualizujGuziki()
     End Sub
 
-    ''' <summary>
-    ''' liczy ile jest w buforze zdjęć które nie trafiły do wszystkich archiwów
-    ''' </summary>
-    ''' <returns></returns>
-    Private Function CountDoArchiwizacji() As Integer
-
-        Dim currentArchs As New List(Of String)
-        For Each oArch As Vblib.LocalStorage In Application.GetArchivesList.GetList
-            If oArch.enabled Then currentArchs.Add(oArch.StorageName.ToLower)
-        Next
-
-        If currentArchs.Count < 1 Then Return 0
-
-        Dim iCnt As Integer = 0
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
-            If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
-
-            If oPic.Archived Is Nothing Then
-                iCnt += 1
-            Else
-                Dim sArchiwa As String = oPic.Archived.ToLower
-                For Each sArch As String In currentArchs
-                    If Not sArchiwa.Contains(sArch) Then
-                        iCnt += 1
-                        Exit For
-                    End If
-                Next
-            End If
-
-        Next
-
-        Return iCnt
-
-    End Function
-
     Private Function CountDoCloudArchiwizacji() As Integer
 
         Dim currentArchs As New List(Of String)
         For Each oArch As Vblib.CloudConfig In Application.GetCloudArchivesList.GetList
-            If oArch.enabled Then currentArchs.Add(oArch.sNazwa.ToLower)
+            If oArch.enabled Then currentArchs.Add(oArch.nazwa.ToLower)
         Next
 
         If currentArchs.Count < 1 Then Return 0
@@ -58,9 +23,9 @@ Class ProcessPic
             Else
                 Dim sArchiwa As String = oPic.CloudArchived.ToLower
                 For Each sArch As String In currentArchs
-                        If Not sArchiwa.Contains(sArch) Then
-                            iCnt += 1
-                            Exit For
+                    If Not sArchiwa.Contains(sArch) Then
+                        iCnt += 1
+                        Exit For
                     End If
                 Next
             End If
@@ -101,7 +66,7 @@ Class ProcessPic
         uiBatchEdit.IsEnabled = (counter > 0)
 
         ' z licznika do archiwizacji
-        counter = CountDoArchiwizacji()
+        counter = LocalArchive.CountDoArchiwizacji()
         uiLocalArch.Content = $"Local arch ({counter})"
         uiLocalArch.IsEnabled = (counter > 0)
 
@@ -132,6 +97,11 @@ Class ProcessPic
 
     Private Sub uiBatchEdit_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New BatchEdit
+        oWnd.ShowDialog()
+    End Sub
+
+    Private Sub uiLocalArch_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New LocalArchive
         oWnd.ShowDialog()
     End Sub
 End Class

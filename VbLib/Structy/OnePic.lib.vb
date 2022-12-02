@@ -41,6 +41,21 @@ Public Class OnePic
         sSuggestedFilename = suggestedFilename
     End Sub
 
+#Region "operacje na Archived"
+    Public Sub AddArchive(sArchName As String)
+        If IsArchivedIn(sArchName) Then Return
+        If Archived Is Nothing Then Archived = ""
+        Archived &= sArchName & ";"
+    End Sub
+
+    Public Function IsArchivedIn(sArchName As String) As Boolean
+        If Archived Is Nothing Then Return False
+        If Archived.Contains(sArchName & ";") Then Return True
+        Return False
+    End Function
+
+#End Region
+
 #Region "operacje na ExifTags"
 
     Public Function GetExifOfType(sType As String) As ExifTag
@@ -164,25 +179,26 @@ Public Class OnePic
 
         ' https://stackoverflow.com/questions/725341/how-to-determine-if-a-file-matches-a-file-mask
         Dim aMaski As String()
+        Dim sFilename As String = sFilenameNoPath.ToLowerInvariant
 
         If Not String.IsNullOrWhiteSpace(sExcludeMasks) Then
-            aMaski = sExcludeMasks.Split(";")
+            aMaski = sExcludeMasks.ToLowerInvariant.Split(";")
             For Each maska As String In aMaski
                 Dim regExMaska As New Regex(DOSmask2regExp(maska))
-                If regExMaska.IsMatch(sFilenameNoPath) Then Return False
+                If regExMaska.IsMatch(sFilename) Then Return False
             Next
         End If
 
         If String.IsNullOrWhiteSpace(sIncludeMasks) Then
             aMaski = "*.jpg;*.tif;*.png".Split(";")
         Else
-            aMaski = sIncludeMasks.Split(";")
+            aMaski = sIncludeMasks.ToLowerInvariant.Split(";")
         End If
 
         Dim bMatch As Boolean = False
         For Each maska As String In aMaski
             Dim regExMaska As New Regex(DOSmask2regExp(maska))
-            If regExMaska.IsMatch(sFilenameNoPath) Then
+            If regExMaska.IsMatch(sFilename) Then
                 bMatch = True
                 Exit For
             End If

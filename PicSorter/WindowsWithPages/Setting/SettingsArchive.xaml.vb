@@ -96,7 +96,7 @@ Class SettingsArchive
         uiTree3DzienWeekDay.IsChecked = _item.tree3DzienWeekDay
         uiTree4geo.IsChecked = _item.tree4Geo
 
-        uiSrcSaveToExif.IsChecked = _item.saveToExif
+        ' uiSrcSaveToExif.IsChecked = _item.saveToExif
         uiSrcJSONinside.IsChecked = _item.jsonInDir
 
     End Sub
@@ -144,7 +144,7 @@ Class SettingsArchive
         _item.tree3DzienWeekDay = uiTree3DzienWeekDay.IsChecked
         _item.tree4Geo = uiTree4geo.IsChecked
 
-        _item.saveToExif = uiSrcSaveToExif.IsChecked
+        '_item.saveToExif = uiSrcSaveToExif.IsChecked
         _item.jsonInDir = uiSrcJSONinside.IsChecked
 
         ShowSourcesList()

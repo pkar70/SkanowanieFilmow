@@ -54,7 +54,7 @@ Class SettingsGlobal
 
         Dim oDrives = IO.DriveInfo.GetDrives()
         For Each oDrive As IO.DriveInfo In oDrives
-            If oDrive.DriveType = IO.DriveType.Fixed And oDrive.AvailableFreeSpace > iMax Then
+            If oDrive.DriveType = IO.DriveType.Fixed AndAlso oDrive.IsReady AndAlso oDrive.AvailableFreeSpace > iMax Then
                 iMax = oDrive.AvailableFreeSpace
                 sPath = oDrive.Name
             End If

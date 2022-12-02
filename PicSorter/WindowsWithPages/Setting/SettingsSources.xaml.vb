@@ -32,7 +32,7 @@ Class SettingsSources
         If Not Await vb14.DialogBoxYNAsync("Na pewno usunąć, a nie tylko zablokować?") Then Return
 
         Application.GetSourcesList().Remove(oItem)
-
+        ShowSourcesList()
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
@@ -104,7 +104,7 @@ Class SettingsSources
 
         If String.IsNullOrWhiteSpace(sCurrentVolLabel) Then sCurrentVolLabel = "#####"  ' taka nie wystąpi
 
-        vb14.DialogBox($"ComboVolLabels (...,{sCurrentVolLabel})")
+        'vb14.DialogBox($"ComboVolLabels (...,{sCurrentVolLabel})")
 
         Dim iInd As Integer = sCurrentVolLabel.IndexOf("(")
         If iInd > 1 Then sCurrentVolLabel = sCurrentVolLabel.Substring(0, iInd - 1)
@@ -240,12 +240,14 @@ Class SettingsSources
             End Try
         End If
 
-        _item.VolLabel = uiSrcVolume.SelectedValue
-        If _item.VolLabel.Length < 2 Then
-            vb14.DialogBox("Błędny vollabel")
-            Return
+        If _item.Typ <> Vblib.PicSourceType.AdHOC Then
+            ' przy AdHoc to jest null
+            _item.VolLabel = uiSrcVolume.SelectedValue
+            If _item.VolLabel.Length < 2 Then
+                vb14.DialogBox("Błędny vollabel")
+                Return
+            End If
         End If
-
         _item.SourceName = uiSrcName.Text
         _item.Path = uiSrcPath.Text
         _item.Recursive = uiSrcRecursive.IsChecked

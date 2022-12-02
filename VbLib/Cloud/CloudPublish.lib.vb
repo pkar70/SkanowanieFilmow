@@ -1,13 +1,34 @@
 ﻿
-' Instagram
-' Facebook
-' adhoc
+' Instagram - NUGET
+' Facebook - NUGET?
+' adhoc (DIR)
 
 ' Publish, czyli po stronie serwisu są jakieś zmiany
 
 Public MustInherit Class CloudPublishData
+    Implements AnyStorage, AnyCloudStorage
 
     Public Property konfiguracja As CloudConfig
+
+    ' te dwa muszą się zgadzać z tym co w konfiguracja
+    Public MustOverride Property sProvider As String
+    Public Property eTyp As CloudTyp = CloudTyp.publish
+
+
+    Public MustOverride Function SendFile(oPic As OnePic) As String Implements AnyStorage.SendFile
+    Public MustOverride Function VerifyFileExist(oPic As OnePic) As String Implements AnyStorage.VerifyFileExist
+    Public MustOverride Function VerifyFile(oPic As OnePic, oCopyFromArchive As LocalStorage) As String Implements AnyStorage.VerifyFile
+    Public MustOverride Function SendFiles(oPicki As List(Of OnePic)) As String Implements AnyStorage.SendFiles
+    Public MustOverride Function GetFile(oPic As OnePic) As String Implements AnyStorage.GetFile
+    Public MustOverride Function GetMBfreeSpace() As Integer Implements AnyStorage.GetMBfreeSpace
+
+    Public MustOverride Function Login() As String Implements AnyCloudStorage.Login
+    Public MustOverride Function GetRemoteTags(oPic As OnePic) As String Implements AnyCloudStorage.GetRemoteTags
+    Public MustOverride Function Delete(oPic As OnePic) As String Implements AnyCloudStorage.Delete
+    Public MustOverride Function GetShareLink(oPic As OnePic) As String Implements AnyCloudStorage.GetShareLink
+    Public MustOverride Function GetShareLink(oOneDir As OneDir) As String Implements AnyCloudStorage.GetShareLink
+    Public MustOverride Function Logout() As String Implements AnyCloudStorage.Logout
+    Public MustOverride Function CreateNew(oConfig As CloudConfig) As AnyStorage Implements AnyCloudStorage.CreateNew
 End Class
 
 

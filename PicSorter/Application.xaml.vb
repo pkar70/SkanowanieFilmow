@@ -51,6 +51,15 @@ Partial Class Application
 
     End Function
 
+
+    Public Shared Sub AddToGlobalJsonIndex(sContent As String)
+
+        Dim sJsonFile As String = GetDataFile("", "archIndex.json", False)
+        Vblib.LocalStorage.AddToJsonIndexMain(sJsonFile, sContent)
+
+    End Sub
+
+
     Private Shared gSourcesList As VbLib20.PicSourceList
     Private Shared gBuffer As Vblib.Buffer
 

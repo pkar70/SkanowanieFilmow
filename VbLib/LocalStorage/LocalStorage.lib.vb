@@ -1,5 +1,7 @@
 ﻿
 
+Imports System.IO
+
 Public MustInherit Class LocalStorage
 	Implements AnyStorage
 
@@ -13,7 +15,7 @@ Public MustInherit Class LocalStorage
 	Public Property lastSave As DateTime
 
 	Public Property jsonInDir As Boolean = True
-	Public Property saveToExif As Boolean = True
+	'	Public Property saveToExif As Boolean = True
 
 	Public Property tree0Dekada As Boolean = False
 	Public Property tree1Rok As Boolean = True
@@ -35,8 +37,8 @@ Public MustInherit Class LocalStorage
 	''' <param name="oOneDir">do jakiego katalogu</param>
 	''' <param name="sGeo">string potrzebny przy dzieleniu wedle GEO</param>
 	''' <returns></returns>
-	Protected Function GetWriteFolder(oOneDir As Vblib.OneDir) As String
-		Return GetFolder(oOneDir, False)
+	Protected Function GetWriteFolder(sDirId As String) As String
+		Return GetFolder(sDirId, False)
 	End Function
 
 	''' <summary>
@@ -44,8 +46,8 @@ Public MustInherit Class LocalStorage
 	''' </summary>
 	''' <param name="oItem"></param>
 	''' <returns></returns>
-	Protected Function FindRealFolder(oOneDir As Vblib.OneDir) As String
-		Return GetFolder(oOneDir, True)
+	Protected Function FindRealFolder(sDirId As String) As String
+		Return GetFolder(sDirId, True)
 	End Function
 
 
@@ -55,50 +57,50 @@ Public MustInherit Class LocalStorage
 	''' <param name="oOneDir">do jakiego katalogu</param>
 	''' <param name="sGeo">string potrzebny przy dzieleniu wedle GEO</param>
 	''' <returns></returns>
-	Private Function GetFolder(oOneDir As Vblib.OneDir, bForRead As Boolean) As String
+	Private Function GetFolder(sDirId As String, bForRead As Boolean) As String
 
 		Dim sPath As String = GetConvertedPathForVol(VolLabel, Path)
 		If sPath = "" Then Return ""
 
-		If oOneDir.IsFromKeyword Then Return GetFolderForKeyword(sPath, oOneDir, bForRead)
+		If OneDir.IsFromKeyword(sDirId) Then Return GetFolderForKeyword(sPath, sDirId, bForRead)
 
 		' 1981.01.23.sb_geo -> 198x
 		If tree0Dekada Or bForRead Then
-			sPath = FindCreateRealDir(sPath, oOneDir.sId.Substring(0, 3) & "x", Not bForRead)
+			sPath = FindCreateRealDir(sPath, sDirId.Substring(0, 3) & "x", Not bForRead)
 		End If
 
 		' 1981.01.23.sb_geo -> 1981
 		If tree1Rok Or bForRead Then
-			sPath = FindCreateRealDir(sPath, oOneDir.sId.Substring(0, 4), Not bForRead)
+			sPath = FindCreateRealDir(sPath, sDirId.Substring(0, 4), Not bForRead)
 		End If
 
 		' 1981.01.23.sb_geo -> 1981.01
 		If tree2Miesiac Or bForRead Then
-			sPath = FindCreateRealDir(sPath, oOneDir.sId.Substring(0, 7), Not bForRead)
+			sPath = FindCreateRealDir(sPath, sDirId.Substring(0, 7), Not bForRead)
 		End If
 
 		' 1981.01.23.sb_geo -> 1981.01.23
 		If tree3Dzien Or bForRead Then
-			sPath = FindCreateRealDir(sPath, oOneDir.sId.Substring(0, 10), Not bForRead)
+			sPath = FindCreateRealDir(sPath, sDirId.Substring(0, 10), Not bForRead)
 		End If
 
 		' 1981.01.23.sb_geo -> 1981.01.23.sb
 		If tree3DzienWeekDay Or bForRead Then
-			sPath = FindCreateRealDir(sPath, oOneDir.sId.Substring(0, 13), Not bForRead)
+			sPath = FindCreateRealDir(sPath, sDirId.Substring(0, 13), Not bForRead)
 		End If
 
 		' 1981.01.23.sb_geo -> 1981.01.23.sb_geo
 		If tree4Geo Or bForRead Then
-			sPath = FindCreateRealDir(sPath, oOneDir.sId, Not bForRead)
+			sPath = FindCreateRealDir(sPath, sDirId, Not bForRead)
 		End If
 
 		Return sPath
 	End Function
 
-	Private Function GetFolderForKeyword(sPath As String, oOneDir As OneDir, bForRead As Boolean) As String
+	Private Function GetFolderForKeyword(sPath As String, sDirId As String, bForRead As Boolean) As String
 		sPath = FindCreateRealDir(sPath, "_kwd", True)  ' _kwd musi istnieć
-		sPath = FindCreateRealDir(sPath, oOneDir.sId.Substring(0, 1), False) ' podkatalog typu może istnieć, ale nie musi (i program nigdy go nie stworzy)
-		sPath = FindCreateRealDir(sPath, oOneDir.sId, Not bForRead) ' a konkretny - może
+		'sPath = FindCreateRealDir(sPath, sDirId.Substring(0, 1), False) ' podkatalog typu może istnieć, ale nie musi (i program nigdy go nie stworzy)
+		sPath = FindCreateRealDir(sPath, sDirId, Not bForRead) ' a konkretny - może
 		Return sPath
 	End Function
 
@@ -112,7 +114,9 @@ Public MustInherit Class LocalStorage
 		If Not IO.Directory.Exists(sInFolder) Then Return ""
 
 		For Each sFolder As String In IO.Directory.GetDirectories(sInFolder)
-			If IO.Path.GetFileName(sFolder).StartsWith(sSubfolderPrefix) Then Return sFolder
+			If IO.Path.GetFileName(sFolder).StartsWith(sSubfolderPrefix) Then
+				Return IO.Path.Combine(sInFolder, sSubfolderPrefix)
+			End If
 		Next
 
 		If Not bCreate Then Return sInFolder
@@ -125,42 +129,162 @@ Public MustInherit Class LocalStorage
 
 #Region "implementacja interface"
 
-	Public Function Login() As String Implements AnyStorage.Login
+#Region "przerzucenie do vblib 2.0"
+	Public MustOverride Function GetMBfreeSpace() As Integer Implements AnyStorage.GetMBfreeSpace
+
+#End Region
+
+#Region "realne funkcje"
+
+	Private Const NO_MATCH_MASK As String = "nomatch"
+
+	Public Function SendFile(oPic As OnePic) As String Implements AnyStorage.SendFile
+		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
+
+		' zapisz plik, gdy błąd - wróć od razu
+		Dim sErr As String = SendPhoto(oPic)
+		If sErr = NO_MATCH_MASK Then Return ""    ' nie ma błędu, bo po prostu plik spoza maski jest
+		If sErr <> "" Then Return sErr  ' błąd
+
+		Dim sJsonContent As String = oPic.DumpAsJSON
+		AddToJsonIndex(oPic.TargetDir, sJsonContent)
+
 		Return ""
+
 	End Function
 
-	' tu może być implementacja, jak się uda.
-	Public Function SendFile(oPic As OnePic) As String Implements AnyStorage.SendFile
+	Public Function SendFiles(oPicki As List(Of OnePic)) As String Implements AnyStorage.SendFiles
+		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
+
+		If oPicki Is Nothing Then Return ""
+		If oPicki.Count < 1 Then Return ""
+
+		Dim sTargetDir As String = oPicki(0).TargetDir
+
+		Dim sJsonContent As String = ""
+		Dim sError As String = ""
+		For Each oPic As OnePic In oPicki
+
+			If oPic.TargetDir <> sTargetDir Then Continue For
+
+			Dim temperr As String = SendPhoto(oPic)
+			If temperr = NO_MATCH_MASK Then Continue For  ' nie ma błędu, bo po prostu plik spoza maski jest
+
+			If temperr = "" Then
+				' zapis OK
+				If sJsonContent <> "" Then sJsonContent = sJsonContent & "," & vbCrLf
+				sJsonContent = sJsonContent & oPic.DumpAsJSON
+			Else
+				sError = sError & vbCrLf & temperr
+			End If
+
+		Next
+
+		If sJsonContent <> "" Then AddToJsonIndex(sTargetDir, sJsonContent)
+
+		Return sError
+
+	End Function
+
+	Public Function VerifyFileExist(oPic As OnePic) As String Implements AnyStorage.VerifyFileExist
+		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
+
+		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: cannot get folder for file"
+
+		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
+
+		If IO.File.Exists(sTargetFile) Then Return ""
+
+		Return "no file"
+	End Function
+
+	Public Function VerifyFile(oPic As OnePic, oFromArchive As LocalStorage) As String Implements AnyStorage.VerifyFile
+		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
+
+		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: cannot get folder for file"
+
+		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
+
+		If IO.File.Exists(sTargetFile) Then Return ""
+
+		' *TODO* jeśli nie, to spróbuj skopiować z oArchive
 		Throw New NotImplementedException()
 	End Function
 
 	Public Function GetFile(oPic As OnePic) As String Implements AnyStorage.GetFile
-		Throw New NotImplementedException()
-	End Function
+		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
-	Public Function GetRemoteTags(oPic As OnePic) As String Implements AnyStorage.GetRemoteTags
-		Throw New NotImplementedException()
-	End Function
+		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: cannot get folder for file"
 
-	Public Function Delete(oPic As OnePic) As String Implements AnyStorage.Delete
-		Throw New NotImplementedException()
-	End Function
+		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
 
-	Public Function Logout() As String Implements AnyStorage.Logout
+		If Not IO.File.Exists(sTargetFile) Then Return $"ERROR: non existent file {sTargetFile}"
+
+		oPic.oContent = IO.File.Open(sTargetFile, FileMode.Open)
+
 		Return ""
 	End Function
 
-	Public Function GetShareLink(oPic As OnePic) As String Implements AnyStorage.GetShareLink
+	Public Shared Sub AddToJsonIndexMain(sIndexFilename As String, sContent As String)
+
+		If Not IO.File.Exists(sIndexFilename) Then
+			IO.File.WriteAllText(sIndexFilename, "[")
+		Else
+			' skoro już mamy coś w pliku, to teraz dodajemy do tego przecinek - pomiędzy itemami
+			sContent = "," & vbCrLf & sContent
+		End If
+
+		IO.File.AppendAllText(sIndexFilename, sContent)
+
+	End Sub
+
+	Private Sub AddToJsonIndex(sDirId As String, sContent As String)
+		If Not jsonInDir Then Return
+
+		Dim sFolder As String = FindRealFolder(sDirId)
+		If String.IsNullOrEmpty(sFolder) Then Return
+
+		Dim sJsonFile As String = IO.Path.Combine(sFolder, "picsort.arch.json")
+
+		AddToJsonIndexMain(sJsonFile, sContent)
+
+	End Sub
+
+	''' <summary>
+	''' wysyła plik oPic do oOneDir, dba o daty pliku w archiwum, odnotowuje archiwizację w oPic.Archived
+	''' </summary>
+	''' <param name="oPic"></param>
+	''' <param name="oOneDir"></param>
+	''' <returns>errmessage lub ""</returns>
+	Private Function SendPhoto(oPic As OnePic) As String
+
+		If OnePic.MatchesMasks(oPic.sSuggestedFilename, includeMask, excludeMask) Then Return NO_MATCH_MASK
+
+		Dim sFolder As String = GetWriteFolder(oPic.TargetDir)
+		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: SendPhoto, cannot get folder for write"
+
+		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
+		If IO.File.Exists(sTargetFile) Then Return $"ERROR: file {sTargetFile} already exist!"
+
+		IO.File.Copy(oPic.InBufferPathName, sTargetFile)
+
+		Try
+			IO.File.SetCreationTime(sTargetFile, IO.File.GetCreationTime(oPic.InBufferPathName))
+			IO.File.SetLastWriteTime(sTargetFile, IO.File.GetLastWriteTime(oPic.InBufferPathName))
+		Catch ex As Exception
+			' to nie jest takie istotne
+		End Try
+
+		oPic.AddArchive(StorageName)
+
 		Return ""
 	End Function
 
-	Public Function GetShareLink(oOneDir As OneDir) As String Implements AnyStorage.GetShareLink
-		Return ""
-	End Function
+#End Region
 
-	Public Function SendFiles(oPicki As List(Of OnePic)) As String Implements AnyStorage.SendFiles
-		Throw New NotImplementedException()
-	End Function
 #End Region
 End Class
 

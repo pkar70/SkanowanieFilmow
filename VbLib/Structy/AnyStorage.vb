@@ -4,12 +4,6 @@
 Public Interface AnyStorage
 
     ''' <summary>
-    ''' login do serwisu
-    ''' </summary>
-    ''' <returns>"" gdy OK, lub error message</returns>
-    Function Login() As String
-
-    ''' <summary>
     '''  wyślij plik, ewentualnie z EXIFami, opisz jeśli trzeba, i w ogóle wszystko razem
     ''' </summary>
     ''' <param name="oPic"></param>
@@ -17,7 +11,23 @@ Public Interface AnyStorage
     Function SendFile(oPic As OnePic) As String
 
     ''' <summary>
+    '''  sprawdź czy istnieje, 
+    ''' </summary>
+    ''' <param name="oPic"></param>
+    ''' <returns>"" gdy OK, lub error message</returns>
+    Function VerifyFileExist(oPic As OnePic) As String
+
+    ''' <summary>
+    '''  sprawdź czy istnieje, w razie czego wyślij ponownie z Archiwum
+    ''' </summary>
+    ''' <param name="oPic"></param>
+    ''' <returns>"" gdy OK, lub error message</returns>
+    Function VerifyFile(oPic As OnePic, oCopyFromArchive As LocalStorage) As String
+
+
+    ''' <summary>
     '''  wyślij serię plików (jak SendFile), ale tylko z jednym zapisem do JSON 
+    '''  wyśle tylko te zdjęcia, które mają targetDir takie jak pierwsze zdjęcie
     ''' </summary>
     ''' <param name="oPic"></param>
     ''' <returns>"" gdy OK, lub error message</returns>
@@ -30,6 +40,24 @@ Public Interface AnyStorage
     ''' <param name="oPic"></param>
     ''' <returns>oPic.oContent ustaw na Stream do wczytywania; "" gdy OK, lub error message</returns>
     Function GetFile(oPic As OnePic) As String
+
+
+
+    ''' <summary>
+    ''' ile wolnego miejsca jest
+    ''' </summary>
+    ''' <returns></returns>
+    Function GetMBfreeSpace() As Integer
+
+
+End Interface
+
+Public Interface AnyCloudStorage
+    ''' <summary>
+    ''' login do serwisu
+    ''' </summary>
+    ''' <returns>"" gdy OK, lub error message</returns>
+    Function Login() As String
 
     ''' <summary>
     ''' ściągnij zewnętrzne opisy (oPic.ExifTag nowy)
@@ -64,4 +92,13 @@ Public Interface AnyStorage
     ''' </summary>
     ''' <returns>"" gdy OK, lub error message</returns>
     Function Logout() As String
+
+    ''' <summary>
+    ''' zwróć klasę, jeśli oConfig pasuje do konkretnej klasy, lub NULL, jeśli to nie tej klasy
+    ''' </summary>
+    ''' <param name="oConfig"></param>
+    ''' <returns></returns>
+    Function CreateNew(oConfig As CloudConfig) As AnyStorage
+
+
 End Interface

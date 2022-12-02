@@ -61,7 +61,8 @@ Public Class PicSourceImplement
         If Not IO.Directory.Exists(Path) Then Return -2
 
         Dim iCnt As Integer = 0
-        _listaPlikow.Clear()
+        _listaPlikow?.Clear()
+        _listaPlikow = New List(Of OnePic)
 
         Dim dateMin As Date = currentExif.DateMin
 
@@ -120,6 +121,8 @@ Public Class PicSourceImplement
 
     Public Shared Function GetConvertedPathForVol_Folder(sVolLabel As String, sPath As String) As String
         sVolLabel = sVolLabel.ToLowerInvariant
+        Dim iInd As Integer = sVolLabel.IndexOf("(")
+        If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd).Trim
 
         Dim oDrives = IO.DriveInfo.GetDrives()
         For Each oDrive As IO.DriveInfo In oDrives

@@ -66,6 +66,10 @@ Public Class OneDir
     ''' </summary>
     ''' <returns></returns>
     Public Function IsFromKeyword() As Boolean
+        Return IsFromKeyword(sId)
+    End Function
+
+    Public Shared Function IsFromKeyword(sId As String)
         Return (sId.IndexOfAny({"-", "#", "="}) = 0)
     End Function
 

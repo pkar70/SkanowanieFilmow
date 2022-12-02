@@ -19,6 +19,9 @@ Public Class ProcessDownload
             Dim dirToGet As String = SettingsGlobal.FolderBrowser(oSrc.Path, "Select source folder")
             If dirToGet = "" Then Return
             oSrc.Path = dirToGet
+
+            oSrc.VolLabel = GetVolLabelForPath(dirToGet)
+
         End If
 
         If oSrc.currentExif Is Nothing Then oSrc.currentExif = oSrc.defaultExif.Clone
@@ -35,6 +38,19 @@ Public Class ProcessDownload
         End If
 
     End Sub
+
+    Private Function GetVolLabelForPath(dirToGet As String) As String
+        Dim oDrives = IO.DriveInfo.GetDrives()
+        For Each oDrive As IO.DriveInfo In oDrives
+            If oDrive.IsReady Then
+                If dirToGet.StartsWith(oDrive.RootDirectory.FullName) Then
+                    Return oDrive.VolumeLabel & " (" & oDrive.RootDirectory.FullName & ")"
+                End If
+            End If
+        Next
+
+        Return ""
+    End Function
 
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
         ' uproszczona wersja

@@ -21,5 +21,15 @@ Public Class LocalStorageMiddle
 		Return True
 	End Function
 
+	Public Overrides Function GetMBfreeSpace() As Integer
+		Dim sPath As String = PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path)
+		If sPath = "" Then Return -1
+
+		Dim oDrive As IO.DriveInfo = New IO.DriveInfo(sPath) ' .Net 2.0
+		If Not oDrive.IsReady Then Return -1
+		Return (oDrive.AvailableFreeSpace / 1024) / 1024
+	End Function
+
+
 End Class
 

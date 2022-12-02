@@ -97,7 +97,7 @@
             </StackPanel>
 
             <TextBlock Grid.Row="6" Text="Save to EXIF:" />
-            <CheckBox Grid.Row="6" Grid.Column="1" Name="uiSrcSaveToExif" />
+            <CheckBox Grid.Row="6" Grid.Column="1" Name="uiSrcSaveToExif" IsEnabled="false" />
 
             <TextBlock Grid.Row="7" Text="JSON w katalogu:" />
             <CheckBox Grid.Row="7" Grid.Column="1" Name="uiSrcJSONinside" />
