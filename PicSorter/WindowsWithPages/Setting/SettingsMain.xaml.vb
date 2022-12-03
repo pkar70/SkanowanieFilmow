@@ -68,4 +68,8 @@ Class SettingsMain
     Private Sub uiArchives_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsArchive)
     End Sub
+
+    Private Sub uiCloudPublish_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsCloudPublisher)
+    End Sub
 End Class

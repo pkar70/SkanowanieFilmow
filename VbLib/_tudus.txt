@@ -1,9 +1,21 @@
 
+Resize błąd: ze gdy plik jest mniejszy? ale czemu co drugie uruchomienie? czegoś nie zwalnia?
+ ale nawet jeśli, to w pipeline powinien po prostu przekopiować, zamiast stopować.
+
+Main:Publish: progressbar per miejsce: wysłanych/zaznaczonych
+
+BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
+
+PUBLISH, CLOUDARCH i z Azure " ADULTPIC" - pytanie czy sure? 
+Albo Property w definicji, true/false.
+
+PUBLISH jednego - może być pytanie, np. o opis.
+
+czy robić default/temp EXIF przy Publish? Dla grupowych, czy także dla pojedynczych (z ShowBig)?
+jak uwzgledniac EXIF w publish, którego przeciez nie dopisuje sie do pliku :)
 
 Facebook: special folders, typu "jaNaCyfrowo" dla zdjęć z -JA
 Instagram: reguły tworzenia description
-
-CLOUDARCH: funkcja GetArchive, która znajduje Engine dla podanej nazwy?
 
 SEaRCH: zdjęcia wedle opisu serii (katalogu) - "stare samochody, Anka, ale nie Aśka."
 
@@ -15,7 +27,6 @@ może zrobić na koniec otwieranie dowolnego katalogu, bez zabierania do bufora,
 
 sprawdzic autorotate?
 
-Publish.Adhoc (do DIR), sprawdzic dzialanie pipeline. Zwykle byłby to watermark, BasicEmbedExif - takze do cloudarch?
 
 Shuterfly, degoo?
 Degoo sharing ma?
@@ -28,6 +39,7 @@ Publish: wysyła tylko wskazane
 w sumie to może być ten sam engine, i opcja "as archive / as publish" (że albo wszystko, albo tylko zaznaczane)
 
 OneDir, albo Archive: GetDirAsBuffer (później, przy Search, itp.)
+moze zawsze dawac JSON w katalogu, byloby o wiele latwiej
 
 dla Degoo, Shutterfly: postprocess: simpleEXIF, znak wodny, podpis?
 

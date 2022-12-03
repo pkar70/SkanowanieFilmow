@@ -90,6 +90,7 @@ Public Class Buffer
     ''' <param name="pic">tu jest wazne suggestedfileName oraz oContent</param>
     ''' <returns>OnePic uzupelniony o BufferFileName, FALSE: error</returns>
     Public Async Function AddFile(oPic As OnePic) As Task(Of Boolean)
+        DumpCurrMethod($"({oPic.sSuggestedFilename}")
 
         Dim sDstPathName As String = IO.Path.Combine(_rootPictures, oPic.sSuggestedFilename)
 

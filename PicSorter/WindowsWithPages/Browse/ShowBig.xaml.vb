@@ -111,6 +111,8 @@ Public Class ShowBig
 
         ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
         ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
+        ProcessBrowse.WypelnMenuCloudPublish(uiMenuPublish, AddressOf ApplyPublish)
+
 
         OnOffMap()
         SettingsMapsy.WypelnMenuMapami(uiOnMap, AddressOf uiOnMap_Click)
@@ -176,6 +178,24 @@ Public Class ShowBig
 
     End Sub
 
+    Private Async Sub ApplyPublish(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oSrc As Vblib.CloudPublish = oFE?.DataContext
+        If oSrc Is Nothing Then Return
+
+        If oSrc.sProvider = Publish_AdHoc.PROVIDERNAME Then
+            Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
+            If sFolder = "" Then Return
+            oSrc.sZmienneZnaczenie = sFolder
+        End If
+
+        Application.ShowWait(True)
+        Dim sRet As String = Await oSrc.SendFile(_picek.oPic)
+        Application.ShowWait(False)
+        If sRet <> "" Then Await vb14.DialogBoxAsync(sRet)
+
+        SaveMetaData()  ' bo zmieniono info o publishingu
+    End Sub
     'Private Sub uiFullPicture_MouseRightButtonDown(sender As Object, e As MouseButtonEventArgs) Handles uiFullPicture.MouseRightButtonDown
     '    uiFlyout.IsOpen = True
     'End Sub

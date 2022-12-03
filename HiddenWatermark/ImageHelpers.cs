@@ -34,7 +34,8 @@ namespace HiddenWatermark
             return ReadPixels(image);
         }
 
-        public byte[] MergeWatermarkPixels(byte[] fileBytes, byte[] watermarkBytes)
+        // // PKAR PKAR PKAR PKAR PKAR PKAR PKAR 
+        public byte[] MergeWatermarkPixels(byte[] fileBytes, byte[] watermarkBytes, int JPGquality)
         {
             var image = CreateImage(fileBytes);
 
@@ -91,6 +92,7 @@ namespace HiddenWatermark
                 bitmap.WritePixels(new Int32Rect(0, 0, width, height), pixels, width * pixelSize, 0);
 
                 var encoder = new JpegBitmapEncoder();
+                encoder.QualityLevel = JPGquality;  // PKAR PKAR PKAR PKAR PKAR PKAR PKAR 
                 encoder.Frames.Add(BitmapFrame.Create(bitmap));
                 encoder.Save(encoderMemoryStream);
 

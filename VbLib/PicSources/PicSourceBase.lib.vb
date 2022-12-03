@@ -120,12 +120,15 @@ Public MustInherit Class PicSourceBase
 		Dim sPicFile As String = IO.Path.GetFileName(oFile.sInSourceID)
 		Dim sDescr As String = IO.Path.Combine(sPicDir, "descript.ion")
 
+
 		' if inne niz _sDescriptIonName - wczytaj
 		If sDescr <> _sDescriptIonName Then
 			_sDescriptIonName = sDescr
 			If Not IO.File.Exists(sDescr) Then Return
 			_sDescriptIonContent = IO.File.ReadAllLines(sDescr)
 		End If
+
+		If _sDescriptIonContent Is Nothing Then Return
 
 		' sprawdz czy mamy
 		' filename.jpg<space>comment<0x04>bindata
@@ -166,7 +169,10 @@ Public MustInherit Class PicSourceBase
 	Public Function GetFirst(Optional sinceDate As DateTime = Nothing) As OnePic
 		If _listaPlikow Is Nothing Then Return Nothing
 
-		If Not sinceDate.IsDateValid Then sinceDate = lastDownload
+		If Not SourceName.ToLowerInvariant.Contains("adhoc") Then
+			If Not sinceDate.IsDateValid Then sinceDate = lastDownload
+		End If
+
 		_sinceDate = sinceDate
 
 		For iLp = 0 To _listaPlikow.Count - 1

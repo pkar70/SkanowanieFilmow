@@ -5,7 +5,7 @@
 
 ' Publish, czyli po stronie serwisu są jakieś zmiany
 
-Public MustInherit Class CloudPublishData
+Public MustInherit Class CloudPublish
     Implements AnyStorage, AnyCloudStorage
 
     Public Property konfiguracja As CloudConfig
@@ -14,20 +14,25 @@ Public MustInherit Class CloudPublishData
     Public MustOverride Property sProvider As String
     Public Property eTyp As CloudTyp = CloudTyp.publish
 
+    ''' <summary>
+    ''' znaczenie zmienne, w zależności od konkretnego Providera; dla AdHoc: katalog docelowy
+    ''' </summary>
+    ''' <returns></returns>
+    Public Property sZmienneZnaczenie As String
 
-    Public MustOverride Function SendFile(oPic As OnePic) As String Implements AnyStorage.SendFile
-    Public MustOverride Function VerifyFileExist(oPic As OnePic) As String Implements AnyStorage.VerifyFileExist
-    Public MustOverride Function VerifyFile(oPic As OnePic, oCopyFromArchive As LocalStorage) As String Implements AnyStorage.VerifyFile
-    Public MustOverride Function SendFiles(oPicki As List(Of OnePic)) As String Implements AnyStorage.SendFiles
-    Public MustOverride Function GetFile(oPic As OnePic) As String Implements AnyStorage.GetFile
-    Public MustOverride Function GetMBfreeSpace() As Integer Implements AnyStorage.GetMBfreeSpace
+    Public MustOverride Async Function SendFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.SendFile
+    Public MustOverride Async Function VerifyFileExist(oPic As OnePic) As Task(Of String) Implements AnyStorage.VerifyFileExist
+    Public MustOverride Async Function VerifyFile(oPic As OnePic, oCopyFromArchive As LocalStorage) As Task(Of String) Implements AnyStorage.VerifyFile
+    Public MustOverride Async Function SendFiles(oPicki As List(Of OnePic)) As Task(Of String) Implements AnyStorage.SendFiles
+    Public MustOverride Async Function GetFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.GetFile
+    Public MustOverride Async Function GetMBfreeSpace() As Task(Of Integer) Implements AnyStorage.GetMBfreeSpace
 
-    Public MustOverride Function Login() As String Implements AnyCloudStorage.Login
-    Public MustOverride Function GetRemoteTags(oPic As OnePic) As String Implements AnyCloudStorage.GetRemoteTags
-    Public MustOverride Function Delete(oPic As OnePic) As String Implements AnyCloudStorage.Delete
-    Public MustOverride Function GetShareLink(oPic As OnePic) As String Implements AnyCloudStorage.GetShareLink
-    Public MustOverride Function GetShareLink(oOneDir As OneDir) As String Implements AnyCloudStorage.GetShareLink
-    Public MustOverride Function Logout() As String Implements AnyCloudStorage.Logout
+    Public MustOverride Async Function Login() As Task(Of String) Implements AnyCloudStorage.Login
+    Public MustOverride Async Function GetRemoteTags(oPic As OnePic) As Task(Of String) Implements AnyCloudStorage.GetRemoteTags
+    Public MustOverride Async Function Delete(oPic As OnePic) As Task(Of String) Implements AnyCloudStorage.Delete
+    Public MustOverride Async Function GetShareLink(oPic As OnePic) As Task(Of String) Implements AnyCloudStorage.GetShareLink
+    Public MustOverride Async Function GetShareLink(oOneDir As OneDir) As Task(Of String) Implements AnyCloudStorage.GetShareLink
+    Public MustOverride Async Function Logout() As Task(Of String) Implements AnyCloudStorage.Logout
     Public MustOverride Function CreateNew(oConfig As CloudConfig) As AnyStorage Implements AnyCloudStorage.CreateNew
 End Class
 

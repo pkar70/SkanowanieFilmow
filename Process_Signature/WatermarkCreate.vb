@@ -1,6 +1,7 @@
 ﻿
 
 Imports System.Drawing
+Imports System.Drawing.Imaging
 Imports System.IO
 
 Public Class WatermarkCreate
@@ -90,7 +91,9 @@ Public Class WatermarkCreate
                             Dim oPoint1 As New Point(1, 17)
                             graphic.DrawString(sTekst2, oFont, oBrush, oPoint1)
 
-                            img.Save(watermarkStream, Imaging.ImageFormat.Jpeg)
+                            img.Save(watermarkStream, Process_Signature.GetEncoder(ImageFormat.Jpeg), Process_Signature.GetJpgQuality(95))
+
+                            ' img.Save(watermarkStream, Imaging.ImageFormat.Jpeg)
 
                         End Using
 

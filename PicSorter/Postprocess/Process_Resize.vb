@@ -74,48 +74,49 @@ Public MustInherit Class Process_ResizeBase
 
         oPic.InitEdit(bPipeline)
 
-        Dim oSoftBitmap As wingraph.SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(oPic)
+        Using oSoftBitmap As wingraph.SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(oPic)
 
-        ' przelicz jaką skalę należy przyjąć
-        Dim iHeight As Integer = oSoftBitmap.PixelHeight
-        Dim iWidth As Integer = oSoftBitmap.PixelWidth
-        Dim dScale As Double
+            ' przelicz jaką skalę należy przyjąć
+            Dim iHeight As Integer = oSoftBitmap.PixelHeight
+            Dim iWidth As Integer = oSoftBitmap.PixelWidth
+            Dim dScale As Double
 
-        If _iMaxSize > 0 Then
-            ' mamy podany maxsize
-            If iHeight > iWidth Then
-                dScale = _iMaxSize / iHeight
+            If _iMaxSize > 0 Then
+                ' mamy podany maxsize
+                If iHeight > iWidth Then
+                    dScale = _iMaxSize / iHeight
+                Else
+                    dScale = _iMaxSize / iWidth
+                End If
+
+                If dScale >= 1 Then
+                    oPic.CancelEdit()
+                    Return False ' nie skalujemy, bo plik jest mniejszy
+                End If
             Else
-                dScale = _iMaxSize / iWidth
+                ' mamy podany współczynnik skalowania
+                dScale = 1 / (-1 * _iMaxSize)
             End If
 
-            If dScale >= 1 Then
-                oPic.CancelEdit()
-                Return False ' nie skalujemy, bo plik jest mniejszy
-            End If
-        Else
-            ' mamy podany współczynnik skalowania
-            dScale = 1 / (-1 * _iMaxSize)
-        End If
 
+            Using oStream As New Windows.Storage.Streams.InMemoryRandomAccessStream
 
-        Using oStream As New Windows.Storage.Streams.InMemoryRandomAccessStream
+                Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
 
-            Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
+                ' kopiujemy informacje o tym co jest do zrobienia
+                'oEncoder.BitmapTransform.Rotation
+                oEncoder.BitmapTransform.ScaledHeight = iHeight * dScale
+                oEncoder.BitmapTransform.ScaledWidth = iWidth * dScale
 
-            ' kopiujemy informacje o tym co jest do zrobienia
-            'oEncoder.BitmapTransform.Rotation
-            oEncoder.BitmapTransform.ScaledHeight = iHeight * dScale
-            oEncoder.BitmapTransform.ScaledWidth = iWidth * dScale
+                oEncoder.SetSoftwareBitmap(oSoftBitmap)
 
-            oEncoder.SetSoftwareBitmap(oSoftBitmap)
+                ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
+                Await oEncoder.FlushAsync()
 
-            ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
-            Await oEncoder.FlushAsync()
+                Process_AutoRotate.SaveSoftBitmap(oStream, oPic)
+                'Process_AutoRotate.SaveSoftBitmap(oStream, oPic.sFilenameEditDst, oPic.sFilenameEditSrc)
 
-            Process_AutoRotate.SaveSoftBitmap(oStream, oPic)
-            'Process_AutoRotate.SaveSoftBitmap(oStream, oPic.sFilenameEditDst, oPic.sFilenameEditSrc)
-
+            End Using
         End Using
 
         oPic.EndEdit(True, True)

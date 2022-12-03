@@ -45,12 +45,62 @@ Public Class OnePic
     Public Sub AddArchive(sArchName As String)
         If IsArchivedIn(sArchName) Then Return
         If Archived Is Nothing Then Archived = ""
-        Archived &= sArchName & ";"
+        Archived &= Archived & ";"
     End Sub
 
     Public Function IsArchivedIn(sArchName As String) As Boolean
         If Archived Is Nothing Then Return False
         If Archived.Contains(sArchName & ";") Then Return True
+        Return False
+    End Function
+
+#End Region
+
+#Region "operacje na CloudArchive"
+    Public Sub AddCloudArchive(sArchName As String)
+        If IsCloudArchivedIn(sArchName) Then Return
+        If CloudArchived Is Nothing Then CloudArchived = ""
+        CloudArchived &= sArchName & ";"
+    End Sub
+
+    Public Function IsCloudArchivedIn(sArchName As String) As Boolean
+        If CloudArchived Is Nothing Then Return False
+        If CloudArchived.Contains(sArchName & ";") Then Return True
+        Return False
+    End Function
+#End Region
+
+#Region "operacje na Cloud Publish"
+    Public Sub AddCloudPublished(sPublName As String, sRemoteId As String)
+        If IsCloudPublishedIn(sPublName) Then Return
+        If Published Is Nothing Then Published = New Dictionary(Of String, String)
+        Published.Add(sPublName, sRemoteId)
+    End Sub
+
+    Public Function IsCloudPublishMentioned(sPublName As String) As Boolean
+        If Published Is Nothing Then Return False
+        If Not Published.ContainsKey(sPublName) Then Return False
+        Dim sDir As String = ""
+        Return Published.TryGetValue(sPublName, sDir)
+    End Function
+
+    Public Function IsCloudPublishedIn(sPublName As String) As Boolean
+        If Not IsCloudPublishMentioned(sPublName) Then Return False
+        Dim sDir As String = ""
+        If Not Published.TryGetValue(sPublName, sDir) Then Return False
+
+        If String.IsNullOrEmpty(sDir) Then Return False
+
+        Return True
+    End Function
+
+    Public Function IsCloudPublishScheduledIn(sPublName As String) As Boolean
+        If Not IsCloudPublishMentioned(sPublName) Then Return False
+        Dim sDir As String = ""
+        If Not Published.TryGetValue(sPublName, sDir) Then Return False
+
+        If String.IsNullOrEmpty(sDir) Then Return True
+
         Return False
     End Function
 
@@ -401,9 +451,12 @@ Public Class OnePic
         _EditPipeline = bPipeline
 
         If _EditPipeline Then
-            If _PipelineOutput.Length > 0 Then
+            If _PipelineOutput IsNot Nothing AndAlso _PipelineOutput.Length > 0 Then
                 _PipelineInput.Dispose()
                 _PipelineInput = _PipelineOutput
+                _PipelineOutput = New MemoryStream
+            Else
+                _PipelineInput = IO.File.OpenRead(InBufferPathName)
                 _PipelineOutput = New MemoryStream
             End If
         Else
@@ -424,14 +477,19 @@ Public Class OnePic
 
         If bCopyExif Then
             ' próba przeniesienia kopiowania EXIF tutaj
+            _PipelineInput.Seek(0, SeekOrigin.Begin)
             Dim oExifLib As New CompactExifLib.ExifData(_PipelineInput)
             If bResetOrientation Then
                 ' zarówno w pliku ma być bez obracania, jak i w naszych danych
                 oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
-                Dim oExif As ExifTag = GetExifOfType(ExifSource.FileExif)
-                If oExif IsNot Nothing Then oExif.Orientation = 1
+
+                If Not _EditPipeline Then
+                    ' to tylko gdy zmieniamy zdjęcie w buforze
+                    Dim oExif As ExifTag = GetExifOfType(ExifSource.FileExif)
+                    If oExif IsNot Nothing Then oExif.Orientation = 1
+                End If
             End If
-            _PipelineOutput.Seek(0, SeekOrigin.Begin)
+                _PipelineOutput.Seek(0, SeekOrigin.Begin)
             Dim tempStream As New MemoryStream
             oExifLib.Save(_PipelineOutput, tempStream, 0) ' (orgFileName)
             _PipelineOutput.Dispose()
@@ -468,7 +526,30 @@ Public Class OnePic
 
     End Sub
 
+    Public Async Function RunPipeline(sProcessingSteps As String, aPostProcesory As Vblib.PostProcBase()) As Task(Of String)
 
+        If String.IsNullOrEmpty(sProcessingSteps) Then
+            ' zrób tak, by w oPic.outputStream było to co do wysłania
+            Dim oNewFileStream As FileStream = IO.File.OpenRead(InBufferPathName)
+            _PipelineOutput = oNewFileStream
+            Return ""
+        End If
+
+        Dim aSteps As String() = sProcessingSteps.Split(";")
+        For Each sStep As String In aSteps
+            ' wykonaj krok
+
+            For Each oEngine As Vblib.PostProcBase In aPostProcesory
+                If oEngine.Nazwa.ToLowerInvariant = sStep.ToLowerInvariant Then
+                    If Not Await oEngine.Apply(Me, True) Then Return "ERROR in step " & sStep
+                    Exit For
+                End If
+            Next
+
+        Next
+
+        Return ""
+    End Function
 
 
 #End If

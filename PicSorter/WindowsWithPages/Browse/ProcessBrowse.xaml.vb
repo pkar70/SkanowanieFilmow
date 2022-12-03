@@ -23,6 +23,7 @@ Imports System.Globalization
 Imports System.IO
 Imports Microsoft.Windows.Themes
 Imports Vblib
+Imports Windows.Media.Ocr
 Imports vb14 = Vblib.pkarlibmodule14
 
 
@@ -58,12 +59,14 @@ Public Class ProcessBrowse
 
         WypelnMenuAutotagerami(uiMenuAutotags, AddressOf AutoTagRun)
         WypelnMenuBatchProcess(uiBatchProcessors, AddressOf PostProcessRun)
+        WypelnMenuCloudPublish(uiMenuPublish, AddressOf PublishRun)
 
         Await EwentualneKasowanieBak()
-        ' *TODO* Await EwentualneKasowanieArchived() - uwaga: z przepisaniem danych z buffer.json do archived.json
+        ' *TODO* Await EwentualneKasowanieArchived() -
 
         Application.ShowWait(False)
     End Sub
+
 
     ' to jest w związku z DEL w ShowBig
     Private Sub Window_GotFocus(sender As Object, e As RoutedEventArgs)
@@ -833,6 +836,38 @@ Public Class ProcessBrowse
 
     End Sub
 
+    'Public Shared Sub WypelnMenuCloudArchive(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
+    '    oMenuItem.Items.Clear()
+    '    ' _UImenuOnClick = oEventHandler
+
+    '    For Each oEngine As Vblib.CloudArchive In Application.gCloudProviders.GetCloudArchiversList
+    '        Dim oNew As New MenuItem
+    '        oNew.Header = oEngine.konfiguracja.nazwa.Replace("_", "__")
+    '        oNew.DataContext = oEngine
+    '        AddHandler oNew.Click, oEventHandler
+    '        oMenuItem.Items.Add(oNew)
+    '    Next
+
+    '    oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
+
+    'End Sub
+
+    Public Shared Sub WypelnMenuCloudPublish(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
+        oMenuItem.Items.Clear()
+        ' _UImenuOnClick = oEventHandler
+
+        For Each oEngine As Vblib.CloudPublish In Application.GetCloudPublishers.GetList
+            Dim oNew As New MenuItem
+            oNew.Header = oEngine.konfiguracja.nazwa.Replace("_", "__")
+            oNew.DataContext = oEngine
+            AddHandler oNew.Click, oEventHandler
+            oMenuItem.Items.Add(oNew)
+        Next
+
+        oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
+
+    End Sub
+
 #End Region
     Private Async Sub AutoTagRun(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
@@ -887,6 +922,42 @@ Public Class ProcessBrowse
         SaveMetaData()  ' bo zmieniono EXIF
 
     End Sub
+
+    Private Async Sub PublishRun(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oSrc As Vblib.CloudPublish = oFE?.DataContext
+        If oSrc Is Nothing Then Return
+
+        Dim bSendNow As Boolean = Await vb14.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
+
+        If oSrc.sProvider = Publish_AdHoc.PROVIDERNAME Then
+            Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
+            If sFolder = "" Then Return
+            oSrc.sZmienneZnaczenie = sFolder
+        End If
+
+        uiProgBar.Maximum = uiPicList.SelectedItems.Count
+        uiProgBar.Visibility = Visibility.Visible
+
+        Application.ShowWait(True)
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+
+            If bSendNow Then
+                Await oSrc.SendFile(oItem.oPic)
+            Else
+                oItem.oPic.AddCloudPublished(oSrc.konfiguracja.nazwa, "")
+            End If
+            Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
+            uiProgBar.Value += 1
+        Next
+        Application.ShowWait(False)
+
+        uiProgBar.Visibility = Visibility.Collapsed
+
+        SaveMetaData()  ' bo zmieniono dane plików
+
+    End Sub
+
 
     Public Class ThumbPicek
         Public Property oPic As Vblib.OnePic

@@ -209,9 +209,11 @@ Public Class Process_RemoveExif
             Process_AutoRotate.SaveSoftBitmap(oStream, oPic)
         End Using
 
+        oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
         Dim oExifLib As New CompactExifLib.ExifData(oPic._PipelineInput)
         oExifLib.RemoveAllTags()
 
+        oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
         oExifLib.Save(oPic._PipelineInput, oPic._PipelineOutput) ' (orgFileName)
 
         oPic.EndEdit(False, False)

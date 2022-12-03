@@ -98,10 +98,12 @@ Public Module pkar
         Clipboard.SetText(sHtml, TextDataFormat.Html)
     End Sub
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     ''' <summary>
     ''' w razie Catch() zwraca ""
     ''' </summary>
     Public Async Function ClipGetAsync() As Task(Of String)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         Return Clipboard.GetText()
     End Function
 #End Region
@@ -485,15 +487,19 @@ Public Module pkar
 
 #Region "DialogBoxy"
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Async Function FromLibDialogBoxAsync(sMsg As String) As Task
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
         MessageBox.Show(sMsg, sAppName)
     End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     ''' <summary>
     ''' Dla Cancel zwraca ""
     ''' </summary>
     Public Async Function FromLibDialogBoxYNAsync(sMsg As String, Optional sYes As String = "Tak", Optional sNo As String = "Nie") As Task(Of Boolean)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
         Dim iRet As MessageBoxResult = MessageBox.Show(sMsg, sAppName, MessageBoxButton.YesNo)
         If iRet = MessageBoxResult.Yes Then Return True
@@ -518,7 +524,9 @@ Public Module pkar
         Loop While guard > 0
     End Sub
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Async Function FromLibDialogBoxInputAllDirectAsync(sMsg As String, Optional sDefault As String = "", Optional sYes As String = "Continue", Optional sNo As String = "Cancel") As Task(Of String)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
 
         Dim oStack As New StackPanel With {.Margin = New Thickness(5, 5, 5, 5)}

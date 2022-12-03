@@ -7,6 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Accord.Math;
 
+// // PKAR PKAR PKAR PKAR PKAR PKAR PKAR - dodane JPGquality
+
 namespace HiddenWatermark
 {
     public class Watermark
@@ -134,19 +136,20 @@ namespace HiddenWatermark
         {
             WatermarkResult result = new WatermarkResult();
             byte[] watermarkedImage = null;
-            Parallel.Invoke(() => result = RetrieveWatermark(imageBytes), () => watermarkedImage = EmbedWatermark(imageBytes));
+            Parallel.Invoke(() => result = RetrieveWatermark(imageBytes), () => watermarkedImage = EmbedWatermark(imageBytes,90));
             result.WatermarkedImage = watermarkedImage;
             return result;
         }
 
+        // // PKAR PKAR PKAR PKAR PKAR PKAR PKAR 
         /// <summary>
         /// Embeds a watermark in an image
         /// </summary>
         /// <param name="imageBytes">Image bytes</param>
         /// <returns>Image bytes of embedded watermark</returns>
-        public byte[] EmbedWatermark(byte[] imageBytes)
-        {
-            return _imageHelper.MergeWatermarkPixels(imageBytes, _watermarkDiff);
+        public byte[] EmbedWatermark(byte[] imageBytes, int JPGquality)
+        { // // PKAR PKAR PKAR PKAR PKAR PKAR PKAR 
+            return _imageHelper.MergeWatermarkPixels(imageBytes, _watermarkDiff, JPGquality);
         }
 
         /// <summary>

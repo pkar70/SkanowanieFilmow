@@ -2,6 +2,10 @@
 
 Imports System.IO
 Imports System.Drawing
+Imports System.Drawing.Imaging
+Imports System.Text
+Imports vb14 = Vblib.pkarlibmodule14
+
 
 Public Class Process_Signature
     Inherits Vblib.PostProcBase
@@ -35,7 +39,7 @@ Public Class Process_Signature
                 graphic.PageUnit = GraphicsUnit.Pixel
                 Dim oMeasure As SizeF = graphic.MeasureString(signature, oFont)
 
-                Dim iWhereX As Integer = img.Width - oMeasure.Height
+                Dim iWhereX As Integer = img.Width - oMeasure.Width
                 iWhereX = Math.Max(iWhereX, 10)
 
 
@@ -43,7 +47,12 @@ Public Class Process_Signature
                 Dim oPoint As New Point(iWhereX, img.Height - fontSize * 2)
 
                 graphic.DrawString(signature, oFont, oBrush, oPoint)
+#If STARA_WERSJA Then
                 img.Save(oPic._PipelineOutput, Imaging.ImageFormat.Jpeg)    '   watermarkedStream
+#Else
+                img.Save(oPic._PipelineOutput, GetEncoder(ImageFormat.Jpeg), GetJpgQuality)
+#End If
+
 
             End Using
         End Using
@@ -53,6 +62,24 @@ Public Class Process_Signature
         oPic.EndEdit(True, False)
 
         Return True
+    End Function
+
+    Public Shared Function GetJpgQuality(Optional iQuality As Integer = 0) As EncoderParameters
+        If iQuality = 0 Then iQuality = vb14.GetSettingsInt("uiJpgQuality")
+
+        ' https://stackoverflow.com/questions/1484759/quality-of-a-saved-jpg-in-c-sharp
+        Dim myEncoder As Imaging.Encoder = Imaging.Encoder.Quality
+        Dim myEncoderParameters As New EncoderParameters(1)
+        myEncoderParameters.Param(0) = New EncoderParameter(myEncoder, iQuality)
+        Return myEncoderParameters
+    End Function
+
+    Public Shared Function GetEncoder(format As ImageFormat) As ImageCodecInfo
+
+        For Each codec As ImageCodecInfo In ImageCodecInfo.GetImageDecoders()
+            If codec.FormatID = format.Guid Then Return codec
+        Next
+        Return Nothing
     End Function
 
     Private Function GetSignatureString(oPic As Vblib.OnePic) As String

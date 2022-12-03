@@ -5,10 +5,12 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class ProcessDownload
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        vb14.DumpCurrMethod()
         uiLista.ItemsSource = Application.GetSourcesList.GetList
     End Sub
 
     Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
+        vb14.DumpCurrMethod()
         ' to konkretne, więc bardziej szczegółowo
         Dim oFE As FrameworkElement = sender
         Dim oSrc As Vblib.PicSourceBase = oFE?.DataContext
@@ -40,6 +42,8 @@ Public Class ProcessDownload
     End Sub
 
     Private Function GetVolLabelForPath(dirToGet As String) As String
+        vb14.DumpCurrMethod()
+
         Dim oDrives = IO.DriveInfo.GetDrives()
         For Each oDrive As IO.DriveInfo In oDrives
             If oDrive.IsReady Then
@@ -53,6 +57,8 @@ Public Class ProcessDownload
     End Function
 
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
+        vb14.DumpCurrMethod()
+
         ' uproszczona wersja
 
         If Not Await vb14.DialogBoxYNAsync("Ściągnąć ze wszystkich zaznaczonych źródeł?") Then Return
@@ -69,10 +75,14 @@ Public Class ProcessDownload
     End Sub
 
     Private Async Function RetrieveFilesFromSource(oSrc As Vblib.PicSourceBase) As Task
+        vb14.DumpCurrMethod()
+
         vb14.DumpCurrMethod(oSrc.VolLabel)
 
         Dim iCount As Integer = oSrc.ReadDirectory
         'Await vb14.DialogBoxAsync($"read {iCount} files")
+        vb14.DumpMessage($"Read {iCount} files")
+
         If iCount < 1 Then Return
 
         uiProgBar.Maximum = iCount

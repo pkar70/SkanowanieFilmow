@@ -55,7 +55,7 @@ Public Class LocalArchive
     End Sub
 
 
-    Private Function CountWithTargetDir() As Integer
+    Public Shared Function CountWithTargetDir() As Integer
         Dim iCnt As Integer = 0
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
@@ -152,7 +152,7 @@ Public Class LocalArchive
 
             If oPic.IsArchivedIn(oSrc.nazwa) Then Continue For
 
-            oSrc.engine.SendFile(oPic)
+            Await oSrc.engine.SendFile(oPic)
             If Not oPic.IsArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
 
             ' aktualizujemy DirList

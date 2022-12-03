@@ -21,7 +21,7 @@ Public Class LocalStorageMiddle
 		Return True
 	End Function
 
-	Public Overrides Function GetMBfreeSpace() As Integer
+	Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
 		Dim sPath As String = PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path)
 		If sPath = "" Then Return -1
 

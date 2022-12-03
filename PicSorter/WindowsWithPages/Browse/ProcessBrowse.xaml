@@ -78,7 +78,7 @@
                         <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
                         <MenuItem Header="Batch process" Name="uiBatchProcessors" />
                         <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click"/>
-                    <MenuItem Header="Publish" Name="uiMenuPublish" IsEnabled="False"  />
+                    <MenuItem Header="Publish" Name="uiMenuPublish"  />
                 </Menu>
             </Popup>
             </StackPanel>

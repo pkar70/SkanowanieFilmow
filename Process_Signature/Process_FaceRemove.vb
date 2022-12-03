@@ -1,5 +1,5 @@
 ﻿Imports System.Drawing
-
+Imports System.Drawing.Imaging
 Imports System.IO
 
 Public Class Process_FaceRemove
@@ -27,6 +27,7 @@ Public Class Process_FaceRemove
         'Using oStream As IO.Stream = IO.File.OpenRead(oPic.sFilenameEditSrc)
 
         'Using img = Image.FromStream(oStream)
+        oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
         Using img = Image.FromStream(oPic._PipelineInput)
 
             Using graphic = Graphics.FromImage(img)
@@ -48,7 +49,8 @@ Public Class Process_FaceRemove
                     graphic.DrawEllipse(oPen, iX, iY, iW, iH)
                 Next
 
-                img.Save(oPic._PipelineOutput, Imaging.ImageFormat.Jpeg)    ' outputStream
+                ' img.Save(oPic._PipelineOutput, Imaging.ImageFormat.Jpeg)    ' outputStream
+                img.Save(oPic._PipelineOutput, Process_Signature.GetEncoder(ImageFormat.Jpeg), Process_Signature.GetJpgQuality)
             End Using
         End Using
         ' End Using
@@ -59,17 +61,17 @@ Public Class Process_FaceRemove
     End Function
 
     Private Function GetSignatureString(oPic As Vblib.OnePic) As String
-            Dim sSignature As String = ""
+        Dim sSignature As String = ""
 
-            For Each oExif As Vblib.ExifTag In oPic.Exifs
-                If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then sSignature = oExif.Copyright
-            Next
+        For Each oExif As Vblib.ExifTag In oPic.Exifs
+            If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then sSignature = oExif.Copyright
+        Next
 
-            Dim iInd As Integer = sSignature.IndexOf(".")
-            If iInd > 1 Then sSignature = sSignature.Substring(0, iInd)
+        Dim iInd As Integer = sSignature.IndexOf(".")
+        If iInd > 1 Then sSignature = sSignature.Substring(0, iInd)
 
-            Return sSignature
-        End Function
+        Return sSignature
+    End Function
 
 
-    End Class
+End Class

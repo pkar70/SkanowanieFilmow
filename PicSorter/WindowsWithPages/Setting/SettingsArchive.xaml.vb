@@ -121,9 +121,9 @@ Class SettingsArchive
         uiEditSource.Visibility = Visibility.Hidden
 
         ' nazwa nie moze sie pokryć
-        If uiSrcName.Name <> _item.StorageName Then
+        If uiSrcName.Text <> _item.StorageName Then
             For Each oItem In Application.GetSourcesList().GetList
-                If oItem.SourceName.ToLowerInvariant = uiSrcName.Name.ToLowerInvariant Then
+                If oItem.SourceName.ToLowerInvariant = uiSrcName.Text.ToLowerInvariant Then
                     vb14.DialogBox("Archiwum o takiej nazwie już istnieje")
                     Return
                 End If

@@ -87,7 +87,7 @@ Partial Public Module Extensions
     ''' <returns></returns>
     <Runtime.CompilerServices.Extension()>
     Public Function ToExifString(ByVal oDate As Date) As String
-        Return oDate.ToString("yyyy.MM.dd HH:MMM:ss")
+        Return oDate.ToString("yyyy.MM.dd HH:mm:ss")
     End Function
 
 

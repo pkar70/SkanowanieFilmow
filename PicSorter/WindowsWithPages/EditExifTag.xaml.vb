@@ -96,8 +96,32 @@ Public Class EditExifTag
     End Sub
 
     Private Sub SchowajZbedne()
+
         ' w zaleznosci od _scope
-        ' *TODO* na razie niepotrzebne, bo tylko jeden typ jest używany
+        Select Case _scope
+            Case EditExifTagScope.LimitedToSourceDir
+                uiDateMax.Visibility = Visibility.Visible
+                uiDateMin.Visibility = Visibility.Visible
+                uiDateMinHdr.Visibility = Visibility.Visible
+                uiDateMaxHdr.Visibility = Visibility.Visible
+
+                uiKeywordsHdr.Visibility = Visibility.Collapsed
+                uiKeywords.Visibility = Visibility.Collapsed
+                uiUserCommentHdr.Visibility = Visibility.Collapsed
+                uiUserComment.Visibility = Visibility.Collapsed
+
+            Case EditExifTagScope.LimitedToCloudPublish
+                uiDateMax.Visibility = Visibility.Collapsed
+                uiDateMin.Visibility = Visibility.Collapsed
+                uiDateMinHdr.Visibility = Visibility.Collapsed
+                uiDateMaxHdr.Visibility = Visibility.Collapsed
+
+                uiKeywordsHdr.Visibility = Visibility.Visible
+                uiKeywords.Visibility = Visibility.Visible
+                uiUserCommentHdr.Visibility = Visibility.Visible
+                uiUserComment.Visibility = Visibility.Visible
+        End Select
+
     End Sub
 
     Private Sub uiOpenAuthors_Click(sender As Object, e As RoutedEventArgs)
@@ -145,5 +169,6 @@ Public Enum EditExifTagScope
     LimitedToSourceFilename
     LimitedToSourceExif
     LimitedToAdHocSource
+    LimitedToCloudPublish
     Full
 End Enum

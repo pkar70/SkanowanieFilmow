@@ -6,7 +6,9 @@ Partial Class Application
     ' Application-level events, such as Startup, Exit, and DispatcherUnhandledException
     ' can be handled in this file.
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Async Function AppServiceLocalCommand(sCommand As String) As Task(Of String)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         Return ""
     End Function
 
@@ -91,15 +93,15 @@ Partial Class Application
         Return gArchiveList
     End Function
 
-    Private Shared gCloudArchiveList As Vblib.MojaLista(Of Vblib.CloudConfig)
-    Public Shared Function GetCloudArchivesList() As Vblib.MojaLista(Of Vblib.CloudConfig)
+    'Private Shared gCloudArchiveList As Vblib.MojaLista(Of Vblib.CloudConfig)
+    'Public Shared Function GetCloudArchivesList() As Vblib.MojaLista(Of Vblib.CloudConfig)
 
-        If gCloudArchiveList Is Nothing OrElse gCloudArchiveList.Count < 1 Then
-            gCloudArchiveList = New Vblib.MojaLista(Of Vblib.CloudConfig)(Application.GetDataFolder, "cloudArchives.json")
-            gCloudArchiveList.Load()
-        End If
-        Return gCloudArchiveList
-    End Function
+    '    If gCloudArchiveList Is Nothing OrElse gCloudArchiveList.Count < 1 Then
+    '        gCloudArchiveList = New Vblib.MojaLista(Of Vblib.CloudConfig)(Application.GetDataFolder, "cloudArchives.json")
+    '        gCloudArchiveList.Load()
+    '    End If
+    '    Return gCloudArchiveList
+    'End Function
 
 
 
@@ -113,7 +115,26 @@ Partial Class Application
         Return gKeywords
     End Function
 
+    Private Shared gCloudPublishers As CloudPublishersList
 
+    Public Shared Function GetCloudPublishers() As CloudPublishersList
+        If gCloudPublishers Is Nothing Then
+            gCloudPublishers = New CloudPublishersList()
+            gCloudPublishers.Load()
+        End If
+        Return gCloudPublishers
+    End Function
+
+
+    Private Shared gCloudArchives As CloudArchivesList
+
+    Public Shared Function GetCloudArchives() As CloudArchivesList
+        If gCloudArchives Is Nothing Then
+            gCloudArchives = New CloudArchivesList()
+            gCloudArchives.Load()
+        End If
+        Return gCloudArchives
+    End Function
 
     Private Shared gDirList As Vblib.DirsList
 
@@ -151,5 +172,6 @@ Partial Class Application
         New Process_Signature.Process_FaceRemove
     }
 
+    ' Public Shared gCloudProviders As New CloudProviders
 
 End Class

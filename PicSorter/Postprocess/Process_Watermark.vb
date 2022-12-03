@@ -1,5 +1,6 @@
 ﻿
 Imports System.IO
+Imports vb14 = Vblib.pkarlibmodule14
 
 ' https://github.com/mchall/HiddenWatermark
 
@@ -24,7 +25,7 @@ Public Class Process_Watermark
     Private Function EnsureWatermarkData() As Boolean
         If _watermark IsNot Nothing Then Return True
 
-        Dim sWatermarkFile As String = Application.GetDataFile("", "watermark.png")
+        Dim sWatermarkFile As String = Application.GetDataFile("", "watermark.jpg")
         If Not IO.File.Exists(sWatermarkFile) Then Return False     ' musimy mieć plik ze znakiem wodnym
 
         Dim watermarkBytes As Byte() = File.ReadAllBytes(sWatermarkFile)
@@ -44,15 +45,16 @@ Public Class Process_Watermark
         Dim fileBytes As Byte()
 
         Using memoryStream As New MemoryStream
-            oPic._PipelineInput.CopyTo(memoryStream)
+            Await oPic._PipelineInput.CopyToAsync(memoryStream)
             fileBytes = memoryStream.ToArray
         End Using
 
         ' Dim fileBytes As Byte() = File.ReadAllBytes(oPic.sFilenameEditSrc)
 
-        Dim newFileBytes As Byte() = _watermark.EmbedWatermark(fileBytes)
+        Dim newFileBytes As Byte() = _watermark.EmbedWatermark(fileBytes, vb14.GetSettingsInt("uiJpgQuality"))
+        'Dim newFileBytes As Byte() = _watermark.EmbedWatermark(fileBytes, 99)
 
-        oPic._PipelineOutput.Write(newFileBytes)
+        Await oPic._PipelineOutput.WriteAsync(newFileBytes)
 
         ' File.WriteAllBytes(oPic.sFilenameEditDst, newFileBytes)
 

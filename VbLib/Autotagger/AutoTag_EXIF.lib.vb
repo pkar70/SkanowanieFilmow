@@ -16,7 +16,9 @@ Public Class AutoTag_EXIF
     'End Function
 
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         Dim oNewExif As New Vblib.ExifTag(Nazwa)
 

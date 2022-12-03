@@ -219,9 +219,9 @@ Class SettingsSources
         uiEditSource.Visibility = Visibility.Hidden
 
         ' nazwa nie moze sie pokryć
-        If uiSrcName.Name <> _item.SourceName Then
+        If uiSrcName.Text <> _item.SourceName Then
             For Each oItem In Application.GetSourcesList().GetList
-                If oItem.SourceName.ToLowerInvariant = uiSrcName.Name.ToLowerInvariant Then
+                If oItem.SourceName.ToLowerInvariant = uiSrcName.Text.ToLowerInvariant Then
                     vb14.DialogBox("Źródło o takiej nazwie już istnieje")
                     Return
                 End If

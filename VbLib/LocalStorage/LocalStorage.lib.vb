@@ -130,7 +130,7 @@ Public MustInherit Class LocalStorage
 #Region "implementacja interface"
 
 #Region "przerzucenie do vblib 2.0"
-	Public MustOverride Function GetMBfreeSpace() As Integer Implements AnyStorage.GetMBfreeSpace
+	Public MustOverride Async Function GetMBfreeSpace() As Task(Of Integer) Implements AnyStorage.GetMBfreeSpace
 
 #End Region
 
@@ -138,7 +138,7 @@ Public MustInherit Class LocalStorage
 
 	Private Const NO_MATCH_MASK As String = "nomatch"
 
-	Public Function SendFile(oPic As OnePic) As String Implements AnyStorage.SendFile
+	Public Async Function SendFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.SendFile
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		' zapisz plik, gdy błąd - wróć od razu
@@ -153,7 +153,7 @@ Public MustInherit Class LocalStorage
 
 	End Function
 
-	Public Function SendFiles(oPicki As List(Of OnePic)) As String Implements AnyStorage.SendFiles
+	Public Async Function SendFiles(oPicki As List(Of OnePic)) As Task(Of String) Implements AnyStorage.SendFiles
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		If oPicki Is Nothing Then Return ""
@@ -186,7 +186,7 @@ Public MustInherit Class LocalStorage
 
 	End Function
 
-	Public Function VerifyFileExist(oPic As OnePic) As String Implements AnyStorage.VerifyFileExist
+	Public Async Function VerifyFileExist(oPic As OnePic) As Task(Of String) Implements AnyStorage.VerifyFileExist
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
@@ -199,7 +199,7 @@ Public MustInherit Class LocalStorage
 		Return "no file"
 	End Function
 
-	Public Function VerifyFile(oPic As OnePic, oFromArchive As LocalStorage) As String Implements AnyStorage.VerifyFile
+	Public Async Function VerifyFile(oPic As OnePic, oFromArchive As LocalStorage) As Task(Of String) Implements AnyStorage.VerifyFile
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
@@ -213,7 +213,7 @@ Public MustInherit Class LocalStorage
 		Throw New NotImplementedException()
 	End Function
 
-	Public Function GetFile(oPic As OnePic) As String Implements AnyStorage.GetFile
+	Public Async Function GetFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.GetFile
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
@@ -261,7 +261,7 @@ Public MustInherit Class LocalStorage
 	''' <returns>errmessage lub ""</returns>
 	Private Function SendPhoto(oPic As OnePic) As String
 
-		If OnePic.MatchesMasks(oPic.sSuggestedFilename, includeMask, excludeMask) Then Return NO_MATCH_MASK
+		If Not OnePic.MatchesMasks(oPic.sSuggestedFilename, includeMask, excludeMask) Then Return NO_MATCH_MASK
 
 		Dim sFolder As String = GetWriteFolder(oPic.TargetDir)
 		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: SendPhoto, cannot get folder for write"

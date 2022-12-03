@@ -8,8 +8,8 @@ Class ProcessPic
     Private Function CountDoCloudArchiwizacji() As Integer
 
         Dim currentArchs As New List(Of String)
-        For Each oArch As Vblib.CloudConfig In Application.GetCloudArchivesList.GetList
-            If oArch.enabled Then currentArchs.Add(oArch.nazwa.ToLower)
+        For Each oArch As Vblib.CloudArchive In Application.GetCloudArchives.GetList
+            If oArch.konfiguracja.enabled Then currentArchs.Add(oArch.konfiguracja.nazwa.ToLower)
         Next
 
         If currentArchs.Count < 1 Then Return 0
@@ -78,7 +78,7 @@ Class ProcessPic
 
         ' oraz bez licznika
         counter = CountDoPublishing()
-        uiPublish.Content = $"Publish"
+        uiPublish.Content = $"Publish {counter}"
         uiPublish.IsEnabled = (counter > 0)
 
     End Sub
@@ -92,16 +92,21 @@ Class ProcessPic
 
     Private Sub uiAutotag_Click(sender As Object, e As RoutedEventArgs) Handles uiAutotag.Click
         Dim oWnd As New AutoTags
-        oWnd.ShowDialog()
+        oWnd.Show()
     End Sub
 
     Private Sub uiBatchEdit_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New BatchEdit
-        oWnd.ShowDialog()
+        oWnd.Show()
     End Sub
 
     Private Sub uiLocalArch_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New LocalArchive
-        oWnd.ShowDialog()
+        oWnd.Show()
+    End Sub
+
+    Private Sub uiCloudPublish_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New CloudPublishing
+        oWnd.Show()
     End Sub
 End Class
