@@ -25,8 +25,10 @@
     <ProjectReference Include="..\HiddenWatermark\HiddenWatermark.csproj" />
     <ProjectReference Include="..\MediaDevicesLib\MediaDevicesLib.vbproj" />
     <ProjectReference Include="..\Process_Signature\Process_SigAndFace.vbproj" />
+    <ProjectReference Include="..\Publish_Instagram\Publish_std2_Instagram.vbproj" />
     <ProjectReference Include="..\Taggers_OCR\Auto_WinOCR_lib.vbproj" />
     <ProjectReference Include="..\VbLib20\VbLib20.vbproj" />
+    <ProjectReference Include="..\vblib46ram\vblib46ram.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>
 

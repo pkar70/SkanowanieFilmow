@@ -5,6 +5,7 @@
     Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoOSM
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Zamienia współrzędne na nazwę miejsca (tylko pierwszy znacznik), używając OpenStreetMap." & vbCrLf & "Limit 1 szukanie na sekundę!"
+    Public Overrides ReadOnly Property includeMask As String = "*.*"
 
     Private _cacheDataFolder As String
 
@@ -27,6 +28,7 @@
 
 
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
+        If Not oFile.MatchesMasks(includeMask, "") Then Return Nothing
 
         If oFile.Exifs Is Nothing Then Return Nothing
 

@@ -8,7 +8,7 @@ Public Interface AnyStorage
     ''' </summary>
     ''' <param name="oPic"></param>
     ''' <returns>"" gdy OK, lub error message</returns>
-    Function SendFile(oPic As OnePic) As Task(Of String)
+    Function SendFileMain(oPic As OnePic) As Task(Of String)
 
     ''' <summary>
     '''  sprawdź czy istnieje, 
@@ -98,6 +98,6 @@ Public Interface AnyCloudStorage
     '' </summary>
     '' <param name="oConfig"></param>
     '' <returns></returns>
-    Function CreateNew(oConfig As CloudConfig) As AnyStorage
+    Function CreateNew(oConfig As CloudConfig, oPostProcs As PostProcBase()) As AnyStorage
 
 End Interface

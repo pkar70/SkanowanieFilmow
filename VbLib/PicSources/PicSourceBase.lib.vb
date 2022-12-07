@@ -57,7 +57,7 @@ Public MustInherit Class PicSourceBase
 	''' wczytanie katalogu plików (pełny listing)
 	''' </summary>
 	''' <returns>count(files), gdy = 0 wtedy nie ma sensu iterować</returns>
-	Public Function ReadDirectory() As Integer
+	Public Function ReadDirectory(lKeywords As List(Of OneKeyword)) As Integer
 		DumpCurrMethod()
 		If Not IsPresent_Main() Then Return -1
 
@@ -69,7 +69,7 @@ Public MustInherit Class PicSourceBase
 		End If
 
 		Dim iRet As Integer = ReadDirectory_Main()
-
+		UseTagsFromFilename(_listaPlikow, lKeywords)
 		' jesli sobie przełączyliśmy, to teraz przełączamy na powrot
 		If bNoCurrentExif Then currentExif = Nothing
 
@@ -80,6 +80,76 @@ Public MustInherit Class PicSourceBase
 
 	<Newtonsoft.Json.JsonIgnore>
 	Protected _listaPlikow As List(Of OnePic)
+
+	''' <summary>
+	''' "import" wcześniej używanych tagów, tych istniejących
+	''' </summary>
+	''' <param name="lPicki"></param>
+	''' <param name="lKeys"></param>
+	Public Shared Sub UseTagsFromFilename(lPicki As List(Of OnePic), lKeys As List(Of OneKeyword))
+
+		For Each oPic As OnePic In lPicki
+
+			Dim oExif As ExifTag = oPic.GetExifOfType(ExifSource.SourceFile)
+			' można się zabezpieczyć i dawać nowy, ale ten i tak zawsze będzie
+			If oExif Is Nothing Then Continue For
+
+			Dim sFilename As String = oPic.sSuggestedFilename
+
+			' for each kwd, use it
+			For Each oKey As OneKeyword In lKeys
+				If oKey.sTagId.Length = 1 Then Continue For
+
+				If sFilename.Contains(oKey.sTagId) Then
+					oExif.Keywords = oExif.Keywords & " " & oKey.sTagId
+					oExif.UserComment = oExif.UserComment & " | " & oKey.sDisplayName
+
+					sFilename = sFilename.Replace(oKey.sTagId, "")  ' kasujemy istniejące
+				End If
+			Next
+
+			' wycięcie pierwszego sklejenia
+			If Not String.IsNullOrEmpty(oExif.Keywords) Then
+				oExif.Keywords = oExif.Keywords.Trim
+				If oExif.UserComment.StartsWith(" | ") Then oExif.UserComment = oExif.UserComment.Substring(3)
+			End If
+
+			' *TODO* reszta -do userdescription
+			' WP_20[0-9_]*_Rich, WP_20[0-9_]*_Pro, 
+
+			' telefon Marcina, 20220723_170151
+			'				 0123456789012345
+			If Regex.IsMatch(sFilename, "^20[0-9][0-9][0-1][0-9][0-3][0-9]_[0-2][0-9][0-5][0-9][0-6][0-9]") Then sFilename = sFilename.Substring(15)
+
+			' Fuji,	DSCF0494
+			'		0123456789012345
+			If Regex.IsMatch(sFilename, "^DSCF[0-9][0-9][0-9][0-9]") Then sFilename = sFilename.Substring(8)
+
+			' iPhone	IMG_E5513.JPG
+			'		0123456789012345
+			If Regex.IsMatch(sFilename, "^IMG_E[0-9][0-9][0-9][0-9]") Then sFilename = sFilename.Substring(9)
+			' iPhone	IMG_5513.JPG
+			'		0123456789012345
+			If Regex.IsMatch(sFilename, "^IMG_[0-9][0-9][0-9][0-9]") Then sFilename = sFilename.Substring(8)
+
+			' telefon		WP_20221117_11_32_45_Pro
+			'			WP_20221117_11_45_21_Rich
+			'			012345678901234567890123456
+			If Regex.IsMatch(sFilename, "^WP_20[0-9][0-9][0-1][0-9][0-3][0-9]_[0-2][0-9]_[0-5][0-9]") Then
+				sFilename = sFilename.Substring(20)
+				sFilename = sFilename.Replace("_Pro", "")
+				sFilename = sFilename.Replace("_Rich", "")
+			End If
+
+			sFilename = sFilename.Substring(0, sFilename.Length - 4)
+			If sFilename.Length > 2 Then
+				oExif.UserComment = sFilename & " | " & oExif.UserComment
+			End If
+		Next
+
+		' *TODO* ewentualnie tak podmień, by suggested filename (a więc w buforze i dalej) było już bez tego
+	End Sub
+
 
 	''' <summary>
 	''' returns count of files newer than sinceDate (excluding)
@@ -148,10 +218,12 @@ Public MustInherit Class PicSourceBase
 			iInd = sComment.IndexOf(ChrW(4))
 			sComment = sComment.Substring(0, iInd)
 
-			' jesli tak, to stworz nowego Exifa
-			Dim oNew As New ExifTag(ExifSource.SourceDescriptIon)
-			oNew.Keywords = sComment
-			oFile.Exifs.Add(oNew)
+			If Not String.IsNullOrWhiteSpace(sComment) Then
+				' jesli tak, to stworz nowego Exifa
+				Dim oNew As New ExifTag(ExifSource.SourceDescriptIon)
+				oNew.Keywords = sComment
+				oFile.Exifs.Add(oNew)
+			End If
 		Next
 
 	End Sub

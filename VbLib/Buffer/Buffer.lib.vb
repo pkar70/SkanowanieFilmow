@@ -2,6 +2,9 @@
 
 
 
+Imports System.ComponentModel
+Imports System.IO
+
 Public Class Buffer
     Private _RootDataPath As String
     Private _rootPictures As String
@@ -84,31 +87,63 @@ Public Class Buffer
     End Function
 
 
+    Private Async Function IsSameFileContents(oStream1 As Stream, oStream2 As Stream) As Task(Of Boolean)
+        ' This is not merely an optimization, as incrementing one stream's position
+        ' should Not affect the position of the other.
+        If oStream1.Equals(oStream2) Then Return True
+
+        If oStream1.Length <> oStream2.Length Then Return False
+
+        Dim oBuf1 As Byte() = New Byte(4100) {}
+        Dim oBuf2 As Byte() = New Byte(4100) {}
+
+        Do
+            Dim iBytes1 As Integer = Await oStream1.ReadAsync(oBuf1, 0, 4096)
+            Dim iBytes2 As Integer = Await oStream2.ReadAsync(oBuf2, 0, 4096)
+
+            If iBytes1 = 0 Then Return True
+
+            For iLp As Integer = 0 To iBytes1
+                If oBuf1(iLp) <> oBuf2(iLp) Then Return False
+            Next
+
+        Loop
+
+        Return True
+    End Function
+
     ''' <summary>
     ''' zabierz plik (skorzystaj z OnePic.oContent - stream do pliku)
     ''' </summary>
     ''' <param name="pic">tu jest wazne suggestedfileName oraz oContent</param>
-    ''' <returns>OnePic uzupelniony o BufferFileName, FALSE: error</returns>
+    ''' <returns>OnePic uzupelniony o BufferFileName, FALSE: error (lub ten plik z tą zawartością już jest)</returns>
     Public Async Function AddFile(oPic As OnePic) As Task(Of Boolean)
         DumpCurrMethod($"({oPic.sSuggestedFilename}")
 
         Dim sDstPathName As String = IO.Path.Combine(_rootPictures, oPic.sSuggestedFilename)
 
         If IO.File.Exists(sDstPathName) Then
+            Dim oExistingStream As Stream = IO.File.OpenRead(sDstPathName)
+            Dim bSame As Boolean = Await IsSameFileContents(oPic.oContent, oExistingStream)
+            oExistingStream.Dispose()
+            oPic.oContent.Seek(0, SeekOrigin.Begin)
+
+            If bSame Then Return False
+
             Dim sDstTmp As String
             Dim iInd As Integer
-            iInd = sDstPathName.LastIndexOf(".")
-            sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMdd") & sDstPathName.Substring(iInd)
-            If IO.File.Exists(sDstTmp) Then
-                sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMddHHmmss") & sDstPathName.Substring(iInd)
+                iInd = sDstPathName.LastIndexOf(".")
+                sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMdd") & sDstPathName.Substring(iInd)
                 If IO.File.Exists(sDstTmp) Then
-                    Return False ' file already exist, i nawet z doklejaniem daty - nic sie nie da zrobic
+                    sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMddHHmmss") & sDstPathName.Substring(iInd)
+                    If IO.File.Exists(sDstTmp) Then
+                        Return False ' file already exist, i nawet z doklejaniem daty - nic sie nie da zrobic
+                    End If
                 End If
+                sDstPathName = sDstTmp
             End If
-            sDstPathName = sDstTmp
-        End If
 
-        Dim oWriteStream = IO.File.Create(sDstPathName, 1024 * 1024)
+            Dim oWriteStream = IO.File.Create(sDstPathName, 1024 * 1024)
         Await oPic.oContent.CopyToAsync(oWriteStream, 1024 * 1024)
 
         Await oWriteStream.FlushAsync

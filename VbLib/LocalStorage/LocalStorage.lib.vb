@@ -138,7 +138,7 @@ Public MustInherit Class LocalStorage
 
 	Private Const NO_MATCH_MASK As String = "nomatch"
 
-	Public Async Function SendFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.SendFile
+	Public Async Function SendFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.SendFileMain
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		' zapisz plik, gdy błąd - wróć od razu

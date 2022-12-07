@@ -7,7 +7,8 @@ Public Class CloudPublishersList
     ' Inherits Vblib.MojaLista(Of CloudConfig)
 
     Private gCloudProviders As Vblib.CloudPublish() = {
-        New Publish_AdHoc
+        New Publish_AdHoc,
+        New Publish_Instagram
         }
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)
@@ -54,7 +55,7 @@ Public Class CloudPublishersList
 
         For Each oProvider As Vblib.CloudPublish In gCloudProviders
             If oProvider.sProvider = oConfig.sProvider Then
-                Return oProvider.CreateNew(oConfig)
+                Return oProvider.CreateNew(oConfig, Application.gPostProcesory)
             End If
         Next
 
@@ -124,7 +125,7 @@ Public Class CloudArchivesList
 
         For Each oProvider As Vblib.CloudArchive In gCloudProviders
             If oProvider.sProvider = oConfig.sProvider Then
-                Return oProvider.CreateNew(oConfig)
+                Return oProvider.CreateNew(oConfig, Application.gPostProcesory)
             End If
         Next
 

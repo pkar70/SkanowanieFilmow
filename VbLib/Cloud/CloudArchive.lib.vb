@@ -14,8 +14,9 @@ Public MustInherit Class CloudArchive
     Public MustOverride Property sProvider As String
     Public Property eTyp As CloudTyp = CloudTyp.publish
 
+    Protected _PostProcs As PostProcBase()
 
-    Public MustOverride Async Function SendFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.SendFile
+    Public MustOverride Async Function SendFileMain(oPic As OnePic) As Task(Of String) Implements AnyStorage.SendFileMain
     Public MustOverride Async Function VerifyFileExist(oPic As OnePic) As Task(Of String) Implements AnyStorage.VerifyFileExist
     Public MustOverride Async Function VerifyFile(oPic As OnePic, oCopyFromArchive As LocalStorage) As Task(Of String) Implements AnyStorage.VerifyFile
     Public MustOverride Async Function SendFiles(oPicki As List(Of OnePic)) As Task(Of String) Implements AnyStorage.SendFiles
@@ -28,9 +29,18 @@ Public MustInherit Class CloudArchive
     Public MustOverride Async Function GetShareLink(oPic As OnePic) As Task(Of String) Implements AnyCloudStorage.GetShareLink
     Public MustOverride Async Function GetShareLink(oOneDir As OneDir) As Task(Of String) Implements AnyCloudStorage.GetShareLink
     Public MustOverride Async Function Logout() As Task(Of String) Implements AnyCloudStorage.Logout
-    Public MustOverride Function CreateNew(oConfig As CloudConfig) As AnyStorage Implements AnyCloudStorage.CreateNew
+    Public MustOverride Function CreateNew(oConfig As CloudConfig, oPostProcs As PostProcBase()) As AnyStorage Implements AnyCloudStorage.CreateNew
 
+    Public Async Function SendFile(oPic As OnePic) As Task(Of String)
+        ' sprawdź maski
+        If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Return ""
 
+        ' przeslij plik przez pipeline
+        Dim sRet As String = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+        If sRet <> "" Then Return sRet
+
+        Return Await SendFileMain(oPic)
+    End Function
 End Class
 
 

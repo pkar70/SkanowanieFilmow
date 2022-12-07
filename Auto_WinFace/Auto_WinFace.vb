@@ -16,8 +16,10 @@ Public Class Auto_WinFace
     Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoWinFace
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje policzyæ twarze u¿ywaj¹c Windows." & vbCrLf & "U¿ywa keyword -fN, gdzie n to liczba twarzy"
+    'Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"
 
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
+        If Not oFile.MatchesMasks(includeMask) Then Return Nothing
         Return Await ZrobMain(oFile)
 
     End Function
@@ -38,10 +40,29 @@ Public Class Auto_WinFace
         If _FaceEngine Is Nothing Then _FaceEngine = Await FaceDetector.CreateAsync
 
         ' na bitmape i OCR
-        Using oStream As IO.Stream = IO.File.OpenRead(oFile.InBufferPathName)
-            Dim oDecoder As BitmapDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
+        Dim oStream As IO.Stream = Nothing
+        Dim oArchive As IO.Compression.ZipArchive = Nothing
 
-            Dim oTransform As New BitmapTransform()
+        If oFile.MatchesMasks("*.nar") Then
+            oArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
+            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+
+                ' mamy JPGa (a nie XML na przyk³ad)
+                oStream = New MemoryStream
+                Dim oStreamTemp As Stream = oInArch.Open
+                Await oStreamTemp.CopyToAsync(oStream)
+                oStreamTemp.Dispose()
+                Exit For
+            Next
+        Else
+            ' zak³adamy w takim razie ¿e to JPG
+            oStream = IO.File.OpenRead(oFile.InBufferPathName)
+        End If
+
+        Dim oDecoder As BitmapDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
+
+        Dim oTransform As New BitmapTransform()
 
             If oDecoder.PixelHeight > sourceImageHeightLimit Then
                 Dim scalingFactor As Double = sourceImageHeightLimit / oDecoder.PixelHeight
@@ -74,7 +95,9 @@ Public Class Auto_WinFace
 
                 Return oExif
             End Using
-        End Using
+
+        oStream?.Dispose()
+        oArchive?.Dispose()
 
     End Function
 

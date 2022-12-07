@@ -14,7 +14,7 @@ Public MustInherit Class PostProcBase
     Public MustOverride Property Nazwa As String
 
     Public MustOverride Property dymekAbout As String
-    Public Overridable Property include As String = "*.jpg"
+    Public Overridable Property include As String = "*.jpg;*.jpg.thumb"
 
     'Public Property defaultTags As ExifTag
     'Public Property defaultPublish As List(Of String)   ' lista IDs

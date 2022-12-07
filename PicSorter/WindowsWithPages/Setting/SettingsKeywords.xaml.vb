@@ -160,17 +160,33 @@ Class SettingsKeywords
         End Try
     End Sub
 
-    Private Sub uiLatitude_TextChanged(sender As Object, e As TextChangedEventArgs) Handles uiLatitude.TextChanged
-        ' https://www.openstreetmap.org/way/830020459#map=18/50.01990/19.97866
-        If Not uiLatitude.Text.StartsWith("http") Then Return
+    ' teraz to jest w okienku EnterGeoTag
+    'Private Sub uiLatitude_TextChanged(sender As Object, e As TextChangedEventArgs) Handles uiLatitude.TextChanged
+    '    ' https://www.openstreetmap.org/way/830020459#map=18/50.01990/19.97866
+    '    If Not uiLatitude.Text.StartsWith("http") Then Return
 
-        Dim oPos As MyBasicGeoposition = SettingsMapsy.Link2Geo(uiLatitude.Text)
+    '    Dim oPos As MyBasicGeoposition = SettingsMapsy.Link2Geo(uiLatitude.Text)
+    '    If oPos.IsEmpty Then Return
+
+    '    SetGeo(oPos, 100)
+    'End Sub
+
+    Private Sub SetGeo(oPos As MyBasicGeoposition, iRadius As Integer)
         If oPos.IsEmpty Then Return
 
         _editingItem.oGeo = oPos
         uiLatitude.Text = oPos.Latitude
         uiLongitude.Text = oPos.Longitude
-        uiRadius.Text = "100"
+        uiRadius.Text = iRadius
+    End Sub
+
+    Private Sub uiOpenGeo_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New EnterGeoTag
+        If Not oWnd.ShowDialog Then Return
+
+        Dim oGeo As MyBasicGeoposition = oWnd.GetGeoPos
+        SetGeo(oGeo, 100)
+
     End Sub
 End Class
 

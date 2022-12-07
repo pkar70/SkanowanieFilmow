@@ -71,6 +71,9 @@ Public Class ShowBig
 
         Dim iObrot As Rotation = DetermineOrientation(_picek.oPic)
 
+        ' *TODO* reakcja jakaś na inne typy niż JPG
+        ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
+
         _bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
         If _bitmap Is Nothing Then Return
 
@@ -336,7 +339,7 @@ Public Class ShowBig
 
     Private _editMode As EditModeEnum = EditModeEnum.none
 
-    Private Async Function SprawdzCzyJestEdycja(editMode As EditModeEnum) As Task(Of Boolean)
+    Private Async Function SprawdzCzyJestEdycja(editMode As EditModeEnum) As Task
         If _editMode <> EditModeEnum.none Then
 
             If _editMode <> editMode Then ' jeśli włączamy to samo, to nie ma powodu pytać o zapis
@@ -350,7 +353,7 @@ Public Class ShowBig
 
         _editMode = editMode
 
-        Return True
+        Return
     End Function
 
     Private Function RotateToDegree(iRot As Rotation) As Integer
@@ -443,7 +446,7 @@ Public Class ShowBig
                         transf.Rotation = wingraph.BitmapRotation.Clockwise90Degrees
                     End If
 
-                    sHistory = " degrees"
+                    sHistory &= " degrees"
                 End If
 
         End Select
@@ -468,7 +471,7 @@ Public Class ShowBig
 
 
         _editMode = EditModeEnum.none
-        ShowHideEditControls(_editMode)
+        ShowHideEditControls(EditModeEnum.none)
     End Function
 
 #Region "crop"
@@ -538,7 +541,7 @@ Public Class ShowBig
     End Sub
     Private Async Sub uiCrop_Click(sender As Object, e As RoutedEventArgs)
 
-        If Not Await SprawdzCzyJestEdycja(EditModeEnum.crop) Then Return
+        Await SprawdzCzyJestEdycja(EditModeEnum.crop)
 
         If uiCropUp.Visibility = Visibility.Visible Then
             ShowHideEditControls(EditModeEnum.none)
@@ -636,7 +639,7 @@ Public Class ShowBig
 #End If
 
     Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
-        If Not Await SprawdzCzyJestEdycja(EditModeEnum.rotate) Then Return
+        Await SprawdzCzyJestEdycja(EditModeEnum.rotate)
 
         ShowHideEditControls(EditModeEnum.rotate)
 

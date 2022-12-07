@@ -1,5 +1,6 @@
 ﻿
 
+Imports System.Globalization
 Imports System.IO
 Imports System.Text.RegularExpressions
 Imports System.Threading
@@ -167,43 +168,82 @@ Public Class OnePic
         Exifs.Add(oExifTag)
     End Sub
 
+
+    ''' <summary>
+    ''' zwraca minimalną datę zdjęcia, bądź Invalid
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function GetMinDate() As Date
+        Dim dDateMin As Date = Date.MinValue
+
+        For Each oItem As ExifTag In Exifs
+            'If oItem.ExifSource = ExifSource.ManualTag Then
+            dDateMin = dDateMin.DateMax(oItem.DateMin)
+            'End If
+        Next
+
+        Return dDateMin
+
+    End Function
+
+    Public Function GetMaxDate() As Date
+        Dim dDateMax As Date = Date.MaxValue
+
+        For Each oItem As ExifTag In Exifs
+            ' If oItem.ExifSource = ExifSource.ManualTag Then
+            dDateMax = dDateMax.DateMin(oItem.DateMax)
+            'End If
+        Next
+
+        Return dDateMax
+    End Function
+
+    Public Shared Function ExifDateToDate(sExifDate) As Date
+        If String.IsNullOrWhiteSpace(sExifDate) Then Return Date.MaxValue
+
+        Dim retDate As Date
+        If Not Date.TryParseExact(sExifDate, "yyyy.MM.dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, retDate) Then Return Date.MaxValue
+
+        Return retDate
+    End Function
+
+    Private Function GetRealDate() As Date
+        Dim oExif As ExifTag = GetExifOfType(ExifSource.FileExif)
+        If oExif Is Nothing Then Return Date.MaxValue
+
+        ' zeskanowanie daty (string->date)
+        Dim retDate As Date = ExifDateToDate(oExif.DateTimeOriginal)
+        Return retDate
+    End Function
+
     ''' <summary>
     ''' Zwraca datę do sortowania tekstowego w formacie EXIF: 2022.05.06 12:27:47.
     ''' Ważność: FileExif, ManualTag (min ze wszystkich), SourceFile
     ''' </summary>
     ''' <returns></returns>
-    Public Function GetMostProbablyDate() As String
-        Dim oExif As ExifTag
+    Public Function GetMostProbablyDate() As Date
 
-        oExif = GetExifOfType(ExifSource.FileExif)
-        If oExif IsNot Nothing Then
-            If Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then Return oExif.DateTimeOriginal
-        End If
+        Dim retDate As Date = GetRealDate()
+        If retDate.IsDateValid Then Return retDate
 
-        Dim dDateMin As Date = Date.MaxValue
-        Dim dDateMax As Date = Date.MinValue
+        Dim dDateMin As Date = GetMinDate()
+        Dim dDateMax As Date = GetMaxDate()
 
-        For Each oItem As ExifTag In Exifs
-            If oItem.ExifSource = ExifSource.ManualTag Then
-                dDateMin = dDateMin.DateMax(oItem.DateMin)
-                dDateMax = dDateMax.DateMin(oItem.DateMax)
-            End If
-        Next
-
-        If dDateMin.IsDateValid AndAlso Not dDateMax.IsDateValid Then Return dDateMin.ToExifString
-        If Not dDateMin.IsDateValid AndAlso dDateMax.IsDateValid Then Return dDateMax.ToExifString
+        If dDateMin.IsDateValid AndAlso Not dDateMax.IsDateValid Then Return dDateMin
+        If Not dDateMin.IsDateValid AndAlso dDateMax.IsDateValid Then Return dDateMax
         If dDateMin.IsDateValid AndAlso dDateMax.IsDateValid Then
             Dim oDateDiff As TimeSpan = dDateMax - dDateMin
-            Return dDateMin.AddMinutes(oDateDiff.TotalMinutes / 2).ToExifString
+            Return dDateMin.AddMinutes(oDateDiff.TotalMinutes / 2)
         End If
 
-        oExif = GetExifOfType(Vblib.ExifSource.SourceFile)
+        ' czyli tu właściwie juz nigdy nie wejdzie, bo ten EXIF już jest uwzględniony w pętli powyżej
+        Dim oExif As ExifTag = GetExifOfType(Vblib.ExifSource.SourceFile)
         If oExif IsNot Nothing Then
             ' to właściwie na pewno jest, bo to data pliku
-            Return oExif.DateMin.ToExifString
+            Return oExif.DateMin
         End If
 
-        ' jakby co jendak nie było
+        ' jakby co (jednak nie było), to coś  zwracamy
         Return Date.Now
 
     End Function
@@ -211,7 +251,7 @@ Public Class OnePic
 #End Region
 
 #Region "operacje na maskach"
-    Public Function MatchesMasks(sIncludeMasks As String, sExcludeMasks As String) As Boolean
+    Public Function MatchesMasks(sIncludeMasks As String, Optional sExcludeMasks As String = "") As Boolean
 
         Dim sFilenameNoPath As String = IO.Path.GetFileName(InBufferPathName)   ' dla edycji było GetSourceFilename, ale to poprzednia wersja
         Return MatchesMasks(sFilenameNoPath, sIncludeMasks, sExcludeMasks)

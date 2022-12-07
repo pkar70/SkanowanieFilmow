@@ -1,24 +1,17 @@
-ï»¿Imports System.IO
-Imports System.Security.Policy
 Imports Vblib
 
-Public Class Publish_AdHoc
+Public Class Publish_Instagram
     Inherits Vblib.CloudPublish
 
-    Public Const PROVIDERNAME As String = "AdHoc"
+    Public Const PROVIDERNAME As String = "Instagram"
 
     Public Overrides Property sProvider As String = PROVIDERNAME
 
-    Public Overrides Async Function SendFile(oPic As Vblib.OnePic) As Task(Of String)
+    Public Overrides Async Function SendFileMain(oPic As Vblib.OnePic) As Task(Of String)
 
         If String.IsNullOrEmpty(sZmienneZnaczenie) Then Return "ERROR: Publish_AdHoc, folderForFiles is not set"
 
-        ' sprawdÅº maski
-        If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Return ""
-
-        ' przeslij plik przez pipeline
-        Dim sRet As String = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, Application.gPostProcesory)
-        If sRet <> "" Then Return sRet
+        ' jesteœmy po pipeline, które jest "piêtro wy¿ej"
 
         ' zapisz w katalogu docelowym
         Dim sOutFilename As String = IO.Path.Combine(sZmienneZnaczenie, oPic.sSuggestedFilename)
@@ -37,7 +30,7 @@ Public Class Publish_AdHoc
     End Function
 
     Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
-        ' *TODO* na razie i tak nie bÄ™dzie wykorzystywane, podobnie jak w LocalStorage
+        ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
         Throw New NotImplementedException()
     End Function
 
@@ -46,11 +39,13 @@ Public Class Publish_AdHoc
         Throw New NotImplementedException()
     End Function
 
-    Public Overrides Function CreateNew(oConfig As Vblib.CloudConfig) As Vblib.AnyStorage
+    Public Overrides Function CreateNew(oConfig As Vblib.CloudConfig, oPostProcs As PostProcBase()) As Vblib.AnyStorage
         If oConfig.sProvider <> sProvider Then Return Nothing
 
         Dim oNew As New Publish_AdHoc
         oNew.konfiguracja = oConfig
+        oNew._PostProcs = oPostProcs
+
         Return oNew
     End Function
 
@@ -64,7 +59,7 @@ Public Class Publish_AdHoc
     .defaultExif = New Vblib.ExifTag(Vblib.ExifSource.CloudPublish)
     }
 
-    ' po dodaniu parametru - listy procesorÃ³w, moÅ¼e byÄ‡ w OnePic
+    ' po dodaniu parametru - listy procesorów, mo¿e byæ w OnePic
 
 #Region "bez znaczenia dla Publish typu Ad Hoc"
 

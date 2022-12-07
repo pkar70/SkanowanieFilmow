@@ -3,6 +3,7 @@
 Imports System.DirectoryServices.ActiveDirectory
 Imports System.Security.Cryptography
 Imports System.Security.Policy
+Imports MetadataExtractor.Formats
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
@@ -19,6 +20,8 @@ Public Class BrowseKeywordsWindow
         _oPic = oPic
         Me.Title = oPic.oPic.InBufferPathName
 
+        _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
+
         UstalCheckboxy()
         ZablokujNiezgodne()
         RefreshLista()
@@ -28,20 +31,11 @@ Public Class BrowseKeywordsWindow
         WypelnCombo()
     End Sub
 
-
-    Private Sub SetDatesByKeywords(inExif As Vblib.ExifTag, fromKeywords As List(Of Vblib.OneKeyword))
-
-        Dim oMinDate As Date = Date.MaxValue
-        Dim oMaxDate As Date = Date.MinValue
+    Private Sub SetGeoByKeywords(inExif As Vblib.ExifTag, fromKeywords As List(Of Vblib.OneKeyword))
 
         Dim iMinRadius As Integer = Integer.MaxValue
 
         For Each oItem As Vblib.OneKeyword In fromKeywords
-            inExif.Keywords = inExif.Keywords & " " & oItem.sTagId
-            inExif.UserComment = inExif.UserComment & " | " & oItem.sDisplayName
-
-            oMinDate = oMinDate.DateMin(oItem.minDate)
-            oMaxDate = oMaxDate.DateMax(oItem.maxDate)
 
             ' geo: na najbardziej ograniczony zakres (najmniejszy radius)
             If oItem.iGeoRadius > 0 Then
@@ -50,6 +44,19 @@ Public Class BrowseKeywordsWindow
                 inExif.GeoName = oItem.sDisplayName
                 iMinRadius = oItem.iGeoRadius
             End If
+
+        Next
+
+    End Sub
+    Private Sub SetDatesByKeywords(inExif As Vblib.ExifTag, fromKeywords As List(Of Vblib.OneKeyword))
+
+        Dim oMinDate As Date = Date.MaxValue
+        Dim oMaxDate As Date = Date.MinValue
+
+        For Each oItem As Vblib.OneKeyword In fromKeywords
+
+            oMinDate = oMinDate.DateMin(oItem.minDate)
+            oMaxDate = oMaxDate.DateMax(oItem.maxDate)
 
         Next
 
@@ -77,31 +84,36 @@ Public Class BrowseKeywordsWindow
 
     End Function
 
-    Private Sub GetListOfSelectedKeywordsRecursive(oParent As Vblib.OneKeyword, lKeys As List(Of Vblib.OneKeyword))
+    'Private Sub GetListOfSelectedKeywordsRecursive(oParent As Vblib.OneKeyword, lKeys As List(Of Vblib.OneKeyword))
 
-        If oParent.bChecked Then lKeys.Add(oParent)
-        If oParent.SubItems Is Nothing Then Return
+    '    If oParent.bChecked Then lKeys.Add(oParent)
+    '    If oParent.SubItems Is Nothing Then Return
 
-        For Each oItem As Vblib.OneKeyword In oParent.SubItems
-            If oItem.bChecked Then lKeys.Add(oItem)
-            If oItem.SubItems IsNot Nothing Then
-                For Each oChild As Vblib.OneKeyword In oItem.SubItems
-                    GetListOfSelectedKeywordsRecursive(oChild, lKeys)
-                Next
-            End If
-        Next
+    '    For Each oItem As Vblib.OneKeyword In oParent.SubItems
+    '        If oItem.bChecked Then lKeys.Add(oItem)
+    '        If oItem.SubItems IsNot Nothing Then
+    '            For Each oChild As Vblib.OneKeyword In oItem.SubItems
+    '                GetListOfSelectedKeywordsRecursive(oChild, lKeys)
+    '            Next
+    '        End If
+    '    Next
 
-    End Sub
+    'End Sub
 
     Private Function GetListOfSelectedKeywords() As List(Of Vblib.OneKeyword)
         Dim lKeys As New List(Of Vblib.OneKeyword)
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-            If oItem.SubItems IsNot Nothing Then
-                For Each oChild As Vblib.OneKeyword In oItem.SubItems
-                    GetListOfSelectedKeywordsRecursive(oChild, lKeys)
-                Next
-            End If
+        'For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        '    If oItem.SubItems IsNot Nothing Then
+        '        For Each oChild As Vblib.OneKeyword In oItem.SubItems
+        '            GetListOfSelectedKeywordsRecursive(oChild, lKeys)
+        '        Next
+        '    End If
+        'Next
+
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            If oItem.bChecked Then lKeys.Add(oItem)
         Next
+
 
         Return lKeys
 
@@ -109,17 +121,24 @@ Public Class BrowseKeywordsWindow
 
     Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
 
-        _oNewExif.Keywords = ""
-        _oNewExif.UserComment = ""
-
         Dim lKeys As List(Of Vblib.OneKeyword) = GetListOfSelectedKeywords()
 
         SetDatesByKeywords(_oNewExif, lKeys)
+        SetGeoByKeywords(_oNewExif, lKeys)
         Await SetTargetDirByKeywords(_oPic, lKeys)
 
+        _oNewExif.Keywords = ""
+        _oNewExif.UserComment = ""
+
+        For Each oItem As OneKeyword In lKeys
+            _oNewExif.Keywords = _oNewExif.Keywords & " " & oItem.sTagId
+            _oNewExif.UserComment = _oNewExif.UserComment & " | " & oItem.sDisplayName
+        Next
+
+
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
-        If oBrowserWnd Is Nothing Then Return
-        oBrowserWnd.ChangedKeywords(_oNewExif)
+            If oBrowserWnd Is Nothing Then Return
+            oBrowserWnd.ChangedKeywords(_oNewExif)
 
     End Sub
 
@@ -128,33 +147,33 @@ Public Class BrowseKeywordsWindow
     End Sub
 
 
-    Private Sub RefreshListaAddRecursive(oNewList As List(Of Vblib.OneKeyword), oItem As Vblib.OneKeyword)
+    'Private Sub RefreshListaAddRecursive(oNewList As List(Of Vblib.OneKeyword), oItem As Vblib.OneKeyword)
 
-        oNewList.Add(oItem)
-        If oItem.SubItems IsNot Nothing Then
-            For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
-                RefreshListaAddRecursive(oNewList, oSubItem)
-            Next
-        End If
-    End Sub
+    '    oNewList.Add(oItem)
+    '    If oItem.SubItems IsNot Nothing Then
+    '        For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
+    '            RefreshListaAddRecursive(oNewList, oSubItem)
+    '        Next
+    '    End If
+    'End Sub
 
-    Private Function RefreshListaRecursive(sId As String, oItem As Vblib.OneKeyword) As Boolean
+    'Private Function RefreshListaRecursive(sId As String, oItem As Vblib.OneKeyword) As Boolean
 
-        If oItem.sTagId = sId Then
-            Dim oNewList As New List(Of Vblib.OneKeyword)
-            RefreshListaAddRecursive(oNewList, oItem)
-            uiLista.ItemsSource = oNewList
-            Return True
-        End If
+    '    If oItem.sTagId = sId Then
+    '        Dim oNewList As New List(Of Vblib.OneKeyword)
+    '        RefreshListaAddRecursive(oNewList, oItem)
+    '        uiLista.ItemsSource = oNewList
+    '        Return True
+    '    End If
 
-        If oItem.SubItems IsNot Nothing Then
-            For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
-                If RefreshListaRecursive(sId, oSubItem) Then Return True
-            Next
-        End If
+    '    If oItem.SubItems IsNot Nothing Then
+    '        For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
+    '            If RefreshListaRecursive(sId, oSubItem) Then Return True
+    '        Next
+    '    End If
 
-        Return False
-    End Function
+    '    Return False
+    'End Function
     Private Sub RefreshLista()
 
         ' step 1: znajdź sTagId
@@ -164,9 +183,10 @@ Public Class BrowseKeywordsWindow
         If iInd > 0 Then sId = sId.Substring(0, iInd)
 
         ' step 2: znajdź - ale hierarchicznie!
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-            If RefreshListaRecursive(sId, oItem) Then Exit For
-        Next
+        uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList
+        'For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        '    If RefreshListaRecursive(sId, oItem) Then Exit For
+        'Next
 
     End Sub
 
@@ -194,7 +214,7 @@ Public Class BrowseKeywordsWindow
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
             If oItem.SubItems Is Nothing Then Continue For
             If oItem.SubItems.Count < 1 Then Continue For
-
+            ' zostaje własna rekurencja, bo chodzi o indent w hierarchii
             WypelnComboRecursive(oItem, "")
         Next
 
@@ -219,35 +239,47 @@ Public Class BrowseKeywordsWindow
     Private Sub OdblokujWszystkie()
         'vb14.DumpCurrMethod()
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-            OdblokujWszystkieRecursive(oItem)
+        'For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        '    OdblokujWszystkieRecursive(oItem)
+        'Next
+
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            oItem.bEnabled = True
         Next
-
     End Sub
 
-    Private Sub OdblokujWszystkieRecursive(oItem As Vblib.OneKeyword)
-        'vb14.DumpCurrMethod()
+    'Private Sub OdblokujWszystkieRecursive(oItem As Vblib.OneKeyword)
+    '    'vb14.DumpCurrMethod()
 
-        If oItem.SubItems IsNot Nothing Then
-            For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
-                OdblokujWszystkieRecursive(oSubItem)
-            Next
-        End If
+    '    If oItem.SubItems IsNot Nothing Then
+    '        For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
+    '            OdblokujWszystkieRecursive(oSubItem)
+    '        Next
+    '    End If
 
-        oItem.bEnabled = True
+    '    oItem.bEnabled = True
 
-    End Sub
+    'End Sub
 
+    ''' <summary>
+    '''  zaznacza Keywords które są w exif.ManualTag.keywords, exif.FileExif.keywords, descriptions
+    ''' </summary>
     Private Sub UstalCheckboxy()
-        'vb14.DumpCurrMethod()
+        vb14.DumpCurrMethod()
 
         Dim sUsedTags As String = ""
 
-        Dim oExifTag As Vblib.ExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualTag)
-        If oExifTag IsNot Nothing Then sUsedTags = oExifTag.Keywords
+        For Each oExifTag As Vblib.ExifTag In _oPic.oPic.Exifs
+            If Not String.IsNullOrWhiteSpace(oExifTag.Keywords) Then
+                sUsedTags = sUsedTags & " " & oExifTag.Keywords
+            End If
+        Next
 
-        oExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
-        If oExifTag IsNot Nothing Then sUsedTags = sUsedTags & " " & oExifTag.Keywords
+        'Dim oExifTag As Vblib.ExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualTag)
+        'If oExifTag IsNot Nothing Then sUsedTags = oExifTag.Keywords
+
+        'oExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+        'If oExifTag IsNot Nothing Then sUsedTags = sUsedTags & " " & oExifTag.Keywords
 
         If _oPic.oPic.descriptions IsNot Nothing Then
             For Each oDesc As OneDescription In _oPic.oPic.descriptions
@@ -260,72 +292,80 @@ Public Class BrowseKeywordsWindow
         Dim aKwds As String() = sUsedTags.Split(" ")
 
         ' rekurencyjnie przez wszystkie itemy w Keywords, zaznacz odznacz
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-            UstalCheckboxyRecursive(oItem, aKwds)
-        Next
+        'For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        '    UstalCheckboxyRecursive(oItem, aKwds)
+        'Next
 
-    End Sub
-
-    Private Sub UstalCheckboxyRecursive(oItem As Vblib.OneKeyword, aKwds As String())
-        'vb14.DumpCurrMethod()
-
-        If oItem.SubItems IsNot Nothing Then
-            For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
-                UstalCheckboxyRecursive(oSubItem, aKwds)
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            oItem.bChecked = False
+            For Each sTag As String In aKwds
+                If oItem.sTagId = sTag Then
+                    oItem.bChecked = True
+                    Exit For
+                End If
             Next
-        End If
-
-        oItem.bChecked = False
-        For Each sTag As String In aKwds
-            If oItem.sTagId = sTag Then
-                oItem.bChecked = True
-                Exit For
-            End If
         Next
 
     End Sub
+
+    'Private Sub UstalCheckboxyRecursive(oItem As Vblib.OneKeyword, aKwds As String())
+    '    'vb14.DumpCurrMethod()
+
+    '    If oItem.SubItems IsNot Nothing Then
+    '        For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
+    '            UstalCheckboxyRecursive(oSubItem, aKwds)
+    '        Next
+    '    End If
+
+    '    oItem.bChecked = False
+    '    For Each sTag As String In aKwds
+    '        If oItem.sTagId = sTag Then
+    '            oItem.bChecked = True
+    '            Exit For
+    '        End If
+    '    Next
+
+    'End Sub
 
     Private Sub ZablokujNiezgodneWedlePic()
         vb14.DumpCurrMethod()
 
-        Dim minDate As Date = Date.MaxValue
-        Dim maxDate As Date = Date.MinValue
+        Dim minDate As Date = _oPic.oPic.GetMinDate ' Date.MaxValue
+        Dim maxDate As Date = _oPic.oPic.GetMaxDate ' Date.MinValue
 
-        ' policz dateMin i dateMax dla zdjecia - SOURCE, EXIF, MANUALDATE
-        Dim oExifTag As Vblib.ExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.SourceDefault)
-        If oExifTag IsNot Nothing Then
-            vb14.DumpMessage("mam EXIF SOURCE")
-            minDate = minDate.DateMax(oExifTag.DateMin)
-            'If oExifTag.DateMin.IsDateValid Then
-            '    If minDate < oExifTag.DateMin Then minDate = oExifTag.DateMin
-            'End If
-            'If oExifTag.DateMax.IsDateValid Then
-            '    If maxDate > oExifTag.DateMax Then maxDate = oExifTag.DateMax
-            'End If
-            maxDate = minDate.DateMin(oExifTag.DateMax)
-            vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
-        End If
+        '' policz dateMin i dateMax dla zdjecia - SOURCE, EXIF, MANUALDATE
+        'Dim oExifTag As Vblib.ExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.SourceDefault)
+        'If oExifTag IsNot Nothing Then
+        '    vb14.DumpMessage("mam EXIF SOURCE")
+        '    minDate = minDate.DateMax(oExifTag.DateMin)
+        '    maxDate = minDate.DateMin(oExifTag.DateMax)
+        '    vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
+        'End If
 
-        oExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
-        If oExifTag IsNot Nothing Then
-            vb14.DumpMessage("mam EXIF EXIF")
-            minDate = minDate.DateMax(oExifTag.DateMin)
-            maxDate = minDate.DateMin(oExifTag.DateMax)
-            vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
-        End If
+        'oExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+        'If oExifTag IsNot Nothing Then
+        '    vb14.DumpMessage("mam EXIF EXIF")
+        '    minDate = minDate.DateMax(oExifTag.DateMin)
+        '    maxDate = minDate.DateMin(oExifTag.DateMax)
+        '    vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
+        'End If
 
-        oExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualDate)
-        If oExifTag IsNot Nothing Then
-            'vb14.DumpMessage("mam EXIF MANUAL")
-            minDate = minDate.DateMax(oExifTag.DateMin)
-            maxDate = minDate.DateMin(oExifTag.DateMax)
-            vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
-        End If
+        'oExifTag = _oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualDate)
+        'If oExifTag IsNot Nothing Then
+        '    'vb14.DumpMessage("mam EXIF MANUAL")
+        '    minDate = minDate.DateMax(oExifTag.DateMin)
+        '    maxDate = minDate.DateMin(oExifTag.DateMax)
+        '    vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
+        'End If
 
         ' rekurencyjnie przez wszystkie itemy w Keywords, zaznacz odznacz
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-            ZablokujNiezgodneWedleDatRecursive(oItem, minDate, maxDate)
+        'For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        '    ZablokujNiezgodneWedleDatRecursive(oItem, minDate, maxDate)
+        'Next
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            ZablokujNiezgodneWedleDat(oItem, minDate, maxDate)
         Next
+
 
     End Sub
 
@@ -345,8 +385,12 @@ Public Class BrowseKeywordsWindow
         vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
 
         ' rekurencyjnie przez wszystkie itemy w Keywords, zaznacz odznacz
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-            ZablokujNiezgodneWedleDatRecursive(oItem, minDate, maxDate)
+        'For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        '    ZablokujNiezgodneWedleDatRecursive(oItem, minDate, maxDate)
+        'Next
+
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            ZablokujNiezgodneWedleDat(oItem, minDate, maxDate)
         Next
 
     End Sub
@@ -392,7 +436,7 @@ Public Class BrowseKeywordsWindow
     End Function
 
 
-    Private Sub ZablokujNiezgodneWedleDatRecursive(oItem As Vblib.OneKeyword, minDate As Date, maxDate As Date)
+    Private Sub ZablokujNiezgodneWedleDat(oItem As Vblib.OneKeyword, minDate As Date, maxDate As Date)
         'vb14.DumpMessage($"oItem: {oItem.sTagId}, minDate: {minDate}, maxDate: {maxDate}")
 
         ' step 1: czy węzeł ma limit dat?
@@ -409,14 +453,41 @@ Public Class BrowseKeywordsWindow
             End If
         End If
 
-        ' step 2: iterowanie subitemow
-        If oItem.SubItems IsNot Nothing Then
-            For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
-                ZablokujNiezgodneWedleDatRecursive(oSubItem, minDate, maxDate)
-            Next
-        End If
+        '' step 2: iterowanie subitemow
+        'If oItem.SubItems IsNot Nothing Then
+        '    For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
+        '        ZablokujNiezgodneWedleDatRecursive(oSubItem, minDate, maxDate)
+        '    Next
+        'End If
 
     End Sub
+
+
+    'Private Sub ZablokujNiezgodneWedleDatRecursive(oItem As Vblib.OneKeyword, minDate As Date, maxDate As Date)
+    '    'vb14.DumpMessage($"oItem: {oItem.sTagId}, minDate: {minDate}, maxDate: {maxDate}")
+
+    '    ' step 1: czy węzeł ma limit dat?
+
+    '    If minDate.IsDateValid Then
+    '        If oItem.maxDate.IsDateValid Then
+    '            If oItem.maxDate < minDate Then oItem.bEnabled = False
+    '        End If
+    '    End If
+
+    '    If maxDate.IsDateValid Then
+    '        If oItem.minDate.IsDateValid Then
+    '            If oItem.minDate > maxDate Then oItem.bEnabled = False
+    '        End If
+    '    End If
+
+    '    ' step 2: iterowanie subitemow
+    '    If oItem.SubItems IsNot Nothing Then
+    '        For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
+    '            ZablokujNiezgodneWedleDatRecursive(oSubItem, minDate, maxDate)
+    '        Next
+    '    End If
+
+    'End Sub
 
 
 

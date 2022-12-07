@@ -4,16 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Metadane" Height="300" Width="400" Loaded="Window_Loaded">
+        Title="Metadane" Height="400" Width="350" Loaded="Window_Loaded">
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
         <TextBlock Name="uiTitle" HorizontalAlignment="Center" FontSize="14" FontWeight="Bold" />
-
-        <TextBox Name="uiDump" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AcceptsReturn="True" IsReadOnly="True" Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
+        <TextBox Name="uiMask" Margin="5,10,5,5" TextChanged="uiMask_TextChanged" Grid.Row="1"/>
+        <TextBox Name="uiDump" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AcceptsReturn="True" IsReadOnly="True" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" />
 
     </Grid>
 </Window>

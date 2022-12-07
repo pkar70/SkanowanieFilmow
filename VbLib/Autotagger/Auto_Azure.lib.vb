@@ -19,8 +19,8 @@ Public Class Auto_AzureTest
     Public Overrides ReadOnly Property Nazwa As String = ExifSource.AutoAzure
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próba co można wyciągnąć, 20 na minutę"
-
     Public Overrides ReadOnly Property MaxSize As Integer = 3800
+    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"
 
 
     Private _oClient As ComputerVision.ComputerVisionClient
@@ -44,6 +44,9 @@ Public Class Auto_AzureTest
     End Function
 
     Private Async Function GetStreamForSending(oFile As Vblib.OnePic) As Task(Of Stream)
+
+        If oFile.MatchesMasks("*.nar") Then Return Await GetStreamFromZip(oFile)
+
         Dim sFilename As String = oFile.InBufferPathName
 
         ' zabezpieczenie wielkościowe (limit Azure)
@@ -63,8 +66,32 @@ Public Class Auto_AzureTest
 
     End Function
 
+    Private Async Function GetStreamFromZip(oFile As Vblib.OnePic) As Task(Of Stream)
+        Dim oStream As MemoryStream = Nothing
+
+        Using oArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
+
+            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                ' mamy JPGa (a nie XML na przykład)
+
+                ' *TODO* jesteśmy w NAR, tu nie będzie zmniejszania - przynajmniej na razie
+                ' ale dużo jest > 4 MB
+                If oInArch.Length > MaxSize * 1024 Then Continue For
+
+                ' mamy wystarczająco mały, to wysyłamy
+                oStream = New MemoryStream
+                Await oInArch.Open.CopyToAsync(oStream)
+                Exit For
+            Next
+        End Using
+
+        Return oStream
+    End Function
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+        ' *TODO* reakcja jakaś na inne typy niż JPG
+        ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
 
         Dim oStream As Stream = Await GetStreamForSending(oFile)
         If oStream Is Nothing Then Return Nothing

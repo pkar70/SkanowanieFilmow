@@ -1,0 +1,59 @@
+﻿<Window x:Class="EnterGeoTag"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="EnterGeoTag" Height="250" Width="150">
+    <Grid Margin="5,5,5,5">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel>
+        <TextBlock HorizontalAlignment="Center" FontSize="14" Text="Podaj współrzędne" />
+        <TextBlock Text="Latitude:" Margin="0,5,0,0"/>
+        <TextBox Name="uiLatitude" TextChanged="uiLatitude_TextChanged"/>
+        <TextBlock Text="Longitude:" Margin="0,5,0,0"/>
+        <TextBox Name="uiLongitude" InputScope="Number"/>
+        <Button Content=" OK " Click="uiOk_Click" HorizontalAlignment="Center" Margin="5,10,5,10"/>
+        <Rectangle HorizontalAlignment="Stretch" Margin="20,0,20,0" Height="5" Fill="Blue" />
+
+        <TextBlock Text="POI name:" Margin="0,5,0,0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Name="uiPOIname" />
+            <Button Content="Srch" Grid.Column="1" Margin="5,0,0,0" Click="uiSearch_Click"/>
+        </Grid>
+        </StackPanel>
+        
+        <ListView Name="uiLista" Grid.Row="1">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid HorizontalAlignment="Stretch" Margin="0,5,0,0"  >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Use" Margin="5,0,5,0" Click="uiUsePOI_Click"  />
+                        <TextBlock Grid.Column="1" Text="{Binding display_name}" />
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+
+    </Grid>
+</Window>

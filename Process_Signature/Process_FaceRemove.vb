@@ -9,6 +9,7 @@ Public Class Process_FaceRemove
 
     Public Overrides Property dymekAbout As String = "Zakrywanie twarzy"
 
+    Private _brush As New SolidBrush(Color.Gray)
 
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
 
@@ -20,13 +21,6 @@ Public Class Process_FaceRemove
 
         oPic.InitEdit(bPipeline)
 
-        'Dim outputStream As IO.Stream = IO.File.OpenWrite(oPic.sFilenameEditDst)
-
-        Dim signature As String = GetSignatureString(oPic)
-
-        'Using oStream As IO.Stream = IO.File.OpenRead(oPic.sFilenameEditSrc)
-
-        'Using img = Image.FromStream(oStream)
         oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
         Using img = Image.FromStream(oPic._PipelineInput)
 
@@ -40,20 +34,23 @@ Public Class Process_FaceRemove
                     If oFace.X + oFace.Y = 0 Then Continue For
 
                     ' wyliczamy środek
-                    Dim iX As Integer = img.Width * oFace.X
-                    Dim iW As Integer = img.Width * oFace.Width
-                    Dim iY As Integer = img.Height * oFace.Y
-                    Dim iH As Integer = img.Height * oFace.Height
+                    Dim iX As Integer = img.Width * oFace.X / 100
+                    Dim iW As Integer = img.Width * oFace.Width / 100
+                    Dim iY As Integer = img.Height * oFace.Y / 100
+                    Dim iH As Integer = img.Height * oFace.Height / 100
+                    ' jakieś dziwne mamy dane, więc sprawdzamy
+                    If oFace.Width > 90 Then iW = img.Width / 10
+                    If oFace.Height > 90 Then iH = img.Height / 10
+                    If oFace.X + oFace.Width > 100 Then iW = img.Width / 10
+                    If oFace.Y + oFace.Height > 100 Then iH = img.Height / 10
+
                     ' i robimy owal
-                    Dim oPen As New Pen(New SolidBrush(Color.Gray))
-                    graphic.DrawEllipse(oPen, iX, iY, iW, iH)
+                    graphic.FillEllipse(_brush, iX, iY, iW, iH)
                 Next
 
-                ' img.Save(oPic._PipelineOutput, Imaging.ImageFormat.Jpeg)    ' outputStream
                 img.Save(oPic._PipelineOutput, Process_Signature.GetEncoder(ImageFormat.Jpeg), Process_Signature.GetJpgQuality)
             End Using
         End Using
-        ' End Using
 
         oPic.EndEdit(True, False)
 

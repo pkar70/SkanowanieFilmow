@@ -110,6 +110,8 @@ Class SettingsSources
         If iInd > 1 Then sCurrentVolLabel = sCurrentVolLabel.Substring(0, iInd - 1)
         sCurrentVolLabel = sCurrentVolLabel.ToLowerInvariant
 
+        uiSrcBrowse.IsEnabled = True
+
         uiSrcVolume.Items.Clear()
         iInd = -1   ' no vollabel to select
 
@@ -117,13 +119,20 @@ Class SettingsSources
             ' telefony
 
             Dim lLista As List(Of String) = MediaDevicesLib.Helper.GetDevicesList
-            For Each sDevice As String In lLista
-                iInd = uiSrcVolume.Items.Add(sDevice)
-                If sDevice.ToLower.StartsWith(sCurrentVolLabel & " (") Then
-                    uiSrcVolume.SelectedIndex = iInd
-                End If
-            Next
+            If lLista.Count = 0 And sCurrentVolLabel <> "#####" Then
+                iInd = uiSrcVolume.Items.Add(sCurrentVolLabel)
+                uiSrcVolume.SelectedIndex = iInd
 
+                uiSrcVolume.IsEnabled = False
+                uiSrcBrowse.IsEnabled = False
+            Else
+                For Each sDevice As String In lLista
+                    iInd = uiSrcVolume.Items.Add(sDevice)
+                    If sDevice.ToLower.StartsWith(sCurrentVolLabel & " (") Then
+                        uiSrcVolume.SelectedIndex = iInd
+                    End If
+                Next
+            End If
         Else
             ' dyski
             Dim oDrives = IO.DriveInfo.GetDrives()
@@ -240,14 +249,18 @@ Class SettingsSources
             End Try
         End If
 
-        If _item.Typ <> Vblib.PicSourceType.AdHOC Then
-            ' przy AdHoc to jest null
-            _item.VolLabel = uiSrcVolume.SelectedValue
-            If _item.VolLabel.Length < 2 Then
-                vb14.DialogBox("Błędny vollabel")
-                Return
+        ' disabled: gdy edycja MTP, którego nie ma podpiętego
+        If uiSrcVolume.IsEnabled Then
+            If _item.Typ <> Vblib.PicSourceType.AdHOC Then
+                ' przy AdHoc to jest null
+                _item.VolLabel = uiSrcVolume.SelectedValue
+                If _item.VolLabel.Length < 2 Then
+                    vb14.DialogBox("Błędny vollabel")
+                    Return
+                End If
             End If
         End If
+
         _item.SourceName = uiSrcName.Text
         _item.Path = uiSrcPath.Text
         _item.Recursive = uiSrcRecursive.IsChecked

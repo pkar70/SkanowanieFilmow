@@ -14,6 +14,7 @@ uiGeoGapInt=20
 uiHourGapInt=36
 uiGeoGapOn=True
 uiHourGapOn=True
+uiMaxThumb=100
 
 # remark
 ' remark

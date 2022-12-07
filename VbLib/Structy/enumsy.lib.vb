@@ -56,6 +56,7 @@ Public Class ExifSource
     ' Public Const ManualRotate As String = "MANUAL_ROTATE"
     Public Const Flattened As String = "INTERNAL_FLATTENED"
     Public Const CloudPublish As String = "CLOUD_PUBLISH"
+    Public Const FilenameToTags As String = "AUTO_TAG_FROM_NAME"
 End Class
 
 Public Enum AutoTaggerType

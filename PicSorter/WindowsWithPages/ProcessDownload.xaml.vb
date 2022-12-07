@@ -79,7 +79,7 @@ Public Class ProcessDownload
 
         vb14.DumpCurrMethod(oSrc.VolLabel)
 
-        Dim iCount As Integer = oSrc.ReadDirectory
+        Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
         'Await vb14.DialogBoxAsync($"read {iCount} files")
         vb14.DumpMessage($"Read {iCount} files")
 
@@ -93,11 +93,12 @@ Public Class ProcessDownload
         If oSrcFile Is Nothing Then Return
 
         Do
-            Await Application.GetBuffer.AddFile(oSrcFile)
-
-            oSrcFile = oSrc.GetNext
-            If oSrcFile Is Nothing Then Exit Do
-            uiProgBar.Value += 1
+            ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
+            If Await Application.GetBuffer.AddFile(oSrcFile) Then
+                oSrcFile = oSrc.GetNext
+                If oSrcFile Is Nothing Then Exit Do
+                uiProgBar.Value += 1
+            End If
         Loop
 
         Application.GetBuffer.SaveData()

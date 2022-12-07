@@ -60,22 +60,26 @@ Public Class TargetDir
         Return lLista
     End Function
 
-    Private Sub KatalogiWgKeywordRecursive(oKwd As Vblib.OneKeyword, lista As List(Of String))
-        If oKwd.SubItems Is Nothing Then Return
+    'Private Sub KatalogiWgKeywordRecursive(oKwd As Vblib.OneKeyword, lista As List(Of String))
+    '    If oKwd.SubItems Is Nothing Then Return
 
-        For Each oChild As Vblib.OneKeyword In oKwd.SubItems
-            If oChild.hasFolder Then lista.Add(oChild.ToComboDisplayName)
-            KatalogiWgKeywordRecursive(oChild, lista)
-        Next
+    '    For Each oChild As Vblib.OneKeyword In oKwd.SubItems
+    '        If oChild.hasFolder Then lista.Add(oChild.ToComboDisplayName)
+    '        KatalogiWgKeywordRecursive(oChild, lista)
+    '    Next
 
-    End Sub
+    'End Sub
 
     Private Function KatalogiWgKeyword() As List(Of String)
         Dim lLista As New List(Of String) ' poprzez listę pośrednią, bo chodzi o sortowanie
 
-        For Each oKwd As Vblib.OneKeyword In Application.GetKeywords.GetList
+        'For Each oKwd As Vblib.OneKeyword In Application.GetKeywords.GetList
+        '    If oKwd.hasFolder Then lLista.Add(oKwd.ToComboDisplayName)
+        '    KatalogiWgKeywordRecursive(oKwd, lLista)
+        'Next
+
+        For Each oKwd As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
             If oKwd.hasFolder Then lLista.Add(oKwd.ToComboDisplayName)
-            KatalogiWgKeywordRecursive(oKwd, lLista)
         Next
 
         Return lLista
@@ -195,6 +199,11 @@ Public Class TargetDir
             Next
         End If
 
+        For Each oThPic As ProcessBrowse.ThumbPicek In _selected
+            oThPic.ZrobDymek()
+        Next
+
+
     End Sub
 
     Private Sub DopiszKatalog(oPicek As ProcessBrowse.ThumbPicek, forceDir As Boolean)
@@ -228,7 +237,7 @@ Public Class TargetDir
     Private Function DopiszKatalogExisting(oPicek As ProcessBrowse.ThumbPicek) As Boolean
 
         Dim sExisting As String = uiComboExisting.SelectedItem
-        If sExisting Is Nothing Then Return ""
+        If sExisting Is Nothing Then Return False
 
         Dim iInd As Integer = sExisting.IndexOf(" (")
         If iInd > 0 Then sExisting = sExisting.Substring(0, iInd)

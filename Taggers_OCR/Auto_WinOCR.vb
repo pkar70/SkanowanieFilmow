@@ -11,7 +11,11 @@ Public Class AutoTag_WinOCR
     Public Overrides ReadOnly Property Nazwa As String = "AUTO_WINOCR"
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje zrobiæ OCR u¿ywaj¹c Windows." & vbCrLf & "U¿ywa pola UserComment"
+    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"
+
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+        If Not oFile.MatchesMasks(includeMask) Then Return Nothing
+
         Dim teksty As String = Await ZrobOCR(oFile)
 
         Dim oExif As New Vblib.ExifTag(Nazwa)
@@ -31,12 +35,33 @@ Public Class AutoTag_WinOCR
         Dim rOCR As OcrResult
 
         ' na bitmape i OCR
-        Using oStream As IO.Stream = IO.File.OpenRead(oFile.InBufferPathName)
-            Dim oDecoder As BitmapDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
-            Using softbitmap As SoftwareBitmap = Await oDecoder.GetSoftwareBitmapAsync()
-                rOCR = Await _OcrEngine.RecognizeAsync(softbitmap)
-            End Using
+        Dim oStream As IO.Stream = Nothing
+        Dim oArchive As IO.Compression.ZipArchive = Nothing
+
+        If oFile.MatchesMasks("*.nar") Then
+            oArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
+            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+
+                ' mamy JPGa (a nie XML na przyk³ad)
+                oStream = New MemoryStream
+                Dim oStreamTemp As Stream = oInArch.Open
+                Await oStreamTemp.CopyToAsync(oStream)
+                oStreamTemp.Dispose()
+                Exit For
+            Next
+        Else
+            ' zak³adamy w takim razie ¿e to JPG
+            oStream = IO.File.OpenRead(oFile.InBufferPathName)
+        End If
+
+        Dim oDecoder As BitmapDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
+        Using softbitmap As SoftwareBitmap = Await oDecoder.GetSoftwareBitmapAsync()
+            rOCR = Await _OcrEngine.RecognizeAsync(softbitmap)
         End Using
+
+        oStream?.Dispose()
+        oArchive?.dispose()
 
         Dim sRet As String = ""
 
@@ -48,3 +73,5 @@ Public Class AutoTag_WinOCR
     End Function
 
 End Class
+
+

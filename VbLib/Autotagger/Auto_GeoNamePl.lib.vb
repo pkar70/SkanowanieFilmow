@@ -14,6 +14,7 @@ Public Class Auto_GeoNamePl
     Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoImgw
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Zamienia współrzędne na nazwę miejscowości (tylko pierwszy znacznik)"
+    Public Overrides ReadOnly Property includeMask As String = "*.*"
 
     Private _cacheDataFolder As String
 
@@ -22,6 +23,7 @@ Public Class Auto_GeoNamePl
     End Sub
 
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
+        If Not oFile.MatchesMasks(includeMask) Then Return Nothing
 
         If oFile.Exifs Is Nothing Then Return Nothing
 

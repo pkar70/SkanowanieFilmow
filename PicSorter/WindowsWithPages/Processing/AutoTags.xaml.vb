@@ -26,6 +26,8 @@ Public Class AutoTags
         For Each oSrc As JedenEngine In _lista
             If Not oSrc.enabled Then Continue For
 
+            uiProgBarEngines.ToolTip = oSrc.nazwa
+
             Await ApplyOne(oSrc)
             uiProgBarEngines.Value += 1
             Application.GetBuffer.SaveData()  ' bo zmieniono EXIF

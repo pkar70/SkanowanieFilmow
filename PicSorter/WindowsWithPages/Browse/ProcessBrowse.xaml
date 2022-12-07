@@ -76,6 +76,7 @@
                         </MenuItem>
                         <MenuItem Header="Describe" Click="uiDescribeSelected_Click" />
                         <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
+                        <MenuItem Header="Create GeoTag" Click="uiMenuCreateGeoTag_Click" />
                         <MenuItem Header="Batch process" Name="uiBatchProcessors" />
                         <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click"/>
                     <MenuItem Header="Publish" Name="uiMenuPublish"  />
@@ -87,7 +88,8 @@
 
         <ListView Name="uiPicList" Grid.Row="1" Margin="5,5,5,5"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
-                      ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2" SelectionChanged="uiPicList_SelChanged" >
+                      ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2"
+                        SelectionChanged="uiPicList_SelChanged" >
 
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">

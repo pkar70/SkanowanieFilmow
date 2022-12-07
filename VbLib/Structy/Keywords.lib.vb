@@ -1,5 +1,4 @@
 ﻿
-Imports System.Security.Cryptography
 Imports Newtonsoft.Json
 
 Public Class OneKeyword
@@ -46,6 +45,21 @@ Public Class OneKeyword
 
     End Function
 
+    Public Function ToFlatList() As List(Of OneKeyword)
+        DumpCurrMethod(sTagId)
+        Dim lista As New List(Of OneKeyword)
+
+        lista.Add(Me)
+
+        If SubItems IsNot Nothing Then
+            For Each oChild As OneKeyword In SubItems
+                lista = lista.Concat(oChild.ToFlatList).ToList
+            Next
+        End If
+
+        Return lista
+    End Function
+
 End Class
 
 Public Class KeywordsList
@@ -70,7 +84,7 @@ Public Class KeywordsList
     End Function
 
     Public Function GetKeyword(sKey As String) As OneKeyword
-        For Each oItem As OneKeyword In _lista
+        For Each oItem As OneKeyword In ToFlatList()
             If oItem.sTagId = sKey Then Return oItem
         Next
 
@@ -78,6 +92,15 @@ Public Class KeywordsList
     End Function
 
 
+    Public Function ToFlatList() As List(Of OneKeyword)
+        Dim lista As New List(Of OneKeyword)
+
+        For Each oItem As OneKeyword In _lista
+            lista = lista.Concat(oItem.ToFlatList).ToList
+        Next
+
+        Return lista
+    End Function
 
 
 #Region "przeliczanie dat w drzewku"
