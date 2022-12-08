@@ -218,7 +218,7 @@ Class SettingsSources
 
     Private Sub uiEditExif_Click(sender As Object, e As RoutedEventArgs)
         uiOpenExif.IsEnabled = False
-        Dim oWnd As New EditExifTag(_item.defaultExif, _item.SourceName, EditExifTagScope.LimitedToSourceDir, False)
+        Dim oWnd As New EditExifTag(_item.defaultExif, uiSrcName.Text, EditExifTagScope.LimitedToSourceDir, False)
         oWnd.ShowDialog()
         uiOpenExif.IsEnabled = True
     End Sub

@@ -12,7 +12,7 @@ Public Class OnePic
     Public Property Archived As String
     Public Property CloudArchived As String
     Public Property Published As Dictionary(Of String, String)
-    Public Property TargetDir As String ' OneDir.sId
+    Public Property TargetDir As String ' OneDirFlat.sId
     Public Property Exifs As New List(Of ExifTag) ' ExifSource.SourceFile ..., )
     Public Property InBufferPathName As String
     ''' <summary>
@@ -598,11 +598,40 @@ Public Class OnePic
 
 #End Region
 
+    Private Sub MergeTwoExifs(oToExif As ExifTag, oAddExif As ExifTag)
+
+        ' dla nich bierzemy ostatni wpis - pewnie zwykle będzie to ustawiane gdy w loop będzie miał SourceDefault - ale może to nie będzie pierwszy...
+        If oAddExif.FileSourceDeviceType <> 0 Then oToExif.FileSourceDeviceType = oAddExif.FileSourceDeviceType
+        If Not String.IsNullOrWhiteSpace(oAddExif.Author) Then oToExif.Author = oAddExif.Author
+        If Not String.IsNullOrWhiteSpace(oAddExif.Copyright) Then oToExif.Copyright = oAddExif.Copyright
+        If Not String.IsNullOrWhiteSpace(oAddExif.CameraModel) Then oToExif.CameraModel = oAddExif.CameraModel
+        If Not String.IsNullOrWhiteSpace(oAddExif.DateTimeOriginal) Then oToExif.DateTimeOriginal = oAddExif.DateTimeOriginal
+        If Not String.IsNullOrWhiteSpace(oAddExif.DateTimeScanned) Then oToExif.DateTimeScanned = oAddExif.DateTimeScanned
+
+        If Not String.IsNullOrWhiteSpace(oAddExif.Restrictions) Then oToExif.Restrictions = oAddExif.Restrictions
+        If Not String.IsNullOrWhiteSpace(oAddExif.PicGuid) Then oToExif.PicGuid = oAddExif.PicGuid
+
+        If Not String.IsNullOrWhiteSpace(oAddExif.ReelName) Then oToExif.ReelName = oAddExif.ReelName
+        If Not String.IsNullOrWhiteSpace(oAddExif.OriginalRAW) Then oToExif.OriginalRAW = oAddExif.OriginalRAW
+        If Not String.IsNullOrWhiteSpace(oAddExif.PicGuid) Then oToExif.PicGuid = oAddExif.PicGuid
+
+        ' te sklejamy
+        oToExif.Keywords = oToExif.Keywords.ConcatenateWithComma(oAddExif.Keywords)
+        oToExif.UserComment = oToExif.UserComment.ConcatenateWithComma(oAddExif.UserComment)
+        oToExif.GeoName = oToExif.GeoName.ConcatenateWithPipe(oAddExif.GeoName)
+
+        ' to przeliczamy
+        oToExif.DateMax = oToExif.DateMax.DateMin(oAddExif.DateMax)
+        oToExif.DateMin = oToExif.DateMin.DateMax(oAddExif.DateMin)
+
+    End Sub
+
+
     ''' <summary>
     ''' sprowadza wszystkie EXIFy do jednego - ale dalej jeszcze z dodatkowymi polami!
     ''' </summary>
     ''' <returns></returns>
-    Public Function FlattenExifs() As ExifTag
+    Public Function FlattenExifs(Optional oOstatniExif As ExifTag = Nothing) As ExifTag
 
         ' defaulty mamy z FileSourceDeviceType
         Dim oNew As New ExifTag(ExifSource.Flattened)
@@ -614,47 +643,16 @@ Public Class OnePic
             oNew = New ExifTag(ExifSource.Flattened)
         End If
 
-        ' dla nich bierzemy ostatni wpis - pewnie zwykle będzie to ustawiane gdy w loop będzie miał SourceDefault - ale może to nie będzie pierwszy...
-        For Each oExif As ExifTag In Exifs
-            If oExif.FileSourceDeviceType <> 0 Then oNew.FileSourceDeviceType = oExif.FileSourceDeviceType
-            If Not String.IsNullOrWhiteSpace(oExif.Author) Then oNew.Author = oExif.Author
-            If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then oNew.Copyright = oExif.Copyright
-            If Not String.IsNullOrWhiteSpace(oExif.CameraModel) Then oNew.CameraModel = oExif.CameraModel
-            If Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then oNew.DateTimeOriginal = oExif.DateTimeOriginal
-            If Not String.IsNullOrWhiteSpace(oExif.DateTimeScanned) Then oNew.DateTimeScanned = oExif.DateTimeScanned
-
-            If Not String.IsNullOrWhiteSpace(oExif.Restrictions) Then oNew.Restrictions = oExif.Restrictions
-            If Not String.IsNullOrWhiteSpace(oExif.PicGuid) Then oNew.PicGuid = oExif.PicGuid
-
-            If Not String.IsNullOrWhiteSpace(oExif.ReelName) Then oNew.ReelName = oExif.ReelName
-            If Not String.IsNullOrWhiteSpace(oExif.OriginalRAW) Then oNew.OriginalRAW = oExif.OriginalRAW
-            If Not String.IsNullOrWhiteSpace(oExif.PicGuid) Then oNew.PicGuid = oExif.PicGuid
-        Next
-
-        ' sklejamy - concatenate, więc musimy najpierw wyciąć to co było z SourceDefault
+        ' te sklejamy - concatenate, więc musimy najpierw wyciąć to co było z SourceDefault, bo byłoby dwa razy
         oNew.Keywords = ""
         oNew.UserComment = ""
         oNew.GeoName = ""
-        For Each oExif As ExifTag In Exifs
-            oNew.Keywords = oNew.Keywords.ConcatenateWithComma(oExif.Keywords)
-            oNew.UserComment = oNew.UserComment.ConcatenateWithComma(oExif.UserComment)
-            oNew.GeoName = oNew.GeoName.ConcatenateWithPipe(oExif.GeoName)
-        Next
-
-        ' te przeliczamy (min/max)
-        Dim dMax As Date = Date.MaxValue
-        Dim dMin As Date = Date.MinValue
 
         For Each oExif As ExifTag In Exifs
-            dMax = dMax.DateMin(oExif.DateMax)
-            dMin = dMin.DateMax(oExif.DateMin)
+            MergeTwoExifs(oNew, oExif)
         Next
-
-        oNew.DateMin = dMin
-        oNew.DateMax = dMax
 
         ' dwa przypadki szczególne
-
         oNew.GeoTag = GetGeoTag()   ' z priorytetem dla MANUAL
 
         ' description z PIC do Exif.UserComment
@@ -671,6 +669,8 @@ Public Class OnePic
                 oNew.UserComment = oNew.UserComment.ConcatenateWithPipe(oExif.AzureAnalysis.DumpAsText)
             End If
         Next
+
+        If oOstatniExif IsNot Nothing Then MergeTwoExifs(oNew, oOstatniExif)
 
         Return oNew
     End Function

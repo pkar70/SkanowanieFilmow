@@ -27,6 +27,12 @@
         <TextBlock Text="key 1:" />
         <TextBox Name="uiAzureSubscriptionKey" />
         <CheckBox Name="uiAzurePaid" Content="Płatna subskrypcja" />
+        <!--<TextBlock Text="Datowane katalogi na zdjęcia:" Margin="0,5,0,0" />
+        <CheckBox Name="uiTree0Dekada" Content="198x" />
+        <CheckBox Name="uiTree1Rok" Content=" + 1981" IsChecked="True" IsEnabled="False"/>
+        <CheckBox Name="uiTree2Miesiac" Content=" | + 1981.01" />
+        <CheckBox Name="uiTree3DzienWeekDay" Content=" | | + 1981.01.24.sb" IsChecked="True" IsEnabled="False"/>-->
+
         <Button Content=" OK " HorizontalAlignment="Center" Margin="5,20,5,0" Click="uiOK_Click" />
     </StackPanel>
 </Page>

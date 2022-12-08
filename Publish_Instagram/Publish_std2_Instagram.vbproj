@@ -3,10 +3,11 @@
   <PropertyGroup>
     <RootNamespace>Publish_Instagram</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="InstagramApiSharp" Version="1.7.4" />
+    <PackageReference Include="InstagramApiSharp" Version="1.7.2" />
   </ItemGroup>
 
   <ItemGroup>

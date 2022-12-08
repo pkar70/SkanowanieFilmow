@@ -1,15 +1,16 @@
-﻿<Page x:Class="SettingsKeywords"
+﻿<Window x:Class="SettingsKeywords"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:PicSorterNS"
-      mc:Ignorable="d" 
+      mc:Ignorable="d"
+      Height="620" Width="350" 
       Title="Keywords" Loaded="Page_Loaded">
-    <Page.Resources>
+    <Window.Resources>
         <local:KonwersjaDaty x:Key="KonwersjaDaty"/>
         <local:KonwersjaGeo x:Key="KonwersjaGeo"/>
-    </Page.Resources>
+    </Window.Resources>
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" Name="naTitle"/>
@@ -83,9 +84,9 @@
             <TextBlock Grid.Row="3" Text="MaxDate" />
             <TextBlock Grid.Row="4" Text="Latitude" />
             <TextBlock Grid.Row="5" Text="Longitude" />
-            <TextBlock Grid.Row="6" Text="Radius (km)" />
+            <TextBlock Grid.Row="6" Text="Radius (m)" />
             <TextBlock Grid.Row="7" Text="Own dir" />
-            <TextBlock Grid.Row="8" Text="DefPublish" />
+            <!--<TextBlock Grid.Row="8" Text="DefPublish" />-->
             <TextBlock Grid.Row="9" Text="DenyPublish" />
             <TextBlock Grid.Row="10" Text="Notes" />
 
@@ -96,14 +97,16 @@
             <TextBox Grid.Row="4" Name="uiLatitude" Grid.Column="1" Width="100" HorizontalAlignment="Left" InputScope="Number" />
             <TextBox Grid.Row="5" Name="uiLongitude" Grid.Column="1" Width="100" HorizontalAlignment="Left" InputScope="Number"/>
             <Button Grid.Row="4" Grid.RowSpan="2" VerticalAlignment="Center" Grid.Column="1" HorizontalAlignment="Right" Content=" … " Click="uiOpenGeo_Click" Margin="5,0,10,0" />
-            <TextBox Grid.Row="6" Name="uiRadius" Grid.Column="1"  InputScope="Digits" />
-            <CheckBox Grid.Row="7" Name="uiHasDir" Grid.Column="1" />
-            <TextBox Grid.Row="8" Name="uiDefPublish" Grid.Column="1" IsEnabled="false"/>
-            <TextBox Grid.Row="9" Name="uiDenyPublish" Grid.Column="1" IsEnabled="false"/>
+            <TextBox Grid.Row="6" Name="uiRadius" Grid.Column="1" InputScope="Digits" />
+            <ComboBox Grid.Row="7" Name="uiOwnDir" Grid.Column="1" />
+            <!--<CheckBox Grid.Row="7" Name="uiHasDir" Grid.Column="1" />-->
+            <!--<TextBox Grid.Row="8" Name="uiDefPublish" Grid.Column="1" IsEnabled="false"/>-->
+            <!--<TextBox Grid.Row="9" Name="uiDenyPublish" Grid.Column="1" IsEnabled="false"/>-->
+            <CheckBox Grid.Row="9" Name="uiDenyPublish" Grid.Column="1" />
             <TextBox Grid.Row="10" Name="uiNotes" Grid.Column="1" AcceptsReturn="True" Height="40"/>
 
-            <Button Content=" Done " HorizontalAlignment="Center" Grid.Row="10" Grid.ColumnSpan="2" Margin="5,10,5,15" Click="uiAddEditDone_Click"/>
+            <Button Content=" Done " HorizontalAlignment="Center" Grid.Row="11" Grid.ColumnSpan="2" Margin="5,10,5,15" Click="uiAddEditDone_Click"/>
         </Grid>
         <Button Content=" OK " Click="uiOk_Click" Grid.Row="3" HorizontalAlignment="Center" />
     </Grid>
-</Page>
+</Window>

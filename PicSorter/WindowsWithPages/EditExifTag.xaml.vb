@@ -91,6 +91,9 @@ Public Class EditExifTag
 
         WypelnDatePickery(_exifTag.DateMin, _exifTag.DateMax)
 
+        uiKeywords.Text = _exifTag.Keywords
+        uiUserComment.Text = _exifTag.UserComment
+
         SchowajZbedne()
 
     End Sub
@@ -158,6 +161,9 @@ Public Class EditExifTag
         Else
             _exifTag.DateMax = DateTime.MinValue
         End If
+
+        _exifTag.Keywords = uiKeywords.Text
+        _exifTag.UserComment = uiUserComment.Text
 
         Me.Close()
     End Sub

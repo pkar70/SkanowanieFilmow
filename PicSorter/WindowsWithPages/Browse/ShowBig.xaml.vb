@@ -193,6 +193,13 @@ Public Class ShowBig
         End If
 
         Application.ShowWait(True)
+        Dim sErr As String = Await oSrc.Login
+        If sErr <> "" Then
+            Await vb14.DialogBoxAsync(sErr)
+            Application.ShowWait(False)
+            Return
+        End If
+
         Dim sRet As String = Await oSrc.SendFile(_picek.oPic)
         Application.ShowWait(False)
         If sRet <> "" Then Await vb14.DialogBoxAsync(sRet)
@@ -589,6 +596,8 @@ Public Class ShowBig
             _picek.oPic.EndEdit(True, True)
 
         End Using
+
+        _picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
 
         Return True
     End Function

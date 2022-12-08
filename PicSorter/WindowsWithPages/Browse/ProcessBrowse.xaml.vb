@@ -454,14 +454,19 @@ Public Class ProcessBrowse
         If uiPicList.SelectedItems.Count > 1 Then
             Return FromBig_NextMain(oPic, bGoBack, uiPicList.SelectedItems, True)
         Else
-            Return FromBig_NextMain(oPic, bGoBack, _thumbsy, False)
+            Return FromBig_NextMain(oPic, bGoBack, _thumbsy.ToList, False)
         End If
 
     End Function
 
-    Private Function FromBig_NextMain(oPic As ThumbPicek, bGoBack As Boolean, lista As List(Of ThumbPicek), retSame As Boolean) As ThumbPicek
+    Private Function FromBig_NextMainA(oPic As ThumbPicek, bGoBack As Boolean, selectedItems As IList, v As Boolean) As ThumbPicek
+        Throw New NotImplementedException()
+    End Function
+
+    Private Function FromBig_NextMain(oPic As ThumbPicek, bGoBack As Boolean, lista As IList, retSame As Boolean) As ThumbPicek
         For iLP = 0 To lista.Count - 1
-            If lista.ElementAt(iLP).oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
+            Dim oItem As ThumbPicek = lista.Item(iLP)
+            If oItem.oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
                 If bGoBack Then
                     If iLP = 0 Then
                         If retSame Then
@@ -471,7 +476,7 @@ Public Class ProcessBrowse
                             Return Nothing
                         End If
                     Else
-                        Return lista.ElementAt(iLP - 1)
+                        Return lista.Item(iLP - 1)
                     End If
                 Else
                     If iLP = lista.Count - 1 Then
@@ -482,7 +487,7 @@ Public Class ProcessBrowse
                             Return Nothing
                         End If
                     Else
-                        Return lista.ElementAt(iLP + 1)
+                        Return lista.Item(iLP + 1)
                     End If
                 End If
             End If
@@ -1040,7 +1045,7 @@ Public Class ProcessBrowse
             Await PublishOnePicTo(oSrc, bSendNow, oItem)
         Next
 
-        Await oSrc.Logout()
+        ' Await oSrc.Logout()
     End Function
 
     Private Async Function PublishOnePicTo(oSrc As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
@@ -1145,16 +1150,18 @@ Public Class ProcessBrowse
         End If
     End Sub
 
-    Public Sub ChangedKeywords(oExif As Vblib.ExifTag)
+    Public Sub ChangedKeywords(oExif As Vblib.ExifTag, oPic1 As ThumbPicek)
         ' callback z BrowseKeywordsWindow - do zaznaczonego (jednego bądź wielu)
 
         If uiPicList.SelectedItems.Count < 1 Then Return
 
         If uiPicList.SelectedItems.Count = 1 Then
-            Dim oPic As ThumbPicek = uiPicList.SelectedItems(0)
-            oPic.oPic.ReplaceOrAddExif(oExif)
-            oPic.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
-            oPic.ZrobDymek()
+            'Dim oPic As ThumbPicek = uiPicList.SelectedItems(0)
+            ' tylko jeden wyselekcjonowany - to uznaj że dobry oPic przychodzi z Keyword
+            ' bo przez PgUp/PgDown mogliśmy przejść do innego zdjęcia
+            oPic1.oPic.ReplaceOrAddExif(oExif)
+            oPic1.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
+            oPic1.ZrobDymek()
 
         Else
             For Each oPic As ThumbPicek In uiPicList.SelectedItems

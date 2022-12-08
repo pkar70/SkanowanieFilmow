@@ -1,6 +1,5 @@
 ﻿
 
-Imports System.Security.Policy
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
@@ -12,7 +11,8 @@ Class SettingsKeywords
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
         Application.GetKeywords.Save(True)
-        Me.NavigationService.GoBack()
+        'Me.NavigationService.GoBack()
+        Me.Close()
     End Sub
 
     Private Sub uiEditKeyword_Click(sender As Object, e As RoutedEventArgs)
@@ -40,6 +40,7 @@ Class SettingsKeywords
 
         Dim oNew As New Vblib.OneKeyword
         oNew.sTagId = oItem.sTagId
+        oNew.denyPublish = oItem.denyPublish    ' domyślnie schodzi zakaz w dół
 
         oItem.SubItems.Add(oNew)
         Item2Edit(oNew, True)
@@ -77,16 +78,52 @@ Class SettingsKeywords
             uiRadius.Text = ""
         End If
 
-        uiHasDir.IsChecked = oItem.hasFolder
+        uiOwnDir.Items.Clear()
+        FillDirCombo(uiOwnDir, oItem.ownDir, False)
 
-        uiDefPublish.Text = oItem.defaultPublish
-        uiDenyPublish.Text = oItem.denyPublish
+        'uiDefPublish.Text = oItem.defaultPublish
+        uiDenyPublish.IsChecked = oItem.denyPublish
 
         uiNotes.Text = oItem.notes
 
     End Sub
 
-    Private Sub uiAddEditDone_Click(sender As Object, e As RoutedEventArgs)
+    Private Shared Sub WypelnComboRecursive(uiCombo As ComboBox, oItem As Vblib.OneDir, sIndent As String, currDir As String, bNoDates As Boolean)
+
+        ' jeśli natrafiliśmy na datowy katalog, a mamy takich nie pokazywać, to nie pokazujemy całego drzewka
+        If bNoDates AndAlso oItem.IsFromDate Then Return
+
+        Dim oNew As New ComboBoxItem
+        oNew.Content = sIndent & oItem.ToComboDisplayName
+        oNew.DataContext = oItem
+        Dim iInd As Integer = uiCombo.Items.Add(oNew)
+        If oItem.sId = currDir Then uiCombo.SelectedIndex = iInd
+
+        If oItem.SubItems IsNot Nothing Then
+            For Each oSubItem As Vblib.OneDir In oItem.SubItems
+                If oSubItem.SubItems Is Nothing Then Continue For
+                If oSubItem.SubItems.Count < 1 Then Continue For
+
+                WypelnComboRecursive(uiCombo, oSubItem, sIndent & "  ", currDir, bNoDates)
+            Next
+        End If
+
+    End Sub
+
+    Public Shared Sub FillDirCombo(uiCombo As ComboBox, currDir As String, bNoDates As Boolean)
+
+
+        For Each oItem As Vblib.OneDir In Application.GetDirTree.GetList
+            If oItem.SubItems Is Nothing Then Continue For
+            If oItem.SubItems.Count < 1 Then Continue For
+            ' zostaje własna rekurencja, bo chodzi o indent w hierarchii
+            WypelnComboRecursive(uiCombo, oItem, "", currDir, bNoDates)
+        Next
+
+    End Sub
+
+
+    Private Async Sub uiAddEditDone_Click(sender As Object, e As RoutedEventArgs)
 
         If _addMode Then
             For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
@@ -112,10 +149,24 @@ Class SettingsKeywords
             _editingItem.iGeoRadius = uiRadius.Text
         End If
 
-        _editingItem.hasFolder = uiHasDir.IsChecked
+        If uiOwnDir.SelectedIndex < 0 Then
+            _editingItem.ownDir = Nothing
+        Else
+            Dim oCBI As ComboBoxItem = uiOwnDir.SelectedItem
+            Dim oDir As OneDir = oCBI.DataContext
+            _editingItem.ownDir = oDir.sId
+        End If
 
-        _editingItem.defaultPublish = uiDefPublish.Text
-        _editingItem.denyPublish = uiDenyPublish.Text
+        '_editingItem.defaultPublish = uiDefPublish.Text
+        If _editingItem.denyPublish <> uiDenyPublish.IsChecked AndAlso _editingItem.SubItems IsNot Nothing AndAlso _editingItem.SubItems.Count > 0 Then
+            _editingItem.denyPublish = uiDenyPublish.IsChecked
+
+            If Await vb14.DialogBoxYNAsync("Zmiana zakazu publikacji, propagować w subkeys?") Then
+                For Each oItem As OneKeyword In _editingItem.ToFlatList
+                    oItem.denyPublish = _editingItem.denyPublish
+                Next
+            End If
+        End If
         _editingItem.notes = uiNotes.Text
 
 

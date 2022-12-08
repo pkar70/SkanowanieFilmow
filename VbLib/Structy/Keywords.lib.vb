@@ -17,13 +17,13 @@ Public Class OneKeyword
     Public Property oGeo As MyBasicGeoposition
     Public Property iGeoRadius As Integer
 
-    ' jak publikować / gdzie publikować
-    Public Property defaultPublish As String
-    Public Property denyPublish As String
+    '' jak publikować / gdzie publikować
+    'Public Property defaultPublish As String
+    Public Property denyPublish As Boolean
     ' *TODO* upload behaviour ' można, nie można, skasować - o co to chodziło? :)
     ' *TODO* można dodać Exif narzucany (chyba)
 
-    Public Property hasFolder As Boolean
+    Public Property ownDir As String
 
     Public Property SubItems As List(Of OneKeyword)
 

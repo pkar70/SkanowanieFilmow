@@ -9,19 +9,29 @@
 
         <TextBlock HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Text="Katalog w archiwum" />
 
-        <TextBlock Text="Select existing folder:" Margin="0,10,0,0"/>
+        <Grid Height="Auto" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Select existing folder:" VerticalAlignment="Bottom"/>
+            <Button Content=" f " Grid.Column="1" Click="uiSearchTree_Click" FontSize="10" VerticalAlignment="Bottom" Margin="4,0,4,0"/>
+            <Button Content=" + " Grid.Column="2" Click="uiOpenDirTree_Click" FontSize="10" VerticalAlignment="Bottom"/>
+        </Grid>
         <ComboBox Name="uiComboExisting" />
-        <TextBlock Text="or one of options below:" Margin="0,10,0,0"/>
+        <!--<TextBlock Text="or one of options below:" Margin="0,10,0,0"/>-->
 
-        <RadioButton Content="auto date split" Margin="0,10,0,2" Name="uiAutoDateSplit" IsChecked="true" GroupName="wedlugCzasu"/>
+        <RadioButton Content="no date split" Margin="0,10,0,2" Name="uiNoDateSplit" GroupName="wedlugCzasu"  Checked="uiNoDateSplit_Checked"/>
+        <RadioButton Content="auto date split" Margin="0,2,0,2" Name="uiAutoDateSplit" IsChecked="true" GroupName="wedlugCzasu"  Checked="uiDateSplit_Checked"/>
         <!--<RadioButton Name="uiPreviousDateSplit" GroupName="wedlugCzasu"/>-->
         <Grid Margin="0,2,0,5" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <RadioButton Name="uiManualDateSplit" GroupName="wedlugCzasu"/>
-            <TextBox Grid.Column="1" Name="uiManualDateName" TextChanged="uiCzasFolder_Changed"/>
+            <RadioButton Name="uiManualDateSplit" GroupName="wedlugCzasu" Checked="uiDateSplit_Checked"/>
+            <TextBox Grid.Column="1" Name="uiManualDateName" />
         </Grid>
 
         <Rectangle HorizontalAlignment="Stretch" Height="2" Fill="Blue" Margin="20,0,20,0"/>

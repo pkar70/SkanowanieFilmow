@@ -115,6 +115,17 @@ Partial Class Application
         Return gKeywords
     End Function
 
+    Private Shared gDirtree As Vblib.DirsList
+
+    Public Shared Function GetDirTree() As Vblib.DirsList
+        If gDirtree Is Nothing Then
+            gDirtree = New Vblib.DirsList(Application.GetDataFolder)
+            gDirtree.Load()
+        End If
+        Return gDirtree
+    End Function
+
+
     Private Shared gCloudPublishers As CloudPublishersList
 
     Public Shared Function GetCloudPublishers() As CloudPublishersList
@@ -136,15 +147,15 @@ Partial Class Application
         Return gCloudArchives
     End Function
 
-    Private Shared gDirList As Vblib.DirsList
+    'Private Shared gDirList As Vblib.DirsListFlat
 
-    Public Shared Function GetDirList() As Vblib.DirsList
-        If gDirList Is Nothing Then
-            gDirList = New Vblib.DirsList(Application.GetDataFolder)
-            gDirList.Load()
-        End If
-        Return gDirList
-    End Function
+    'Public Shared Function GetDirList() As Vblib.DirsListFlat
+    '    If gDirList Is Nothing Then
+    '        gDirList = New Vblib.DirsListFlat(Application.GetDataFolder)
+    '        gDirList.Load()
+    '    End If
+    '    Return gDirList
+    'End Function
 
 
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {

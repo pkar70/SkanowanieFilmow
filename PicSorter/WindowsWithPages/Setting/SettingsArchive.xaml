@@ -86,7 +86,7 @@
             <TextBlock Grid.Row="4" Text="Exclude mask:" />
             <TextBox Grid.Row="4" Grid.Column="1" Name="uiSrcExclude" />
 
-            <TextBlock Grid.Row="5" Text="Katalog:" VerticalAlignment="Top" />
+            <!--<TextBlock Grid.Row="5" Text="Katalog:" VerticalAlignment="Top" />
             <StackPanel Grid.Row="5" Grid.Column="1" Margin="0,5,0,5" >
                 <CheckBox Name="uiTree0Dekada" Content="198x" />
                 <CheckBox Name="uiTree1Rok" Content=" + 1981" />
@@ -94,7 +94,7 @@
                 <RadioButton Name="uiTree3Dzien" Content=" | | + 1981.01.24" />
                 <RadioButton Name="uiTree3DzienWeekDay" Content=" | | + 1981.01.24.sb" />
                 <CheckBox Name="uiTree4geo" Content=" | | + 1981.01.24.sb.gdzie" />
-            </StackPanel>
+            </StackPanel>-->
 
             <TextBlock Grid.Row="6" Text="Save to EXIF:" />
             <CheckBox Grid.Row="6" Grid.Column="1" Name="uiSrcSaveToExif" IsEnabled="false" />

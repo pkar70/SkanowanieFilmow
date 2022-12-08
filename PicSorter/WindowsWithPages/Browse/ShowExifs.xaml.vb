@@ -40,7 +40,7 @@ Public Class ShowExifs
 
         sTxt &= JsonConvert.SerializeObject(oPic.Exifs, Formatting.Indented, oSerSet)
 
-        _fullOpis = sTxt
+        _fullOpis = sTxt.Replace("\r\n", vbCrLf)
 
         FilterText()
     End Sub

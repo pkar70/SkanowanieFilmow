@@ -31,6 +31,7 @@ Public MustInherit Class LocalStorage
 
 #Region "folder ID na real"
 
+#If False Then
 	''' <summary>
 	''' robi domyślną nazwę do zapisu
 	''' </summary>
@@ -62,7 +63,7 @@ Public MustInherit Class LocalStorage
 		Dim sPath As String = GetConvertedPathForVol(VolLabel, Path)
 		If sPath = "" Then Return ""
 
-		If OneDir.IsFromKeyword(sDirId) Then Return GetFolderForKeyword(sPath, sDirId, bForRead)
+		If OneDir.IsFromDate(sDirId) Then Return GetFolderForKeyword(sPath, sDirId, bForRead)
 
 		' 1981.01.23.sb_geo -> 198x
 		If tree0Dekada Or bForRead Then
@@ -99,7 +100,7 @@ Public MustInherit Class LocalStorage
 
 	Private Function GetFolderForKeyword(sPath As String, sDirId As String, bForRead As Boolean) As String
 		sPath = FindCreateRealDir(sPath, "_kwd", True)  ' _kwd musi istnieć
-		'sPath = FindCreateRealDir(sPath, sDirId.Substring(0, 1), False) ' podkatalog typu może istnieć, ale nie musi (i program nigdy go nie stworzy)
+		'sPath = FindCreateRealDir(sPath, sId.Substring(0, 1), False) ' podkatalog typu może istnieć, ale nie musi (i program nigdy go nie stworzy)
 		sPath = FindCreateRealDir(sPath, sDirId, Not bForRead) ' a konkretny - może
 		Return sPath
 	End Function
@@ -125,6 +126,7 @@ Public MustInherit Class LocalStorage
 		IO.Directory.CreateDirectory(sSubfolder)
 		Return sSubfolder
 	End Function
+#End If
 #End Region
 
 #Region "implementacja interface"
@@ -189,7 +191,9 @@ Public MustInherit Class LocalStorage
 	Public Async Function VerifyFileExist(oPic As OnePic) As Task(Of String) Implements AnyStorage.VerifyFileExist
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
-		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		Dim sFolder As String = GetConvertedPathForVol(VolLabel, oPic.TargetDir)
+
 		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: cannot get folder for file"
 
 		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
@@ -202,7 +206,9 @@ Public MustInherit Class LocalStorage
 	Public Async Function VerifyFile(oPic As OnePic, oFromArchive As LocalStorage) As Task(Of String) Implements AnyStorage.VerifyFile
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
-		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		Dim sFolder As String = GetConvertedPathForVol(VolLabel, oPic.TargetDir)
+
 		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: cannot get folder for file"
 
 		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
@@ -216,7 +222,9 @@ Public MustInherit Class LocalStorage
 	Public Async Function GetFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.GetFile
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
-		Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		Dim sFolder As String = GetConvertedPathForVol(VolLabel, oPic.TargetDir)
+
 		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: cannot get folder for file"
 
 		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
@@ -244,7 +252,9 @@ Public MustInherit Class LocalStorage
 	Private Sub AddToJsonIndex(sDirId As String, sContent As String)
 		If Not jsonInDir Then Return
 
-		Dim sFolder As String = FindRealFolder(sDirId)
+		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		Dim sFolder As String = GetConvertedPathForVol(VolLabel, sDirId)
+
 		If String.IsNullOrEmpty(sFolder) Then Return
 
 		Dim sJsonFile As String = IO.Path.Combine(sFolder, "picsort.arch.json")
@@ -263,7 +273,9 @@ Public MustInherit Class LocalStorage
 
 		If Not OnePic.MatchesMasks(oPic.sSuggestedFilename, includeMask, excludeMask) Then Return NO_MATCH_MASK
 
-		Dim sFolder As String = GetWriteFolder(oPic.TargetDir)
+		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
+		Dim sFolder As String = GetConvertedPathForVol(VolLabel, oPic.TargetDir)
+
 		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: SendPhoto, cannot get folder for write"
 
 		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)

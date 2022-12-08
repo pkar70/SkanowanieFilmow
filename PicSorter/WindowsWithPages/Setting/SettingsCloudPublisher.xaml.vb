@@ -144,8 +144,8 @@ Class SettingsCloudPublisher
             uiSrcUsername.IsEnabled = True
         End If
 
-        uiSrcPassword.Text = _item.sUsername
-        uiSrcUsername.Text = _item.sPswd
+        uiSrcPassword.Text = _item.sPswd
+        uiSrcUsername.Text = _item.sUsername
 
 
         'afterTagChangeBehaviour As AfterChangeBehaviour = AfterChangeBehaviour.ignore
@@ -161,7 +161,7 @@ Class SettingsCloudPublisher
 
     Private Sub uiEditExif_Click(sender As Object, e As RoutedEventArgs)
         uiOpenExif.IsEnabled = False
-        Dim oWnd As New EditExifTag(_item.defaultExif, _item.nazwa, EditExifTagScope.LimitedToCloudPublish, False)
+        Dim oWnd As New EditExifTag(_item.defaultExif, uiSrcName.Text, EditExifTagScope.LimitedToCloudPublish, False)
         oWnd.ShowDialog()
         uiOpenExif.IsEnabled = True
     End Sub
@@ -196,8 +196,8 @@ Class SettingsCloudPublisher
         _item.nazwa = uiSrcName.Text
         _item.defaultPostprocess = uiPostprocess.Text
 
-        _item.sUsername = uiSrcPassword.Text
-        _item.sPswd = uiSrcUsername.Text
+        _item.sUsername = uiSrcUsername.Text
+        _item.sPswd = uiSrcPassword.Text
 
 
         'afterTagChangeBehaviour As AfterChangeBehaviour = AfterChangeBehaviour.ignore

@@ -5,6 +5,8 @@
     <TargetFramework>netstandard1.4</TargetFramework>
     <AssemblyName>Vblib</AssemblyName>
     <NeutralLanguage>en</NeutralLanguage>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
+    <EnableNETAnalyzers>True</EnableNETAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

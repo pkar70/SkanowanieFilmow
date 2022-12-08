@@ -89,12 +89,12 @@ Class SettingsArchive
         uiSrcLastSave.Text = "-"
         If _item.lastSave.IsDateValid Then uiSrcLastSave.Text = _item.lastSave.ToString("yyyy-MM-dd HH:mm")
 
-        uiTree0Dekada.IsChecked = _item.tree0Dekada
-        uiTree1Rok.IsChecked = _item.tree1Rok
-        uiTree2Miesiac.IsChecked = _item.tree2Miesiac
-        uiTree3Dzien.IsChecked = _item.tree3Dzien
-        uiTree3DzienWeekDay.IsChecked = _item.tree3DzienWeekDay
-        uiTree4geo.IsChecked = _item.tree4Geo
+        'uiTree0Dekada.IsChecked = _item.tree0Dekada
+        'uiTree1Rok.IsChecked = _item.tree1Rok
+        'uiTree2Miesiac.IsChecked = _item.tree2Miesiac
+        'uiTree3Dzien.IsChecked = _item.tree3Dzien
+        'uiTree3DzienWeekDay.IsChecked = _item.tree3DzienWeekDay
+        'uiTree4geo.IsChecked = _item.tree4Geo
 
         ' uiSrcSaveToExif.IsChecked = _item.saveToExif
         uiSrcJSONinside.IsChecked = _item.jsonInDir
@@ -137,12 +137,12 @@ Class SettingsArchive
         _item.includeMask = uiSrcInclude.Text
         _item.excludeMask = uiSrcExclude.Text
 
-        _item.tree0Dekada = uiTree0Dekada.IsChecked
-        _item.tree1Rok = uiTree1Rok.IsChecked
-        _item.tree2Miesiac = uiTree2Miesiac.IsChecked
-        _item.tree3Dzien = uiTree3Dzien.IsChecked
-        _item.tree3DzienWeekDay = uiTree3DzienWeekDay.IsChecked
-        _item.tree4Geo = uiTree4geo.IsChecked
+        '_item.tree0Dekada = uiTree0Dekada.IsChecked
+        '_item.tree1Rok = uiTree1Rok.IsChecked
+        '_item.tree2Miesiac = uiTree2Miesiac.IsChecked
+        '_item.tree3Dzien = uiTree3Dzien.IsChecked
+        '_item.tree3DzienWeekDay = uiTree3DzienWeekDay.IsChecked
+        '_item.tree4Geo = uiTree4geo.IsChecked
 
         '_item.saveToExif = uiSrcSaveToExif.IsChecked
         _item.jsonInDir = uiSrcJSONinside.IsChecked

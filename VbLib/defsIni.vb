@@ -15,6 +15,8 @@ uiHourGapInt=36
 uiGeoGapOn=True
 uiHourGapOn=True
 uiMaxThumb=100
+uiTree0Dekada=True
+uiTree2Miesiac=True
 
 # remark
 ' remark

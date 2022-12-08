@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Process_Signature</RootNamespace>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
 
   <ItemGroup>

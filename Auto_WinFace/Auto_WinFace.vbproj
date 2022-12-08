@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>Auto_WinFace</RootNamespace>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
 
   <ItemGroup>

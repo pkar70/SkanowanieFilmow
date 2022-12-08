@@ -25,7 +25,14 @@ Class SettingsMain
     End Sub
 
     Private Sub uiKeywords_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingsKeywords)
+        Dim oWnd As New SettingsKeywords
+        oWnd.ShowDialog()
+        ' Me.NavigationService.Navigate(New SettingsKeywords)
+    End Sub
+
+    Private Sub uiDirTree_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New SettingsDirTree
+        oWnd.ShowDialog()
     End Sub
 
     Private Sub uiBackup_Click(sender As Object, e As RoutedEventArgs)
@@ -72,4 +79,5 @@ Class SettingsMain
     Private Sub uiCloudPublish_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsCloudPublisher)
     End Sub
+
 End Class

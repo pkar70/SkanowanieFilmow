@@ -1,0 +1,32 @@
+﻿
+
+Co można zrobić?
+
+	* może być PUBLISH:deleteAfterDays ?
+	* wysłanie zdjęcia
+	* opisanie zdjęcia
+	* odczytanie stamtąd informacji - bo niby sam tworzy opis (2022.11.24 16:25, czekamy czy coś opisze)
+	* Instagram: caption 200 chars, location (nie czyta z EXIFa), accessibility (opis, albo automat albo ręcznie), like/counts yes/no, commenting yes/no
+
+	* instagram Saved oraz Posts
+	
+	* z Instagramu może pójść do facebook, twitter, tumblr
+	
+	* nie można ukryć kogo się followuje, więc trzeba mieć dwa accounty. Tyle że zdjęcie w jednym i drugim pozwoliłoby "namierzyć" to ukryte konto
+' https://github.com/ramtinak/InstagramApiSharp/ , InstaMon ma to w wersji 1.7.2, teraz jest 1.7.4
+https://github.com/ramtinak/InstagramApiSharp/blob/master/samples/Examples/Samples/UploadPhoto.cs
+    
+	/// <summary>
+        ///     Upload photo [Supports user tags]
+        /// </summary>
+        /// <param name="image">Photo to upload</param>
+        /// <param name="caption">Caption</param>
+        /// <param name="location">Location => Optional (get it from <seealso cref="ILocationProcessor.SearchLocationAsync"/></param>
+        /// <param name="userTags">User tags => Optional</param>
+        Task<IResult<InstaMedia>> UploadPhotoAsync(InstaImageUpload image, string caption, InstaLocationShort location = null);
+
+		https://github.com/ramtinak/InstagramApiSharp/blob/f328e50fd3e01f8153c6dfa6990366228cb3aad4/src/InstagramApiSharp/Classes/Models/Media/InstaImageUpload.cs#L13
+
+		https://www.instagram.com/p/ClWUU73q1EX/
+		https://www.instagram.com/p/ClWUJywqozX/
+		https://www.instagram.com/p/ClWT-DIKxUA/

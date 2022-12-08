@@ -5,7 +5,10 @@
 'Imports System.Collections.ObjectModel
 
 Imports System.Security.Policy
+Imports Vblib
 Imports Windows.Devices
+Imports vb14 = Vblib.pkarlibmodule14
+
 
 Public Class TargetDir
 
@@ -43,70 +46,55 @@ Public Class TargetDir
 
     End Sub
 
+#Region "combo katalogów"
 
     Private Function KatalogiWgDaty(aboutDateOd As Date, aboutDateDo As Date) As List(Of String)
 
         Dim lLista As New List(Of String) ' poprzez listę pośrednią, bo chodzi o sortowanie
 
-        Dim sDataOd As String = Vblib.OneDir.DateToDirId(aboutDateOd.AddDays(-5))
-        Dim sDataDo As String = Vblib.OneDir.DateToDirId(aboutDateDo.AddDays(5))
+        'Dim sDataOd As String = Vblib.OneDirFlat.DateToDirId(aboutDateOd.AddDays(-5))
+        'Dim sDataDo As String = Vblib.OneDirFlat.DateToDirId(aboutDateDo.AddDays(5))
+        Dim sDataOd As String = aboutDateOd.AddDays(-5).ToExifString
+        Dim sDataDo As String = aboutDateDo.AddDays(5).ToExifString
 
         ' teraz mozna wedle stringow
-        For Each oDir As Vblib.OneDir In Application.GetDirList.GetList
+        For Each oDir As Vblib.OneDir In Application.GetDirTree.ToFlatList
             ' If oDir.sId.StartsWith("_") Then lLista.Add(oDir.ToComboDisplayName)
+            If Not oDir.IsFromDate Then Continue For
             If oDir.sId > sDataOd AndAlso oDir.sId < sDataDo Then lLista.Add(oDir.ToComboDisplayName)
         Next
 
         Return lLista
     End Function
 
-    'Private Sub KatalogiWgKeywordRecursive(oKwd As Vblib.OneKeyword, lista As List(Of String))
-    '    If oKwd.SubItems Is Nothing Then Return
-
-    '    For Each oChild As Vblib.OneKeyword In oKwd.SubItems
-    '        If oChild.hasFolder Then lista.Add(oChild.ToComboDisplayName)
-    '        KatalogiWgKeywordRecursive(oChild, lista)
-    '    Next
-
-    'End Sub
-
-    Private Function KatalogiWgKeyword() As List(Of String)
-        Dim lLista As New List(Of String) ' poprzez listę pośrednią, bo chodzi o sortowanie
-
-        'For Each oKwd As Vblib.OneKeyword In Application.GetKeywords.GetList
-        '    If oKwd.hasFolder Then lLista.Add(oKwd.ToComboDisplayName)
-        '    KatalogiWgKeywordRecursive(oKwd, lLista)
-        'Next
-
-        For Each oKwd As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
-            If oKwd.hasFolder Then lLista.Add(oKwd.ToComboDisplayName)
-        Next
-
-        Return lLista
-
-    End Function
-
     Private Sub PokazIstniejaceKatalogi(aboutDateOd As Date, aboutDateDo As Date)
 
+        ' z sortowaniem według daty
         Dim lLista As List(Of String) = KatalogiWgDaty(aboutDateOd, aboutDateDo)
-
         For Each sId As String In From c In lLista Order By c
             uiComboExisting.Items.Add(sId)
         Next
 
-        lLista = KatalogiWgKeyword()
-        For Each sId As String In From c In lLista Order By c
-            uiComboExisting.Items.Add(sId)
+        ' a teraz bez sortowania
+
+        ' te ze słów kluczowych
+        For Each oKwd As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            If Not String.IsNullOrWhiteSpace(oKwd.ownDir) Then
+                uiComboExisting.Items.Add(oKwd.ToComboDisplayName)
+            End If
         Next
 
+        ' a na koniec te normalne, jako drzewko
+        SettingsKeywords.FillDirCombo(uiComboExisting, "", True)
     End Sub
+#End Region
 
     Private Sub PokazOpcjeCzasowe(iFirstSelected As Integer)
 
         For iLp As Integer = iFirstSelected To 0 Step -1
             If _thumbsy(iLp).splitBefore = SplitBeforeEnum.czas Then
                 ' w ten sposób mamy datę z dniem tygodnia (wspólne dla całego programu)
-                _lastCzasDir = Vblib.OneDir.DateToDirId(_thumbsy(iLp).dateMin)
+                _lastCzasDir = _thumbsy(iLp).dateMin.ExifDateWithWeekDay
                 uiManualDateSplit.Content = _lastCzasDir & " "
                 Exit For
             End If
@@ -123,29 +111,6 @@ Public Class TargetDir
 
 
     End Sub
-
-    Private Sub uiCzasFolder_Changed(sender As Object, e As TextChangedEventArgs)
-        ' jeśli coś ktoś wpisał, to wymusza MANUAL
-        If uiManualDateName.Text.Length > 0 Then uiManualDateSplit.IsChecked = True
-    End Sub
-
-    Private Function CountSubdirInDate(sData As String) As Char
-        Dim iCount As Integer = 65
-        For Each oDir As Vblib.OneDir In Application.GetDirList.GetList
-            If oDir.sId.StartsWith(sData) Then iCount += 1
-        Next
-
-        Return Chr(iCount)
-    End Function
-
-    Private Function PicekToGeoName(oPic As Vblib.OnePic) As String
-        Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
-        If oExif Is Nothing Then Return ""
-
-        Dim sNazwa As String = Vblib.Auto_OSM_POI.FullGeoNameToFolderName(oExif.GeoName)
-        Return sNazwa
-
-    End Function
 
     Private Sub PokazOpcjeGeo(iFirstSelected As Integer)
 
@@ -172,6 +137,31 @@ Public Class TargetDir
         Next
 
     End Sub
+
+    'Private Sub uiCzasFolder_Changed(sender As Object, e As TextChangedEventArgs)
+    '    ' jeśli coś ktoś wpisał, to wymusza MANUAL
+    '    If uiManualDateName.Text.Length > 0 Then uiManualDateSplit.IsChecked = True
+    'End Sub
+
+    Private Function CountSubdirInDate(sData As String) As Char
+        Dim iCount As Integer = 65
+        For Each oDir As Vblib.OneDir In Application.GetDirTree.ToFlatList
+            If oDir.sId.StartsWith(sData) Then iCount += 1
+        Next
+
+        Return Chr(iCount)
+    End Function
+
+    Private Function PicekToGeoName(oPic As Vblib.OnePic) As String
+        Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
+        If oExif Is Nothing Then Return ""
+
+        Dim sNazwa As String = Vblib.Auto_OSM_POI.FullGeoNameToFolderName(oExif.GeoName)
+        Return sNazwa
+
+    End Function
+
+
 
 
     Private Sub uiGeoFolder_Changed(sender As Object, e As TextChangedEventArgs)
@@ -220,104 +210,64 @@ Public Class TargetDir
         ' no existing, auto czas, auto geo
 
         ' wybrany z istniejących
-        If DopiszKatalogExisting(oPicek) Then Return
 
-        If DopiszKatalogForcedGeo(oPicek) Then Return
+        Dim oDir As OneDir = GetKatalogExisting()
+        oDir = GetSubdirDate(oPicek, oDir)
+        oDir = GetSubdirGeo(oPicek, oDir)
 
-        If DopiszKatalogForcedCzasNoGeo(oPicek) Then Return
-
-        If DopiszKatalogForcedCzasAutoGeo(oPicek) Then Return
-
-        If DopiszKatalogAutoCzasNoGeo(oPicek) Then Return
-
-        If DopiszKatalogAutoCzasAutoGeo(oPicek) Then Return
+        oPicek.oPic.TargetDir = Application.GetDirTree.GetFullPath(oDir)
+        oPicek.ZrobDymek()
 
     End Sub
 
-    Private Function DopiszKatalogExisting(oPicek As ProcessBrowse.ThumbPicek) As Boolean
+    Private Function GetKatalogExisting() As OneDir
 
-        Dim sExisting As String = uiComboExisting.SelectedItem
-        If sExisting Is Nothing Then Return False
+        Dim oCBI As ComboBoxItem = uiComboExisting.SelectedItem
+        Dim oDir As OneDir = oCBI?.DataContext
 
-        Dim iInd As Integer = sExisting.IndexOf(" (")
-        If iInd > 0 Then sExisting = sExisting.Substring(0, iInd)
-
-        oPicek.oPic.TargetDir = sExisting
-        oPicek.ZrobDymek()
-        Return True
+        Return oDir
     End Function
 
-    Private Function DopiszKatalogForcedGeo(oPicek As ProcessBrowse.ThumbPicek) As Boolean
+    Private Function GetSubdirDate(oPicek As ProcessBrowse.ThumbPicek, oParent As OneDir) As OneDir
+        If uiNoDateSplit.IsChecked Then Return oParent
 
-        If Not uiManualGeoSplit.IsChecked Then Return False
+        If uiManualDateSplit.IsChecked Then
+            Dim sDir As String = uiManualDateSplit.Content.ToString.Replace("__", "_").Trim
+            If Not String.IsNullOrWhiteSpace(uiManualDateName.Text) Then
+                sDir = sDir & " " & uiManualDateName.Text
+            End If
+            Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
+        End If
 
-        Dim sDirId As String = uiManualGeoSplit.Content.ToString.Replace("__", "_")
-        Dim sOpis As String = uiManualGeoName.Text
-        Application.GetDirList.TryAddFolder(sDirId, sOpis)
+        If uiAutoDateSplit.IsChecked Then
+            Dim sDir As String = KatalogNaCzas(oPicek)
+            Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
+        End If
 
-        oPicek.oPic.TargetDir = (sDirId & " " & sOpis).Trim
-        oPicek.ZrobDymek()
-
-        Return True
-    End Function
-
-    Private Function DopiszKatalogForcedCzasNoGeo(oPicek As ProcessBrowse.ThumbPicek) As Boolean
-        If Not uiNoGeoSplit.IsChecked Then Return False
-        If Not uiManualDateSplit.IsChecked Then Return False
-
-        Dim sDirId As String = uiManualDateSplit.Content.ToString
-        Dim sOpis As String = uiManualDateName.Text
-        Application.GetDirList.TryAddFolder(sDirId, sOpis)
-
-        oPicek.oPic.TargetDir = (sDirId & " " & sOpis).Trim
-
-        oPicek.ZrobDymek()
-        Return True
-    End Function
-
-    Private Function DopiszKatalogAutoCzasNoGeo(oPicek As ProcessBrowse.ThumbPicek) As Boolean
-        If Not uiNoGeoSplit.IsChecked Then Return False
-        If Not uiAutoDateSplit.IsChecked Then Return False
-
-        Dim sTargetDir As String = KatalogNaCzas(oPicek)
-        Application.GetDirList.TryAddFolder(sTargetDir, "")
-        oPicek.oPic.TargetDir = sTargetDir
-
-        oPicek.ZrobDymek()
-        Return True
-    End Function
-
-    Private Function DopiszKatalogForcedCzasAutoGeo(oPicek As ProcessBrowse.ThumbPicek) As Boolean
-        If Not uiManualDateSplit.IsChecked Then Return False
-        If Not uiAutoGeoSplit.IsChecked Then Return False
-
-        Dim sDirId As String = uiManualDateSplit.Content.ToString
-        Dim sOpis As String = uiManualDateName.Text
-
-        Return DopiszKatalogCzasAutoGeo(oPicek, (sDirId & " " & sOpis).Trim)
+        ' a to się nie ma prawa zdarzyć
+        Return Nothing
 
     End Function
 
-    Private Function DopiszKatalogAutoCzasAutoGeo(oPicek As ProcessBrowse.ThumbPicek) As Boolean
-        If Not uiAutoDateSplit.IsChecked Then Return False
-        If Not uiAutoGeoSplit.IsChecked Then Return False
+    Private Function GetSubdirGeo(oPicek As ProcessBrowse.ThumbPicek, oParent As OneDir) As OneDir
+        If uiNoGeoSplit.IsChecked Then Return oParent
 
-        Dim sTargetDir As String = KatalogNaCzas(oPicek)
-        Return DopiszKatalogCzasAutoGeo(oPicek, sTargetDir)
+        If uiManualGeoSplit.IsChecked Then
+            Dim sDir As String = uiManualGeoSplit.Content.ToString.Replace("__", "_").Trim
+            If Not String.IsNullOrWhiteSpace(uiManualGeoName.Text) Then
+                sDir = sDir & " " & uiManualGeoName.Text
+            End If
+            Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
+        End If
 
-    End Function
+        If uiAutoDateSplit.IsChecked Then
+            Dim sDir As String = KatalogNaCzas(oPicek)
+            sDir = sDir & "_" & KatalogNaGeo(oPicek)
+            Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
+        End If
 
-
-
-    Private Function DopiszKatalogCzasAutoGeo(oPicek As ProcessBrowse.ThumbPicek, sFolderCzas As String) As Boolean
-
-        Dim sGeoSufix As String = KatalogNaGeo(oPicek)
-
-        Dim sTargetDir As String = sFolderCzas & "_" & sGeoSufix
-
-        oPicek.oPic.TargetDir = sTargetDir
-        oPicek.ZrobDymek()
-        Return True
+        ' a to się nie ma prawa zdarzyć
+        Return Nothing
 
     End Function
 
@@ -337,60 +287,98 @@ Public Class TargetDir
         ' dla AUTO czas, bierze czas z serii, i zmienia tylko na przedziałku
         ' pierwotne ustawienie _lastCzasDir jest w WindowLoad:PokazOpcjeCzasowe
         If oPicek.splitBefore = SplitBeforeEnum.czas Then
-            _lastCzasDir = Vblib.OneDir.DateToDirId(oPicek.dateMin)
+            _lastCzasDir = oPicek.dateMin.ExifDateWithWeekDay
         End If
 
         Return _lastCzasDir
     End Function
 
-    '''' <summary>
-    '''' podaje ustalony katalog czasowy dla zdjęć, lub "" gdy ma być auto
-    '''' </summary>
-    '''' <returns></returns>
-    'Public Function GetFolderCzas() As String
-    '    If uiAutoDateSplit.IsChecked Then Return ""
-    '    Return (uiManualDateSplit.oContent.ToString & " " & uiManualDateName.Text).Trim
-    'End Function
 
-    '''' <summary>
-    '''' podaje ustalony katalog geograficzny dla zdjęć, "" gdy ma być auto, lub nothing - gdy bez podziału geo
-    '''' </summary>
-    '''' <returns></returns>
-    'Public Function GetFolderGeo() As String
-    '    If uiNoGeoSplit.IsChecked Then Return Nothing
-
-    '    If uiAutoGeoSplit.IsChecked Then Return ""
-    '    Return (uiManualGeoSplit.oContent.ToString.Replace("__", "_") & " " & uiManualGeoName.Text).Trim
-    'End Function
-
-    '''' <summary>
-    '''' podaje narzucony (wybrany z istniejących) katalog, lub "", gdy nie ma narzucenia
-    '''' </summary>
-    '''' <returns></returns>
-    'Private Function GetFolderExisting() As String
+    'Private Sub uiComboExisting_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles uiComboExisting.SelectionChanged
     '    Dim sRet As String = uiComboExisting.SelectedItem
-    '    If sRet Is Nothing Then Return ""
-
-    '    Dim iInd As Integer = sRet.IndexOf(" (")
-    '    If iInd > 0 Then sRet = sRet.Substring(0, iInd)
-
-    '    Return sRet
-    'End Function
-
-    Private Sub uiComboExisting_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles uiComboExisting.SelectionChanged
-        Dim sRet As String = uiComboExisting.SelectedItem
-        uiAutoDateSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-        uiManualDateSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-        uiManualDateName.IsEnabled = (String.IsNullOrEmpty(sRet))
-        uiNoGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-        uiAutoGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-        uiManualGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-        uiManualGeoName.IsEnabled = (String.IsNullOrEmpty(sRet))
-    End Sub
+    '    uiAutoDateSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+    '    uiManualDateSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+    '    uiManualDateName.IsEnabled = (String.IsNullOrEmpty(sRet))
+    '    uiNoGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+    '    uiAutoGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+    '    uiManualGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+    '    uiManualGeoName.IsEnabled = (String.IsNullOrEmpty(sRet))
+    'End Sub
 
     Private Sub uiManualGeoSplit_Checked(sender As Object, e As RoutedEventArgs)
         uiAutoDateSplit.IsEnabled = Not uiManualGeoSplit.IsChecked
         uiManualDateSplit.IsEnabled = Not uiManualGeoSplit.IsChecked
         uiManualDateName.IsEnabled = Not uiManualGeoSplit.IsChecked
     End Sub
+
+    Private Sub uiOpenDirTree_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New SettingsDirTree
+        If Not oWnd.ShowDialog Then Return
+        Window_Loaded(Nothing, Nothing)
+    End Sub
+
+    Private Sub uiDateSplit_Checked(sender As Object, e As RoutedEventArgs)
+        If uiManualDateName Is Nothing Then Return
+
+        Try
+            uiManualDateName.IsEnabled = uiManualDateSplit.IsChecked
+            uiNoGeoSplit.IsEnabled = True
+            uiAutoGeoSplit.IsEnabled = True
+            uiManualGeoSplit.IsEnabled = True
+            uiManualGeoName.IsEnabled = True
+        Catch ex As Exception
+
+        End Try
+    End Sub
+
+    Private Sub uiNoDateSplit_Checked(sender As Object, e As RoutedEventArgs)
+        If uiManualDateName Is Nothing Then Return
+
+        uiManualDateName.IsEnabled = False
+        uiNoGeoSplit.IsEnabled = False
+        uiAutoGeoSplit.IsEnabled = False
+        uiManualGeoSplit.IsEnabled = False
+        uiManualGeoName.IsEnabled = False
+    End Sub
+
+    Private Async Sub uiSearchTree_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim sQuery As String = Await vb14.DialogBoxInputAllDirectAsync("Czego szukać?")
+        If sQuery = "" Then Return
+        sQuery = sQuery.ToLowerInvariant
+
+        ' wyszukiwanie w drzewku, ale drzewko musi być chyba raz wczytane i w nim tylko przeglądanie
+        For Each oCBItem As ComboBoxItem In uiComboExisting.Items
+            oCBItem.Visibility = Visibility.Collapsed
+            Dim oDir As OneDir = oCBItem.DataContext
+            If oDir.sId.ToLowerInvariant.Contains(sQuery) Then oCBItem.Visibility = Visibility.Visible
+        Next
+
+    End Sub
 End Class
+
+Partial Public Module Extensions
+
+    <Runtime.CompilerServices.Extension>
+    Public Function ExifDateWithWeekDay(ByVal oDate As Date) As String
+        Dim sId As String = oDate.ToExifString & "."
+        Select Case oDate.DayOfWeek
+            Case DayOfWeek.Monday
+                sId &= "pn"
+            Case DayOfWeek.Tuesday
+                sId &= "wt"
+            Case DayOfWeek.Wednesday
+                sId &= "sr"
+            Case DayOfWeek.Thursday
+                sId &= "cz"
+            Case DayOfWeek.Friday
+                sId &= "pt"
+            Case DayOfWeek.Saturday
+                sId &= "sb"
+            Case DayOfWeek.Sunday
+                sId &= "nd"
+        End Select
+
+        Return sId
+    End Function
+End Module

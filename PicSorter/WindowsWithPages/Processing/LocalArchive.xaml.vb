@@ -143,6 +143,7 @@ Public Class LocalArchive
         uiProgBarInEngine.Visibility = Visibility.Visible
 
         Dim sIndexJson As String = ""
+        Dim bDirTreeToSave As Boolean = False
 
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             uiProgBarInEngine.Value += 1
@@ -155,8 +156,9 @@ Public Class LocalArchive
             Await oSrc.engine.SendFile(oPic)
             If Not oPic.IsArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
 
-            ' aktualizujemy DirList
-            Application.GetDirList.TryAddFolder(oPic.TargetDir, "")
+            ' aktualizujemy DirList - to tylko ostateczność, bo powinno być wcześniej zrobione
+            If Application.GetDirTree.TryAddFolder(oPic.TargetDir, "") Then bDirTreeToSave = True
+
             ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
             Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
 
@@ -169,7 +171,7 @@ Public Class LocalArchive
         uiProgBarInEngine.Visibility = Visibility.Collapsed
 
         Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
-        Application.GetDirList.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
+        If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
         Application.AddToGlobalJsonIndex(sIndexJson)    ' aktualizacja indeksu archiwalnego
 
     End Function

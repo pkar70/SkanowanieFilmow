@@ -3,6 +3,7 @@
   <PropertyGroup>
     <RootNamespace>MediaDevicesLib</RootNamespace>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>
 
   <ItemGroup>

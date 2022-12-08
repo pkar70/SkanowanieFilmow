@@ -8,7 +8,7 @@ Public Class CloudPublishersList
 
     Private gCloudProviders As Vblib.CloudPublish() = {
         New Publish_AdHoc,
-        New Publish_Instagram
+        New Publish_Instagram.Publish_Instagram
         }
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)

@@ -17,6 +17,7 @@ Public Class BrowseKeywordsWindow
 #Region "UI events"
 
     Public Sub InitForPic(oPic As ProcessBrowse.ThumbPicek)
+        If oPic Is Nothing Then Return
         _oPic = oPic
         Me.Title = oPic.oPic.InBufferPathName
 
@@ -68,9 +69,9 @@ Public Class BrowseKeywordsWindow
     Private Async Function SetTargetDirByKeywords(forPic As ProcessBrowse.ThumbPicek, fromKeywords As List(Of Vblib.OneKeyword)) As Task
 
         For Each oItem As Vblib.OneKeyword In fromKeywords
-            If oItem.hasFolder Then
+            If Not String.IsNullOrWhiteSpace(oItem.ownDir) Then
                 ' podkatalog _kwd\ zapewne, ale to też zależy od Archive przecież
-                Dim sTargetDir As String = oItem.sTagId
+                Dim sTargetDir As String = oItem.ownDir
                 If Not String.IsNullOrEmpty(forPic.oPic.TargetDir) Then
                     If Not Await vb14.DialogBoxYNAsync("Dotychczasowy katalog: " & forPic.oPic.TargetDir & vbCrLf & "Z keyword: " & sTargetDir) Then
                         ' teoretycznie mogłoby być Continue, bo może kolejny już tak?
@@ -138,7 +139,7 @@ Public Class BrowseKeywordsWindow
 
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
             If oBrowserWnd Is Nothing Then Return
-            oBrowserWnd.ChangedKeywords(_oNewExif)
+        oBrowserWnd.ChangedKeywords(_oNewExif, _oPic)
 
     End Sub
 
@@ -460,6 +461,12 @@ Public Class BrowseKeywordsWindow
         '    Next
         'End If
 
+    End Sub
+
+    Private Sub uiEditKeyTree_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New SettingsKeywords
+        oWnd.ShowDialog()
+        InitForPic(_oPic)
     End Sub
 
 
