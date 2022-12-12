@@ -114,7 +114,7 @@ Public Class ShowBig
 
         ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
         ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
-        ProcessBrowse.WypelnMenuCloudPublish(uiMenuPublish, AddressOf ApplyPublish)
+        ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
 
 
         OnOffMap()
@@ -182,27 +182,54 @@ Public Class ShowBig
     End Sub
 
     Private Async Sub ApplyPublish(sender As Object, e As RoutedEventArgs)
-        Dim oFE As FrameworkElement = sender
-        Dim oSrc As Vblib.CloudPublish = oFE?.DataContext
-        If oSrc Is Nothing Then Return
+        Dim oFE As MenuItem = sender
+        Dim oCloud As Vblib.CloudPublish = oFE?.DataContext
+        If oCloud Is Nothing Then Return
 
-        If oSrc.sProvider = Publish_AdHoc.PROVIDERNAME Then
-            Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
-            If sFolder = "" Then Return
-            oSrc.sZmienneZnaczenie = sFolder
-        End If
+        Select Case oFE.Header.ToString.ToLowerInvariant
+            Case "open"
+                Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
+                If sLink.ToLowerInvariant.StartsWith("http") Then
+                    pkar.OpenBrowser(sLink)
+                Else
+                    If sLink = "" Then sLink = "ERROR getting sharing link"
+                    vb14.DialogBox(sLink)   ' error message
+                End If
+            Case "delete"
+                Await oCloud.Delete(_picek.oPic)
+            Case "get tags"
+                Await oCloud.GetRemoteTags(_picek.oPic)
+            Case "share link"
+                Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
+                If sLink.ToLowerInvariant.StartsWith("http") Then
+                    vb14.ClipPut(sLink)
+                    vb14.DialogBox("Link in ClipBoard")
+                Else
+                    If sLink = "" Then sLink = "ERROR getting sharing link"
+                    vb14.DialogBox(sLink)   ' error message
+                End If
+            Case Else
+                If oCloud.sProvider = Publish_AdHoc.PROVIDERNAME Then
+                    Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
+                    If sFolder = "" Then Return
+                    oCloud.sZmienneZnaczenie = sFolder
+                End If
 
-        Application.ShowWait(True)
-        Dim sErr As String = Await oSrc.Login
-        If sErr <> "" Then
-            Await vb14.DialogBoxAsync(sErr)
-            Application.ShowWait(False)
-            Return
-        End If
+                Application.ShowWait(True)
+                Dim sErr As String = Await oCloud.Login
+                If sErr <> "" Then
+                    Await vb14.DialogBoxAsync(sErr)
+                    Application.ShowWait(False)
+                    Return
+                End If
 
-        Dim sRet As String = Await oSrc.SendFile(_picek.oPic)
-        Application.ShowWait(False)
-        If sRet <> "" Then Await vb14.DialogBoxAsync(sRet)
+                Dim sRet As String = Await oCloud.SendFile(_picek.oPic)
+                Application.ShowWait(False)
+                If sRet <> "" Then Await vb14.DialogBoxAsync(sRet)
+
+        End Select
+
+        ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
 
         SaveMetaData()  ' bo zmieniono info o publishingu
     End Sub

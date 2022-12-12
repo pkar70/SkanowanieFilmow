@@ -6,7 +6,7 @@ Public Class SettingsDirTree
     ' skopiowane i przerobione z Keywords, więc trochę pozostałości nazewniczych stamtąd
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        RefreshList(True)
+        RefreshList()
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
@@ -55,14 +55,14 @@ Public Class SettingsDirTree
 
         If bAdd Then
             uiId.IsReadOnly = False
-            uiDisplayName.IsReadOnly = False
+            'uiDisplayName.IsReadOnly = False
         Else
             uiId.IsReadOnly = True
-            uiDisplayName.IsReadOnly = True
+            'uiDisplayName.IsReadOnly = True
         End If
 
         uiId.Text = oItem.sId
-        uiDisplayName.Text = oItem.notes
+        'uiDisplayName.Text = oItem.notes
 
         uiDenyPublish.IsChecked = oItem.denyPublish
 
@@ -74,12 +74,12 @@ Public Class SettingsDirTree
 
         If _addMode Then
             For Each oItem As Vblib.OneDir In Application.GetDirTree.GetList
-                If oItem.sId = uiDisplayName.Text Then
+                If oItem.sId = uiId.Text Then
                     vb14.DialogBox("Taka nazwa już istnieje, wybierz inną")
                     Return
                 End If
             Next
-            _editingItem.notes = uiDisplayName.Text
+            _editingItem.notes = uiNotes.Text
             _editingItem.sId = uiId.Text
         End If
 
@@ -97,11 +97,11 @@ Public Class SettingsDirTree
 
 
         uiAddEdit.Visibility = Visibility.Collapsed
-        RefreshList(True)
+        RefreshList()
 
     End Sub
 
-    Private Sub RefreshList(bPrzelicz As Boolean)
+    Private Sub RefreshList()
         uiTreeView.ItemsSource = Nothing
         uiTreeView.ItemsSource = Application.GetDirTree.GetList()
     End Sub
@@ -130,11 +130,58 @@ Public Class SettingsDirTree
             Dim oNode As Vblib.OneDir = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(Vblib.OneKeyword))
             If oItem.SubItems Is Nothing Then oItem.SubItems = New List(Of Vblib.OneDir)
             oItem.SubItems.Add(oNode)
-            RefreshList(True)
+            RefreshList()
         Catch ex As Exception
 
         End Try
     End Sub
+
+    Private Async Sub uiDeleteItem_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oItem As Vblib.OneDir = oFE?.DataContext
+
+        If oItem Is Nothing Then Return
+
+        If oItem.SubItems IsNot Nothing AndAlso oItem.SubItems.Count > 0 Then
+            If Not Await vb14.DialogBoxYNAsync("Ten katalog zawiera pod-katalogi, skasować całe drzewko?") Then Return
+        End If
+
+        ' nie trzeba we flat wszystkich katalogów, bo wystarczy prefix
+        Dim bHasKeys As Boolean = False
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If oPic.TargetDir.StartsWith(oItem.sId) Then
+                bHasKeys = True
+                Exit For
+            End If
+        Next
+
+        ' kolejne pytanie - lub w ogóle zakaz gdy użyte
+        If bHasKeys Then
+            If Not Await vb14.DialogBoxYNAsync("Katalog jest używany, na pewno usunąć z listy?") Then Return
+        End If
+
+        ' kasowanie
+        Application.GetDirTree.Remove(oItem)
+    End Sub
+
+
+    Private Sub uiScanFolder_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oItem As Vblib.OneDir = oFE?.DataContext
+
+        If oItem Is Nothing Then Return
+
+        Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Wskaż drzewko katalogów")
+        If sFolder = "" Then Return
+
+        Application.ShowWait(True)
+        ' wczytanie istniejących folderów, tree, jako podkatalogi do item
+        Application.GetDirTree.AddSubfolderTree(oItem, sFolder)
+        Application.ShowWait(False)
+
+        RefreshList()
+    End Sub
+
 
 End Class
 

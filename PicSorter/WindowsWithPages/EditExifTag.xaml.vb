@@ -165,6 +165,9 @@ Public Class EditExifTag
         _exifTag.Keywords = uiKeywords.Text
         _exifTag.UserComment = uiUserComment.Text
 
+        Dim sDevType As String = uiFileSourceDeviceType.SelectedValue
+        _exifTag.FileSourceDeviceType = sDevType.Substring(0, 1)
+
         Me.Close()
     End Sub
 End Class

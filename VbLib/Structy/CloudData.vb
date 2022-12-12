@@ -24,6 +24,7 @@ Public Class CloudConfig
     Public Property includeMask As String = "*.jpg;*.tif;*.png" ' maski regexp
     Public Property excludeMask As String  ' maski regexp
 
+    Public Property processLikes As Boolean
     Public Property lastSave As DateTime
 
 End Class

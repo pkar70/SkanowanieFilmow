@@ -29,6 +29,7 @@ Public Class Publish_AdHoc
         Return ""
     End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
         Throw New NotImplementedException()
@@ -38,8 +39,9 @@ Public Class Publish_AdHoc
         ' *TODO* jak w localstorage
         Throw New NotImplementedException()
     End Function
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
-    Public Overrides Function CreateNew(oConfig As Vblib.CloudConfig, oPostProcs As PostProcBase()) As Vblib.AnyStorage
+    Public Overrides Function CreateNew(oConfig As Vblib.CloudConfig, oPostProcs As PostProcBase(), sDataName As String) As Vblib.AnyStorage
         If oConfig.sProvider <> sProvider Then Return Nothing
 
         Dim oNew As New Publish_AdHoc
@@ -80,7 +82,7 @@ Public Class Publish_AdHoc
         Return ""
     End Function
 
-    Public Overrides Async Function GetRemoteTags(oPic As Vblib.OnePic) As Task(Of String)
+    Protected Overrides Async Function GetRemoteTagsMain(oPic As Vblib.OnePic) As Task(Of String)
         Return "Should not be run for Ad-Hoc"
     End Function
 

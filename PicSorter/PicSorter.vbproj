@@ -23,15 +23,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Auto_WinFace\Auto_WinFace.vbproj" />
-    <ProjectReference Include="..\ClassLibrary2\Taggers_OCR_lib.vbproj" />
-    <ProjectReference Include="..\HiddenWatermark\HiddenWatermark.csproj" />
-    <ProjectReference Include="..\MediaDevicesLib\MediaDevicesLib.vbproj" />
+    <ProjectReference Include="..\Auto_WinFace\VbLibCore31-Auto_WinFace.vbproj" />
+    <ProjectReference Include="..\HiddenWatermark\AsNuget-HiddenWatermark.csproj" />
     <ProjectReference Include="..\Process_Signature\Process_SigAndFace.vbproj" />
     <ProjectReference Include="..\Publish_Instagram\Publish_std2_Instagram.vbproj" />
-    <ProjectReference Include="..\Taggers_OCR\Auto_WinOCR_lib.vbproj" />
-    <ProjectReference Include="..\VbLib20\VbLib20.vbproj" />
+    <ProjectReference Include="..\Publish_std2_Facebook\Publish_std2_Facebook.vbproj" />
+    <ProjectReference Include="..\Taggers_OCR\VbLibCore31-Auto_WinOCR_lib.vbproj" />
     <ProjectReference Include="..\vblib46ram\vblib46ram.vbproj" />
+    <ProjectReference Include="..\VbLibCore3-mediaDevices\VbLibCore3-mediaDevices.vbproj" />
+    <ProjectReference Include="..\VbLibCore3\VbLibCore3-picSource.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>
 
@@ -40,6 +40,13 @@
     <Folder Include="WindowsWithPages\HashTags\" />
     <Folder Include="WindowsWithPages\SlideShow\" />
     <Folder Include="WindowsWithPages\Search\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

@@ -80,7 +80,8 @@
                         <MenuItem Header="Batch process" Name="uiBatchProcessors" />
                         <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click"/>
                     <MenuItem Header="Publish" Name="uiMenuPublish"  />
-                </Menu>
+                        <MenuItem Header="Remote tags" Name="uiMenuRemoteTags"  />
+                    </Menu>
             </Popup>
             </StackPanel>
         </Grid>

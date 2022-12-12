@@ -29,7 +29,7 @@
                             <ColumnDefinition Width="80" Name="naCheckBoxOrazTag" />
                             <ColumnDefinition Width="*" Name="naOpis" />
                         </Grid.ColumnDefinitions>
-                        <CheckBox IsChecked="{Binding bChecked}" IsEnabled="{Binding bEnabled}" Content="{Binding sTagId}"/>
+                        <CheckBox IsChecked="{Binding bChecked}" IsEnabled="{Binding bEnabled}" Content="{Binding sId}"/>
                         <TextBlock Grid.Column="1" Text="{Binding sDisplayName}" />
                     </Grid>
                 </DataTemplate>

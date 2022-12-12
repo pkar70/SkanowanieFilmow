@@ -8,12 +8,19 @@ Public Class CloudPublishersList
 
     Private gCloudProviders As Vblib.CloudPublish() = {
         New Publish_AdHoc,
-        New Publish_Instagram.Publish_Instagram
+        New Publish_Instagram.Publish_Instagram,
+        New Publish_std2_Facebook.Publish_Facebook_Post
         }
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)
 
     Private gCloudConfigs As New MojaLista(Of CloudConfig)(Application.GetDataFolder, "cloudPublishers.json")
+
+    Private _DataDir As String
+
+    Public Sub New(sDataDir As String)
+        _DataDir = sDataDir
+    End Sub
 
     Public Function Load() As Boolean
 
@@ -23,7 +30,7 @@ Public Class CloudPublishersList
 
         Dim bMamAdHoc As Boolean = False
         For Each oItem As Vblib.CloudConfig In gCloudConfigs.GetList
-            Dim oNew As Vblib.CloudPublish = GetCloudPublishInstantion(oItem)
+            Dim oNew As Vblib.CloudPublish = GetCloudPublishInstantion(oItem, _DataDir)
             If oNew IsNot Nothing Then
                 gCloudPublishers.Add(oNew)
                 If oNew.konfiguracja.sProvider.ToLower.Contains("adhoc") Then bMamAdHoc = True
@@ -51,11 +58,11 @@ Public Class CloudPublishersList
         Return gCloudConfigs.Save(bIgnoreNulls)
     End Function
 
-    Private Function GetCloudPublishInstantion(oConfig As Vblib.CloudConfig) As Vblib.CloudPublish
+    Private Function GetCloudPublishInstantion(oConfig As Vblib.CloudConfig, sDataDir As String) As Vblib.CloudPublish
 
         For Each oProvider As Vblib.CloudPublish In gCloudProviders
             If oProvider.sProvider = oConfig.sProvider Then
-                Return oProvider.CreateNew(oConfig, Application.gPostProcesory)
+                Return oProvider.CreateNew(oConfig, Application.gPostProcesory, sDataDir)
             End If
         Next
 
@@ -76,7 +83,7 @@ Public Class CloudPublishersList
     End Sub
 
     Public Sub Add(oNewConfig As CloudConfig)
-        gCloudPublishers.Add(GetCloudPublishInstantion(oNewConfig))
+        gCloudPublishers.Add(GetCloudPublishInstantion(oNewConfig, _DataDir))
     End Sub
 
 End Class
@@ -93,6 +100,11 @@ Public Class CloudArchivesList
 
     Private gCloudConfigs As New MojaLista(Of CloudConfig)(Application.GetDataFolder, "cloudArchives.json")
 
+    Private _DataDir As String
+
+    Public Sub New(sDataDir As String)
+        _DataDir = sDataDir
+    End Sub
 
     Public Function Load() As Boolean
 
@@ -125,7 +137,7 @@ Public Class CloudArchivesList
 
         For Each oProvider As Vblib.CloudArchive In gCloudProviders
             If oProvider.sProvider = oConfig.sProvider Then
-                Return oProvider.CreateNew(oConfig, Application.gPostProcesory)
+                Return oProvider.CreateNew(oConfig, Application.gPostProcesory, _DataDir)
             End If
         Next
 

@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="TargetDir" Height="300" Width="250" Loaded="Window_Loaded">
+        Title="TargetDir" Height="330" Width="250" Loaded="Window_Loaded">
     <StackPanel Margin="5,5,5,5">
 
         <TextBlock HorizontalAlignment="Center" FontSize="16" FontWeight="Bold" Text="Katalog w archiwum" />
@@ -21,8 +21,9 @@
         </Grid>
         <ComboBox Name="uiComboExisting" />
         <!--<TextBlock Text="or one of options below:" Margin="0,10,0,0"/>-->
+        <TextBlock Text="and subfolder:" Margin="0,10,0,2" />
 
-        <RadioButton Content="no date split" Margin="0,10,0,2" Name="uiNoDateSplit" GroupName="wedlugCzasu"  Checked="uiNoDateSplit_Checked"/>
+        <RadioButton Content="no date split" Margin="0,2,0,2" Name="uiNoDateSplit" GroupName="wedlugCzasu"  Checked="uiNoDateSplit_Checked"/>
         <RadioButton Content="auto date split" Margin="0,2,0,2" Name="uiAutoDateSplit" IsChecked="true" GroupName="wedlugCzasu"  Checked="uiDateSplit_Checked"/>
         <!--<RadioButton Name="uiPreviousDateSplit" GroupName="wedlugCzasu"/>-->
         <Grid Margin="0,2,0,5" >
@@ -30,7 +31,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <RadioButton Name="uiManualDateSplit" GroupName="wedlugCzasu" Checked="uiDateSplit_Checked"/>
+            <RadioButton Name="uiManualDateSplit" GroupName="wedlugCzasu" Checked="uiDateSplit_Checked" />
             <TextBox Grid.Column="1" Name="uiManualDateName" />
         </Grid>
 

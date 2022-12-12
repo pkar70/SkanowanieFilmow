@@ -144,7 +144,7 @@ Public MustInherit Class LocalStorage
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		' zapisz plik, gdy błąd - wróć od razu
-		Dim sErr As String = SendPhoto(oPic)
+		Dim sErr As String = Await SendPhoto(oPic)
 		If sErr = NO_MATCH_MASK Then Return ""    ' nie ma błędu, bo po prostu plik spoza maski jest
 		If sErr <> "" Then Return sErr  ' błąd
 
@@ -169,7 +169,7 @@ Public MustInherit Class LocalStorage
 
 			If oPic.TargetDir <> sTargetDir Then Continue For
 
-			Dim temperr As String = SendPhoto(oPic)
+			Dim temperr As String = Await SendPhoto(oPic)
 			If temperr = NO_MATCH_MASK Then Continue For  ' nie ma błędu, bo po prostu plik spoza maski jest
 
 			If temperr = "" Then
@@ -188,7 +188,9 @@ Public MustInherit Class LocalStorage
 
 	End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 	Public Async Function VerifyFileExist(oPic As OnePic) As Task(Of String) Implements AnyStorage.VerifyFileExist
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
@@ -203,7 +205,9 @@ Public MustInherit Class LocalStorage
 		Return "no file"
 	End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 	Public Async Function VerifyFile(oPic As OnePic, oFromArchive As LocalStorage) As Task(Of String) Implements AnyStorage.VerifyFile
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
@@ -219,7 +223,9 @@ Public MustInherit Class LocalStorage
 		Throw New NotImplementedException()
 	End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 	Public Async Function GetFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.GetFile
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
@@ -263,13 +269,15 @@ Public MustInherit Class LocalStorage
 
 	End Sub
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 	''' <summary>
 	''' wysyła plik oPic do oOneDir, dba o daty pliku w archiwum, odnotowuje archiwizację w oPic.Archived
 	''' </summary>
 	''' <param name="oPic"></param>
 	''' <param name="oOneDir"></param>
 	''' <returns>errmessage lub ""</returns>
-	Private Function SendPhoto(oPic As OnePic) As String
+	Private Async Function SendPhoto(oPic As OnePic) As Task(Of String)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
 		If Not OnePic.MatchesMasks(oPic.sSuggestedFilename, includeMask, excludeMask) Then Return NO_MATCH_MASK
 

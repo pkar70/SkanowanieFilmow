@@ -98,6 +98,6 @@ Public Interface AnyCloudStorage
     '' </summary>
     '' <param name="oConfig"></param>
     '' <returns></returns>
-    Function CreateNew(oConfig As CloudConfig, oPostProcs As PostProcBase()) As AnyStorage
+    Function CreateNew(oConfig As CloudConfig, oPostProcs As PostProcBase(), sDataDir As String) As AnyStorage
 
 End Interface

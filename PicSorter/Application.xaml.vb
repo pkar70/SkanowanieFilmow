@@ -62,14 +62,14 @@ Partial Class Application
     End Sub
 
 
-    Private Shared gSourcesList As VbLib20.PicSourceList
+    Private Shared gSourcesList As VbLibCore3.PicSourceList
     Private Shared gBuffer As Vblib.Buffer
 
-    Public Shared Function GetSourcesList() As VbLib20.PicSourceList
+    Public Shared Function GetSourcesList() As VbLibCore3.PicSourceList
 
         If gSourcesList Is Nothing Then
             Vblib.PicSourceBase._dataFolder = Application.GetDataFolder ' żeby JSON mógł wczytać sources
-            gSourcesList = New VbLib20.PicSourceList(Application.GetDataFolder)
+            gSourcesList = New VbLibCore3.PicSourceList(Application.GetDataFolder)
             gSourcesList.Load()
             gSourcesList.InitDataDirectory()
         End If
@@ -83,26 +83,15 @@ Partial Class Application
         Return gBuffer
     End Function
 
-    Private Shared gArchiveList As Vblib.MojaLista(Of VbLib20.LocalStorageMiddle)
-    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of VbLib20.LocalStorageMiddle)
+    Private Shared gArchiveList As Vblib.MojaLista(Of VbLibCore3.LocalStorageMiddle)
+    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of VbLibCore3.LocalStorageMiddle)
 
         If gArchiveList Is Nothing OrElse gArchiveList.Count < 1 Then
-            gArchiveList = New Vblib.MojaLista(Of VbLib20.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
+            gArchiveList = New Vblib.MojaLista(Of VbLibCore3.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
             gArchiveList.Load()
         End If
         Return gArchiveList
     End Function
-
-    'Private Shared gCloudArchiveList As Vblib.MojaLista(Of Vblib.CloudConfig)
-    'Public Shared Function GetCloudArchivesList() As Vblib.MojaLista(Of Vblib.CloudConfig)
-
-    '    If gCloudArchiveList Is Nothing OrElse gCloudArchiveList.Count < 1 Then
-    '        gCloudArchiveList = New Vblib.MojaLista(Of Vblib.CloudConfig)(Application.GetDataFolder, "cloudArchives.json")
-    '        gCloudArchiveList.Load()
-    '    End If
-    '    Return gCloudArchiveList
-    'End Function
-
 
 
     Private Shared gKeywords As Vblib.KeywordsList
@@ -130,7 +119,7 @@ Partial Class Application
 
     Public Shared Function GetCloudPublishers() As CloudPublishersList
         If gCloudPublishers Is Nothing Then
-            gCloudPublishers = New CloudPublishersList()
+            gCloudPublishers = New CloudPublishersList(Application.GetDataFolder)
             gCloudPublishers.Load()
         End If
         Return gCloudPublishers
@@ -141,22 +130,11 @@ Partial Class Application
 
     Public Shared Function GetCloudArchives() As CloudArchivesList
         If gCloudArchives Is Nothing Then
-            gCloudArchives = New CloudArchivesList()
+            gCloudArchives = New CloudArchivesList(Application.GetDataFolder)
             gCloudArchives.Load()
         End If
         Return gCloudArchives
     End Function
-
-    'Private Shared gDirList As Vblib.DirsListFlat
-
-    'Public Shared Function GetDirList() As Vblib.DirsListFlat
-    '    If gDirList Is Nothing Then
-    '        gDirList = New Vblib.DirsListFlat(Application.GetDataFolder)
-    '        gDirList.Load()
-    '    End If
-    '    Return gDirList
-    'End Function
-
 
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
         New Vblib.AutoTag_EXIF,

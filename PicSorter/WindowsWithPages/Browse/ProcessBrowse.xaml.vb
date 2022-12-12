@@ -21,11 +21,13 @@ Imports System.Collections.ObjectModel
 Imports System.Data
 Imports System.Globalization
 Imports System.IO
+Imports System.Net.WebRequestMethods
 Imports System.Security.Policy
 Imports System.Xml
 Imports Microsoft.Windows.Themes
 Imports Vblib
 Imports Windows.Media.Ocr
+Imports Windows.Web.Http.Headers
 Imports vb14 = Vblib.pkarlibmodule14
 
 
@@ -62,9 +64,10 @@ Public Class ProcessBrowse
 
         WypelnMenuAutotagerami(uiMenuAutotags, AddressOf AutoTagRun)
         WypelnMenuBatchProcess(uiBatchProcessors, AddressOf PostProcessRun)
-        WypelnMenuCloudPublish(uiMenuPublish, AddressOf PublishRun)
+        WypelnMenuCloudPublish(Nothing, uiMenuPublish, AddressOf PublishRun)
 
         Await EwentualneKasowanieBak()
+        Await EwentualneKasowanieArchived()
         ' *TODO* Await EwentualneKasowanieArchived() -
 
         Application.ShowWait(False)
@@ -89,6 +92,26 @@ Public Class ProcessBrowse
         If Await vb14.DialogBoxYNAsync($"Skasować stare pliki BAK? ({iOutdated})") Then Return
 
         _oBufor.BakDelete(iDelay, True)
+
+    End Function
+
+    Private Async Function EwentualneKasowanieArchived() As Task
+
+        Dim lista As New List(Of ThumbPicek)
+        For Each oThumb As ThumbPicek In _thumbsy
+            If oThumb.oPic.NoPendingAction Then lista.Add(oThumb)
+        Next
+
+        If lista.Count < 1 Then Return
+
+        If Await vb14.DialogBoxYNAsync($"Skasować pliki już w pełni zarchiwizowane? ({lista.Count})") Then Return
+
+        For Each oThumb As ThumbPicek In lista
+            DeletePicture(oThumb)
+        Next
+
+        SaveMetaData()
+        RefreshMiniaturki(True)
 
     End Function
 
@@ -147,7 +170,7 @@ Public Class ProcessBrowse
         For Each oItem As ThumbPicek In _thumbsy
 
             '' *TODO* tymczasowe, by wyłapywać tylko to co chcemy
-            'If Not oItem.oPic.MatchesMasks("*.avi") Then Continue For
+            'If Not oItem.oThumb.MatchesMasks("*.avi") Then Continue For
 
             oItem.oImageSrc = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
             uiProgBar.Value += 1
@@ -437,6 +460,8 @@ Public Class ProcessBrowse
         Dim oWnd As New ShowBig(oPicek)
         oWnd.Owner = Me
         oWnd.Show()
+
+        Task.Delay(100) ' bo czasem focus wraca do Browser i chodzenie nie działa
         oWnd.Focus()
     End Sub
 
@@ -459,9 +484,6 @@ Public Class ProcessBrowse
 
     End Function
 
-    Private Function FromBig_NextMainA(oPic As ThumbPicek, bGoBack As Boolean, selectedItems As IList, v As Boolean) As ThumbPicek
-        Throw New NotImplementedException()
-    End Function
 
     Private Function FromBig_NextMain(oPic As ThumbPicek, bGoBack As Boolean, lista As IList, retSame As Boolean) As ThumbPicek
         For iLP = 0 To lista.Count - 1
@@ -476,7 +498,10 @@ Public Class ProcessBrowse
                             Return Nothing
                         End If
                     Else
-                        Return lista.Item(iLP - 1)
+                        Dim oPicRet As ThumbPicek = lista.Item(iLP - 1)
+                        ShowKwdForPic(oPicRet)
+                        ShowExifForPic(oPicRet)
+                        Return oPicRet
                     End If
                 Else
                     If iLP = lista.Count - 1 Then
@@ -487,7 +512,10 @@ Public Class ProcessBrowse
                             Return Nothing
                         End If
                     Else
-                        Return lista.Item(iLP + 1)
+                        Dim oPicRet As ThumbPicek = lista.Item(iLP + 1)
+                        ShowKwdForPic(oPicRet)
+                        ShowExifForPic(oPicRet)
+                        Return oPicRet
                     End If
                 End If
             End If
@@ -776,6 +804,8 @@ Public Class ProcessBrowse
         RefreshMiniaturki(False)
     End Sub
     Private Sub uiFilterNoGeo_Click(sender As Object, e As RoutedEventArgs)
+        vb14.DumpCurrMethod()
+
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "no geo"
 
@@ -912,16 +942,40 @@ Public Class ProcessBrowse
 
     'End Sub
 
-    Public Shared Sub WypelnMenuCloudPublish(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
+    Private Shared Function NewMenuCloudOperation(sDisplay As String, oEngine As Vblib.CloudPublish, oEventHandler As RoutedEventHandler) As MenuItem
+        Dim oNew As New MenuItem
+        oNew.Header = sDisplay.Replace("_", "__")
+        oNew.DataContext = oEngine
+
+        If oEventHandler IsNot Nothing Then AddHandler oNew.Click, oEventHandler
+
+        Return oNew
+    End Function
+
+    Private Shared Function NewMenuCloudOperation(oEngine As Vblib.CloudPublish) As MenuItem
+        Return NewMenuCloudOperation(oEngine.konfiguracja.nazwa, oEngine, Nothing)
+    End Function
+
+
+    Public Shared Sub WypelnMenuCloudPublish(oPic As Vblib.OnePic, oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
         oMenuItem.Items.Clear()
         ' _UImenuOnClick = oEventHandler
 
         For Each oEngine As Vblib.CloudPublish In Application.GetCloudPublishers.GetList
-            Dim oNew As New MenuItem
-            oNew.Header = oEngine.konfiguracja.nazwa.Replace("_", "__")
-            oNew.DataContext = oEngine
-            AddHandler oNew.Click, oEventHandler
+            Dim oNew As MenuItem = NewMenuCloudOperation(oEngine)
+
+            If oPic Is Nothing OrElse Not oPic.IsCloudPublishedIn(oEngine.konfiguracja.nazwa) Then
+                AddHandler oNew.Click, oEventHandler
+            Else
+                oNew.Items.Add(NewMenuCloudOperation("Open", oEngine, oEventHandler))
+                oNew.Items.Add(NewMenuCloudOperation("Share link", oEngine, oEventHandler))
+                oNew.Items.Add(NewMenuCloudOperation("Get tags", oEngine, oEventHandler))
+                oNew.Items.Add(New Separator)
+                oNew.Items.Add(NewMenuCloudOperation("Delete", oEngine, oEventHandler))
+            End If
+
             oMenuItem.Items.Add(oNew)
+
         Next
 
         oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
@@ -980,6 +1034,37 @@ Public Class ProcessBrowse
         uiProgBar.Visibility = Visibility.Collapsed
 
         SaveMetaData()  ' bo zmieniono EXIF
+
+    End Sub
+
+    Private Async Sub GetRemoteTagsRun(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        Dim oFE As FrameworkElement = sender
+        Dim oSrc As Vblib.CloudPublish = oFE?.DataContext
+        If oSrc Is Nothing Then Return
+
+        uiProgBar.Maximum = uiPicList.SelectedItems.Count
+        uiProgBar.Visibility = Visibility.Visible
+
+        Application.ShowWait(True)
+
+        Dim sErr As String = Await oSrc.Login
+        If sErr <> "" Then
+            Await vb14.DialogBoxAsync(sErr)
+            Application.ShowWait(False)
+            Return
+        End If
+
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            Await oSrc.GetRemoteTags(oItem.oPic)
+        Next
+
+        Application.ShowWait(False)
+
+        uiProgBar.Visibility = Visibility.Collapsed
+
+        SaveMetaData()  ' bo zmieniono dane plików
 
     End Sub
 
@@ -1064,7 +1149,7 @@ Public Class ProcessBrowse
         Public Property oImageSrc As BitmapImage = Nothing ' XAML image
         Public Property iDuzoscH As Integer ' XAML height
         Public Property bVisible As Boolean = True
-        Public Property dateMin As Date ' kopiowane z oPic.Exifs(..)
+        Public Property dateMin As Date ' kopiowane z oThumb.Exifs(..)
         Public Property splitBefore As Integer
         Public Property widthPaskow As Integer
         Public Property opacity As Double = 1   ' czyli normalnie pokazany
@@ -1156,8 +1241,8 @@ Public Class ProcessBrowse
         If uiPicList.SelectedItems.Count < 1 Then Return
 
         If uiPicList.SelectedItems.Count = 1 Then
-            'Dim oPic As ThumbPicek = uiPicList.SelectedItems(0)
-            ' tylko jeden wyselekcjonowany - to uznaj że dobry oPic przychodzi z Keyword
+            'Dim oThumb As ThumbPicek = uiPicList.SelectedItems(0)
+            ' tylko jeden wyselekcjonowany - to uznaj że dobry oThumb przychodzi z Keyword
             ' bo przez PgUp/PgDown mogliśmy przejść do innego zdjęcia
             oPic1.oPic.ReplaceOrAddExif(oExif)
             oPic1.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)

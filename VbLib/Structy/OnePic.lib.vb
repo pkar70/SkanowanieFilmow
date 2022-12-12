@@ -55,6 +55,12 @@ Public Class OnePic
         Return False
     End Function
 
+    Public Function ArchivedCount() As Integer
+        If Archived Is Nothing Then Return 0
+        Dim aArr As String() = Archived.Split(";")
+        Return aArr.Count
+    End Function
+
 #End Region
 
 #Region "operacje na CloudArchive"
@@ -69,6 +75,12 @@ Public Class OnePic
         If CloudArchived.Contains(sArchName & ";") Then Return True
         Return False
     End Function
+
+    Public Function CloudArchivedCount() As Integer
+        If CloudArchived Is Nothing Then Return 0
+        Dim aArr As String() = CloudArchived.Split(";")
+        Return aArr.Count
+    End Function
 #End Region
 
 #Region "operacje na Cloud Publish"
@@ -77,6 +89,18 @@ Public Class OnePic
         If Published Is Nothing Then Published = New Dictionary(Of String, String)
         Published.Add(sPublName, sRemoteId)
     End Sub
+
+    Public Sub RemoveCloudPublished(sPublName As String)
+        If Published Is Nothing Then Return
+        Published.Remove(sPublName)
+    End Sub
+
+    Public Function GetCloudPublishedId(sPublName As String) As String
+        If Not IsCloudPublishedIn(sPublName) Then Return ""
+        Dim sRet As String = ""
+        If Not Published.TryGetValue(sPublName, sRet) Then Return ""
+        Return sRet
+    End Function
 
     Public Function IsCloudPublishMentioned(sPublName As String) As Boolean
         If Published Is Nothing Then Return False
@@ -105,7 +129,26 @@ Public Class OnePic
         Return False
     End Function
 
+    Public Function CountPublishingWaiting() As Integer
+        If Published Is Nothing Then Return 0
+        Dim iCnt As Integer = 0
+        For Each oPubl In Published
+            ' jeśli value jest nonempty, to znaczy że mamy identyfikator wpisany - czyli wysłany
+            If String.IsNullOrWhiteSpace(oPubl.Value) Then iCnt += 1
+        Next
+
+        Return iCnt
+    End Function
+
 #End Region
+
+    Public Function NoPendingAction() As Boolean
+        If ArchivedCount() > 0 Then Return False
+        If CloudArchivedCount() > 0 Then Return False
+        If CountPublishingWaiting() > 0 Then Return False
+
+        Return True
+    End Function
 
 #Region "operacje na ExifTags"
 
@@ -140,19 +183,32 @@ Public Class OnePic
 
 
     Public Function GetGeoTag() As MyBasicGeoposition
+        DumpCurrMethod($"({InBufferPathName})")
         ' ważniejsze jest z keywords, potem manual_geo, potem - dowolny
 
         Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualTag)
-        If oExif IsNot Nothing Then Return oExif.GeoTag
+        If oExif?.GeoTag IsNot Nothing Then
+            DumpMessage("not null ExifSource.ManualTag.GeoTag")
+            If Not oExif.GeoTag.IsEmpty Then Return oExif.GeoTag
+            DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
+        End If
 
         oExif = GetExifOfType(ExifSource.ManualGeo)
-        If oExif IsNot Nothing Then Return oExif.GeoTag
+        If oExif?.GeoTag IsNot Nothing Then
+            DumpMessage("not null ExifSource.ManualGeo.GeoTag")
+            If Not oExif.GeoTag.IsEmpty Then Return oExif.GeoTag
+            DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
+        End If
 
         For Each oExif In Exifs
-            If oExif.GeoTag IsNot Nothing Then
+            If oExif?.GeoTag IsNot Nothing Then
+                DumpMessage($"not null GeoTag in {oExif.ExifSource}")
                 If Not oExif.GeoTag.IsEmpty Then Return oExif.GeoTag
+                DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
             End If
         Next
+
+        DumpMessage("cannot find geotag")
 
         Return Nothing
     End Function
@@ -314,6 +370,22 @@ Public Class OnePic
     End Sub
 
     ''' <summary>
+    ''' gdy jest już z tą datą i keywords, nie dodaje (do zastosowania w comments z Cloud)
+    ''' </summary>
+    ''' <param name="opis"></param>
+    Public Sub TryAddDescription(opis As OneDescription)
+        If descriptions IsNot Nothing Then
+            For Each oDesc As OneDescription In descriptions
+                If oDesc.data = opis.data AndAlso oDesc.keywords = opis.keywords Then Return
+            Next
+        End If
+        ' If String.IsNullOrEmpty(opis.data) Then opis.data = Date.Now.ToString("yyyy.MM.dd HH:mm")
+        descriptions.Add(opis)
+
+        TagsChanged = True
+    End Sub
+
+    ''' <summary>
     ''' usuwa wszystkie Description, które mają tagi podane na wejściu
     ''' </summary>
     ''' <param name="sTagList"></param>
@@ -331,7 +403,7 @@ Public Class OnePic
                 If oDescr.keywords.Contains(sTag & " ") Then
                     Dim oKwd As OneKeyword = oKeywords.GetKeyword(sTag)
                     If oKwd IsNot Nothing Then
-                        oDescr.keywords = oDescr.keywords.Replace(oKwd.sTagId, "")
+                        oDescr.keywords = oDescr.keywords.Replace(oKwd.sId, "")
                         oDescr.comment = oDescr.comment.Replace(oKwd.sDisplayName, "")
                     End If
                 End If
@@ -352,6 +424,7 @@ Public Class OnePic
         Next
 
     End Sub
+
 #End Region
 
 
@@ -567,6 +640,7 @@ Public Class OnePic
     End Sub
 
     Public Async Function RunPipeline(sProcessingSteps As String, aPostProcesory As Vblib.PostProcBase()) As Task(Of String)
+        DumpCurrMethod()
 
         If String.IsNullOrEmpty(sProcessingSteps) Then
             ' zrób tak, by w oPic.outputStream było to co do wysłania
@@ -578,6 +652,7 @@ Public Class OnePic
         Dim aSteps As String() = sProcessingSteps.Split(";")
         For Each sStep As String In aSteps
             ' wykonaj krok
+            DumpMessage("step: " & sStep)
 
             For Each oEngine As Vblib.PostProcBase In aPostProcesory
                 If oEngine.Nazwa.ToLowerInvariant = sStep.ToLowerInvariant Then
@@ -673,6 +748,16 @@ Public Class OnePic
         If oOstatniExif IsNot Nothing Then MergeTwoExifs(oNew, oOstatniExif)
 
         Return oNew
+    End Function
+
+    Public Function HasKeyword(oKey As OneKeyword) As Boolean
+        If Exifs Is Nothing Then Return False
+
+        For Each oExif As ExifTag In Exifs
+            If oExif.Keywords.Contains(oKey.sId) Then Return True
+        Next
+
+        Return False
     End Function
 
 End Class

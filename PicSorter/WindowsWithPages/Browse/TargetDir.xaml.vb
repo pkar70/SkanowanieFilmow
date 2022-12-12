@@ -95,7 +95,7 @@ Public Class TargetDir
             If _thumbsy(iLp).splitBefore = SplitBeforeEnum.czas Then
                 ' w ten sposób mamy datę z dniem tygodnia (wspólne dla całego programu)
                 _lastCzasDir = _thumbsy(iLp).dateMin.ExifDateWithWeekDay
-                uiManualDateSplit.Content = _lastCzasDir & " "
+                uiManualDateName.Text = _lastCzasDir & " "
                 Exit For
             End If
         Next
@@ -114,15 +114,15 @@ Public Class TargetDir
 
     Private Sub PokazOpcjeGeo(iFirstSelected As Integer)
 
-        Dim sTaData As String = uiManualDateSplit.Content.ToString.Trim
+        Dim sTaData As String = uiManualDateName.Text.Trim
         Dim sPrefixGeoData As String = CountSubdirInDate(sTaData)
-        uiManualGeoSplit.Content = sTaData & "." & sPrefixGeoData & "__"
+        uiManualGeoName.Text = sTaData & "." & sPrefixGeoData & "_"
 
 
         For iLp As Integer = iFirstSelected To 0 Step -1
             If _thumbsy(iLp).splitBefore = SplitBeforeEnum.geo Then
                 _lastGeoDir = PicekToGeoName(_thumbsy(iLp).oPic)
-                If _lastGeoDir <> "" Then uiManualGeoSplit.Content += _lastGeoDir
+                If _lastGeoDir <> "" Then uiManualGeoName.Text += _lastGeoDir
                 Exit For
             End If
         Next
@@ -137,11 +137,6 @@ Public Class TargetDir
         Next
 
     End Sub
-
-    'Private Sub uiCzasFolder_Changed(sender As Object, e As TextChangedEventArgs)
-    '    ' jeśli coś ktoś wpisał, to wymusza MANUAL
-    '    If uiManualDateName.Text.Length > 0 Then uiManualDateSplit.IsChecked = True
-    'End Sub
 
     Private Function CountSubdirInDate(sData As String) As Char
         Dim iCount As Integer = 65
@@ -166,7 +161,7 @@ Public Class TargetDir
 
     Private Sub uiGeoFolder_Changed(sender As Object, e As TextChangedEventArgs)
         ' jeśli coś ktoś wpisał, to wymusza MANUAL
-        If uiManualGeoName.Text.Length > 0 Then uiManualGeoSplit.IsChecked = True
+        'If uiManualGeoName.Text.Length > 0 Then uiManualGeoSplit.IsChecked = True
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -232,10 +227,10 @@ Public Class TargetDir
         If uiNoDateSplit.IsChecked Then Return oParent
 
         If uiManualDateSplit.IsChecked Then
-            Dim sDir As String = uiManualDateSplit.Content.ToString.Replace("__", "_").Trim
-            If Not String.IsNullOrWhiteSpace(uiManualDateName.Text) Then
-                sDir = sDir & " " & uiManualDateName.Text
-            End If
+            Dim sDir As String = uiManualDateName.Text.Replace("__", "_").Trim
+            'If Not String.IsNullOrWhiteSpace(uiManualDateName.Text) Then
+            '    sDir = sDir & " " & uiManualDateName.Text
+            'End If
             Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
         End If
 
@@ -253,10 +248,10 @@ Public Class TargetDir
         If uiNoGeoSplit.IsChecked Then Return oParent
 
         If uiManualGeoSplit.IsChecked Then
-            Dim sDir As String = uiManualGeoSplit.Content.ToString.Replace("__", "_").Trim
-            If Not String.IsNullOrWhiteSpace(uiManualGeoName.Text) Then
-                sDir = sDir & " " & uiManualGeoName.Text
-            End If
+            Dim sDir As String = uiManualGeoName.Text.Trim
+            'If Not String.IsNullOrWhiteSpace(uiManualGeoName.Text) Then
+            '    sDir = sDir & " " & uiManualGeoName.Text
+            'End If
             Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
         End If
 
@@ -361,7 +356,7 @@ Partial Public Module Extensions
 
     <Runtime.CompilerServices.Extension>
     Public Function ExifDateWithWeekDay(ByVal oDate As Date) As String
-        Dim sId As String = oDate.ToExifString & "."
+        Dim sId As String = oDate.ToString("yyyy.MM.dd.")
         Select Case oDate.DayOfWeek
             Case DayOfWeek.Monday
                 sId &= "pn"

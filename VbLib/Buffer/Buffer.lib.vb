@@ -14,6 +14,7 @@ Public Class Buffer
         _pliki = New FilesInBuffer(_RootDataPath)
         _pliki.Load()
         ' AddSortBy
+        'AddTyp3()
         _rootPictures = GetSettingsString("uiFolderBuffer")
     End Sub
 
@@ -40,7 +41,18 @@ Public Class Buffer
 
         If bBylyZmiany Then SaveData()
     End Sub
+
+    Private Sub AddTyp3()
+        For Each oItem As OnePic In _pliki.GetList
+
+            Dim oExif As ExifTag = oItem.GetExifOfType(ExifSource.SourceDefault)
+            oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital
+        Next
+
+        SaveData()
+    End Sub
 #End If
+
 
     Public Sub SaveData()
         _pliki.Save(True)

@@ -77,11 +77,11 @@ Class SettingsSources
         Dim oMI As MenuItem = sender
         Select Case oMI.Header.ToString.Trim.ToLowerInvariant
             Case "folder"
-                oNewSrc = New VbLib20.PicSourceImplement(Vblib.PicSourceType.FOLDER, Application.GetDataFolder)
+                oNewSrc = New VbLibCore3.PicSourceImplement(Vblib.PicSourceType.FOLDER, Application.GetDataFolder)
             Case "mtp"
-                oNewSrc = New VbLib20.PicSourceImplement(Vblib.PicSourceType.MTP, Application.GetDataFolder)
+                oNewSrc = New VbLibCore3.PicSourceImplement(Vblib.PicSourceType.MTP, Application.GetDataFolder)
             Case "adhoc"
-                oNewSrc = New VbLib20.PicSourceImplement(Vblib.PicSourceType.AdHOC, Application.GetDataFolder)
+                oNewSrc = New VbLibCore3.PicSourceImplement(Vblib.PicSourceType.AdHOC, Application.GetDataFolder)
             Case Else
                 Return
         End Select
@@ -118,7 +118,7 @@ Class SettingsSources
         If iSrcType = Vblib.PicSourceType.MTP Then
             ' telefony
 
-            Dim lLista As List(Of String) = MediaDevicesLib.Helper.GetDevicesList
+            Dim lLista As List(Of String) = VbLibCore3_mediaDevices.Helper.GetDevicesList
             If lLista.Count = 0 And sCurrentVolLabel <> "#####" Then
                 iInd = uiSrcVolume.Items.Add(sCurrentVolLabel)
                 uiSrcVolume.SelectedIndex = iInd
@@ -203,8 +203,8 @@ Class SettingsSources
         If String.IsNullOrWhiteSpace(sPath) Then sPath = "" ' nie chcemy NULLa
 
         Select Case _item.Typ
-            Case Vblib.PicSourceType.Folder
-                sPath = VbLib20.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
+            Case Vblib.PicSourceType.FOLDER
+                sPath = VbLibCore3.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
                 SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaz folder na archiwum")
             Case Vblib.PicSourceType.MTP
                 Dim oWnd As New BrowseMtpDevice(sVolLabel, sPath)

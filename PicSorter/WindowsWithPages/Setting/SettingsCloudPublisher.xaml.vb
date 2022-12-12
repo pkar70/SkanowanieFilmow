@@ -117,6 +117,8 @@ Class SettingsCloudPublisher
         _item.enabled = False
         _item.defaultExif = New Vblib.ExifTag(Vblib.ExifSource.CloudPublish)
 
+        _item.processLikes = uiProcessLikes.IsChecked
+
         Application.GetCloudPublishers.Add(_item)
 
         PokazDoEdycji(_item)
@@ -137,11 +139,13 @@ Class SettingsCloudPublisher
             uiSrcPurge.Text = "---"
             uiSrcPassword.IsEnabled = False
             uiSrcUsername.IsEnabled = False
+            uiProcessLikes.IsEnabled = False
         Else
             uiSrcPurge.IsEnabled = True
             uiSrcPurge.Text = _item.deleteAfterDays
             uiSrcPassword.IsEnabled = True
             uiSrcUsername.IsEnabled = True
+            uiProcessLikes.IsEnabled = True
         End If
 
         uiSrcPassword.Text = _item.sPswd
@@ -153,6 +157,8 @@ Class SettingsCloudPublisher
 
         uiSrcInclude.Text = _item.includeMask
         uiSrcExclude.Text = _item.excludeMask
+
+        uiProcessLikes.IsChecked = _item.processLikes
 
         uiSrcLastSave.Text = "-"
         If _item.lastSave.IsDateValid Then uiSrcLastSave.Text = _item.lastSave.ToString("yyyy-MM-dd HH:mm")

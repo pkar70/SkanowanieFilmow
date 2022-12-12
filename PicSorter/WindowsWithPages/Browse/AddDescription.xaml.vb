@@ -67,7 +67,7 @@ Public Class AddDescription
         If oSubTree Is Nothing Then Return
         For Each oItem As Vblib.OneKeyword In oSubTree
             Dim oNew As New MenuItem
-            oNew.Header = oItem.sTagId & " " & oItem.sDisplayName
+            oNew.Header = oItem.sId & " " & oItem.sDisplayName
             'oNew.Margin = New Thickness(2)
             DodajSubTree(oNew, oItem.SubItems)
             AddHandler oNew.Click, AddressOf DodajTenKeyword
@@ -84,7 +84,7 @@ Public Class AddDescription
 
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
             Dim oNew As New MenuItem
-            oNew.Header = oItem.sTagId
+            oNew.Header = oItem.sId
             'oNew.Margin = _DefMargin
             DodajSubTree(oNew, oItem.SubItems)
             AddHandler oNew.Click, AddressOf DodajTenKeyword
@@ -108,7 +108,7 @@ Public Class AddDescription
         Dim oKeyword As Vblib.OneKeyword = oMI?.DataContext
         If oKeyword Is Nothing Then Return
 
-        uiKeywords.Text = (uiKeywords.Text & " " & oKeyword.sTagId).Trim & " "
+        uiKeywords.Text = (uiKeywords.Text & " " & oKeyword.sId).Trim & " "
         uiDescription.Text = (uiDescription.Text & vbCrLf & oKeyword.sDisplayName).Trim
 
     End Sub

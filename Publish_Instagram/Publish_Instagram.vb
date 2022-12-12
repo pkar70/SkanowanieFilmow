@@ -1,4 +1,6 @@
 Imports System.IO
+Imports System.Net
+Imports System.Net.Mail
 Imports InstagramApiSharp
 Imports InstagramApiSharp.API
 Imports InstagramApiSharp.Classes.Models
@@ -12,9 +14,10 @@ Public Class Publish_Instagram
 
     Public Overrides Property sProvider As String = PROVIDERNAME
 
+    Private _DataDir As String
 
     Private Function GetSessionFilePathName() As String
-        Return IO.Path.Combine(IO.Path.GetTempPath, "instaSessionState.bin")
+        Return IO.Path.Combine(_DataDir, $"instaSessionState.{konfiguracja.nazwa}.bin")
     End Function
 
     Public Overrides Async Function Login() As Task(Of String)
@@ -23,7 +26,7 @@ Public Class Publish_Instagram
     End Function
 
     Public Overrides Async Function SendFileMain(oPic As Vblib.OnePic) As Task(Of String)
-        If mInstaApi Is Nothing Then Return "ERROR: przed SendFile musi byæ LOGIN"
+        If Not Await EnsureLoggedIn() Then Return "ERROR: przed SendFile musi byæ LOGIN"
 
         ' If String.IsNullOrEmpty(sZmienneZnaczenie) Then Return "ERROR: Publish_AdHoc, folderForFiles is not set"
 
@@ -38,55 +41,136 @@ Public Class Publish_Instagram
 
     End Function
 
-    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
-        ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
-        Throw New NotImplementedException()
-    End Function
-
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
         Return Integer.MaxValue ' no limits
     End Function
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
-    Public Overrides Function CreateNew(oConfig As Vblib.CloudConfig, oPostProcs As Vblib.PostProcBase()) As Vblib.AnyStorage
+    Public Overrides Function CreateNew(oConfig As Vblib.CloudConfig, oPostProcs As Vblib.PostProcBase(), sDataDir As String) As Vblib.AnyStorage
         If oConfig.sProvider <> sProvider Then Return Nothing
 
         Dim oNew As New Publish_Instagram
         oNew.konfiguracja = oConfig
         oNew._PostProcs = oPostProcs
-
+        oNew._DataDir = sDataDir
         Return oNew
     End Function
 
 
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+
+    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
+        ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
+        Throw New NotImplementedException()
+    End Function
+
     Public Overrides Async Function VerifyFileExist(oPic As Vblib.OnePic) As Task(Of String)
-        Return "Should not be run for Ad-Hoc"
+        Dim sLink As String = Await GetShareLink(oPic)
+        If sLink = "" Then Return "ERROR: nie mam zapisanego ID pliku"
+
+        Dim sPage As String = Await Vblib.HttpPageAsync(sLink)
+        If sPage.Contains("<title>Instagram</title>") Then Return "NO FILE"
+        ' gdy jest, to <title>XXXXXX on Instagram: &quot;DESCRIPTION&quot;</title>
+        Return ""
+
     End Function
 
     Public Overrides Async Function VerifyFile(oPic As Vblib.OnePic, oCopyFromArchive As Vblib.LocalStorage) As Task(Of String)
-        Return "Should not be run for Ad-Hoc"
+        Dim sRet As String = Await VerifyFileExist(oPic)
+        If sRet <> "NO FILE" Then Return sRet
+
+        If mInstaApi Is Nothing Then Return "ERROR: przed VerifyFile:Resend musi byæ LOGIN"
+
+        ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
+        Throw New NotImplementedException()
     End Function
 
     Public Overrides Async Function GetFile(oPic As Vblib.OnePic) As Task(Of String)
-        Return "Should not be run for Ad-Hoc"
+        Dim sLink As String = Await GetShareLink(oPic)
+        If sLink = "" Then Return "ERROR: nie mam zapisanego ID pliku"
+
+        ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
+        ' *TODO* raczej bedzie konieczny LOGIN
+        Throw New NotImplementedException()
     End Function
 
 
-    Public Overrides Async Function GetRemoteTags(oPic As Vblib.OnePic) As Task(Of String)
-        Return "Should not be run for Ad-Hoc"
+    Protected Overrides Async Function GetRemoteTagsMain(oPic As Vblib.OnePic) As Task(Of String)
+        Dim sId As String = oPic.GetCloudPublishedId(konfiguracja.nazwa)
+        If sId = "" Then Return "ERROR: nie mam zapisanego ID pliku"
+
+        If Not Await EnsureLoggedIn() Then Return "ERROR: przed Delete musi byæ LOGIN"
+
+        Dim iInd As Integer = sId.IndexOf("|")
+        Dim sIdek As String = sId.Substring(iInd + 1)
+
+        Dim oRet = Await mInstaApi.MediaProcessor.GetMediaByIdAsync(sIdek)
+        If Not oRet.Succeeded Then Return "ERROR: " & oRet.Info.Message
+
+        Dim sKeywordInDesc As String = "CLOUD:" & konfiguracja.nazwa
+
+        If konfiguracja.processLikes Then
+            If oRet.Value.LikesCount > 0 Then
+                Dim sLikes As String = $"Likes: {oRet.Value.LikesCount}"
+                sLikes &= " ("
+                Dim iGuard As Integer = 10
+                For Each oLike As InstaUserShort In oRet.Value.Likers
+                    sLikes = sLikes & oLike.UserName & ","
+                    iGuard -= 1
+                    If iGuard < 0 Then
+                        sLikes &= "..."
+                        Exit For
+                    End If
+                Next
+                sLikes &= ")"
+
+                oPic.AddDescription(New Vblib.OneDescription(sLikes, sKeywordInDesc))
+            End If
+        End If
+
+        If oRet.Value.PreviewComments IsNot Nothing Then
+            For Each oComment As InstaComment In oRet.Value.PreviewComments
+                ' tylko "nieswoje"
+                If oComment.User.UserName <> konfiguracja.sUsername Then
+                    ' *TODO* pomijamy reply, tylko komentarze
+                    Dim sData As String = oComment.CreatedAt.ToString("yyyy.MM.dd HH:mm")
+                    Dim sComm As String = $"{oComment.Text} ({oComment.User.UserName})"
+                    oPic.TryAddDescription(New Vblib.OneDescription(sData, sComm, sKeywordInDesc))
+                End If
+            Next
+        End If
+
+        Return ""
     End Function
 
     Public Overrides Async Function Delete(oPic As Vblib.OnePic) As Task(Of String)
-        Return "Should not be run for Ad-Hoc"
+        Dim sId As String = oPic.GetCloudPublishedId(konfiguracja.nazwa)
+        If sId = "" Then Return "ERROR: nie mam zapisanego ID pliku"
+
+        If Not Await EnsureLoggedIn() Then Return "ERROR: przed Delete musi byæ LOGIN"
+
+        Dim iInd As Integer = sId.IndexOf("|")
+        Dim sIdek As String = sId.Substring(iInd + 1)
+        Dim oRet = Await mInstaApi.MediaProcessor.DeleteMediaAsync(sIdek, InstaMediaType.Image)
+        If Not oRet.Succeeded Then Return "ERROR: " & oRet.Info.Message
+
+        oPic.RemoveCloudPublished(konfiguracja.nazwa)
+
+        Return ""
+
     End Function
 
     Public Overrides Async Function GetShareLink(oPic As Vblib.OnePic) As Task(Of String)
-        Return "Should not be run for Ad-Hoc"
+        Dim sId As String = oPic.GetCloudPublishedId(konfiguracja.nazwa)
+        If sId = "" Then Return ""
+        Dim iInd As Integer = sId.IndexOf("|")
+        Return "https://www.instagram.com/p/" & sId.Substring(0, iInd) & "/"
     End Function
 
     Public Overrides Async Function GetShareLink(oOneDir As Vblib.OneDir) As Task(Of String)
-        Return "Should not be run for Ad-Hoc"
+        Return ""
     End Function
 
     Public Overrides Async Function Logout() As Task(Of String)
@@ -94,6 +178,13 @@ Public Class Publish_Instagram
     End Function
 
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+
+    Private Async Function EnsureLoggedIn() As Task(Of Boolean)
+        If mInstaApi IsNot Nothing Then Return True
+        Await Login()
+        If mInstaApi IsNot Nothing Then Return True
+        Return False
+    End Function
 
 
 #Region "ramtinak/InstagramApiSharp"
@@ -217,315 +308,11 @@ Public Class Publish_Instagram
         Dim oRet = Await mInstaApi.MediaProcessor.UploadPhotoAsync(obrazekTam, sCaption)
         If Not oRet.Succeeded Then Return "ERROR: " & oRet.Info.Message
 
-        oPic.AddCloudPublished(konfiguracja.nazwa, oRet.Value.Code)
+        oPic.AddCloudPublished(konfiguracja.nazwa, oRet.Value.Code & "|" & oRet.Value.Pk)
 
         ' https://github.com/ramtinak/InstagramApiSharp/blob/master/src/InstagramApiSharp/API/Processors/MediaProcessor.cs
         Return ""
     End Function
-
-
-#If False Then
-    Public Async Function InstaNugetGetUserDataAsync(sChannel As String) As Task(Of JSONinstaUser)
-        If mInstaApi Is Nothing Then Return Nothing
-        If Not mInstaApi.IsUserAuthenticated Then Return Nothing
-
-        Try
-            Dim userInfo = Await mInstaApi.UserProcessor.GetUserInfoByUsernameAsync(sChannel)
-            If Not userInfo.Succeeded Then Return Nothing
-            Dim oNew As JSONinstaUser = New JSONinstaUser
-            oNew.biography = userInfo.Value.Biography
-            oNew.full_name = userInfo.Value.FullName
-            oNew.id = userInfo.Value.Pk
-            Return oNew
-        Catch ex As Exception
-            Return Nothing
-        End Try
-
-    End Function
-
-    Public Async Function InstaNugetFollowAsync(iUserId As Long, bMsg As Boolean) As Task(Of Boolean)
-        If mInstaApi Is Nothing Then Return False
-        If Not mInstaApi.IsUserAuthenticated Then Return False
-
-        Try
-            Dim oRes = Await mInstaApi.UserProcessor.FollowUserAsync(iUserId)
-            If oRes.Succeeded Then Return True
-
-            If bMsg Then Await DialogBoxAsync("Error trying to Follow")
-
-        Catch ex As Exception
-        End Try
-        Return False
-    End Function
-
-    Public Function InstaNugetGetCurrentUserId() As Long
-        If mInstaApi Is Nothing Then Return 0
-        If Not mInstaApi.IsUserAuthenticated Then Return 0
-
-        If mInstaApi.GetLoggedUser.LoggedInUser.Pk > 0 Then Return mInstaApi.GetLoggedUser.LoggedInUser.Pk
-
-        'Dim oCurrUsers = Await mInstaApi.GetLoggedUser.LoggedInUser  ' .GetCurrentUserAsync()
-        'If Not oCurrUsers.Succeeded Then Return 0
-
-        'Return oCurrUsers.Value.Pk
-        Return 0
-    End Function
-
-    'Public Async Function InstaNugetGetFollowingi(oTBoxSetText As UItBoxSetText) As Task(Of List(Of LocalChannel))
-    '    Dim oRet As List(Of LocalChannel) = New List(Of LocalChannel)
-
-    '    Dim iUserId As Long = GetSettingsLong("instagramUserId")
-    '    If iUserId = 0 Then
-    '        iUserId = InstaNugetGetCurrentUserId()
-    '        If iUserId = 0 Then
-    '            If oTBoxSetText IsNot Nothing Then Await DialogBoxAsync("ERROR: nie moge dostac sie do currentUserId")
-    '            Return Nothing
-    '        End If
-    '        SetSettingsLong("instagramUserId", iUserId)
-    '    End If
-
-    '    Dim oPaging As InstagramApiSharp.PaginationParameters = InstagramApiSharp.PaginationParameters.MaxPagesToLoad(20)   ' przy 10 jest chyba OK, ale warto miec rezerwê
-    '    Dim sSearchQuery As String = ""
-    '    Dim oRes = Await mInstaApi.UserProcessor.GetUserFollowingByIdAsync(iUserId, oPaging, sSearchQuery)
-    '    If Not oRes.Succeeded Then Return Nothing
-
-    '    If oRes.Value Is Nothing Then Return Nothing
-
-    '    ' 2021.12.14 - jedno pytanie tylko...
-    '    Dim bDodajFollow As Boolean = False
-
-    '    For Each oFoll As InstagramApiSharp.Classes.Models.InstaUserShort In oRes.Value
-    '        Dim bMam As Boolean = False
-    '        For Each oItem As LocalChannel In _kanaly
-    '            If oItem.sChannel.ToLower = oFoll.UserName.ToLower Then
-    '                If oItem.iUserId < 10 Then oItem.iUserId = oFoll.Pk
-    '                oRet.Add(oItem)
-    '                bMam = True
-    '            End If
-    '        Next
-    '        If Not bMam Then
-    '            If oTBoxSetText Is Nothing Then Continue For
-
-    '            If Not bDodajFollow Then
-    '                If Not Await DialogBoxYNAsync("Following '" & oFoll.UserName & "' - nie ma kana³u, dodaæ?") Then
-    '                    Continue For
-    '                End If
-    '                bDodajFollow = True
-    '            End If
-    '            Dim sAdded As String = Await TryAddChannelAsync(oFoll.UserName, oTBoxSetText)
-    '            If Not sAdded.StartsWith("OK") Then Continue For
-    '        End If
-    '    Next
-
-    '    Return oRet
-
-    'End Function
-
-    'Public Delegate Sub UIProgRingShow(bVisible As Boolean, dMax As Double)
-    'Public Delegate Sub UIProgRingMaxVal(iMax As Integer)
-    'Public Delegate Sub UIProgRingInc()
-
-    'Public Async Function InstaNugetRefreshAll(oTBoxSetText As UItBoxSetText,
-    '              oProgRingShow As UIProgRingShow, oProgRingMaxVal As UIProgRingMaxVal, oProgRingInc As UIProgRingInc) As Task(Of Integer)
-    '    'Dim bMsg As Boolean = False
-    '    'If oTB IsNot Nothing Then bMsg = True
-
-    '    oProgRingShow(True, 0)
-    '    Dim bLoadOk As Boolean = LoadChannels()
-    '    oProgRingShow(False, 0)
-
-    '    If Not bLoadOk Then
-    '        If oTBoxSetText IsNot Nothing Then Await DialogBoxAsync("Empty channel list")
-    '        Return False
-    '    End If
-
-    '    ' sprawdzamy tylko followingi - omijaj¹c w ten sposób mechanizm blokowania kana³ów z aplikacji, jako ¿e teraz to jest rozsynchronizowane
-    '    oProgRingShow(True, 0)
-    '    If Not Await InstaNugetLoginAsync(oTBoxSetText) Then Return -1
-
-    '    Dim oFollowingi As List(Of LocalChannel) = Await InstaNugetGetFollowingi(oTBoxSetText)
-    '    oProgRingShow(False, 0)
-    '    If oFollowingi Is Nothing Then Return -1
-
-    '    ' ponizsza czesc bedzie wspolna dla RefreshAll (wedle Following), oraz periodycznego (wedle InstaNugetGetRecentActivity)
-    '    Dim bChannelsDirty As Boolean = False
-    '    Dim lsToastErrors As List(Of String) = New List(Of String)
-    '    Dim lsToastNews As List(Of String) = New List(Of String)
-    '    Dim iNewsCount As Integer = 0
-
-    '    Dim iErrCntToStop As Integer = 10
-
-    '    oProgRingShow(True, oFollowingi.Count)
-    '    oProgRingMaxVal(oFollowingi.Count)   ' bo to zagnie¿d¿one jest w PRShow, czyli sam z siebie nie zmieni Max
-
-    '    For Each oChannel As LocalChannel In From c In oFollowingi Order By c.sChannel
-    '        oProgRingInc()
-
-    '        If oTBoxSetText IsNot Nothing Then oTBoxSetText(oChannel.sChannel)
-
-    '        oProgRingShow(True, 0)
-    '        Dim iRet As Integer = Await InstaNugetCheckNewsFromUserAsync(oChannel, oTBoxSetText)   ' w serii, wiec bez czekania na klikanie b³êdów
-    '        oProgRingShow(False, 0)
-
-    '        Await Task.Delay(3000)  ' tak samo jak w wersji anonymous, jednak czekamy troche, nawet wiêcej (3 nie 2 sek) - i tak idziemy tylko po follow, nieistniej¹ce s¹ usuniête automatycznie
-    '        If iRet < 0 Then
-    '            oChannel.iNewCnt = -1
-    '            If oChannel.sFirstError = "" Then oChannel.sFirstError = DateTime.Now.ToString("dd MM yyyy")
-    '            lsToastErrors.Add(oChannel.sChannel)
-    '            iErrCntToStop -= 1
-    '            If iErrCntToStop < 0 Then
-    '                ' skoro tak duzo bledow pod rz¹d, to pewnie nie ma sensu nic dalej sciagac
-    '                ClipPut(msLastHtmlPage)
-    '                If oTBoxSetText IsNot Nothing Then Await DialogBoxAsync("za duzo b³êdów pod rz¹d, poddajê siê; w ClipBoard ostatni HTML")
-    '                Exit For
-    '            End If
-    '            bChannelsDirty = True
-    '        ElseIf iRet > 0 Then
-    '            iErrCntToStop = 10
-    '            oChannel.sFirstError = ""  ' kana³ ju¿ nie daje b³êdów
-    '            lsToastNews.Add(oChannel.sChannel & " (" & iRet & ")")
-    '            oChannel.iNewCnt = iRet
-    '            iNewsCount += iRet
-    '            bChannelsDirty = True
-    '        End If
-    '        ' zero: nothing - nic nowego, ale te¿ bez b³êdu
-    '        ' ewentualnie kiedyœ sprawdzanie, ¿e dawno nic nie by³o
-    '    Next
-
-    '    ' te dwie rzeczy by³y na koncu, ale wtedy czasem nie zapisuje (jak wylatuje) - wiec zrobmy to teraz, jakby crash byl ponizej (a nie w samym sciaganiu)
-    '    SetSettingsString("lastRun", DateTime.Now.ToString("yyyy.MM.dd HH:mm"))
-    '    If bChannelsDirty Then SaveChannels()
-
-    '    oProgRingShow(False, 0)
-
-    '    Await PrzygotujPokazInfo(lsToastErrors, lsToastNews, (oTBoxSetText IsNot Nothing))
-    '    ' przeniesione przed przygotowanie komunikatu
-    '    'SetSettingsString("lastRun", DateTime.Now.ToString("yyyy.MM.dd HH:mm"))
-
-    '    If Not bChannelsDirty Then Return False
-
-    '    Return True
-
-    'End Function
-
-    '' wersja 2, teoretycznie szybsza: foreach(user in getRecentActivity) do checkUserActivity()
-    '' wersja 3, podobna do powyzej: foreach(activity in getRecentActivity) do sciagnijObrazek
-    '' ale co jak jest kilka obrazkow po kolei w jednym? to jest ten story?
-    '' ile wpisów jest na page? 12, jak przy user (ze nigdy wiecej nie pokazalo obrazkow niz 12?)
-    '' to mo¿e byæ na timer, np. godzinny
-    'Public Async Function InstaNugetGetRecentActivity() As Task
-    '    If mInstaApi Is Nothing Then Return
-    '    If Not mInstaApi.IsUserAuthenticated Then Return
-
-    '    Dim oPaging As InstagramApiSharp.PaginationParameters = InstagramApiSharp.PaginationParameters.MaxPagesToLoad(10)
-    '    Dim oRes = Await mInstaApi.UserProcessor.GetFollowingRecentActivityFeedAsync(oPaging)
-
-    '    ' *TODO*
-
-    'End Function
-
-
-    'Public Async Function InstaNugetCheckNewsFromUserAsync(oChannel As LocalChannel, oTBoxSetText As UItBoxSetText) As Task(Of Integer)
-    '    Try
-
-    '        ' folder for pictures
-    '        Dim sFold As String = Await GetChannelDir(oChannel, (oTBoxSetText IsNot Nothing))
-    '        If sFold = "" Then Return -1
-
-    '        Dim bRet As Boolean
-    '        bRet = Await InstaNugetLoginAsync(oTBoxSetText)
-    '        If Not bRet Then Return Nothing
-
-    '        ' mozna id wzi¹æ z oItem
-    '        If oChannel.iUserId < 10 Then
-    '            Dim userInfo = Await mInstaApi.UserProcessor.GetUserInfoByUsernameAsync(oChannel.sChannel)
-    '            If Not userInfo.Succeeded Then Return Nothing
-    '            oChannel.iUserId = userInfo.Value.Pk
-    '            ' kana³y s¹ do póŸniejszego ZAPISU!! choæby dlatego ¿e lastId sie zmienia
-    '        End If
-
-    '        Dim userFullInfo = Await mInstaApi.UserProcessor.GetFullUserInfoAsync(oChannel.iUserId)
-    '        If Not userFullInfo.Succeeded Then Return Nothing
-
-    '        ' przetworzenie listy z FEED
-    '        Dim oWpisy As List(Of InstagramApiSharp.Classes.Models.InstaMedia) = userFullInfo.Value?.Feed?.Items
-    '        If oWpisy Is Nothing Then
-    '            If oTBoxSetText IsNot Nothing Then Await DialogBoxAsync("Bad List(Of InstaMedia)" & vbCrLf & oChannel.sChannel)
-    '            Return -1
-    '        End If
-
-    '        ' list of pictures (with data)
-    '        Dim oPicList As List(Of LocalPictureData) = LoadPictData(sFold)
-    '        Dim bPicListDirty As Boolean = False
-
-    '        Dim sLastGuid As String = oChannel.sLastId
-    '        Dim bFirst As Boolean = True
-    '        Dim iNewPicCount As Integer = 0
-
-    '        For Each oMedia As InstagramApiSharp.Classes.Models.InstaMedia In oWpisy
-
-    '            If oMedia.Images Is Nothing Then Continue For
-    '            If oMedia.Images.Count < 1 Then Continue For
-
-    '            Dim oPic = oMedia.Images.ElementAt(0) ' teoretycznie pierwszy jest najwiekszy, ale...
-    '            For Each oPicLoop In oMedia.Images
-    '                If oPicLoop.Height > oPic.Height Then oPic = oPicLoop
-    '            Next
-
-    '            If oMedia.Pk = sLastGuid Then Exit For
-    '            If bFirst Then
-    '                oChannel.sLastId = oMedia.Pk
-    '                bFirst = False
-    '            End If
-
-    '            Dim oNew As LocalPictureData = New LocalPictureData
-    '            oNew.iTimestamp = oMedia.TakenAtUnix
-    '            If oMedia.Location IsNot Nothing Then oNew.sPlace = oMedia.Location?.Name
-    '            ' oNew.sCaptionAccessib = oItem.accessibility_caption ' tego pola nie ma?
-    '            oNew.sData = DateTime.Now.ToString("yyyy-MM-dd") ' data wczytania obrazka, nie data obrazka!
-    '            If oMedia.Caption IsNot Nothing Then oNew.sCaption = oMedia.Caption.Text
-    '            'If oItem?.edge_media_to_caption?.edges IsNot Nothing Then
-    '            '    For Each oCapt As JSONinstaNodeCaption In oItem.edge_media_to_caption.edges
-    '            '        oNew.sCaption = oNew.sCaption & oCapt.node.text & vbCrLf
-    '            '    Next
-    '            'End If
-
-    '            oNew.sFileName = Await DownloadPictureAsync(sFold, oPic.Uri)
-    '            If oNew.sFileName = "" Then
-    '                If oTBoxSetText IsNot Nothing Then Await DialogBoxAsync("Cannot download picture from channel" & vbCrLf & oChannel.sChannel)
-    '            Else
-    '                ' tylko gdy dodany zosta³ jakiœ obrazek
-    '                bPicListDirty = True
-    '                iNewPicCount += 1
-    '                oPicList.Insert(0, oNew)
-
-    '                '' aktualizacja listy nowoœci
-    '                'Dim oNewPicData As LocalNewPicture = New LocalNewPicture
-    '                'oNewPicData.oPicture = oNew
-    '                'oNewPicData.oChannel = oChannel
-    '                'App._gNowosci.Add(oNewPicData)
-
-    '            End If
-    '        Next
-
-    '        If Not bPicListDirty Then Return 0
-
-    '        Await SavePictData(oChannel, oPicList, (oTBoxSetText IsNot Nothing))
-    '        'Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(From c In oPicList Select c Distinct, Newtonsoft.Json.Formatting.Indented)
-    '        'Await oFold.WriteAllTextToFileAsync("pictureData.json", sTxt, Windows.Storage.CreationCollisionOption.ReplaceExisting)
-
-
-    '        Return iNewPicCount
-
-    '    Catch ex As Exception
-    '        CrashMessageAdd("GetInstagramFeedFromJSON", ex, True)
-    '    End Try
-
-    '    Return -1   ' signal error
-
-
-    'End Function
-#End If
 
 #End Region
 

@@ -12,12 +12,12 @@
   <ItemGroup>
     <PackageReference Include="MetadataExtractor.StrongName" Version="2.4.3" />
     <PackageReference Include="Microsoft.Azure.CognitiveServices.Vision.ComputerVision" Version="7.0.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="6.0.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.1.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -53,8 +53,7 @@
     <Folder Include="TagTree\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ExifDataLib\Taggers_ExifDataLib.csproj" />
-    <ProjectReference Include="..\Taggers_ExifLib\Taggers_ExifDataLib.csproj" />
+    <ProjectReference Include="..\Taggers_ExifLib\AsNuget-Taggers_ExifDataLib.csproj" />
   </ItemGroup>
 
 </Project>

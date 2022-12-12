@@ -4,7 +4,7 @@ Imports Newtonsoft.Json
 Public Class OneKeyword
     Inherits MojaStruct
 
-    Public Property sTagId As String
+    Public Property sId As String
     Public Property sDisplayName As String
     Public Property notes As String
     ' w dwie strony:
@@ -37,8 +37,8 @@ Public Class OneKeyword
 #End Region
 
     Public Function ToComboDisplayName() As String
-        If String.IsNullOrWhiteSpace(sDisplayName) Then Return sTagId
-        Dim sRet As String = sTagId & " ("
+        If String.IsNullOrWhiteSpace(sDisplayName) Then Return sId
+        Dim sRet As String = sId & " ("
         If sDisplayName.Length < 24 Then Return sRet & sDisplayName & ")"
 
         Return sRet & sDisplayName.Substring(0, 23) & "…)"
@@ -46,7 +46,7 @@ Public Class OneKeyword
     End Function
 
     Public Function ToFlatList() As List(Of OneKeyword)
-        DumpCurrMethod(sTagId)
+        DumpCurrMethod(sId)
         Dim lista As New List(Of OneKeyword)
 
         lista.Add(Me)
@@ -71,13 +71,13 @@ Public Class KeywordsList
 
     Public Overloads Function Load() As Boolean
         If MyBase.Load() Then
-            CalculateMinMaxDateTree
+            CalculateMinMaxDateTree()
             Return True
         End If
 
-        _lista.Add(New OneKeyword With {.sTagId = "-", .sDisplayName = "osoby"})
-        _lista.Add(New OneKeyword With {.sTagId = "#", .sDisplayName = "miejsca"})
-        _lista.Add(New OneKeyword With {.sTagId = "=", .sDisplayName = "inne"})
+        _lista.Add(New OneKeyword With {.sId = "-", .sDisplayName = "osoby"})
+        _lista.Add(New OneKeyword With {.sId = "#", .sDisplayName = "miejsca"})
+        _lista.Add(New OneKeyword With {.sId = "=", .sDisplayName = "inne"})
 
         Return False
 
@@ -85,7 +85,7 @@ Public Class KeywordsList
 
     Public Function GetKeyword(sKey As String) As OneKeyword
         For Each oItem As OneKeyword In ToFlatList()
-            If oItem.sTagId = sKey Then Return oItem
+            If oItem.sId = sKey Then Return oItem
         Next
 
         Return Nothing

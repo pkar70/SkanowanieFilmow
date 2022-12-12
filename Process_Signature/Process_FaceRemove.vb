@@ -38,11 +38,16 @@ Public Class Process_FaceRemove
                     Dim iW As Integer = img.Width * oFace.Width / 100
                     Dim iY As Integer = img.Height * oFace.Y / 100
                     Dim iH As Integer = img.Height * oFace.Height / 100
-                    ' jakieś dziwne mamy dane, więc sprawdzamy
+                    ' jakieś dziwne mamy dane, więc sprawdzamy - to jest zawsze dobre
                     If oFace.Width > 90 Then iW = img.Width / 10
                     If oFace.Height > 90 Then iH = img.Height / 10
                     If oFace.X + oFace.Width > 100 Then iW = img.Width / 10
                     If oFace.Y + oFace.Height > 100 Then iH = img.Height / 10
+
+                    ' oraz limit na razie, może później do usunięcia
+                    If oFace.Width > 30 Then iW = img.Width / 10
+                    If oFace.Height > 30 Then iH = img.Height / 10
+
 
                     ' i robimy owal
                     graphic.FillEllipse(_brush, iX, iY, iW, iH)

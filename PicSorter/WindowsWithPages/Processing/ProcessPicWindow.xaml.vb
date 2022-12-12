@@ -41,12 +41,7 @@ Class ProcessPic
         Dim iCnt As Integer = 0
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For  ' bo musimy wiedzieć gdzie wstawiać
-            If oPic.Published Is Nothing Then Continue For   ' bo wysyłamy do Cloud tylko te, które każemy wysyłać, a nie każdy
-
-            For Each oPubl In oPic.Published
-                ' jeśli value jest nonempty, to znaczy że mamy identyfikator wpisany - czyli wysłany
-                If String.IsNullOrWhiteSpace(oPubl.Value) Then iCnt += 1
-            Next
+            iCnt += oPic.CountPublishingWaiting
         Next
 
         Return iCnt

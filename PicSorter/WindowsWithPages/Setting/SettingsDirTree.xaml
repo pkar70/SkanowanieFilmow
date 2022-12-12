@@ -26,7 +26,7 @@
                 <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
                     <Grid HorizontalAlignment="Stretch" >
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="60" Name="naID" />
+                            <ColumnDefinition Width="200" Name="naID" />
                             <ColumnDefinition Width="*" Name="naName" />
                         </Grid.ColumnDefinitions>
 
@@ -40,6 +40,10 @@
                                 <Separator/>
                                 <MenuItem Header="Export node" Click="uiExportItem_Click" />
                                 <MenuItem Header="Import subnode" Click="uiImportSubItem_Click" />
+                                <Separator/>
+                                <MenuItem Header="Delete" Click="uiDeleteItem_Click" />
+                                <Separator/>
+                                <MenuItem Header="Scan folders" Click="uiScanFolder_Click" />
                             </ContextMenu>
                         </Grid.ContextMenu>
                     </Grid>
@@ -56,18 +60,17 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" Name="naOkEndEdit"/>
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" Text="Id" />
             <TextBlock Grid.Row="1" Text="Name" />
             <TextBlock Grid.Row="2" Text="DenyPublish" />
             <TextBlock Grid.Row="3" Text="Notes" />
 
-            <TextBox Grid.Row="0" Name="uiId" Grid.Column="1"/>
-            <TextBox Grid.Row="1" Name="uiDisplayName" Grid.Column="1"/>
-            <CheckBox Grid.Row="3" Name="uiDenyPublish" Grid.Column="1" />
-            <TextBox Grid.Row="4" Name="uiNotes" Grid.Column="1" AcceptsReturn="True" Height="40"/>
+            <TextBox Grid.Row="1" Name="uiId" Grid.Column="1"/>
+            <CheckBox Grid.Row="2" Name="uiDenyPublish" Grid.Column="1" />
+            <TextBox Grid.Row="3" Name="uiNotes" Grid.Column="1" AcceptsReturn="True" Height="40"/>
 
             <Button Content=" Done " HorizontalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2" Margin="5,10,5,15" Click="uiAddEditDone_Click"/>
         </Grid>

@@ -132,7 +132,7 @@ Public Class BrowseKeywordsWindow
         _oNewExif.UserComment = ""
 
         For Each oItem As OneKeyword In lKeys
-            _oNewExif.Keywords = _oNewExif.Keywords & " " & oItem.sTagId
+            _oNewExif.Keywords = _oNewExif.Keywords & " " & oItem.sId
             _oNewExif.UserComment = _oNewExif.UserComment & " | " & oItem.sDisplayName
         Next
 
@@ -160,7 +160,7 @@ Public Class BrowseKeywordsWindow
 
     'Private Function RefreshListaRecursive(sId As String, oItem As Vblib.OneKeyword) As Boolean
 
-    '    If oItem.sTagId = sId Then
+    '    If oItem.sId = sId Then
     '        Dim oNewList As New List(Of Vblib.OneKeyword)
     '        RefreshListaAddRecursive(oNewList, oItem)
     '        uiLista.ItemsSource = oNewList
@@ -177,7 +177,8 @@ Public Class BrowseKeywordsWindow
     'End Function
     Private Sub RefreshLista()
 
-        ' step 1: znajdź sTagId
+        If uiGrupy.SelectedItem Is Nothing Then Return
+        ' step 1: znajdź sId
         ' Dim oMI As MenuItem = uiGrupy.SelectedItem
         Dim sId As String = uiGrupy.SelectedItem.Trim
         Dim iInd As Integer = sId.IndexOf(" ")
@@ -196,7 +197,7 @@ Public Class BrowseKeywordsWindow
 
     Private Sub WypelnComboRecursive(oItem As Vblib.OneKeyword, sPrefix As String)
 
-        uiGrupy.Items.Add(sPrefix & oItem.sTagId & " (" & oItem.sDisplayName & ")")
+        uiGrupy.Items.Add(sPrefix & oItem.sId & " (" & oItem.sDisplayName & ")")
 
         If oItem.SubItems IsNot Nothing Then
             For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
@@ -300,7 +301,7 @@ Public Class BrowseKeywordsWindow
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
             oItem.bChecked = False
             For Each sTag As String In aKwds
-                If oItem.sTagId = sTag Then
+                If oItem.sId = sTag Then
                     oItem.bChecked = True
                     Exit For
                 End If
@@ -320,7 +321,7 @@ Public Class BrowseKeywordsWindow
 
     '    oItem.bChecked = False
     '    For Each sTag As String In aKwds
-    '        If oItem.sTagId = sTag Then
+    '        If oItem.sId = sTag Then
     '            oItem.bChecked = True
     '            Exit For
     '        End If
@@ -438,7 +439,7 @@ Public Class BrowseKeywordsWindow
 
 
     Private Sub ZablokujNiezgodneWedleDat(oItem As Vblib.OneKeyword, minDate As Date, maxDate As Date)
-        'vb14.DumpMessage($"oItem: {oItem.sTagId}, minDate: {minDate}, maxDate: {maxDate}")
+        'vb14.DumpMessage($"oItem: {oItem.sId}, minDate: {minDate}, maxDate: {maxDate}")
 
         ' step 1: czy węzeł ma limit dat?
 
@@ -471,7 +472,7 @@ Public Class BrowseKeywordsWindow
 
 
     'Private Sub ZablokujNiezgodneWedleDatRecursive(oItem As Vblib.OneKeyword, minDate As Date, maxDate As Date)
-    '    'vb14.DumpMessage($"oItem: {oItem.sTagId}, minDate: {minDate}, maxDate: {maxDate}")
+    '    'vb14.DumpMessage($"oItem: {oItem.sId}, minDate: {minDate}, maxDate: {maxDate}")
 
     '    ' step 1: czy węzeł ma limit dat?
 

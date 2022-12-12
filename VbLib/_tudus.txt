@@ -1,6 +1,16 @@
 
 BROWSER: po edycji jest stara wersja miniaturki - chyba juz
 
+Mniej więcej 1 picek to 1 call, więc 5000 obrazków miesięcznie. Całkiem dobrze, nie trzeba tak bardzo oszczędzać.
+
+wygaszanie autosplit gdy nie ma podziałów w selecteditems
+
+powoli robić refactor obiektowy,
+tzn. przenosić do OneKey i OneDir jak najwiecej, je jako podstawa i bez uzywania innych
+potem do OnePic, ktory by wykorzystywał OneKey i OneDir
+
+ARCHIVE: stykówki?
+
 teraz jest 1150 katalogów w cyfrowe, więc trzeba liczyć >2k
 
 może katalogi nie takie drzewiaste... ale to by utrudniło z kolei treeview.
@@ -10,7 +20,6 @@ PUBLISH: ściąganie komentarzy i ich doklejanie do PIC.
 To może być nie z browser, tylko gdzieś później, z wyszukiwnaia.
 Albo z BigPic, gdy menu już można IsEnable robić per item.
 To może być w ogóle później jako stałe do robienia, np. raz na miesiąc ściągnij nowe komentarze.
-
 
 Resize błąd: ze gdy plik jest mniejszy? ale czemu co drugie uruchomienie? czegoś nie zwalnia?
  ale nawet jeśli, to w pipeline powinien po prostu przekopiować, zamiast stopować.

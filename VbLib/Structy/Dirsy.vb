@@ -169,6 +169,23 @@ Public Class DirsList
         Return oNew
     End Function
 
+    Public Sub AddSubfolderTree(oItem As OneDir, sFolder As String)
+        DumpCurrMethod(sFolder)
+
+        For Each sDir As String In IO.Directory.EnumerateDirectories(sFolder)
+            Dim oNew As New OneDir
+            oNew.sId = IO.Path.GetFileName(sDir)
+            oNew.sParentId = IO.Path.GetFileName(sFolder)
+            'Public Property notes As String
+            'Public Property denyPublish As Boolean
+            ' Public Property SubItems As List(Of OneDir)
+            If oItem.SubItems Is Nothing Then oItem.SubItems = New List(Of OneDir)
+            oItem.SubItems.Add(oNew)
+
+            AddSubfolderTree(oNew, sDir)
+        Next
+
+    End Sub
 
 End Class
 

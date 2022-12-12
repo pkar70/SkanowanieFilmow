@@ -21,7 +21,7 @@ Class SettingsKeywords
 
         If oItem Is Nothing Then Return
 
-        If oItem.sTagId.Length = 1 Then
+        If oItem.sId.Length = 1 Then
             vb14.DialogBox("Głównego węzła nie wolno edytować")
             Return
         End If
@@ -39,7 +39,7 @@ Class SettingsKeywords
         If oItem.SubItems Is Nothing Then oItem.SubItems = New List(Of Vblib.OneKeyword)
 
         Dim oNew As New Vblib.OneKeyword
-        oNew.sTagId = oItem.sTagId
+        oNew.sId = oItem.sId
         oNew.denyPublish = oItem.denyPublish    ' domyślnie schodzi zakaz w dół
 
         oItem.SubItems.Add(oNew)
@@ -62,7 +62,7 @@ Class SettingsKeywords
             uiDisplayName.IsReadOnly = True
         End If
 
-        uiId.Text = oItem.sTagId
+        uiId.Text = oItem.sId
         uiDisplayName.Text = oItem.sDisplayName
 
         If oItem.minDate.Year > 1000 And oItem.minDate.Year < 2100 Then uiMinDate.SelectedDate = oItem.minDate
@@ -127,13 +127,13 @@ Class SettingsKeywords
 
         If _addMode Then
             For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-                If oItem.sTagId = uiDisplayName.Text Then
+                If oItem.sId = uiDisplayName.Text Then
                     vb14.DialogBox("Taka nazwa już istnieje, wybierz inną")
                     Return
                 End If
             Next
             _editingItem.sDisplayName = uiDisplayName.Text
-            _editingItem.sTagId = uiId.Text
+            _editingItem.sId = uiId.Text
         End If
 
         If uiMinDate.SelectedDate.HasValue Then _editingItem.minDate = uiMinDate.SelectedDate.Value
@@ -238,6 +238,37 @@ Class SettingsKeywords
         Dim oGeo As MyBasicGeoposition = oWnd.GetGeoPos
         SetGeo(oGeo, 100)
 
+    End Sub
+
+    Private Async Sub uiDeleteItem_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oItem As Vblib.OneKeyword = oFE?.DataContext
+
+        If oItem Is Nothing Then Return
+
+        If oItem.SubItems IsNot Nothing AndAlso oItem.SubItems.Count > 0 Then
+            If Not Await vb14.DialogBoxYNAsync("To słowo zawiera pod-słowa, skasować całe drzewko?") Then Return
+        End If
+
+        ' we flat, sprawdzić występowanie słów kluczowych w buffor/archive
+        Dim bHasKeys As Boolean = False
+        For Each oKey As OneKeyword In oItem.ToFlatList
+            For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+                If oPic.HasKeyword(oKey) Then
+                    bHasKeys = True
+                    Exit For
+                End If
+            Next
+            If bHasKeys Then Exit For
+        Next
+
+        ' kolejne pytanie - lub w ogóle zakaz gdy użyte
+        If bHasKeys Then
+            If Not Await vb14.DialogBoxYNAsync("Keyword jest używany, na pewno usunąć?") Then Return
+        End If
+
+        ' kasowanie
+        Application.GetKeywords.Remove(oItem)
     End Sub
 End Class
 

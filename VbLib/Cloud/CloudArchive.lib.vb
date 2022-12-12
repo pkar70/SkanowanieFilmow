@@ -24,12 +24,12 @@ Public MustInherit Class CloudArchive
     Public MustOverride Async Function GetMBfreeSpace() As Task(Of Integer) Implements AnyStorage.GetMBfreeSpace
 
     Public MustOverride Async Function Login() As Task(Of String) Implements AnyCloudStorage.Login
-    Public MustOverride Async Function GetRemoteTags(oPic As OnePic) As Task(Of String) Implements AnyCloudStorage.GetRemoteTags
+    Public MustOverride Async Function GetRemoteTagsMain(oPic As OnePic) As Task(Of String)
     Public MustOverride Async Function Delete(oPic As OnePic) As Task(Of String) Implements AnyCloudStorage.Delete
     Public MustOverride Async Function GetShareLink(oPic As OnePic) As Task(Of String) Implements AnyCloudStorage.GetShareLink
     Public MustOverride Async Function GetShareLink(oOneDir As OneDir) As Task(Of String) Implements AnyCloudStorage.GetShareLink
     Public MustOverride Async Function Logout() As Task(Of String) Implements AnyCloudStorage.Logout
-    Public MustOverride Function CreateNew(oConfig As CloudConfig, oPostProcs As PostProcBase()) As AnyStorage Implements AnyCloudStorage.CreateNew
+    Public MustOverride Function CreateNew(oConfig As CloudConfig, oPostProcs As PostProcBase(), sDataDir As String) As AnyStorage Implements AnyCloudStorage.CreateNew
 
     Public Async Function SendFile(oPic As OnePic) As Task(Of String)
         ' sprawdź maski
@@ -41,6 +41,24 @@ Public MustInherit Class CloudArchive
 
         Return Await SendFileMain(oPic)
     End Function
+
+    'Protected Function GetRemoteId(oPic As Vblib.OnePic) As String
+    '    If oPic.Published Is Nothing Then Return ""
+
+    '    Dim sId As String = ""
+    '    If Not oPic.Published.TryGetValue(konfiguracja.nazwa, sId) Then Return ""
+
+    '    Return sId
+    'End Function
+
+    Public Async Function GetRemoteTags(oPic As OnePic) As Task(Of String) Implements AnyCloudStorage.GetRemoteTags
+        Dim sLink As String = Await GetShareLink(oPic)
+        If sLink = "" Then Return "ERROR: nie mam zapisanego ID pliku"
+
+        Return Await GetRemoteTagsMain(oPic)
+
+    End Function
+
 End Class
 
 
