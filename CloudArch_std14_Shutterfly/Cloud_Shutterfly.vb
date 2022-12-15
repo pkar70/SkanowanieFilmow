@@ -1,3 +1,8 @@
+
+' https://www.cs.hmc.edu/~ben/c4p_API_v2.html
+' https://www.shutterfly.com/documentation/OflyBasicXml.sfly?esch=1
+' https://stackoverflow.com/questions/275130/shutterfly-order-api
+
 Public Class Cloud_Shutterfly
     Inherits Vblib.CloudArchive
 

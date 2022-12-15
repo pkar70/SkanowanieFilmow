@@ -1,12 +1,30 @@
 
+Mój NUGET:
+* 2.0.1 jako wersja .Net Std 2.0
+* Nuget2: MojaLista, MojaStruct
+* może coś jeszcze z vblib, co da się zamknąć "razem" w jedno
+
+ShowBig, menu z CloudArch które mają publikacje (do sciagania komentarzy itp.)
+Chyba że to zrobić jako w ogóle osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać.
+
+jeszcze raz sprawdzić różnice w API między .Net (Std14, Std2, Core 3, 5, 6, 7, FW4.6, FW4.8)
+WinUI3 zamiast WPF? Może byłby ProgressRing?
+Jak się ma WinUI3 do .Net do MAUI? Który XAML?
+(chyba: WinForms jak dawniej zwykłe VB, bez XAML; WPF->UWP->WinUI3)
+* vblib -> 2.0, co upraszcza także LocalSourceMiddle
+
+
 BROWSER: po edycji jest stara wersja miniaturki - chyba juz
+
+* tak jakby nie zawsze było poprawnie dodawanie nowego tagu (kasowałoby poprzednie? może tu jest lastkeywords, a nie suma?)
+* dodawanie tag (-JA) dla zaznaczonych, a nie pojedynczych. I dodawanie, nie replace.
 
 Mniej więcej 1 picek to 1 call, więc 5000 obrazków miesięcznie. Całkiem dobrze, nie trzeba tak bardzo oszczędzać.
 
 wygaszanie autosplit gdy nie ma podziałów w selecteditems
 
 powoli robić refactor obiektowy,
-tzn. przenosić do OneKey i OneDir jak najwiecej, je jako podstawa i bez uzywania innych
+tzn. przenosić do OneKey i OneDir jak najwiecej, je jako podstawa i bez uzywania innych. Dostęp do Property tylko XAML i Settings, reszta przez Methods?
 potem do OnePic, ktory by wykorzystywał OneKey i OneDir
 
 ARCHIVE: stykówki?
@@ -122,8 +140,6 @@ NAJBLIZSZE KROKI ZDJĘCIOWE:
 * Buffer.property DelayAfterArchive - dni, ile należy odczekać po odesłaniu do archiwum? (czas na dodanie kolejnego archiwum)
 
 * może Browser, w menu action: ArchiveToDir, i robi DIRname z pierwszego zdjęcia. Wtedy może jakiś jeszcze inny podział (kreska splitu) pomiędzy DIRami?
-* albo podział GEO robić przy zaznaczaniu serii - pakowanej do jednego DIR, i w nim autosplit lokalizacyjny?
-* albo okno (ShowDialog), w którym jest propozycja katalogu, wyszukiwarka katalogów, propozycja podziału wedle geo... coś tego typu
 
 * kiedy dodawać OneDir do zestawu? (tak żeby było dodawanie na bieżąco, znaczy select/settarget, ale żeby niewykorzystane nie zużywało katalogów)
 

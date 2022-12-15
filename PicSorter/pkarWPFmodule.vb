@@ -1,5 +1,8 @@
 ﻿Imports Vblib.Extensions
-
+Imports pkar.NetConfigs
+Imports Vblib
+Imports Microsoft.Extensions.Configuration
+Imports System.Reflection
 
 Partial Public Class App
     Inherits Application
@@ -115,11 +118,23 @@ Public Module pkar
     ''' <summary>
     ''' inicjalizacja pełnych zmiennych, bez tego wywołania będą tylko defaulty z pliku INI (i nie będzie pamiętania)
     ''' </summary>
+#If CONFIG_NUGET_PROVIDERS Then
+    ' wersja z NUGET tylko jako Providers
+
     Private Sub InitSettings(aCmdLineArgs As List(Of String))
         Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
 
         Dim oBuilder As New Microsoft.Extensions.Configuration.ConfigurationBuilder()
+
+#If DEBUG Then
+        oBuilder = oBuilder.AddIniReleaseDebugSettings(IniLikeDefaults.sIniContent, True)
+#Else
+        oBuilder = oBuilder.AddIniReleaseDebugSettings(IniLikeDefaults.sIniContent, false)
+#End If
+
+#If False Then
         oBuilder = oBuilder.AddIniRelDebugSettings(Vblib.IniLikeDefaults.sIniContent)   ' defaults.ini w głównym katalogu Project, sekcje [main] oraz [debug]
+#End If
 
         ' ale i tak jest Empty
         Dim oDict As IDictionary = Environment.GetEnvironmentVariables()    ' że, w 1.4, zwraca HashTable?
@@ -135,8 +150,27 @@ Public Module pkar
 
         Vblib.LibInitSettings(settings)
     End Sub
+#Else
+    ' wersja z NUGET pełnym
+    Private Sub InitSettings(aCmdLineArgs As List(Of String))
 
-#If FalseThen Then
+        Dim sAssemblyFullName = System.Reflection.Assembly.GetEntryAssembly().FullName
+        Dim oAss As New AssemblyName(sAssemblyFullName)
+        Dim sAppName = oAss.Name
+
+        Dim sPathLocal As String = IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), sAppName)
+        Dim sPathRoam As String = IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), sAppName)
+
+        Vblib.InitSettings(
+                sAppName, Environment.GetEnvironmentVariables(),
+                Nothing,
+                sPathLocal, sPathRoam,
+                Environment.GetCommandLineArgs.ToList)
+    End Sub
+#End If
+
+    ' wersja z przeskokami do UWP
+#If CONFIG_UWP_PROXY Then
 
 #Region "String"
 

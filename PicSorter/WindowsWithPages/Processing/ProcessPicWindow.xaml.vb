@@ -5,7 +5,7 @@ Class ProcessPic
         AktualizujGuziki()
     End Sub
 
-    Private Function CountDoCloudArchiwizacji() As Integer
+    Private Shared Function CountDoCloudArchiwizacji() As Integer
 
         Dim currentArchs As New List(Of String)
         For Each oArch As Vblib.CloudArchive In Application.GetCloudArchives.GetList
@@ -18,7 +18,7 @@ Class ProcessPic
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
 
-            If oPic.Archived Is Nothing Then
+            If oPic.CloudArchived Is Nothing Then
                 iCnt += 1
             Else
                 Dim sArchiwa As String = oPic.CloudArchived.ToLower
@@ -36,7 +36,7 @@ Class ProcessPic
 
     End Function
 
-    Private Function CountDoPublishing() As Integer
+    Private Shared Function CountDoPublishing() As Integer
 
         Dim iCnt As Integer = 0
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
@@ -102,6 +102,11 @@ Class ProcessPic
 
     Private Sub uiCloudPublish_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New CloudPublishing
+        oWnd.Show()
+    End Sub
+
+    Private Sub uiCloudArch_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New CloudArchiving
         oWnd.Show()
     End Sub
 End Class

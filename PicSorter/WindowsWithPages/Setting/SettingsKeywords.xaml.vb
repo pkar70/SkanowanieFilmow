@@ -101,8 +101,8 @@ Class SettingsKeywords
 
         If oItem.SubItems IsNot Nothing Then
             For Each oSubItem As Vblib.OneDir In oItem.SubItems
-                If oSubItem.SubItems Is Nothing Then Continue For
-                If oSubItem.SubItems.Count < 1 Then Continue For
+                'If oSubItem.SubItems Is Nothing Then Continue For
+                'If oSubItem.SubItems.Count < 1 Then Continue For
 
                 WypelnComboRecursive(uiCombo, oSubItem, sIndent & "  ", currDir, bNoDates)
             Next
@@ -114,8 +114,8 @@ Class SettingsKeywords
 
 
         For Each oItem As Vblib.OneDir In Application.GetDirTree.GetList
-            If oItem.SubItems Is Nothing Then Continue For
-            If oItem.SubItems.Count < 1 Then Continue For
+            'If oItem.SubItems Is Nothing Then Continue For
+            'If oItem.SubItems.Count < 1 Then Continue For
             ' zostaje własna rekurencja, bo chodzi o indent w hierarchii
             WypelnComboRecursive(uiCombo, oItem, "", currDir, bNoDates)
         Next

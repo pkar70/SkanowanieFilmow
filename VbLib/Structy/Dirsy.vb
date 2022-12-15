@@ -1,7 +1,7 @@
 ﻿
-Imports System.Security.Cryptography
-Imports Microsoft.Rest
-Imports Newtonsoft.Json
+'Imports System.Security.Cryptography
+'Imports Microsoft.Rest
+'Imports Newtonsoft.Json
 
 Public Class OneDir
     Inherits MojaStruct
@@ -24,7 +24,7 @@ Public Class OneDir
     End Function
 
     Public Function ToFlatList() As List(Of OneDir)
-        DumpCurrMethod(sId)
+        'DumpCurrMethod(sId)
         Dim lista As New List(Of OneDir)
 
         lista.Add(Me)
@@ -102,6 +102,7 @@ Public Class DirsList
         If oItem Is Nothing Then Return ""
 
         If String.IsNullOrWhiteSpace(oItem.sParentId) Then Return oItem.sId
+        If oItem.sParentId = "(root)" Then Return oItem.sId
 
         Return IO.Path.Combine(GetFullPath(oItem.sParentId), oItem.sId)
 
@@ -110,7 +111,7 @@ Public Class DirsList
     Public Function GetFullPath(oDir As OneDir) As String
 
         If String.IsNullOrWhiteSpace(oDir.sParentId) Then Return oDir.sId
-
+        If oDir.sParentId = "(root)" Then Return oDir.sId
         Return IO.Path.Combine(GetFullPath(oDir.sParentId), oDir.sId)
 
     End Function

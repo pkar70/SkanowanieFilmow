@@ -124,7 +124,7 @@ Public Class ShowBig
 
     End Sub
 
-    Private Function OrientationToRotation(v As Vblib.OrientationEnum?) As Rotation
+    Private Shared Function OrientationToRotation(v As Vblib.OrientationEnum?) As Rotation
         If Not v.HasValue Then Return Rotation.Rotate0
 
         Select Case v.Value
@@ -390,7 +390,7 @@ Public Class ShowBig
         Return
     End Function
 
-    Private Function RotateToDegree(iRot As Rotation) As Integer
+    Private Shared Function RotateToDegree(iRot As Rotation) As Integer
         Select Case iRot
             Case Rotation.Rotate0
                 Return 0
@@ -405,7 +405,7 @@ Public Class ShowBig
         Return 0
     End Function
 
-    Private Function DegreeToBitmapRotate(iKat As Integer) As wingraph.BitmapRotation
+    Private Shared Function DegreeToBitmapRotate(iKat As Integer) As wingraph.BitmapRotation
         Select Case iKat
             Case 0
                 Return wingraph.BitmapRotation.None
@@ -421,7 +421,7 @@ Public Class ShowBig
     End Function
 
 
-    Public Function KatToOrientationEnum(iKat) As Vblib.OrientationEnum
+    Public Shared Function KatToOrientationEnum(iKat As Integer) As Vblib.OrientationEnum
         If iKat > 359 Then iKat -= 360
         Select Case iKat
             Case 0
@@ -499,6 +499,9 @@ Public Class ShowBig
             SaveMetaData()
 
             Await ZapiszZmianyObrazka(transf)
+
+            ' wczytanie obrazka (miniaturki) na nowo
+            _picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
 
         End If
 

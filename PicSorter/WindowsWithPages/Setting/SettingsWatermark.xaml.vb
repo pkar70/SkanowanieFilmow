@@ -67,7 +67,7 @@ Class SettingsWatermark
     End Function
 
 
-    Private Function BajtyNaBitmape(aBajty As Byte()) As BitmapImage
+    Private Shared Function BajtyNaBitmape(aBajty As Byte()) As BitmapImage
 
         Dim bitmapa As New BitmapImage()
 

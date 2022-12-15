@@ -11,7 +11,7 @@
 
         <Button Content="Sources" Margin="5,10,5,5" FontSize="18" Click="uiSettSources_Click"/>
         <Button Content="Local arch" Margin="5,10,5,5" FontSize="18" Click="uiArchives_Click"/>
-        <Button Content="Cloud storage" IsEnabled="false" Margin="5,10,5,5" FontSize="18"/>
+        <Button Content="Cloud storage" Margin="5,10,5,5" FontSize="18" Click="uiCloudArchive_Click"/>
         <Button Content="Publishing" Margin="5,10,5,20" FontSize="18" Click="uiCloudPublish_Click"/>
 
         <Button Content="Dir tree" Margin="5,10,5,5" FontSize="18" Click="uiDirTree_Click"/>

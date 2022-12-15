@@ -3,9 +3,14 @@
 Class MainWindow
     Inherits Window
 
-    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+    Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         InitLib(Nothing)
         Me.Content = New MainPage
+
+
+        'Dim chomik As New CloudArch_std14_Chomikuj.Cloud_Chomikuj
+        'Await chomik.Login
+
     End Sub
 
     Private Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)

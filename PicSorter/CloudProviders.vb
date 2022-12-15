@@ -94,6 +94,7 @@ Public Class CloudArchivesList
     ' Inherits Vblib.MojaLista(Of CloudConfig)
 
     Private gCloudProviders As Vblib.CloudArchive() = {
+            New CloudArch_std14_Chomikuj.Cloud_Chomikuj
         }
 
     Private gCloudArchives As List(Of Vblib.CloudArchive)
@@ -148,17 +149,17 @@ Public Class CloudArchivesList
         Return gCloudArchives
     End Function
 
+    Public Function GetProvidersList() As List(Of Vblib.CloudArchive)
+        Return gCloudProviders.ToList
+    End Function
+
     Public Sub Remove(oItem As Vblib.CloudArchive)
         gCloudArchives.Remove(oItem)
     End Sub
-
-
-End Class
-
-
-Public Class CloudProviders
-
-
+    Public Sub Add(oNewConfig As CloudConfig)
+        gCloudArchives.Add(GetCloudInstantion(oNewConfig))
+    End Sub
 
 End Class
+
 

@@ -98,7 +98,7 @@ Public MustInherit Class PicSourceBase
 
 			' for each kwd, use it
 			For Each oKey As OneKeyword In lKeys
-				If oKey.sId.Length = 1 Then Continue For
+				If oKey.IsRoot Then Continue For
 
 				If sFilename.Contains(oKey.sId) Then
 					oExif.Keywords = oExif.Keywords & " " & oKey.sId

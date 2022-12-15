@@ -73,7 +73,7 @@ Class SettingsGlobal
         uiFolderData.GetSettingsString()
     End Sub
 
-    Private Function CheckDirsExists(oTBox1 As TextBox, oTBox2 As TextBox) As Boolean
+    Private Shared Function CheckDirsExists(oTBox1 As TextBox, oTBox2 As TextBox) As Boolean
         If Not IO.Directory.Exists(oTBox1.Text) Then
             oTBox1.Text = ""
             Return False
@@ -85,7 +85,7 @@ Class SettingsGlobal
         Return True
     End Function
 
-    Private Function CheckDirsOnFixed(oTBox1 As TextBox, oTBox2 As TextBox) As Boolean
+    Private Shared Function CheckDirsOnFixed(oTBox1 As TextBox, oTBox2 As TextBox) As Boolean
         If Not (New IO.DriveInfo(oTBox1.Text)).DriveType = IO.DriveType.Fixed Then
             oTBox1.Text = ""
             Return False

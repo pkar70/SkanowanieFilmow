@@ -142,9 +142,9 @@ Public Class OnePic
 
 #End Region
 
-    Public Function NoPendingAction() As Boolean
-        If ArchivedCount() > 0 Then Return False
-        If CloudArchivedCount() > 0 Then Return False
+    Public Function NoPendingAction(iArchCount As Integer, iCloudArchCount As Integer) As Boolean
+        If ArchivedCount() < iArchCount Then Return False
+        If CloudArchivedCount() < iCloudArchCount Then Return False
         If CountPublishingWaiting() > 0 Then Return False
 
         Return True

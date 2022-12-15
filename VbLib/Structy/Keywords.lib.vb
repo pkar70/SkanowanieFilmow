@@ -46,7 +46,7 @@ Public Class OneKeyword
     End Function
 
     Public Function ToFlatList() As List(Of OneKeyword)
-        DumpCurrMethod(sId)
+        ' DumpCurrMethod(sId)
         Dim lista As New List(Of OneKeyword)
 
         lista.Add(Me)
@@ -58,6 +58,10 @@ Public Class OneKeyword
         End If
 
         Return lista
+    End Function
+
+    Public Function IsRoot() As Boolean
+        Return sId.Length = 1
     End Function
 
 End Class
@@ -101,6 +105,12 @@ Public Class KeywordsList
 
         Return lista
     End Function
+
+    Public Sub EnableDisableAll(bEnable As Boolean)
+        For Each oItem As OneKeyword In ToFlatList()
+            oItem.bEnabled = True
+        Next
+    End Sub
 
 
 #Region "przeliczanie dat w drzewku"

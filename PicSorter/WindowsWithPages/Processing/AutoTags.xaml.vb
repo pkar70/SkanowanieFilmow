@@ -69,7 +69,7 @@ Public Class AutoTags
         uiLista.ItemsSource = _lista
     End Sub
 
-    Private Function PoliczUstawione(nazwa As String) As Integer
+    Private Shared Function PoliczUstawione(nazwa As String) As Integer
         Dim iCnt As Integer = 0
 
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList

@@ -41,6 +41,7 @@ Public Class Buffer
 
         If bBylyZmiany Then SaveData()
     End Sub
+#End If
 
     Private Sub AddTyp3()
         For Each oItem As OnePic In _pliki.GetList
@@ -51,7 +52,7 @@ Public Class Buffer
 
         SaveData()
     End Sub
-#End If
+
 
 
     Public Sub SaveData()

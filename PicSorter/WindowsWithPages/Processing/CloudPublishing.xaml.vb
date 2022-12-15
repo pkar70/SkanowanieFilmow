@@ -54,7 +54,7 @@ Public Class CloudPublishing
 
 
 
-    Private Sub CountPublished(oPublisher As DisplayPublish)
+    Private Shared Sub CountPublished(oPublisher As DisplayPublish)
         Dim iCnt As Integer = 0
         Dim iMax As Integer = 0
         Dim sDir As String = ""

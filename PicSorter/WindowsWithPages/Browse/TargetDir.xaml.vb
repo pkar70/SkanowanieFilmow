@@ -48,7 +48,7 @@ Public Class TargetDir
 
 #Region "combo katalogów"
 
-    Private Function KatalogiWgDaty(aboutDateOd As Date, aboutDateDo As Date) As List(Of String)
+    Private Shared Function KatalogiWgDaty(aboutDateOd As Date, aboutDateDo As Date) As List(Of String)
 
         Dim lLista As New List(Of String) ' poprzez listę pośrednią, bo chodzi o sortowanie
 
@@ -138,7 +138,7 @@ Public Class TargetDir
 
     End Sub
 
-    Private Function CountSubdirInDate(sData As String) As Char
+    Private Shared Function CountSubdirInDate(sData As String) As Char
         Dim iCount As Integer = 65
         For Each oDir As Vblib.OneDir In Application.GetDirTree.ToFlatList
             If oDir.sId.StartsWith(sData) Then iCount += 1
@@ -147,7 +147,7 @@ Public Class TargetDir
         Return Chr(iCount)
     End Function
 
-    Private Function PicekToGeoName(oPic As Vblib.OnePic) As String
+    Private Shared Function PicekToGeoName(oPic As Vblib.OnePic) As String
         Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
         If oExif Is Nothing Then Return ""
 

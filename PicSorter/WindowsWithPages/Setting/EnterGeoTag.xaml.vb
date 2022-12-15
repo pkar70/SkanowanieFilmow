@@ -30,7 +30,7 @@ Public Class EnterGeoTag
 
     End Sub
 
-    Private Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
         Dim sQuery As String = uiPOIname.Text
         If sQuery.Length < 5 Then
             DialogBox("Tekst musi mieć przynajmniej 5 znaków!")
@@ -39,7 +39,7 @@ Public Class EnterGeoTag
 
         Me.Height = 400
         Me.Width = 300
-        POIfill(sQuery)
+        Await POIfill(sQuery)
     End Sub
 
     'z przypomnijTu

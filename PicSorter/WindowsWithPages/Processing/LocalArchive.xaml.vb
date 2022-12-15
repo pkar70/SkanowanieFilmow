@@ -100,7 +100,7 @@ Public Class LocalArchive
 
     End Function
 
-    Private Function CountArchived(sArchName As String) As Integer
+    Private Shared Function CountArchived(sArchName As String) As Integer
         Dim iCnt As Integer = 0
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If oPic.IsArchivedIn(sArchName) Then iCnt += 1

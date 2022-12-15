@@ -16,7 +16,7 @@
             <Button Name="uiAutotag" Content="Try autotag (xx)" Margin="5,15,5,5" FontSize="18"  />
             <Button Name="uiBatchEdit" Content="Batch edit" Margin="5,15,5,5" FontSize="18" Click="uiBatchEdit_Click" />
             <Button Name="uiLocalArch" Content="Local arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiLocalArch_Click" />
-            <Button Name="uiCloudArch" Content="Cloud arch (xx)" Margin="5,15,5,5" FontSize="18" IsEnabled="False" />
+            <Button Name="uiCloudArch" Content="Cloud arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudArch_Click" />
             <Button Name="uiPublish" Content="Publish (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudPublish_Click" />
 
         </StackPanel>

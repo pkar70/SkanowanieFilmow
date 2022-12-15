@@ -277,8 +277,8 @@ Public Class TextWithProbAndBox
     Private Sub SetXY(oRect As ComputerVision.Models.FaceRectangle, oMeta As ComputerVision.Models.ImageMetadata)
         X = 100.0 * oRect.Left / oMeta.Width
         Y = 100.0 * oRect.Top / oMeta.Height
-        Width = oRect.Width
-        Height = oRect.Height
+        Width = 100.0 * oRect.Width / oMeta.Width
+        Height = 100.0 * oRect.Height / oMeta.Height
     End Sub
 
     Public Overloads Function ToDisplay() As String
@@ -409,14 +409,14 @@ Public Class MojeAzure
             Next
         End If
 
-        If analysis.Categories IsNot Nothing Then
+        If analysis.Categories IsNot Nothing AndAlso analysis.Categories.Count > 0 Then
             Categories = New ListTextWithProbability
             For Each oItem As ComputerVision.Models.Category In analysis.Categories
                 If oItem.Score > iMinProbabil Then Categories.Add(New TextWithProbability(oItem))
             Next
         End If
 
-        If analysis.Tags IsNot Nothing Then
+        If analysis.Tags IsNot Nothing AndAlso analysis.Tags.Count > 0 Then
             Tags = New ListTextWithProbability
             For Each oItem As ComputerVision.Models.ImageTag In analysis.Tags
                 If oItem.Confidence > iMinProbabil Then Tags.Add(New TextWithProbability(oItem))
@@ -425,7 +425,7 @@ Public Class MojeAzure
 
         If analysis.Categories IsNot Nothing Then
             For Each category As ComputerVision.Models.Category In analysis.Categories
-                If category.Detail?.Landmarks IsNot Nothing Then
+                If category.Detail?.Landmarks IsNot Nothing AndAlso category.Detail.Landmarks.Count > 0 Then
                     If Landmarks Is Nothing Then Landmarks = New ListTextWithProbability
                     For Each oItem As ComputerVision.Models.LandmarksModel In category.Detail.Landmarks
                         If oItem.Confidence > iMinProbabil Then Landmarks.Add(New TextWithProbability(oItem))
@@ -435,14 +435,14 @@ Public Class MojeAzure
         End If
 
         ' pola razem z BOX
-        If analysis.Brands IsNot Nothing Then
+        If analysis.Brands IsNot Nothing AndAlso analysis.Brands.Count > 0 Then
             Brands = New ListTextWithProbabAndBox
             For Each oItem As ComputerVision.Models.DetectedBrand In analysis.Brands
                 If oItem.Confidence > iMinProbabil Then Brands.Add(New TextWithProbAndBox(oItem, analysis.Metadata))
             Next
         End If
 
-        If analysis.Objects IsNot Nothing Then
+        If analysis.Objects IsNot Nothing AndAlso analysis.Objects.Count > 0 Then
             Objects = New ListTextWithProbabAndBox
             For Each oItem As ComputerVision.Models.DetectedObject In analysis.Objects
                 If oItem.Confidence > iMinProbabil Then Objects.Add(New TextWithProbAndBox(oItem, analysis.Metadata))
@@ -460,7 +460,7 @@ Public Class MojeAzure
             Next
         End If
 
-        If analysis.Faces IsNot Nothing Then
+        If analysis.Faces IsNot Nothing AndAlso analysis.Faces.Count > 0 Then
             Faces = New ListTextWithProbabAndBox
             For Each face As ComputerVision.Models.FaceDescription In analysis.Faces
                 Faces.Add(New TextWithProbAndBox(face, analysis.Metadata))
@@ -483,13 +483,13 @@ Public Class MojeAzure
         ' to chyba do przeróbki
         If Categories IsNot Nothing Then sOutput &= Categories.ToComment("Categories")
 
-        If Objects IsNot Nothing Then sOutput &= Objects.ToComment("Brands")
+        If Objects IsNot Nothing Then sOutput &= Objects.ToComment("Objects")
 
         If Faces IsNot Nothing Then sOutput &= Faces.ToComment("Faces")
 
         If Brands IsNot Nothing Then sOutput &= Brands.ToComment("Brands")
 
-        If Celebrities IsNot Nothing Then sOutput &= Celebrities.ToComment("Landmarks")
+        If Celebrities IsNot Nothing Then sOutput &= Celebrities.ToComment("Celebrities")
         If Landmarks IsNot Nothing Then sOutput &= Landmarks.ToComment("Landmarks")
 
         If IsBW Then

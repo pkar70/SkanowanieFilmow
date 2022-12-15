@@ -38,7 +38,7 @@ Class SettingsMapsy
         _lista.Save()
     End Sub
 
-    Private Function LinkToName(sLink As String) As String
+    Private Shared Function LinkToName(sLink As String) As String
         ' *TODO* wczytaj nazwę mapy
 
         Dim sNazwa As String = sLink

@@ -17,7 +17,9 @@ Public Class Process_Signature
 
 
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         oPic.InitEdit(bPipeline)
 

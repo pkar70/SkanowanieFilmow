@@ -245,6 +245,10 @@ Public MustInherit Class Publish_Facebook
                     Case Enums.FacebookLoginResult.RenewPwdEncKeyPkg
                         Await vb14.DialogBoxAsync("Press login button again")
                         Return False
+                    Case Enums.FacebookLoginResult.SMScodeRequired
+                        Dim sCode As String = Await vb14.DialogBoxInputAllDirectAsync("Enter SMS code")
+                        If sCode = "" Then Return False
+                        ' *TODO* zrób co trzeba
                     Case Else
                         Await vb14.DialogBoxAsync("Login error: " & loginResult.Value)
                         Return False

@@ -41,7 +41,7 @@ Public Class ProcessDownload
 
     End Sub
 
-    Private Function GetVolLabelForPath(dirToGet As String) As String
+    Private Shared Function GetVolLabelForPath(dirToGet As String) As String
         vb14.DumpCurrMethod()
 
         Dim oDrives = IO.DriveInfo.GetDrives()

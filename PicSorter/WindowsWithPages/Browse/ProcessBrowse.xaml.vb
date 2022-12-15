@@ -97,14 +97,18 @@ Public Class ProcessBrowse
 
     Private Async Function EwentualneKasowanieArchived() As Task
 
+        Dim iArchCount As Integer = Application.GetArchivesList.Count
+        Dim iCloudArchCount As Integer = Application.GetCloudArchives.GetList.Count
+
+
         Dim lista As New List(Of ThumbPicek)
         For Each oThumb As ThumbPicek In _thumbsy
-            If oThumb.oPic.NoPendingAction Then lista.Add(oThumb)
+            If oThumb.oPic.NoPendingAction(iArchCount, iCloudArchCount) Then lista.Add(oThumb)
         Next
 
         If lista.Count < 1 Then Return
 
-        If Await vb14.DialogBoxYNAsync($"Skasować pliki już w pełni zarchiwizowane? ({lista.Count})") Then Return
+        If Not Await vb14.DialogBoxYNAsync($"Skasować pliki już w pełni zarchiwizowane? ({lista.Count})") Then Return
 
         For Each oThumb As ThumbPicek In lista
             DeletePicture(oThumb)
@@ -125,6 +129,7 @@ Public Class ProcessBrowse
 
 
     Private Async Function WczytajIndeks() As Task(Of List(Of ThumbPicek))
+        vb14.DumpCurrMethod()
 
         Dim lista As New List(Of ThumbPicek)
 
@@ -136,6 +141,7 @@ Public Class ProcessBrowse
             If Not IO.File.Exists(oItem.InBufferPathName) Then
                 ' zabezpieczenie przed samoznikaniem - nie ma, to kasujemy z listy naszych plikow
                 lDeleted.Add(oItem)
+                vb14.DumpMessage("Znikniety plik: " & oItem.InBufferPathName)
                 Continue For
             End If
 
@@ -175,7 +181,6 @@ Public Class ProcessBrowse
             oItem.oImageSrc = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
             uiProgBar.Value += 1
 
-            ' If uiProgBar.Value > iMax Then Exit For
         Next
 
     End Function
@@ -198,31 +203,10 @@ Public Class ProcessBrowse
         Next
         lista.Clear()
 
+        uiProgBar.Value = 0
         Await DoczytajMiniaturki()
 
     End Function
-
-    '''' <summary>
-    '''' data do wsortowania obrazka - dateMin z sourcefile, jako że to najpewniejsza (ustawiana przy import pic)
-    '''' </summary>
-    '''' <param name="dlaZdjecia"></param>
-    '''' <returns></returns>
-    'Private Function DataDoSortowania(dlaZdjecia As Vblib.OnePic) As String
-
-    '    Dim oExif As Vblib.ExifTag
-    '    oExif = dlaZdjecia.GetExifOfType(Vblib.ExifSource.FileExif)
-    '    If oExif IsNot Nothing Then
-    '        If Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then Return oExif.DateTimeOriginal
-    '        ' 2022.05.06 12:27:47
-    '    End If
-
-    '    oExif = dlaZdjecia.GetExifOfType(Vblib.ExifSource.SourceFile)
-    '    ' jakby co, ale zakładam że jest ten ExifSource... data potrzebna do sortowania plików
-    '    If oExif Is Nothing Then Return Date.Now
-
-    '    Return oExif.DateMin
-    'End Function
-
 
     Private Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
         uiPicList.ItemsSource = Nothing
@@ -990,21 +974,25 @@ Public Class ProcessBrowse
         Dim oEngine As AutotaggerBase = oFE?.DataContext
         If oEngine Is Nothing Then Return
 
+        uiProgBar.Value = 0
         uiProgBar.Maximum = uiPicList.SelectedItems.Count
         uiProgBar.Visibility = Visibility.Visible
 
         Application.ShowWait(True)
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            uiProgBar.ToolTip = oItem.oPic.InBufferPathName
             If oItem.oPic.GetExifOfType(oEngine.Nazwa) Is Nothing Then
                 Dim oExif As Vblib.ExifTag = Await oEngine.GetForFile(oItem.oPic)
                 If oExif IsNot Nothing Then
                     oItem.oPic.Exifs.Add(oExif)
                     oItem.oPic.TagsChanged = True
+                    oItem.ZrobDymek()
                 End If
                 Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
             End If
             uiProgBar.Value += 1
         Next
+        uiProgBar.ToolTip = ""
         Application.ShowWait(False)
 
         uiProgBar.Visibility = Visibility.Collapsed
