@@ -117,6 +117,7 @@
                                     <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
                                     <MenuItem Header="Show big" Click="uiShowBig_Click"/>
                                     <MenuItem Header="Describe" Click="uiDescribe_Click" />
+                                    <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click"/>
                                     <Separator/>
                                     <MenuItem Header="Delete" Click="uiDelOne_Click"/>
                                 </ContextMenu>

@@ -120,12 +120,12 @@ Partial Public Module Extensions
     End Function
 
     <Runtime.CompilerServices.Extension()>
-    Public Function ConcatenateWithComma(ByVal sFirstString As String, sSecondString As String)
+    Public Function ConcatenateWithComma(ByVal sFirstString As String, sSecondString As String) As String
         Return sFirstString.ConcatenateWithSeparator(sSecondString, ", ")
     End Function
 
     <Runtime.CompilerServices.Extension()>
-    Public Function ConcatenateWithPipe(ByVal sFirstString As String, sSecondString As String)
+    Public Function ConcatenateWithPipe(ByVal sFirstString As String, sSecondString As String) As String
         Return sFirstString.ConcatenateWithSeparator(sSecondString, " | ")
     End Function
 

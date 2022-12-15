@@ -115,7 +115,7 @@ Public Class ShowBig
         ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
         ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
         ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
-
+        ProcessBrowse.WypelnMenuCloudArchives(_picek.oPic, uiMenuCloudArch, AddressOf ApplyCloudArch)
 
         OnOffMap()
         SettingsMapsy.WypelnMenuMapami(uiOnMap, AddressOf uiOnMap_Click)
@@ -123,6 +123,7 @@ Public Class ShowBig
         ' MenuAutoTaggerow()
 
     End Sub
+
 
     Private Shared Function OrientationToRotation(v As Vblib.OrientationEnum?) As Rotation
         If Not v.HasValue Then Return Rotation.Rotate0
@@ -232,6 +233,37 @@ Public Class ShowBig
         ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
 
         SaveMetaData()  ' bo zmieniono info o publishingu
+    End Sub
+
+
+    Private Async Sub ApplyCloudArch(sender As Object, e As RoutedEventArgs)
+        Dim oFE As MenuItem = sender
+        Dim oCloud As Vblib.CloudArchive = oFE?.DataContext
+        If oCloud Is Nothing Then Return
+
+        Select Case oFE.Header.ToString.ToLowerInvariant
+            Case "open"
+                Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
+                If sLink.ToLowerInvariant.StartsWith("http") Then
+                    pkar.OpenBrowser(sLink)
+                Else
+                    If sLink = "" Then sLink = "ERROR getting sharing link"
+                    vb14.DialogBox(sLink)   ' error message
+                End If
+            Case "get tags"
+                Await oCloud.GetRemoteTags(_picek.oPic)
+                SaveMetaData()  ' bo zmieniono info o publishingu
+            Case "share link"
+                Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
+                If sLink.ToLowerInvariant.StartsWith("http") Then
+                    vb14.ClipPut(sLink)
+                    vb14.DialogBox("Link in ClipBoard")
+                Else
+                    If sLink = "" Then sLink = "ERROR getting sharing link"
+                    vb14.DialogBox(sLink)   ' error message
+                End If
+        End Select
+
     End Sub
     'Private Sub uiFullPicture_MouseRightButtonDown(sender As Object, e As MouseButtonEventArgs) Handles uiFullPicture.MouseRightButtonDown
     '    uiFlyout.IsOpen = True

@@ -129,6 +129,7 @@ Public Class CloudArchiving
 
         Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
 
+        Application.ShowWait(True)
         uiProgBarInEngine.Maximum = oSrc.maxCount
         uiProgBarInEngine.Value = 0
             uiProgBarInEngine.Visibility = Visibility.Visible
@@ -165,9 +166,10 @@ Public Class CloudArchiving
             If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
             Application.AddToGlobalJsonIndex(sIndexJson)    ' aktualizacja indeksu archiwalnego
 
-        End Function
+        Application.ShowWait(False)
+    End Function
 
-        Public Class DisplayArchive
+    Public Class DisplayArchive
             Public Property enabled As Boolean
             Public Property nazwa As String
         Public Property engine As Vblib.CloudArchive

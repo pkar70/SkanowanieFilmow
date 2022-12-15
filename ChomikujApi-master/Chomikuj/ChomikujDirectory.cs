@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Web.UI;
 using Chomikuj.Rest;
 //using Fizzler.Systems.HtmlAgilityPack;
 using HtmlAgilityPack;
@@ -252,12 +253,19 @@ namespace Chomikuj
         private IEnumerable<ChomikujFile> GetFilesFromPage(HtmlDocument html)
         {
             //var listView = html.DocumentNode.QuerySelector("#listView");
-            var listView = html.DocumentNode.SelectSingleNode("//#listView");
+            var listView = html.DocumentNode.SelectSingleNode("//div[@id='listView']");
             if (listView == null)
                 return Enumerable.Empty<ChomikujFile>();
 
             //return listView.QuerySelectorAll(".filerow").Select(BuildFile).ToArray();
-            return listView.SelectNodes(".//@filerow").Select(BuildFile).ToArray();
+            var nodes = listView.SelectNodes(".//div[contains(@class,'filerow')]"); // alt fileItemContainer'] | .//div[@class='filerow fileItemContainer']");
+            var ret = new List<ChomikujFile>();
+            foreach(var node in nodes)
+            {
+                ret.Add(BuildFile(node));
+            }
+            // return listView.SelectNodes(".//@filerow").Select(BuildFile).ToArray();
+            return ret;
         }
 
         private bool IsSinglePage(HtmlDocument html)
@@ -275,11 +283,11 @@ namespace Chomikuj
             //var fileType = q.QuerySelector(".filename").Attributes["class"].Value.Split(' ')[1];
             //var fileSize = fileInfo[0].InnerText;
             //var additionalInfo = q.QuerySelector(".additionalInfo");
-            var fileLink = q.SelectSingleNode(".//@expanderHeader,downloadAction,downloadContext");
-            var fileInfo = q.SelectSingleNode(".//@fileinfo").SelectNodes("//span").ToArray();
-            var thumbnail = q.SelectSingleNode(".//@thumbnail");
-            var description = q.SelectSingleNode(".//@filedescription");
-            var fileType = q.SelectSingleNode(".//@filename").Attributes["class"].Value.Split(' ')[1];
+            var fileLink = q.SelectSingleNode(".//a[@class='expanderHeader downloadAction downloadContext']");
+            var fileInfo = q.SelectSingleNode(".//div[@class='fileinfo tab']").SelectNodes(".//span").ToArray();
+            var thumbnail = q.SelectSingleNode(".//div[@class='thumbnail']");
+            var description = q.SelectSingleNode(".//span[@class='filedescription']");
+            var fileType = q.SelectSingleNode(".//div[contains(@class, 'filename')]").Attributes["class"].Value.Split(' ')[1];
             var fileSize = fileInfo[0].InnerText;
             var additionalInfo = q.SelectSingleNode(".//@additionalInfo");
             return new ChomikujFile(_base)

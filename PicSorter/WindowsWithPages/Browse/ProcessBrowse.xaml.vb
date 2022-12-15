@@ -926,7 +926,7 @@ Public Class ProcessBrowse
 
     'End Sub
 
-    Private Shared Function NewMenuCloudOperation(sDisplay As String, oEngine As Vblib.CloudPublish, oEventHandler As RoutedEventHandler) As MenuItem
+    Private Shared Function NewMenuCloudOperation(sDisplay As String, oEngine As Object, oEventHandler As RoutedEventHandler) As MenuItem
         Dim oNew As New MenuItem
         oNew.Header = sDisplay.Replace("_", "__")
         oNew.DataContext = oEngine
@@ -936,10 +936,9 @@ Public Class ProcessBrowse
         Return oNew
     End Function
 
-    Private Shared Function NewMenuCloudOperation(oEngine As Vblib.CloudPublish) As MenuItem
+    Private Shared Function NewMenuCloudOperation(oEngine As Object) As MenuItem
         Return NewMenuCloudOperation(oEngine.konfiguracja.nazwa, oEngine, Nothing)
     End Function
-
 
     Public Shared Sub WypelnMenuCloudPublish(oPic As Vblib.OnePic, oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
         oMenuItem.Items.Clear()
@@ -957,6 +956,27 @@ Public Class ProcessBrowse
                 oNew.Items.Add(New Separator)
                 oNew.Items.Add(NewMenuCloudOperation("Delete", oEngine, oEventHandler))
             End If
+
+            oMenuItem.Items.Add(oNew)
+
+        Next
+
+        oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
+
+    End Sub
+
+    Public Shared Sub WypelnMenuCloudArchives(oPic As Vblib.OnePic, oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
+        oMenuItem.Items.Clear()
+        ' _UImenuOnClick = oEventHandler
+
+        For Each oEngine As Vblib.CloudArchive In Application.GetCloudArchives.GetList
+            If Not oPic.IsCloudArchivedIn(oEngine.konfiguracja.nazwa) Then Continue For
+
+            Dim oNew As MenuItem = NewMenuCloudOperation(oEngine)
+
+            oNew.Items.Add(NewMenuCloudOperation("Open", oEngine, oEventHandler))
+            oNew.Items.Add(NewMenuCloudOperation("Share link", oEngine, oEventHandler))
+            oNew.Items.Add(NewMenuCloudOperation("Get tags", oEngine, oEventHandler))
 
             oMenuItem.Items.Add(oNew)
 

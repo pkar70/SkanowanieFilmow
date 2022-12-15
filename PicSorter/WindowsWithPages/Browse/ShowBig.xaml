@@ -72,6 +72,7 @@
                                 <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
                             </MenuItem>
                             <MenuItem Header="Batch process" Name="uiBatchProcessors" />
+                            <MenuItem Header="Cloud arch" Name="uiMenuCloudArch"  />
                             <MenuItem Header="Publish" Name="uiMenuPublish"  />
                             <!--<MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />-->
                         <MenuItem Header="On map" Name="uiOnMap" />

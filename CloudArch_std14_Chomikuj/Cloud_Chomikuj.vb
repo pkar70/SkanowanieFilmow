@@ -35,6 +35,12 @@ Public Class Cloud_Chomikuj
 
         oDir.UploadFile(oFile)
 
+        Dim oRemoteFile As Chomikuj.ChomikujFile = oDir.GetFile(oPic.sSuggestedFilename)
+        If oRemoteFile Is Nothing Then Return "ERROR: unsuccessfull upload"
+
+        Dim sCaption As String = oPic.GetDescriptionForCloud
+        If Not String.IsNullOrWhiteSpace(sCaption) Then oRemoteFile.AddComment(sCaption)
+
         oPic.AddCloudArchive(konfiguracja.nazwa)
 
         Return ""
@@ -70,7 +76,7 @@ Public Class Cloud_Chomikuj
 
     Public Overrides Async Function GetRemoteTagsMain(oPic As Vblib.OnePic) As Task(Of String)
 
-        If Not oPic.IsArchivedIn(konfiguracja.nazwa) Then Return "ERROR: plik nie zarchiwizowany w " & konfiguracja.nazwa
+        If Not oPic.IsCloudArchivedIn(konfiguracja.nazwa) Then Return "ERROR: plik nie zarchiwizowany w " & konfiguracja.nazwa
 
         If Not _loggedIn Then Await Login()
         If Not _loggedIn Then Return "ERROR: login problem"
@@ -81,9 +87,19 @@ Public Class Cloud_Chomikuj
         Dim oFile As Chomikuj.ChomikujFile = oDir.GetFile(oPic.sSuggestedFilename)
         If oFile Is Nothing Then Return "ERROR: no file"
 
+        Dim oComms As List(Of Chomikuj.ChomikComment) = oFile.GetComments
+        If oComms Is Nothing Then Return ""
 
+        For Each oComment As Chomikuj.ChomikComment In oComms
+            ' tylko "nieswoje"
+            If oComment.User <> konfiguracja.sUsername Then
+                Dim sData As String = oComment.When
+                Dim sComm As String = oComment.Tekst
+                oPic.TryAddDescription(New Vblib.OneDescription(sData, sComm))
+            End If
+        Next
 
-
+        Return ""
     End Function
 
     Public Overrides Async Function Delete(oPic As Vblib.OnePic) As Task(Of String)
@@ -112,14 +128,14 @@ Public Class Cloud_Chomikuj
 
         sLink = sLink & oPic.TargetDir
 
-        Return sLink.Replace("//", "/")
+        Return sLink.Replace("\", "/").Replace("//", "/")
     End Function
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetShareLink(oPic As Vblib.OnePic) As Task(Of String)
 
-        Dim sLink As String = $"{konfiguracja.sUsername}/" & GetFolderForFile(oPic)
-        Return "https://chomikuj.pl/" & sLink.Replace("//", "/")
+        Dim sTemp As String = $"/{GetFolderForFile(oPic)}/{oPic.sSuggestedFilename}"
+        Return "https://" & ("chomikuj.pl/" & konfiguracja.sUsername & sTemp).Replace("//", "/")
     End Function
 
     Public Overrides Async Function Login() As Task(Of String)
@@ -222,24 +238,6 @@ Public Class Cloud_Chomikuj
         Next
 
         Return oDir
-    End Function
-
-
-    Private Async Function GetChomikFile(oPic As Vblib.OnePic) As Task(Of Chomikuj.ChomikujFile)
-
-        If Not oPic.IsArchivedIn(konfiguracja.nazwa) Then Return Nothing
-
-        If Not _loggedIn Then Await Login()
-        If Not _loggedIn Then Return Nothing
-
-        Dim oDir As Chomikuj.ChomikujDirectory = TryCreateDirectoryTree(GetFolderForFile(oPic))
-        If oDir Is Nothing Then Return Nothing
-
-        For Each oFile As Chomikuj.ChomikujFile In oDir.GetFiles
-            If oFile.Title.ToLower = oPic.sSuggestedFilename.ToLower Then Return oFile
-        Next
-
-        Return Nothing
     End Function
 
 #End Region

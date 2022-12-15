@@ -15,6 +15,8 @@ namespace Chomikuj
         internal const string GetUrlToFileByWarningMessageUrl = "action/License/DownloadWarningAccept";
         internal const string GetUploadUrl = "/action/Upload/GetUrl/";
         internal const string DeleteFileUrl = "/action/FileDetails/DeleteFilesAction";
+        internal const string AddCommentUrl = "/action/FileDetails/AddComment";
+        internal const string GetCommentsUrl = "/action/fileDetails/Index/";
 
         internal const string AccessControlRequestHeaders = "accept, content-type";
         internal const string AccessControlRequestMethod = "POST";

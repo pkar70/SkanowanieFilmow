@@ -369,6 +369,32 @@ Public Class OnePic
         TagsChanged = True
     End Sub
 
+    Private Function GetSumOfDescriptionsText() As String
+        If descriptions Is Nothing Then Return ""
+
+        Dim sRet As String = ""
+        For Each oDesc As OneDescription In descriptions
+            ' pomijamy systemowe opisy
+            If oDesc.comment.StartsWith("Cropped to ") Then Continue For
+            If oDesc.comment.StartsWith("Rotated ") Then Continue For
+            sRet &= oDesc.comment & " "
+        Next
+
+        Return sRet
+    End Function
+
+    Private Function GetSumOfCommentText() As String
+        Dim sRet As String = ""
+
+        For Each oExif As ExifTag In Exifs
+            If oExif.ExifSource = ExifSource.AutoAzure Then Continue For
+            sRet = ConcatenateWithComma(sRet, oExif.UserComment)
+        Next
+
+        Return sRet
+
+    End Function
+
     ''' <summary>
     ''' gdy jest już z tą datą i keywords, nie dodaje (do zastosowania w comments z Cloud)
     ''' </summary>
@@ -750,6 +776,12 @@ Public Class OnePic
         Return oNew
     End Function
 
+    Public Function GetAllKeywords() As String
+
+        Dim oFlat As ExifTag = FlattenExifs()
+        Return oFlat.Keywords
+    End Function
+
     Public Function HasKeyword(oKey As OneKeyword) As Boolean
         If Exifs Is Nothing Then Return False
 
@@ -758,6 +790,21 @@ Public Class OnePic
         Next
 
         Return False
+    End Function
+
+    Public Function GetDescriptionForCloud() As String
+
+        Dim sRet As String = GetSumOfDescriptionsText()
+        If sRet <> "" Then Return sRet
+
+        sRet = GetSumOfCommentText()
+        If sRet <> "" Then Return sRet
+
+        Dim oExif As ExifTag = GetExifOfType(ExifSource.AutoAzure)
+        If oExif Is Nothing Then Return ""
+
+        Return oExif.AzureAnalysis.Captions?.ToComment("Azure")
+
     End Function
 
 End Class

@@ -302,9 +302,7 @@ Public Class Publish_Instagram
             Return "ERROR: cannot read picture bytes"
         End If
 
-        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs(konfiguracja.defaultExif)
-
-        Dim sCaption As String = oExif.UserComment  ' caption z oPic
+        Dim sCaption As String = oPic.GetDescriptionForCloud
         Dim oRet = Await mInstaApi.MediaProcessor.UploadPhotoAsync(obrazekTam, sCaption)
         If Not oRet.Succeeded Then Return "ERROR: " & oRet.Info.Message
 
