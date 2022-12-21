@@ -79,6 +79,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="Type:" />
@@ -116,12 +117,15 @@
 
             <CheckBox Grid.Row="8" Name="uiProcessLikes" Content="process likes" />
 
-            <TextBlock Grid.Row="9" Text="Ostatnie wysłanie:" />
-            <TextBlock Grid.Row="9" Grid.Column="1" Name="uiSrcLastSave" />
+            <TextBlock Grid.Row="9" Text="Dodatkowe info:" />
+            <TextBox Grid.Row="9" Grid.Column="1" Name="uiSrcAdditInfo" />
 
-            <Button Grid.Row="10" Content=" EXIF " Click="uiEditExif_Click" Name="uiOpenExif" Width="100" Height="Auto" Grid.ColumnSpan="2"/>
+            <TextBlock Grid.Row="10" Text="Ostatnie wysłanie:" />
+            <TextBlock Grid.Row="10" Grid.Column="1" Name="uiSrcLastSave" />
 
-            <Button Grid.Row="11" Content=" OK " Click="uiEditOk_Click" Width="80" Height="Auto" Margin="5,10,5,5"  Grid.ColumnSpan="2"/>
+            <Button Grid.Row="11" Content=" EXIF " Click="uiEditExif_Click" Name="uiOpenExif" Width="100" Height="Auto" Grid.ColumnSpan="2"/>
+
+            <Button Grid.Row="12" Content=" OK " Click="uiEditOk_Click" Width="80" Height="Auto" Margin="5,10,5,5"  Grid.ColumnSpan="2"/>
         </Grid>
 
         <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Width="Auto" Click="uiOk_Click" Name="uiOK"/>

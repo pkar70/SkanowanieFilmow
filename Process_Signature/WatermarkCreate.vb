@@ -69,6 +69,7 @@ Public Class WatermarkCreate
 
 
     Public Shared Sub StworzWatermarkFile(sTargetFilename As String, sTekst1 As String, sTekst2 As String)
+        Vblib.DumpCurrMethod($"file: {sTargetFilename}, teksty: '{sTekst1}', '{sTekst2}'")
         Using watermarkStream = IO.File.OpenWrite(sTargetFilename)
 
             Using oStream As MemoryStream = GetEmptyGIFStream32x32()

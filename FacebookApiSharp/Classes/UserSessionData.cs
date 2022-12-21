@@ -19,5 +19,9 @@ namespace FacebookApiSharp.Classes
         public string MachineId { get; set; }
         public FacebookLoginSession LoggedInUser { get; set; }
         public static UserSessionData Empty => new UserSessionData();
+
+        // PKAR, dla 406 SMS code
+        public long uid { get; set; }
+        public string login_first_factor { get; set; }
     }
 }

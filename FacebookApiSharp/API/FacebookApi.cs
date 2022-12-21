@@ -418,6 +418,169 @@ namespace FacebookApiSharp.API
                 return Result.Fail<bool>(exception);
             }
         }
+
+        public async Task<IResult<FacebookLoginResult>> LoginSMScodeAsync(string SMScode)
+        {
+            string responseContent = null;
+
+            try
+            {
+                var instaUri = UriCreator.GetAuthLoginUri();
+
+                if (string.IsNullOrEmpty(User.PublicKey) || string.IsNullOrEmpty(User.PublicKeyId))
+                    await SendLoginFlowsAsync();
+
+                var password = this.GetEncryptedPassword(User.Password);
+                var data = new Dictionary<string, string>
+                {
+                    {"adid", _deviceInfo.AdId.ToString()},
+                    {"format", "json"},
+                    {"device_id", _deviceInfo.DeviceGuid.ToString()},
+                    {"email", User.User},
+                    //{"password", password}, - bo potem jest z two-factor
+                    {"generate_analytics_claim","1"},
+                    {"community_id",""},
+                    {"cpl","true"},
+                    {"try_num","1"},
+                    {"cds_experiment_group","-1"},
+
+                    {"family_device_id", _deviceInfo.FamilyDeviceGuid.ToString()},
+                    {"secure_family_device_id", _deviceInfo.PhoneGuid.ToString()},
+                    //{"credentials_type","password"}, - bo potem jest two-factor
+                    {"fb4a_shared_phone_cpl_experiment","fb4a_shared_phone_nonce_cpl_at_risk_v3"},
+                    {"fb4a_shared_phone_cpl_group","enable_v3_at_risk"},
+                    {"enroll_misauth","false"},
+                    {"generate_session_cookies","1"},
+                    {"error_detail_type","button_with_disabled"},
+                    {"source","login"},
+                    {"machine_id", User.MachineId},
+                    {"jazoest", ExtensionsHelper.GenerateJazoest(_deviceInfo.DeviceGuid.ToString())},
+
+                //meta_inf_fbmeta=&
+                //advertiser_id=-db16-41c4-b581-&
+                //encrypted_msisdn=&
+                //currently_logged_in_userid=0&
+                //locale=en_US&
+                //client_country_code=IR&
+                //fb_api_req_friendly_name=authenticate&
+                //fb_api_caller_class=Fb4aAuthHandler&
+                //api_key=882a8490361da98702bf97a021ddc14d&
+                //sig=&
+                //access_token=350685531728|62f8ce9f74b12f84c123cc23437a4a32
+
+                { "meta_inf_fbmeta",""},
+                    {"advertiser_id", _deviceInfo.AdId.ToString()},
+                    {"encrypted_msisdn",""},
+                    {"currently_logged_in_userid","0"},
+                    {"locale", AppLocale},
+                    {"client_country_code", ClientCountryCode},
+
+                    {"fb_api_req_friendly_name","authenticate"},
+                    {"fb_api_caller_class","Fb4aAuthHandler"},
+                    {"api_key", FacebookApiConstants.FACEBOOK_API_KEY},
+                    {"sig", CryptoHelper.CalculateMd5()},
+                    {"access_token", FacebookApiConstants.FACEBOOK_ACCESS_TOKEN},
+
+                    // https://github.com/bitlbee/bitlbee-facebook/commit/31b56ec07d8b1682a15e1dde114810140dddcb4e
+                  {"uid", User.uid.ToString() },    // int
+                // credentials_type magic
+                {"credentials_type", "two_factor" },
+
+                    // first_factor, yes cleverly wants it with different name than gives
+                {"first_factor", User.login_first_factor},    //string
+                // twofactor_code
+                { "twofactor_code", SMScode},  //string
+                                                            // password actually now same as twofactor_code
+                    { "password", SMScode },     //string
+                                                              // userid , same as uid. needs to be here for 2FA to work.
+                {"userid", User.uid.ToString()}  // int
+            };
+
+                var request = _httpHelper.GetDefaultRequest(HttpMethod.Post,
+                    instaUri, _deviceInfo, data, true);
+                //request.Headers.AddHeader("Authorization", "OAuth null");
+                request.Headers.AddHeader(FacebookApiConstants.HEADER_FB_FRIENDLY_NAME, "authenticate", true);
+
+                var response = await _httpRequestProcessor.SendAsync(request);
+                var json = await response.Content.ReadAsStringAsync();
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    var failureResponse = JsonConvert.DeserializeObject<FacebookFailureLoginResponse>(json);
+                    var error = failureResponse.Error;
+                    if (error != null)
+                    {
+                        if (error.Code == 401) // Wrong Credentials
+                        {
+                            //"code": 401,
+                            //"message": "Invalid username or password",
+                            //"error_user_title": "Wrong Credentials",
+                            //"error_user_msg": "Invalid username or password",
+                            return Result.Fail(error.Message, FacebookLoginResult.WrongUserOrPassword);
+                        }
+                        else if (error.Code == 418)
+                        {
+                            //"message": "An unexpected error occurred. Please try logging in again.",
+                            //"code": 418,
+                            //"error_user_title": "Login Error",
+                            //"error_subcode": 2779001,
+                            //"error_user_title": "Login Error",
+                            //"error_user_msg": "An unexpected error occurred. Please try logging in again.",
+                            if (error.ErrorData?.PwdEncKeyPkg != null)
+                            {
+                                User.PublicKey = error.ErrorData.PwdEncKeyPkg.PublicKey.Base64Encode();
+                                User.PublicKeyId = error.ErrorData.PwdEncKeyPkg.KeyId.ToString();
+                                return await LoginAsync(true);
+                            }
+
+                            return Result.Fail(error.Message, FacebookLoginResult.RenewPwdEncKeyPkg);
+                        }
+                        else if (error.Code == 406)
+                        {
+                            // "message": "Login approvals are on. Expect an SMS shortly with a code to use for log in",
+                            // "type": "OAuthException",
+                            // "code":406,
+                            // "error_data":{"uid":xxxxx,
+                            // login_first_factor":"xxxxxxxxxxxxxx",
+                            // "support_uri":"https://m.facebook.com/two_factor/id_upload/mobile/?idd=xxxxxxxx&nonce=xxxxxxxx&ext=xxx&hash=xxx",
+                            // "auth_token":"xxx"},
+                            // "error_subcode":1348161,
+                            // "is_transient":false,
+                            // "error_user_title":"Wymagany kod logowania",
+                            // "error_user_msg":"Wprowad\\u017a kod, kt\\u00f3ry wys\\u0142ali\\u015bmy Ci w wiadomo\\u015bci tekstowej, aby si\\u0119 zalogowa\\u0107.",
+                            // "fbtrace_id":"AQQuUcaNFIOc_Mmrc-1oHDG"}}"
+                            return Result.Fail(error.Message, FacebookLoginResult.SMScodeRequired);
+                        }
+                    }
+
+                    return Result.UnExpectedResponse<FacebookLoginResult>(response, json);
+
+                }
+
+                var validateCheckpoint = ExtensionsHelper.CheckpointCheck(response.Headers);
+                if (validateCheckpoint.Item1)
+                    return Result.Fail(validateCheckpoint.Item2,
+                        ResponseType.CheckpointAccount, default(FacebookLoginResult));
+
+                responseContent = json;
+                if (json.Contains("\"errors\"") || json.Contains("\"error\""))
+                    return Result.UnExpectedResponse<FacebookLoginResult>(response, json);
+                var obj = JsonConvert.DeserializeObject<FacebookLoginSessionResponse>(json);
+
+                InvalidateSuccessLogin(obj);
+                return Result.Success(FacebookLoginResult.Success);
+            }
+            catch (HttpRequestException httpException)
+            {
+                _logger?.LogException(httpException);
+                return Result.Fail(httpException, default(FacebookLoginResult), ResponseType.NetworkProblem);
+            }
+            catch (Exception exception)
+            {
+                _logger?.LogException(exception);
+                return Result.Fail<FacebookLoginResult>(exception, responseContent);
+            }
+        }
+
         public async Task<IResult<FacebookLoginResult>> LoginAsync(bool secondTime = false)
         {
             string responseContent = null;
@@ -535,6 +698,8 @@ namespace FacebookApiSharp.API
                             // "error_user_title":"Wymagany kod logowania",
                             // "error_user_msg":"Wprowad\\u017a kod, kt\\u00f3ry wys\\u0142ali\\u015bmy Ci w wiadomo\\u015bci tekstowej, aby si\\u0119 zalogowa\\u0107.",
                             // "fbtrace_id":"AQQuUcaNFIOc_Mmrc-1oHDG"}}"
+                            User.uid = error.ErrorData.uid;
+                            User.login_first_factor = error.ErrorData.login_first_factor;
                             return Result.Fail(error.Message, FacebookLoginResult.SMScodeRequired);
                         }
                     }

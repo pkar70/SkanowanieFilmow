@@ -1,15 +1,32 @@
 
+
+AZURE z NAR: stworzyc nowy oPic z pierwszego JPG wypakowanego do %temp%, i to zwrocic (kasujac plik Temp)
+
+ThumbPic: publ prop IsMovie, jesli tak to pierwsza klatka jako miniaturka, a dorysowany |> na dole)
+
+WPF jako Microsoft Store? Jeśli tak (coś sprawdzić czy się uda) to migracja tych UWP które już nie są telefoniczne? Ale najpierw na pół roku wersja z .Net settings, by przemigrować settingsy z UWP do .Net
+
+picsort.archive.json - nie do cloud, bo nie ma jak kopiować - w LocalStorage (l:\) nie będzie przecież TIFFów, więc nie będzie pełnego by kopiować, zaś .remote.Append byłoby zbyt wolne
+picsort.archive.json dla archive .ext, tego chyba teraz jeszcze nie ma
+
+
 Mój NUGET:
 * 2.0.1 jako wersja .Net Std 2.0
 * Nuget2: MojaLista, MojaStruct
 * może coś jeszcze z vblib, co da się zamknąć "razem" w jedno
+
+CloudPublish: SSC, additInfo jako nazwa grupy, może nawet Combo threadów gdzie jest się zapisanym (na poziomie settings) - wszak do różnych thread mogą być różne pipelines
+Reply się chyba nie da tak ściągnąć
+
+na start można sprawdzać czy jest plik %data%\movie.jpg, jeśli nie ma, to tworzyć (tak jak watermarka), i jego wyświetlać dla filmików w Browser.
+
+publikacja/itp., konwertery z NAR do JPG, 
 
 ShowBig, menu z CloudArch które mają publikacje (do sciagania komentarzy itp.)
 Chyba że to zrobić jako w ogóle osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać.
 
 jeszcze raz sprawdzić różnice w API między .Net (Std14, Std2, Core 3, 5, 6, 7, FW4.6, FW4.8)
 WinUI3 zamiast WPF? Może byłby ProgressRing?
-Jak się ma WinUI3 do .Net do MAUI? Który XAML?
 (chyba: WinForms jak dawniej zwykłe VB, bez XAML; WPF->UWP->WinUI3)
 * vblib -> 2.0, co upraszcza także LocalSourceMiddle
 

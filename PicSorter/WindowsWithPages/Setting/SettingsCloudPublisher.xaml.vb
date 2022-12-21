@@ -150,7 +150,7 @@ Class SettingsCloudPublisher
 
         uiSrcPassword.Text = _item.sPswd
         uiSrcUsername.Text = _item.sUsername
-
+        uiSrcAdditInfo.Text = _item.additInfo
 
         'afterTagChangeBehaviour As AfterChangeBehaviour = AfterChangeBehaviour.ignore
         'afterPicChangeBehaviour As AfterChangeBehaviour = AfterChangeBehaviour.ignore
@@ -204,7 +204,7 @@ Class SettingsCloudPublisher
 
         _item.sUsername = uiSrcUsername.Text
         _item.sPswd = uiSrcPassword.Text
-
+        _item.additInfo = uiSrcAdditInfo.Text
 
         'afterTagChangeBehaviour As AfterChangeBehaviour = AfterChangeBehaviour.ignore
         'afterPicChangeBehaviour As AfterChangeBehaviour = AfterChangeBehaviour.ignore

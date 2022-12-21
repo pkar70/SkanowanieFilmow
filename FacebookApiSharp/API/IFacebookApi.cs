@@ -20,6 +20,7 @@ namespace FacebookApiSharp.API
     {
         Task<IResult<bool>> SendLoginFlowsAsync();
         Task<IResult<FacebookLoginResult>> LoginAsync(bool secondTime = false);
+        Task<IResult<FacebookLoginResult>> LoginSMScodeAsync(string SMScode);
         Task<IResult<bool>> SendAfterLoginFlowsAsync();
         Task<IResult<FacebookNetworkInterfaceResponse>> GetNetworkInterfaceAsync();
         Task<IResult<bool>> GetPersistentComponentsAsync();

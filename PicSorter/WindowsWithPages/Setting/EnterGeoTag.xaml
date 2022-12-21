@@ -16,10 +16,10 @@
         <StackPanel>
         <TextBlock HorizontalAlignment="Center" FontSize="14" Text="Podaj współrzędne" />
         <TextBlock Text="Latitude:" Margin="0,5,0,0"/>
-        <TextBox Name="uiLatitude" TextChanged="uiLatitude_TextChanged"/>
+        <TextBox Name="uiLatitude" TextChanged="uiLatLon_TextChanged"/>
         <TextBlock Text="Longitude:" Margin="0,5,0,0"/>
-        <TextBox Name="uiLongitude" InputScope="Number"/>
-        <Button Content=" OK " Click="uiOk_Click" HorizontalAlignment="Center" Margin="5,10,5,10"/>
+            <TextBox Name="uiLongitude" InputScope="Number" TextChanged="uiLatLon_TextChanged"/>
+        <Button Content=" OK " Click="uiOk_Click" HorizontalAlignment="Center" Margin="5,10,5,10" Name="uiOK" IsEnabled="false"/>
         <Rectangle HorizontalAlignment="Stretch" Margin="20,0,20,0" Height="5" Fill="Blue" />
 
         <TextBlock Text="POI name:" Margin="0,5,0,0"/>

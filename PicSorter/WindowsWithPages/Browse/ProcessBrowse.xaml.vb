@@ -175,7 +175,7 @@ Public Class ProcessBrowse
 
         For Each oItem As ThumbPicek In _thumbsy
 
-            '' *TODO* tymczasowe, by wyłapywać tylko to co chcemy
+            ' *TODO* tymczasowe, by wyłapywać tylko to co chcemy
             'If Not oItem.oThumb.MatchesMasks("*.avi") Then Continue For
 
             oItem.oImageSrc = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
@@ -400,11 +400,46 @@ Public Class ProcessBrowse
 
         ' *TODO* reakcja jakaś na inne typy niż JPG
         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
+
+        Dim sExt As String = IO.Path.GetExtension(sPathName).ToLower
+        If sExt = ".nar" Or sExt = ".avi" Or sExt = ".mov" Or sExt = ".mp4" Then
+            ' *TODO* pierwsza klatka z filmików, overwrite na tym obrazek z Ext pliku?
+            ' *TODO* z .NAR wyciagnięcie zdjęcia pierwszego/lepszego (wybranego w kodzie) do tempfilename
+            Dim sBreakMe = "make break here"
+        End If
+
         bitmap.UriSource = New Uri(sPathName)
+        Try
+            bitmap.EndInit()
+            Await Task.Delay(1) ' na potrzeby ProgressBara
+
+            Return bitmap
+        Catch ex As Exception
+
+        End Try
+
+        vb14.DumpMessage($"cannot initialize bitmap from {sExt}, using placeholder")
+
+
+        ' się nie udało tak wprost, to pokazujemy inny obrazek - file extension
+        Dim sPlaceholder As String = Application.GetDataFile("", $"placeholder{sExt}.jpg")
+        If Not IO.File.Exists(sPlaceholder) Then
+            Process_Signature.WatermarkCreate.StworzWatermarkFile(sPlaceholder, sExt, sExt)
+        End If
+
+        bitmap = New BitmapImage()
+        bitmap.BeginInit()
+        If iMaxSize > 0 Then bitmap.DecodePixelHeight = iMaxSize
+        bitmap.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+        bitmap.Rotation = iRotation
+        bitmap.UriSource = New Uri(sPlaceholder)
         bitmap.EndInit()
         Await Task.Delay(1) ' na potrzeby ProgressBara
 
         Return bitmap
+
+
+
     End Function
 
 
@@ -418,7 +453,12 @@ Public Class ProcessBrowse
 
     Private Sub uiImage_LeftClick(sender As Object, e As MouseButtonEventArgs)
         Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem?.DataContext
+        Dim oPicek As ThumbPicek
+        Try
+            oPicek = oItem?.DataContext
+        Catch ex As Exception
+            Return  ' disconnected item na przykład
+        End Try
 
         If oPicek Is Nothing Then Return
 
@@ -556,7 +596,7 @@ Public Class ProcessBrowse
         End If
 
         _ReapplyAutoSplit = False
-        DeletePicture(oPicek)
+        DeletePicture(oPicek)   ' zmieni _Reapply, jeśli picek miał splita
 
         SaveMetaData()
 
@@ -619,11 +659,19 @@ Public Class ProcessBrowse
 
     Private Sub ApplyAutoSplitHours(hours As Integer)
 
-        Dim lastDate As New Date(1970, 1, 1) ' yyyyMMddHHmmss
+        Dim lastDate As New Date(1600, 1, 1) ' yyyyMMddHHmmss
 
         For Each oItem As ThumbPicek In _thumbsy
-            If lastDate < oItem.dateMin Then oItem.splitBefore = SplitBeforeEnum.czas
-            lastDate = oItem.dateMin.AddHours(hours)
+            If lastDate.IsDateValid Then
+                Dim dDateDiff As TimeSpan = oItem.dateMin - lastDate
+                If dDateDiff.TotalHours > hours Then
+                    oItem.splitBefore = SplitBeforeEnum.czas
+                    Dim temp As Long = dDateDiff.TotalSeconds
+                    oItem.dymekSplit = $"Time diff: {temp.ToStringDHMS}"
+                End If
+            End If
+
+            lastDate = oItem.dateMin
         Next
     End Sub
 
@@ -634,9 +682,15 @@ Public Class ProcessBrowse
         For Each oItem As ThumbPicek In _thumbsy
             Dim geoExif As Vblib.MyBasicGeoposition = oItem.oPic.GetGeoTag
             If geoExif IsNot Nothing Then
-                If lastGeo.DistanceTo(geoExif) > kiloms Then oItem.splitBefore = SplitBeforeEnum.geo
+                If Not lastGeo.IsEmpty Then
+                    Dim dOdl As Double = Math.Floor(lastGeo.DistanceTo(geoExif)) / 1000
+                    If dOdl > kiloms Then
+                        oItem.splitBefore = SplitBeforeEnum.geo
+                        oItem.dymekSplit = $"Distance: {dOdl} km"
+                    End If
+                End If
                 lastGeo = geoExif
-            End If
+                End If
         Next
     End Sub
 
@@ -666,6 +720,7 @@ Public Class ProcessBrowse
         ' najpierw usuwamy splittery
         For Each oItem As ThumbPicek In _thumbsy
             oItem.splitBefore = SplitBeforeEnum.none
+            oItem.dymekSplit = Nothing
         Next
 
         ' split mniej ważny
@@ -1019,6 +1074,12 @@ Public Class ProcessBrowse
 
         SaveMetaData() ' bo zmieniono EXIF
 
+        ' ale nie mamy pamiętane jaki jest aktualnie filtr
+        'If oEngine.Nazwa = ExifSource.AutoAzure Then
+        '    RefreshMiniaturki(False)
+        'End If
+
+
     End Sub
 
     Private Async Sub PostProcessRun(sender As Object, e As RoutedEventArgs)
@@ -1160,6 +1221,7 @@ Public Class ProcessBrowse
         Public Property dateMin As Date ' kopiowane z oThumb.Exifs(..)
         Public Property splitBefore As Integer
         Public Property widthPaskow As Integer
+        Public Property dymekSplit As String = ""
         Public Property opacity As Double = 1   ' czyli normalnie pokazany
 
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)

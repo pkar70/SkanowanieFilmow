@@ -5,6 +5,7 @@ Imports System.IO
 Imports System.Text.RegularExpressions
 Imports System.Threading
 Imports Newtonsoft.Json
+Imports Newtonsoft.Json.Linq
 
 Public Class OnePic
     Inherits MojaStruct
@@ -582,6 +583,19 @@ Public Class OnePic
         ' empty, bo po nowemu nic nie trzeba robić
     End Sub
 
+    Public Sub SkipEdit(bPipeline As Boolean)
+        If Not bPipeline Then Return
+
+        ' po prostu symulujemy pusty krok - kopiujemy in/out
+        _PipelineOutput = New MemoryStream
+        _PipelineInput.Seek(0, SeekOrigin.Begin)
+        _PipelineInput.CopyTo(_PipelineOutput)
+
+        _PipelineInput.Seek(0, SeekOrigin.Begin)
+        _PipelineOutput.Seek(0, SeekOrigin.Begin)
+
+    End Sub
+
 
     ''' <summary>
     ''' przygotuj Stream do edycji
@@ -628,7 +642,7 @@ Public Class OnePic
                     If oExif IsNot Nothing Then oExif.Orientation = 1
                 End If
             End If
-                _PipelineOutput.Seek(0, SeekOrigin.Begin)
+            _PipelineOutput.Seek(0, SeekOrigin.Begin)
             Dim tempStream As New MemoryStream
             oExifLib.Save(_PipelineOutput, tempStream, 0) ' (orgFileName)
             _PipelineOutput.Dispose()
@@ -704,7 +718,40 @@ Public Class OnePic
         ' dla nich bierzemy ostatni wpis - pewnie zwykle będzie to ustawiane gdy w loop będzie miał SourceDefault - ale może to nie będzie pierwszy...
         If oAddExif.FileSourceDeviceType <> 0 Then oToExif.FileSourceDeviceType = oAddExif.FileSourceDeviceType
         If Not String.IsNullOrWhiteSpace(oAddExif.Author) Then oToExif.Author = oAddExif.Author
-        If Not String.IsNullOrWhiteSpace(oAddExif.Copyright) Then oToExif.Copyright = oAddExif.Copyright
+
+        If Not String.IsNullOrWhiteSpace(oAddExif.Copyright) Then
+            If oAddExif.Copyright.Contains("%") Then
+                ' special case - na koniec, przy publikacji; %1, %3 itp. jako długość odpowiedniego słowa
+                Dim aFull As String() = oToExif.Copyright.Split(" ")
+                Dim aShort As String() = oAddExif.Copyright.Split(" ")
+                oToExif.Copyright = ""
+                For iLp As Integer = 0 To aShort.Length
+                    Dim sToken As String = aShort.ElementAt(iLp)
+                    If sToken.StartsWith("%") Then
+                        Dim sOrgWord As String = aFull.ElementAt(iLp)
+                        sToken = sToken.Substring(1)
+                        Dim iLen As Integer = 0
+                        If sToken.StartsWith("^") Then
+                            Integer.TryParse(sToken.Substring(2), iLen)
+                            sOrgWord = sOrgWord.ToUpperInvariant
+                        Else
+                            Integer.TryParse(sToken.Substring(1), iLen)
+                        End If
+                        If iLen = 0 Then
+                            oToExif.Copyright = oToExif.Copyright & sOrgWord.Substring(0, iLen)
+                        Else
+                            oToExif.Copyright = oToExif.Copyright & sOrgWord.Substring(0, iLen)
+                        End If
+                    Else
+                        oToExif.Copyright = oToExif.Copyright & sToken & " "
+                    End If
+
+                Next
+                oToExif.Copyright = oToExif.Copyright.Trim
+            Else
+                oToExif.Copyright = oAddExif.Copyright
+            End If
+        End If
         If Not String.IsNullOrWhiteSpace(oAddExif.CameraModel) Then oToExif.CameraModel = oAddExif.CameraModel
         If Not String.IsNullOrWhiteSpace(oAddExif.DateTimeOriginal) Then oToExif.DateTimeOriginal = oAddExif.DateTimeOriginal
         If Not String.IsNullOrWhiteSpace(oAddExif.DateTimeScanned) Then oToExif.DateTimeScanned = oAddExif.DateTimeScanned

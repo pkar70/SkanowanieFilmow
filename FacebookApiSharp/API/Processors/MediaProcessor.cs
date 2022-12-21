@@ -727,7 +727,7 @@ namespace FacebookApiSharp.API.Processors
                     }
                 },
             };
-            if (attachment == null)
+            if (attachment != null) // PKAR: correction from email
             {
                 input.Add("attachments", attachment == null ? new JArray() : new JArray(attachment));
             }

@@ -403,6 +403,7 @@ Public MustInherit Class PicSourceBase
 	''' <param name="bRealPurge">TRUE: kasuj, FALSE: tylko policz</param>
 	''' <returns></returns>
 	Public Function Purge(bRealPurge As Boolean) As Integer
+		DumpCurrMethod()
 		If Typ = PicSourceType.AdHOC Then Return 0
 
 		If Not IO.File.Exists(_purgeFile) Then Return 0

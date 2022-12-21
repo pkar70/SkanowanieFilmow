@@ -27,9 +27,9 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "VbLib46drawing", "VbLib46\V
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "vblib46ram", "vblib46ram\vblib46ram.vbproj", "{1CC44B1D-3406-4732-8641-A5EA5F26026C}"
 EndProject
-Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Publish_std2_Instagram", "Publish_Instagram\Publish_std2_Instagram.vbproj", "{BBCD1A43-F95F-43DF-8D2A-84B32F80C7F6}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CloudPubl_std2_Instagram", "Publish_Instagram\CloudPubl_std2_Instagram.vbproj", "{BBCD1A43-F95F-43DF-8D2A-84B32F80C7F6}"
 EndProject
-Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Publish_std2_Facebook", "Publish_std2_Facebook\Publish_std2_Facebook.vbproj", "{E53C08B0-FC9E-43AF-ABFF-C71105B8E323}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CloudPubl_std2_Facebook", "Publish_std2_Facebook\CloudPubl_std2_Facebook.vbproj", "{E53C08B0-FC9E-43AF-ABFF-C71105B8E323}"
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "FbTestApp", "FbTestApp\FbTestApp.vbproj", "{6935FB6A-B5EC-49AA-A785-5FAA2736A664}"
 EndProject
@@ -46,6 +46,8 @@ EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "VbLibCore3-picSource", "VbLibCore3\VbLibCore3-picSource.vbproj", "{1A9CE7F2-C9D6-48C8-B8EB-466CBB54073E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsNuget-Chomikuj", "ChomikujApi-master\Chomikuj\AsNuget-Chomikuj.csproj", "{8B23EEE4-62DC-4E43-A22F-12C6814C7F49}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CloudPubl_std14_SSC", "CloudPubl_std14_SSC\CloudPubl_std14_SSC.vbproj", "{799FA259-C6F7-4EA1-B6E7-49007D090274}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -511,6 +513,26 @@ Global
 		{8B23EEE4-62DC-4E43-A22F-12C6814C7F49}.Release|x64.Build.0 = Release|Any CPU
 		{8B23EEE4-62DC-4E43-A22F-12C6814C7F49}.Release|x86.ActiveCfg = Release|Any CPU
 		{8B23EEE4-62DC-4E43-A22F-12C6814C7F49}.Release|x86.Build.0 = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|ARM.Build.0 = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|x64.Build.0 = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Debug|x86.Build.0 = Debug|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|Any CPU.Build.0 = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|ARM.ActiveCfg = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|ARM.Build.0 = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|ARM64.Build.0 = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|x64.ActiveCfg = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|x64.Build.0 = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|x86.ActiveCfg = Release|Any CPU
+		{799FA259-C6F7-4EA1-B6E7-49007D090274}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -530,10 +530,7 @@ Public Class ShowBig
 
             SaveMetaData()
 
-            Await ZapiszZmianyObrazka(transf)
-
-            ' wczytanie obrazka (miniaturki) na nowo
-            _picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
+            Await ZapiszZmianyObrazka(transf) ' w tym wczytanie obrazka (miniaturki) na nowo
 
         End If
 

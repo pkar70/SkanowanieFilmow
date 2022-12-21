@@ -4,16 +4,17 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Auto Split" Height="170" Width="150" Loaded="Window_Loaded" ResizeMode="NoResize" >
+        Title="Auto Split" Height="180" Width="150" Loaded="Window_Loaded" ResizeMode="NoResize" >
     <StackPanel Margin="5,5,5,5">
-        <TextBlock FontSize="14" Text="Autosplit on:" Margin="0,0,0,5"/>
+            <TextBlock FontSize="14" Text="Autosplit on:" Margin="0,0,0,5"/>
+        <Rectangle Height="2" Margin="10,3,10,3" HorizontalAlignment="Stretch" Fill="SkyBlue" Stroke="SkyBlue"/>
         <RadioButton GroupName="uiAutoSplitTime" Name="uiDayChange" Content="day change" />
-        <StackPanel Orientation="Horizontal" >
-            <RadioButton GroupName="uiAutoSplitTime" Name="uiHourGapOn" Content="gap " />
-            <TextBox Name="uiHourGapInt" Width="25" InputScope="Digits" />
-            <TextBlock Text=" hours" />
-        </StackPanel>
-        <Line Height="2" Margin="2,3,2,3" />
+            <StackPanel Orientation="Horizontal" >
+                <RadioButton GroupName="uiAutoSplitTime" Name="uiHourGapOn" Content="gap " />
+                <TextBox Name="uiHourGapInt" Width="25" InputScope="Digits" />
+                <TextBlock Text=" hours" />
+            </StackPanel>
+        <Rectangle Height="2" Margin="10,10,10,3" HorizontalAlignment="Stretch" Fill="OrangeRed" Stroke="OrangeRed"/>
         <StackPanel Orientation="Horizontal" Margin="10,0,0,0">
             <CheckBox Name="uiGeoGapOn" Content="distance " />
             <TextBox Name="uiGeoGapInt" Width="25" InputScope="Digits" />

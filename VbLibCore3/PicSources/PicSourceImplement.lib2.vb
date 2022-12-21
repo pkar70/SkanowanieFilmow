@@ -35,6 +35,7 @@ Public Class PicSourceImplement
     End Function
 
     Protected Overrides Function DeleteFile(sId As String) As Boolean
+        Vblib.pkarlibmodule14.DumpCurrMethod(sId)
         Select Case Typ
             Case Vblib.PicSourceType.MTP
                 Return DeleteFile_MTP(sId)

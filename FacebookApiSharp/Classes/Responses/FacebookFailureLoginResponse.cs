@@ -45,6 +45,10 @@ namespace FacebookApiSharp.Classes.Responses
         [JsonProperty("cpl_info")]
         public FacebookFailureLoginErrorDataCplInfoResponse CplInfo { get; set; }
 
+        // PKAR, dla 406 (SMS code)
+        public long uid { get; set; }
+        public string login_first_factor { get; set; }
+        public string auth_token { get; set; }
     }
 
     public class FacebookPwdEncKeyPkgResponse

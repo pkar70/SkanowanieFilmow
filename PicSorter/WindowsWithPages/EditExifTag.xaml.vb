@@ -87,6 +87,12 @@ Public Class EditExifTag
         WypelnComboDeviceType(_exifTag.FileSourceDeviceType)
         WypelnComboPlikiem(uiAuthor, "authors", _exifTag.Author)
         WypelnComboPlikiem(uiCopyright, "copyrights", _exifTag.Copyright)
+
+        If _scope = EditExifTagScope.LimitedToCloudPublish Then
+            uiCopyright.Items.Add("(C) %1 %1")
+            uiCopyright.Items.Add("(C) %1 %^3")
+        End If
+
         WypelnComboPlikiem(uiCameraModel, "cameras", _exifTag.CameraModel)
 
         WypelnDatePickery(_exifTag.DateMin, _exifTag.DateMax)

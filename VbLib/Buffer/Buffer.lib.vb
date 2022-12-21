@@ -136,31 +136,45 @@ Public Class Buffer
         Dim sDstPathName As String = IO.Path.Combine(_rootPictures, oPic.sSuggestedFilename)
 
         If IO.File.Exists(sDstPathName) Then
-            Dim oExistingStream As Stream = IO.File.OpenRead(sDstPathName)
-            Dim bSame As Boolean = Await IsSameFileContents(oPic.oContent, oExistingStream)
-            oExistingStream.Dispose()
-            oPic.oContent.Seek(0, SeekOrigin.Begin)
+            ' na MTP nie ma Seek, wiec musimy to zrobić przez plik pośredni
 
-            If bSame Then Return False
+            Dim sTempName As String = sDstPathName & ".tmp"
+            Dim oTempStream = IO.File.Create(sTempName, 1024 * 1024)
+            Await oPic.oContent.CopyToAsync(oTempStream, 1024 * 1024)
+
+            Dim oExistingStream As Stream = IO.File.OpenRead(sDstPathName)
+            oTempStream.Seek(0, SeekOrigin.Begin)
+
+            Dim bSame As Boolean = Await IsSameFileContents(oTempStream, oExistingStream)
+            oExistingStream.Dispose()
+
+            If bSame Then
+                DumpMessage("File already exists, same content")
+                Return False
+            End If
+            DumpMessage("File already exists, but another content - renaming")
 
             Dim sDstTmp As String
             Dim iInd As Integer
-                iInd = sDstPathName.LastIndexOf(".")
-                sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMdd") & sDstPathName.Substring(iInd)
+            iInd = sDstPathName.LastIndexOf(".")
+            sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMdd") & sDstPathName.Substring(iInd)
+            If IO.File.Exists(sDstTmp) Then
+                sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMddHHmmss") & sDstPathName.Substring(iInd)
                 If IO.File.Exists(sDstTmp) Then
-                    sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMddHHmmss") & sDstPathName.Substring(iInd)
-                    If IO.File.Exists(sDstTmp) Then
-                        Return False ' file already exist, i nawet z doklejaniem daty - nic sie nie da zrobic
-                    End If
+                    Return False ' file already exist, i nawet z doklejaniem daty - nic sie nie da zrobic
                 End If
-                sDstPathName = sDstTmp
             End If
+            sDstPathName = sDstTmp
 
+            IO.File.Move(sTempName, sDstPathName)
+        Else
             Dim oWriteStream = IO.File.Create(sDstPathName, 1024 * 1024)
-        Await oPic.oContent.CopyToAsync(oWriteStream, 1024 * 1024)
+            Await oPic.oContent.CopyToAsync(oWriteStream, 1024 * 1024)
 
-        Await oWriteStream.FlushAsync
-        oWriteStream.Dispose()
+            Await oWriteStream.FlushAsync
+            oWriteStream.Dispose()
+        End If
+
 
         Dim oExif As ExifTag = oPic.GetExifOfType(ExifSource.SourceFile)
         IO.File.SetCreationTime(sDstPathName, oExif.DateMin)

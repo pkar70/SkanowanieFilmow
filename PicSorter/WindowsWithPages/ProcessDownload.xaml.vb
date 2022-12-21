@@ -39,6 +39,8 @@ Public Class ProcessDownload
             If Await vb14.DialogBoxYNAsync($"Zrobić purge? ({iToPurge} plików)") Then oSrc.Purge(True)
         End If
 
+        vb14.DialogBox("Done.")
+
     End Sub
 
     Private Shared Function GetVolLabelForPath(dirToGet As String) As String
@@ -72,11 +74,11 @@ Public Class ProcessDownload
             oSrc.Purge(True)
         Next
 
+        vb14.DialogBox("Done.")
+
     End Sub
 
     Private Async Function RetrieveFilesFromSource(oSrc As Vblib.PicSourceBase) As Task
-        vb14.DumpCurrMethod()
-
         vb14.DumpCurrMethod(oSrc.VolLabel)
 
         Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
@@ -94,11 +96,10 @@ Public Class ProcessDownload
 
         Do
             ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
-            If Await Application.GetBuffer.AddFile(oSrcFile) Then
-                oSrcFile = oSrc.GetNext
-                If oSrcFile Is Nothing Then Exit Do
-                uiProgBar.Value += 1
-            End If
+            Await Application.GetBuffer.AddFile(oSrcFile)
+            oSrcFile = oSrc.GetNext
+            If oSrcFile Is Nothing Then Exit Do
+            uiProgBar.Value += 1
         Loop
 
         Application.GetBuffer.SaveData()

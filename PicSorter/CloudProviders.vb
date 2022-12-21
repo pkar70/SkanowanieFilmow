@@ -9,7 +9,8 @@ Public Class CloudPublishersList
     Private gCloudProviders As Vblib.CloudPublish() = {
         New Publish_AdHoc,
         New Publish_Instagram.Publish_Instagram,
-        New Publish_std2_Facebook.Publish_Facebook_Post
+        New Publish_std2_Facebook.Publish_Facebook_Post,
+        New CloudPubl_std14_SSC.Cloud_Skyscraper
         }
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)
@@ -94,7 +95,9 @@ Public Class CloudArchivesList
     ' Inherits Vblib.MojaLista(Of CloudConfig)
 
     Private gCloudProviders As Vblib.CloudArchive() = {
-            New CloudArch_std14_Chomikuj.Cloud_Chomikuj
+            New CloudArch_std14_Chomikuj.Cloud_Chomikuj,
+            New CloudArch_std14_Degoo.Cloud_Degoo,
+            New CloudArch_std14_Shutterfly.Cloud_Shutterfly
         }
 
     Private gCloudArchives As List(Of Vblib.CloudArchive)

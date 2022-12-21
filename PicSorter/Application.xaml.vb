@@ -45,6 +45,13 @@ Partial Class Application
 
     End Function
 
+    ''' <summary>
+    ''' podaj sciezke do pliku, w podanym podkatalogu
+    ''' </summary>
+    ''' <param name="sSubfolder">podkatalog w DataRoot</param>
+    ''' <param name="sFilename">nazwa pliku</param>
+    ''' <param name="bThrowNotExist">czy throw gdy nie ma DataRoot</param>
+    ''' <returns></returns>
     Public Shared Function GetDataFile(sSubfolder As String, sFilename As String, Optional bThrowNotExist As Boolean = True) As String
         Dim sFolder As String = GetDataFolder(sSubfolder, bThrowNotExist)
 

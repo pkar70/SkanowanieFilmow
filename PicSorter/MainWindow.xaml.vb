@@ -1,5 +1,6 @@
 ﻿
 
+
 Class MainWindow
     Inherits Window
 
@@ -7,9 +8,14 @@ Class MainWindow
         InitLib(Nothing)
         Me.Content = New MainPage
 
-
-        'Dim chomik As New CloudArch_std14_Chomikuj.Cloud_Chomikuj
-        'Await chomik.Login
+        ' *TODO* to tylko czasowo
+        'Dim sChcemy As String = "Degoo"
+        ' Dim sChcemy As String = "Shutterfly"
+        Dim sChcemy As String = "NIC"
+        For Each oItem In Application.GetCloudArchives.GetList
+            'If oItem.sProvider = "Degoo" Then
+            If oItem.sProvider = sChcemy Then Await oItem.Login
+        Next
 
     End Sub
 

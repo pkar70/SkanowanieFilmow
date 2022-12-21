@@ -1,15 +1,31 @@
 ﻿Imports Vblib
 
 Public Class EnterGeoTag
-    Private Sub uiLatitude_TextChanged(sender As Object, e As TextChangedEventArgs)
-        If Not uiLatitude.Text.StartsWith("http") Then Return
+    Private Sub uiLatLon_TextChanged(sender As Object, e As TextChangedEventArgs)
+        Dim oTB As TextBox = sender
+        If TryFromLink(oTB.Text) Then Return
+        CheckEnableOk()
+    End Sub
 
-        Dim oPos As MyBasicGeoposition = SettingsMapsy.Link2Geo(uiLatitude.Text)
-        If oPos.IsEmpty Then Return
+    Private Sub CheckEnableOk()
+        uiOK.IsEnabled = False
+        If uiLatitude.Text.Length < 3 Then Return
+        If uiLongitude.Text.Length < 3 Then Return
+        uiOK.IsEnabled = True
+    End Sub
+
+    Private Function TryFromLink(sLink As String) As Boolean
+        If Not sLink.ToLowerInvariant.StartsWith("http") Then Return False
+
+        Dim oPos As MyBasicGeoposition = SettingsMapsy.Link2Geo(sLink)
+        If oPos.IsEmpty Then Return False
 
         uiLatitude.Text = oPos.Latitude
         uiLongitude.Text = oPos.Longitude
-    End Sub
+        uiOK.IsEnabled = True
+        Return True
+    End Function
+
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
         Me.DialogResult = True
