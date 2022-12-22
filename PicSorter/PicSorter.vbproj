@@ -27,7 +27,7 @@
     <ProjectReference Include="..\CloudArch_std14_Chomikuj\CloudArch_std20_Chomikuj.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Degoo\CloudArch_std14_Degoo.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Shutterfly\CloudArch_std14_Shutterfly.vbproj" />
-    <ProjectReference Include="..\CloudPubl_std14_SSC\CloudPubl_std14_SSC.vbproj" />
+    <ProjectReference Include="..\CloudPubl_std14_SSC\CloudPubl_std2_SSC.vbproj" />
     <ProjectReference Include="..\HiddenWatermark\AsNuget-HiddenWatermark.csproj" />
     <ProjectReference Include="..\Process_Signature\Process_SigAndFace.vbproj" />
     <ProjectReference Include="..\Publish_Instagram\CloudPubl_std2_Instagram.vbproj" />

@@ -18,6 +18,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -417,6 +418,82 @@ namespace FacebookApiSharp.API
                 _logger?.LogException(exception);
                 return Result.Fail<bool>(exception);
             }
+        }
+
+        private async Task<string> TryGetAlbum(string albumName)
+        {
+            // tak jak Create, tylko tam POST a tu GET
+            var instaUri = UriCreator.GetUserAlbumsUri(User.uid);
+
+            do
+            {
+                var request = _httpHelper.GetDefaultRequest(HttpMethod.Get, instaUri, _deviceInfo);
+
+                var response = await _httpRequestProcessor.SendAsync(request);
+                var json = await response.Content.ReadAsStringAsync();
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    var failureResponse = JsonConvert.DeserializeObject<FacebookFailureLoginResponse>(json);
+                    var error = failureResponse.Error;
+                    if (error != null)
+                        return $"ERROR code={error.Code}, {error.Message}";
+                    return "ERROR jakis";
+                }
+
+                // mamy listę albumów, sprawdzamy czy już znaleźliśmy
+                FacebookAlbumPagedList albums = JsonConvert.DeserializeObject<FacebookAlbumPagedList>(json);
+                if (albums.data is null) return "";
+
+                foreach (var album in albums.data)
+                {
+                    if (album.name.ToLower() == albumName.ToLower())
+                        return album.id;
+                }
+
+                if (albums.paging.next is null) return "";
+                if (albums.paging.next.Length<10) return "";
+
+                instaUri = new Uri(albums.paging.next);
+
+
+            } while (true);
+        }
+
+        public async Task<string> GetOrCreateAlbum(string albumName)
+        {
+            string albumId = await TryGetAlbum(albumName);
+            if (albumId.StartsWith("ERROR")) return albumId;
+            if (albumId != "") return albumId;
+
+            var instaUri = UriCreator.GetUserAlbumsUri(User.uid);
+
+            var data = new Dictionary<string, string>
+            {
+                {"name", albumName}
+            };
+
+            var request = _httpHelper.GetDefaultRequest(HttpMethod.Post,
+                instaUri, _deviceInfo, data, true);
+
+            var response = await _httpRequestProcessor.SendAsync(request);
+            var json = await response.Content.ReadAsStringAsync();
+            if (response.StatusCode != HttpStatusCode.OK)
+            {
+                var failureResponse = JsonConvert.DeserializeObject<FacebookFailureLoginResponse>(json);
+                var error = failureResponse.Error;
+                if (error != null)
+                    return $"ERROR code={error.Code}, {error.Message}";
+                return "ERROR jakis";
+            }
+
+            // "{\"id\":\"6142543195778799\"}"
+            int iInd = json.IndexOf(":");
+            if (iInd < 0)
+                return "ERROR unexpected response (no ':'): " + json;
+
+            json = json.Substring(iInd+1);
+            json = json.Replace("\"", "").Replace("}","").Trim();
+            return json; // z JSON wziety identyfikator 
         }
 
         public async Task<IResult<FacebookLoginResult>> LoginSMScodeAsync(string SMScode)

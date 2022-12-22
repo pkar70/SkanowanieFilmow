@@ -33,5 +33,6 @@ namespace FacebookApiSharp.API.Processors
         Task<IResult<bool>> DisableCommentsAsync(string postId, string id);
         Task<IResult<FacebookStoryCreate>> MakeNewPostAsync(string caption, bool disableComments);
         Task<IResult<FacebookStoryCreate>> UploadPhotoAsync(string caption, byte[] imageBytes, bool disableComments);
+        Task<string> UploadPhotoToAlbumAsync(long albumId, string caption, string picname, byte[] imageBytes);
     }
 }

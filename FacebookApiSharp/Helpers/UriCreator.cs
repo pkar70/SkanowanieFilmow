@@ -16,6 +16,24 @@ namespace FacebookApiSharp.Helpers
         private static readonly Uri FacebookUri = new Uri(FacebookApiConstants.FACEBOOK_URL);
         private static readonly Uri BFacebookUri = new Uri(FacebookApiConstants.B_FACEBOOK_URL);
 
+        public static Uri GetUserAlbumsUri(long userId)
+        {
+            if (!Uri.TryCreate(new Uri(FacebookApiConstants.B_FACEBOOK_URL),
+                $"/{userId.ToString()}/albums/?limit=100",
+                out var instaUri))
+                throw new Exception("Cant create URI GetUserAlbumsUri");
+            return instaUri;
+        }
+
+        public static Uri GetUploadPhotoToAlbum(long albumId)
+        {
+            if (!Uri.TryCreate(new Uri(FacebookApiConstants.B_FACEBOOK_URL),
+                $"/{albumId.ToString()}/photos",
+                out var instaUri))
+                throw new Exception("Cant create URI GetUploadPhotoToAlbum");
+            return instaUri;
+        }
+
 
         public static Uri GetAppLocaleSuggestionsUri()
         {

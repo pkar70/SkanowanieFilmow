@@ -47,7 +47,7 @@ Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "VbLibCore3-picSource", "VbL
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsNuget-Chomikuj", "ChomikujApi-master\Chomikuj\AsNuget-Chomikuj.csproj", "{8B23EEE4-62DC-4E43-A22F-12C6814C7F49}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "CloudPubl_std14_SSC", "CloudPubl_std14_SSC\CloudPubl_std14_SSC.vbproj", "{799FA259-C6F7-4EA1-B6E7-49007D090274}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "CloudPubl_std2_SSC", "CloudPubl_std14_SSC\CloudPubl_std2_SSC.vbproj", "{799FA259-C6F7-4EA1-B6E7-49007D090274}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

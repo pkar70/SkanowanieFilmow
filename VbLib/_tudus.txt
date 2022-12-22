@@ -1,4 +1,119 @@
 
+przemyslec "scheduled" publishing, jak sie to ma do "dziwnosci"
+
+po jednym publish mamy closed stream przy probie nastepnego publish? - i slusznie, bo infrastruct tego nie umie
+- nalezy pipelineoutput resetowac po publikacji (nullować)
+
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Autotagger\Auto_Azure.lib.vb 19 KB Visual Basic Source file 13/12/2022 15:43:53 20/11/2022 16:43:14 21/12/2022 20:51:38 6
+60         ' *TODO* można byłoby zrobić zapętlenie, kilka kolejnych poziomów zmniejszania obrazka
+78                 ' *TODO* jesteśmy w NAR, tu nie będzie zmniejszania - przynajmniej na razie
+93         ' *TODO* reakcja jakaś na inne typy niż JPG
+94         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
+351             ' *TODO*
+507     ' *TODO* czy Azure ma osobno 5000 OCRów? jeśli tak, to można spróbować
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Autotagger\AutoTag_EXIF.lib.vb 15 KB Visual Basic Source file 5/12/2022 14:31:49 3/11/2022 11:33:19 21/12/2022 20:51:38 3
+17     ' *TODO* reakcja jakaś na inne typy niż JPG
+18     ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
+55                 ' *TODO* z filmów mamy tylko wersję uproszczoną - tylko to co jest ustawiane będzie
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Processing\BatchEdit.xaml.vb 4 KB Visual Basic Source file 14/11/2022 16:38:24 14/11/2022 16:20:05 21/12/2022 18:30:38 1
+77             ' *TODO* później będzie dokładniej może, typu pytanie o Exif, i tak dalej
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Buffer\Buffer.lib.vb 7 KB Visual Basic Source file 17/12/2022 19:09:26 27/10/2022 17:08:37 21/12/2022 20:51:38 1
+22     ' *TODO* to później można wyłączyć, bo to uzupełnia to co się powinno zrobić wcześniej
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\CloudArch_std14_Chomikuj\Cloud_Chomikuj.vb 12 KB Visual Basic Source file 20/12/2022 12:52:42 9/12/2022 12:19:47 21/12/2022 20:51:38 5
+68         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+75         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+76         ' *TODO* raczej bedzie konieczny LOGIN
+175         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+184         ' *TODO* na razie i tak nie jest wykorzystywane chyba
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\CloudArch_std14_Degoo\Cloud_Degoo.vb 15 KB Visual Basic Source file 19/12/2022 13:14:47 9/12/2022 12:20:12 21/12/2022 20:51:35 7
+23         ' *TODO*
+42         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+50         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+51         ' *TODO* raczej bedzie konieczny LOGIN
+62         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+72         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+106         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\CloudArch_std14_Shutterfly\Cloud_Shutterfly.vb 6 KB Visual Basic Source file 19/12/2022 12:26:06 9/12/2022 12:21:01 21/12/2022 20:51:35 8
+15         ' *TODO*
+32         ' *TODO* wyślij plik, "" gdy bezpośrednio, Name gdy do albumu
+40         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+48         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+49         ' *TODO* raczej bedzie konieczny LOGIN
+60         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+70         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+105         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Structy\Keywords.lib.vb 5 KB Visual Basic Source file 14/12/2022 10:54:05 30/10/2022 09:32:22 21/12/2022 20:51:38 2
+23     ' *TODO* upload behaviour ' można, nie można, skasować - o co to chodziło? :)
+24     ' *TODO* można dodać Exif narzucany (chyba)
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\LocalStorage\LocalStorage.lib.vb 12 KB Visual Basic Source file 11/12/2022 15:21:24 22/11/2022 13:06:19 21/12/2022 20:51:38 1
+222 		' *TODO* jeśli nie, to spróbuj skopiować z oArchive
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Main\MainPage.xaml.vb 2 KB Visual Basic Source file 12/12/2022 17:13:38 28/10/2022 15:22:29 21/12/2022 20:51:38 1
+16         ' *TODO* guziki pozostałe wyłączane jak nie ma LocalStorage
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\MainWindow.xaml.vb 2 KB Visual Basic Source file 19/12/2022 14:57:57 28/10/2022 15:51:32 21/12/2022 20:51:38 1
+11         ' *TODO* to tylko czasowo
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\PicSources\PicSourceBase.lib.vb 14 KB Visual Basic Source file 17/12/2022 19:13:13 27/10/2022 16:44:07 21/12/2022 20:51:38 2
+117 			' *TODO* reszta -do userdescription
+150 		' *TODO* ewentualnie tak podmień, by suggested filename (a więc w buforze i dalej) było już bez tego
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\Postprocess\Process_AutoRotate.vb 5 KB Visual Basic Source file 2/12/2022 22:50:02 14/11/2022 13:42:46 21/12/2022 18:30:38 1
+97         '' *TODO* ten mechanizm dobrze byłoby przenieść do EndEdit
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Browse\ProcessBrowse.xaml.vb 50 KB Visual Basic Source file 21/12/2022 11:18:10 2/11/2022 11:49:44 21/12/2022 20:51:38 7
+71         ' *TODO* Await EwentualneKasowanieArchived() -
+178             ' *TODO* tymczasowe, by wyłapywać tylko to co chcemy
+401         ' *TODO* reakcja jakaś na inne typy niż JPG
+402         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
+406             ' *TODO* pierwsza klatka z filmików, overwrite na tym obrazek z Ext pliku?
+407             ' *TODO* z .NAR wyciagnięcie zdjęcia pierwszego/lepszego (wybranego w kodzie) do tempfilename
+582         ' przesunięcie "dzielnika" *TODO* bezpośrednio na liscie
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Publishery\Publish_AdHoc.vb 5 KB Visual Basic Source file 11/12/2022 15:19:49 7/12/2022 12:41:01 21/12/2022 20:51:38 2
+34         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+39         ' *TODO* jak w localstorage
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\Publish_std2_Facebook\Publish_Facebook.vb 12 KB Visual Basic Source file 19/12/2022 16:38:06 9/12/2022 10:18:42 21/12/2022 20:51:38 6
+94         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+102         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+103         ' *TODO* raczej bedzie konieczny LOGIN
+114         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+124         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+160         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\Publish_Instagram\Publish_Instagram.vb 14 KB Visual Basic Source file 21/12/2022 20:57:38 7/12/2022 12:32:59 21/12/2022 20:57:38 4
+90         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+98         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
+99         ' *TODO* raczej bedzie konieczny LOGIN
+141                     ' *TODO* pomijamy reply, tylko komentarze
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Setting\SettingsMapsy.xaml.vb 5 KB Visual Basic Source file 12/12/2022 16:59:05 5/11/2022 07:49:42 21/12/2022 20:51:38 1
+42         ' *TODO* wczytaj nazwę mapy
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Setting\SettingsSources.xaml.vb 10 KB Visual Basic Source file 11/12/2022 16:22:08 30/10/2022 15:32:02 21/12/2022 20:51:38 1
+3 ' *TODO* defaultPublish być może dodać
+
+H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Browse\ShowBig.xaml.vb 27 KB Visual Basic Source file 21/12/2022 18:48:26 2/11/2022 18:58:56 21/12/2022 20:51:33 6
+74         ' *TODO* reakcja jakaś na inne typy niż JPG
+75         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
+497                 ' *TODO* resize
+634         ' *TODO* (może) do Settings:Misc, [] ask for confirm after EditSave (przy Crop, i ew. Rotate)
+698     '    ' *TODO* pokaż zmianę
+725         ' *TODO* (może) do Settings:Misc, [] autosave after manual rotate
+
+
+
+
 
 AZURE z NAR: stworzyc nowy oPic z pierwszego JPG wypakowanego do %temp%, i to zwrocic (kasujac plik Temp)
 

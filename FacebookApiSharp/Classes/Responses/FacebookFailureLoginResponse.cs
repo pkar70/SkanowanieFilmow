@@ -5,6 +5,7 @@
  */
 
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace FacebookApiSharp.Classes.Responses
 {
@@ -85,6 +86,45 @@ namespace FacebookApiSharp.Classes.Responses
         public int NonceSendStatus { get; set; }
         [JsonProperty("show_dbl_cpl_interstitial")]
         public bool ShowDblCplInterstitial { get; set; }
+    }
+
+
+    public class FacebookAlbumPagedList
+    {
+        public List<FacebookAlbum> data { get; set; }
+        public FacebookAlbumsListPaging paging { get; set; }
+    }
+
+    public class FacebookAlbumsListPaging
+    {
+        public FacebookAlbumsListPagingCursors cursors { get; set; }
+        public string next { get; set; }
+    }
+
+    public class FacebookAlbumsListPagingCursors
+    {
+        public string before { get; set; }
+        public string after { get; set; }  
+    }
+
+    public class FacebookAlbum
+    {
+        public string id { get; set; }
+        public bool can_upload { get; set; }
+        public int count { get; set; }
+        public System.DateTime created_time { get; set; }
+        public FacebookAlbumFrom from { get; set; }
+        public string link { get; set; }
+        public string name { get; set; }
+        public string privacy { get; set; }
+        public string type { get; set; }
+        public System.DateTime updated_time { get; set; }
+    }
+
+    public class FacebookAlbumFrom
+    {
+        public string name { get; set; }
+        public string id { get; set; }
     }
 
     //public class Contactpoints
