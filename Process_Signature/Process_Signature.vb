@@ -85,16 +85,19 @@ Public Class Process_Signature
     End Function
 
     Private Function GetSignatureString(oPic As Vblib.OnePic) As String
-        Dim sSignature As String = ""
 
-        For Each oExif As Vblib.ExifTag In oPic.Exifs
-            If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then sSignature = oExif.Copyright
-        Next
+        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs
+        Return oExif.Copyright
+        'Dim sSignature As String = ""
 
-        Dim iInd As Integer = sSignature.IndexOfAny({".", ","})
-        If iInd > 1 Then sSignature = sSignature.Substring(0, iInd)
+        'For Each oExif As Vblib.ExifTag In oPic.Exifs
+        '    If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then sSignature = oExif.Copyright
+        'Next
 
-        Return sSignature
+        'Dim iInd As Integer = sSignature.IndexOfAny({".", ","})
+        'If iInd > 1 Then sSignature = sSignature.Substring(0, iInd)
+
+        'Return sSignature
     End Function
 
 

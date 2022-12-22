@@ -1166,51 +1166,68 @@ Public Class ProcessBrowse
         Dim oSrc As Vblib.CloudPublish = oFE?.DataContext
         If oSrc Is Nothing Then Return
 
-        Dim bSendNow As Boolean = Await vb14.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
+        Dim bSendNow As Boolean = True
 
         If oSrc.sProvider = Publish_AdHoc.PROVIDERNAME Then
             Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
             If sFolder = "" Then Return
             oSrc.sZmienneZnaczenie = sFolder
+        Else
+            bSendNow = Await vb14.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
         End If
 
+        If bSendNow Then
 
-        uiProgBar.Maximum = uiPicList.SelectedItems.Count
-        uiProgBar.Visibility = Visibility.Visible
+            Dim lista As New List(Of Vblib.OnePic)
 
-        Application.ShowWait(True)
-        Await PublishAllFilesTo(oSrc, bSendNow)
-        Application.ShowWait(False)
+            For Each oItem As ThumbPicek In uiPicList.SelectedItems
+                lista.Add(oItem.oPic)
+            Next
 
-        uiProgBar.Visibility = Visibility.Collapsed
+            uiProgBar.Maximum = lista.Count
+            uiProgBar.Visibility = Visibility.Visible
+
+            Application.ShowWait(True)
+            Await PublishAllFilesTo(oSrc, lista)
+            Application.ShowWait(False)
+
+            uiProgBar.Visibility = Visibility.Collapsed
+        Else
+            For Each oItem As ThumbPicek In uiPicList.SelectedItems
+                oItem.oPic.AddCloudPublished(oSrc.konfiguracja.nazwa, "")
+            Next
+        End If
 
         SaveMetaData()  ' bo zmieniono dane plików
 
     End Sub
 
-    Private Async Function PublishAllFilesTo(oSrc As CloudPublish, bSendNow As Boolean) As Task
+    Private Async Function PublishAllFilesTo(oSrc As CloudPublish, lista As List(Of Vblib.OnePic)) As Task
         Dim sErr As String = Await oSrc.Login
         If sErr <> "" Then
             Await vb14.DialogBoxAsync(sErr)
             Return
         End If
 
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Await PublishOnePicTo(oSrc, bSendNow, oItem)
-        Next
-
+        sErr = Await oSrc.SendFiles(lista, AddressOf ProgBarInc)
+        If sErr <> "" Then Await vb14.DialogBoxAsync(sErr)
         ' Await oSrc.Logout()
     End Function
 
-    Private Async Function PublishOnePicTo(oSrc As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
-        If bSendNow Then
-            Await oSrc.SendFile(oItem.oPic)
-        Else
-            oItem.oPic.AddCloudPublished(oSrc.konfiguracja.nazwa, "")
-        End If
-        Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
+    Private Sub ProgBarInc()
+
         uiProgBar.Value += 1
-    End Function
+    End Sub
+
+    'Private Async Function PublishOnePicTo(oSrc As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
+    '    If bSendNow Then
+    '        Await oSrc.SendFile(oItem.oPic)
+    '    Else
+    '        oItem.oPic.AddCloudPublished(oSrc.konfiguracja.nazwa, "")
+    '    End If
+    '    Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
+    '    uiProgBar.Value += 1
+    'End Function
 
     Public Class ThumbPicek
         Public Property oPic As Vblib.OnePic

@@ -1,5 +1,4 @@
 ﻿
-Imports System.Security.Policy
 Imports Vblib
 
 
@@ -8,9 +7,10 @@ Public Class CloudPublishersList
 
     Private gCloudProviders As Vblib.CloudPublish() = {
         New Publish_AdHoc,
+        New CloudPubl_std14_SSC.Cloud_Skyscraper,
         New Publish_Instagram.Publish_Instagram,
         New Publish_std2_Facebook.Publish_Facebook_Post,
-        New CloudPubl_std14_SSC.Cloud_Skyscraper
+        New Publish_std2_Facebook.Publish_Facebook_Album
         }
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)

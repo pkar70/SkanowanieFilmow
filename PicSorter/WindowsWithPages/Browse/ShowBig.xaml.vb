@@ -77,6 +77,8 @@ Public Class ShowBig
         _bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
         If _bitmap Is Nothing Then Return
 
+        UpdateClipRegion() ' tym razem, gdyż editmode=none, likwidacja crop
+
         ' tylko JPG może być edytowany
         uiEditModes.IsEnabled = _picek.oPic.InBufferPathName.ToLowerInvariant.EndsWith("jpg")
 
@@ -595,7 +597,7 @@ Public Class ShowBig
 
     Private Sub UpdateClipRegion()
 
-        If Double.IsNaN(uiFullPicture.Width) OrElse Double.IsNaN(uiFullPicture.Height) Then
+        If Not _editMode = EditModeEnum.crop OrElse Double.IsNaN(uiFullPicture.Width) OrElse Double.IsNaN(uiFullPicture.Height) Then
             uiFullPicture.Clip = Nothing
             Return
         End If
