@@ -2,6 +2,7 @@
 Imports System.Net.Mime
 Imports System.Runtime.CompilerServices
 Imports System.Text
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
 ' chomikuj: https://github.com/brogowski/ChomikujApi
@@ -62,11 +63,15 @@ Public Class Cloud_Chomikuj
         Return Integer.MaxValue ' no limits
     End Function
 
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously. Consider using the 'Await' operator to await non-blocking API calls, or 'Await Task.Run(...)' to do CPU-bound work on a background thread.
-    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
-#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously. Consider using the 'Await' operator to await non-blocking API calls, or 'Await Task.Run(...)' to do CPU-bound work on a background thread.
-        ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
-        Throw New NotImplementedException()
+    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
+        ' tu jest proste - zwyk³e wywo³anie SendFile dla kolejnych
+        For Each oPicek As Vblib.OnePic In oPicki
+            Dim sRet As String = Await SendFile(oPicek)
+            If sRet <> "" Then Return $"When sending {oPicek.sSuggestedFilename}: " & sRet
+            oNextPic()
+        Next
+
+        Return ""
     End Function
     Public Overrides Async Function GetFile(oPic As Vblib.OnePic) As Task(Of String)
         Dim sLink As String = Await GetShareLink(oPic)

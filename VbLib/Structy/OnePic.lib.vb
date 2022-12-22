@@ -35,6 +35,8 @@ Public Class OnePic
 
     <Newtonsoft.Json.JsonIgnore>
     Public Property oContent As IO.Stream
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property oOstatniExif As ExifTag
 
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()
@@ -461,127 +463,10 @@ Public Class OnePic
     Private Property _EditPipeline As Boolean = True
 
 
-#If OLD_EDIT_MODE Then
-    <Newtonsoft.Json.JsonIgnore>
-    Public Property sFilenameEditSrc As String
-    <Newtonsoft.Json.JsonIgnore>
-    Public Property sFilenameEditDst As String
-
-
-    ''' <summary>
-    ''' do używania PRZED InitEdit, na potrzeby masek
-    ''' </summary>
-    ''' <returns></returns>
-    Public Function GetSourceFilename()
-        If String.IsNullOrWhiteSpace(sFilenameEditSrc) Then Return InBufferPathName
-        Return sFilenameEditSrc
-    End Function
-
-    Public Sub CancelEdit()
-
-        If _EditPipeline Then
-
-            If IO.File.Exists(sFilenameEditDst) Then IO.File.Delete(sFilenameEditDst)
-            sFilenameEditDst = ""
-
-        Else
-
-            If IO.File.Exists(InBufferPathName) Then Return
-
-            If IO.File.Exists(InBufferPathName & ".tmp") Then
-                IO.File.Move(InBufferPathName & ".tmp", InBufferPathName)
-                Return
-            End If
-
-            If IO.File.Exists(InBufferPathName & ".bak") Then
-                IO.File.Move(InBufferPathName & ".bak", InBufferPathName)
-                Return
-            End If
-
-            ' to jest dziwna sytuacja, której nie powinno być - nie ma się z czego wycofać
-            Throw New Exception("CancelEdit, ale nie ma ani pliku, ani .tmp, ani .bak")
-
-        End If
-    End Sub
-
-
-
-    ''' <summary>
-    ''' przygotuj plik źródłowy do edycji, robiąc bak/tmp
-    ''' </summary>
-    Public Sub InitEdit(bPipeline As Boolean)
-        _EditPipeline = bPipeline
-
-        If _EditPipeline Then
-            InitEditPipeline()
-        Else
-            InitEditInPlace()
-        End If
-
-    End Sub
-
-    Private Sub InitEditPipeline()
-
-        If String.IsNullOrWhiteSpace(sFilenameEditSrc) Then
-            sFilenameEditSrc = InBufferPathName
-        End If
-
-        sFilenameEditDst = IO.Path.GetTempFileName
-
-    End Sub
-
-
-    Private Sub InitEditInPlace()
-
-        Dim bakFileName As String = InBufferPathName & ".bak"
-
-        If Not IO.File.Exists(bakFileName) Then
-            IO.File.Move(InBufferPathName, bakFileName)
-            IO.File.SetCreationTime(bakFileName, Date.Now)
-        Else
-            bakFileName = InBufferPathName & ".tmp"
-
-            If IO.File.Exists(bakFileName) Then IO.File.Delete(bakFileName)
-
-            IO.File.Move(InBufferPathName, bakFileName)
-            IO.File.SetCreationTime(bakFileName, Date.Now)
-        End If
-
-        sFilenameEditSrc = bakFileName
-        sFilenameEditDst = InBufferPathName
-
-    End Sub
-
-    ''' <summary>
-    ''' skasuj ewentualny plik tmp (gdy było kilka edycji) / zmień dst -> src w pipeline
-    ''' </summary>
-    Public Sub EndEdit()
-
-        If _EditPipeline Then
-            If InBufferPathName <> sFilenameEditSrc Then
-                IO.File.Delete(sFilenameEditSrc)
-            End If
-
-            sFilenameEditSrc = sFilenameEditDst
-            sFilenameEditDst = ""
-
-        Else
-            Dim bakFileName As String = InBufferPathName & ".tmp"
-            If Not IO.File.Exists(bakFileName) Then Return
-            IO.File.Delete(bakFileName)
-
-        End If
-
-#Else
-
     <Newtonsoft.Json.JsonIgnore>
     Public Property _PipelineInput As Stream
     <Newtonsoft.Json.JsonIgnore>
     Public Property _PipelineOutput As Stream
-
-    Public Sub CancelEdit()
-        ' empty, bo po nowemu nic nie trzeba robić
-    End Sub
 
     Public Sub SkipEdit(bPipeline As Boolean)
         If Not bPipeline Then Return
@@ -707,7 +592,6 @@ Public Class OnePic
     End Function
 
 
-#End If
 
 
 
@@ -725,20 +609,20 @@ Public Class OnePic
                 Dim aFull As String() = oToExif.Copyright.Split(" ")
                 Dim aShort As String() = oAddExif.Copyright.Split(" ")
                 oToExif.Copyright = ""
-                For iLp As Integer = 0 To aShort.Length
+                For iLp As Integer = 0 To aShort.Length - 1
                     Dim sToken As String = aShort.ElementAt(iLp)
                     If sToken.StartsWith("%") Then
                         Dim sOrgWord As String = aFull.ElementAt(iLp)
                         sToken = sToken.Substring(1)
                         Dim iLen As Integer = 0
                         If sToken.StartsWith("^") Then
-                            Integer.TryParse(sToken.Substring(2), iLen)
+                            Integer.TryParse(sToken.Substring(1), iLen)
                             sOrgWord = sOrgWord.ToUpperInvariant
                         Else
-                            Integer.TryParse(sToken.Substring(1), iLen)
+                            Integer.TryParse(sToken, iLen)
                         End If
                         If iLen = 0 Then
-                            oToExif.Copyright = oToExif.Copyright & sOrgWord.Substring(0, iLen)
+                            oToExif.Copyright = oToExif.Copyright & sOrgWord
                         Else
                             oToExif.Copyright = oToExif.Copyright & sOrgWord.Substring(0, iLen)
                         End If
@@ -779,7 +663,7 @@ Public Class OnePic
     ''' sprowadza wszystkie EXIFy do jednego - ale dalej jeszcze z dodatkowymi polami!
     ''' </summary>
     ''' <returns></returns>
-    Public Function FlattenExifs(Optional oOstatniExif As ExifTag = Nothing) As ExifTag
+    Public Function FlattenExifs() As ExifTag
 
         ' defaulty mamy z FileSourceDeviceType
         Dim oNew As New ExifTag(ExifSource.Flattened)

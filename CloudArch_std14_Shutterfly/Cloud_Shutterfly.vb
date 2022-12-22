@@ -3,6 +3,8 @@
 ' https://www.shutterfly.com/documentation/OflyBasicXml.sfly?esch=1
 ' https://stackoverflow.com/questions/275130/shutterfly-order-api
 
+Imports Vblib
+
 Public Class Cloud_Shutterfly
     Inherits Vblib.CloudArchive
 
@@ -36,7 +38,7 @@ Public Class Cloud_Shutterfly
         Return Integer.MaxValue ' no limits
     End Function
 
-    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
+    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
         ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
         Throw New NotImplementedException()
     End Function
@@ -79,7 +81,7 @@ Public Class Cloud_Shutterfly
     End Function
 
     Public Overrides Async Function Login() As Task(Of String)
-        If Await FacebookLoginAsync() Then Return ""
+        If Await LoginMainAsync() Then Return ""
         Return "ERROR: incorrect login"
     End Function
 
@@ -118,7 +120,7 @@ Public Class Cloud_Shutterfly
 
 #Region "bezpoœredni dostêp do Chomika"
 
-    Private Async Function FacebookLoginAsync() As Task(Of String)
+    Private Async Function LoginMainAsync() As Task(Of String)
 
         If Not String.IsNullOrWhiteSpace(_token) Then Return ""
 

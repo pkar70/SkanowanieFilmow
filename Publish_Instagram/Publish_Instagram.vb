@@ -4,6 +4,7 @@ Imports System.Net.Mail
 Imports InstagramApiSharp
 Imports InstagramApiSharp.API
 Imports InstagramApiSharp.Classes.Models
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
 
@@ -59,11 +60,16 @@ Public Class Publish_Instagram
 
 
 
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+    Public Overrides Async Function SendFilesMain(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
 
-    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
-        ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
-        Throw New NotImplementedException()
+        ' tu jest proste - zwyk³e wywo³anie SendFile dla kolejnych
+        For Each oPicek As Vblib.OnePic In oPicki
+            Dim sRet As String = Await SendFileMain(oPicek)
+            If sRet <> "" Then Return $"When sending {oPicek.sSuggestedFilename}: " & sRet
+            oNextPic()
+        Next
+
+        Return ""
     End Function
 
     Public Overrides Async Function VerifyFileExist(oPic As Vblib.OnePic) As Task(Of String)

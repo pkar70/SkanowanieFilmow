@@ -155,7 +155,7 @@ Public MustInherit Class LocalStorage
 
 	End Function
 
-	Public Async Function SendFiles(oPicki As List(Of OnePic)) As Task(Of String) Implements AnyStorage.SendFiles
+	Public Async Function SendFiles(oPicki As List(Of OnePic), oNextPic As JedenWiecejPlik) As Task(Of String) Implements AnyStorage.SendFiles
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		If oPicki Is Nothing Then Return ""
@@ -170,6 +170,7 @@ Public MustInherit Class LocalStorage
 			If oPic.TargetDir <> sTargetDir Then Continue For
 
 			Dim temperr As String = Await SendPhoto(oPic)
+			oNextPic()
 			If temperr = NO_MATCH_MASK Then Continue For  ' nie ma błędu, bo po prostu plik spoza maski jest
 
 			If temperr = "" Then

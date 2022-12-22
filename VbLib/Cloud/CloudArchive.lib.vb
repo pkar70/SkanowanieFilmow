@@ -19,7 +19,7 @@ Public MustInherit Class CloudArchive
     Public MustOverride Async Function SendFileMain(oPic As OnePic) As Task(Of String) Implements AnyStorage.SendFileMain
     Public MustOverride Async Function VerifyFileExist(oPic As OnePic) As Task(Of String) Implements AnyStorage.VerifyFileExist
     Public MustOverride Async Function VerifyFile(oPic As OnePic, oCopyFromArchive As LocalStorage) As Task(Of String) Implements AnyStorage.VerifyFile
-    Public MustOverride Async Function SendFiles(oPicki As List(Of OnePic)) As Task(Of String) Implements AnyStorage.SendFiles
+    Public MustOverride Async Function SendFiles(oPicki As List(Of OnePic), oNextPic As JedenWiecejPlik) As Task(Of String) Implements AnyStorage.SendFiles
     Public MustOverride Async Function GetFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.GetFile
     Public MustOverride Async Function GetMBfreeSpace() As Task(Of Integer) Implements AnyStorage.GetMBfreeSpace
 
@@ -36,6 +36,7 @@ Public MustInherit Class CloudArchive
         If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Return ""
 
         ' przeslij plik przez pipeline
+        oPic.oOstatniExif = konfiguracja.defaultExif
         Dim sRet As String = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
         If sRet <> "" Then Return sRet
 

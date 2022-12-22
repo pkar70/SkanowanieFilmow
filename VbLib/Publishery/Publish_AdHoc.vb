@@ -29,12 +29,16 @@ Public Class Publish_AdHoc
         Return ""
     End Function
 
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
-        ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-        Throw New NotImplementedException()
+    Public Overrides Async Function SendFilesMain(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
+        For Each oPic As Vblib.OnePic In oPicki
+            Dim sErr As String = Await SendFileMain(oPic)
+            If sErr <> "" Then Return sErr
+            oNextPic()
+        Next
+        Return ""
     End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
         ' *TODO* jak w localstorage
         Throw New NotImplementedException()

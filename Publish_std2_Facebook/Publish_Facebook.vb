@@ -3,7 +3,8 @@ Imports System.Text
 Imports vb14 = Vblib.pkarlibmodule14
 Imports FacebookApiSharp
 Imports System.Runtime.InteropServices.ComTypes
-
+Imports System.Collections.Specialized
+Imports Vblib
 
 Public Class Publish_Facebook_Post
     Inherits Publish_Facebook
@@ -30,6 +31,18 @@ Public Class Publish_Facebook_Post
         Return oNew
     End Function
 
+    Public Overrides Async Function SendFilesMain(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
+        ' tu jest proste - zwyk³e wywo³anie SendFile dla kolejnych
+        For Each oPicek As Vblib.OnePic In oPicki
+            Dim sRet As String = Await SendFileMain(oPicek)
+            If sRet <> "" Then Return $"When sending {oPicek.sSuggestedFilename}: " & sRet
+            oNextPic()
+        Next
+
+        Return ""
+    End Function
+
+
 End Class
 
 Public Class Publish_Facebook_Album
@@ -41,7 +54,29 @@ Public Class Publish_Facebook_Album
 
     Public Overrides Async Function SendFileMain(oPic As Vblib.OnePic) As Task(Of String)
 
-        Return Await SendFileMainFB(oPic, oPic.TargetDir)
+        Dim sAlbumName As String = konfiguracja.additInfo
+        If String.IsNullOrWhiteSpace(sAlbumName) Then sAlbumName = oPic.TargetDir
+
+        Dim albumId As String = Await mMordkaApi.GetOrCreateAlbum(sAlbumName)
+        If albumId.StartsWith("ERROR") Then Return albumId
+
+        ' sRet to numer albumu
+        Dim iPicSize As Integer = oPic._PipelineOutput.Length
+        Dim ImageBytes As Byte() = New Byte(iPicSize - 1) {}
+        oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
+        If Await oPic._PipelineOutput.ReadAsync(ImageBytes, 0, iPicSize) < iPicSize Then
+            Return "ERROR: cannot read picture bytes"
+        End If
+
+        Dim sCaption As String = oPic.GetDescriptionForCloud
+        Dim sRet As String = Await mMordkaApi.MediaProcessor.UploadPhotoToAlbumAsync(albumId, sCaption, oPic.sSuggestedFilename, ImageBytes)
+        If sRet.StartsWith("ERROR") Then Return sRet
+
+        oPic.AddCloudPublished(konfiguracja.nazwa, $"media/set/?set=a.{albumId}")
+
+        Return ""
+
+        ' Return Await SendFileMainFB(oPic, oPic.TargetDir)
 
     End Function
 
@@ -54,6 +89,37 @@ Public Class Publish_Facebook_Album
         oNew._DataDir = sDataDir
 
         Return oNew
+    End Function
+
+    Private Async Function CreateAlbum(sAlbumName As String) As Task(Of String)
+        Dim sRet As String = Await mMordkaApi.GetOrCreateAlbum(sAlbumName)
+        If sRet.StartsWith("ERROR") Then
+            ' to jest error
+        Else
+            ' to jest ID albumu
+        End If
+    End Function
+
+    Public Overrides Async Function SendFilesMain(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
+
+        Dim sAlbumName As String = konfiguracja.additInfo
+        If Not String.IsNullOrWhiteSpace(sAlbumName) Then
+            Dim albumId As String = Await mMordkaApi.GetOrCreateAlbum(sAlbumName)
+            If albumId.StartsWith("ERROR") Then Return albumId
+
+            ' *TODO* do tego albumu wyœlikj pliki - ju¿ s¹ po pipeline
+        Else
+            ' skoro mog¹ byæ ró¿ne foldery za ka¿dym razem, rób to zupe³nie pojedynczo
+            For Each oPicek As Vblib.OnePic In oPicki
+                Dim sRet As String = Await SendFileMain(oPicek)
+                If sRet <> "" Then Return $"When sending {oPicek.sSuggestedFilename}: " & sRet
+                oNextPic()
+            Next
+
+            Return ""
+        End If
+
+        Return "ERROR unexpected place in code"
     End Function
 
 End Class
@@ -90,11 +156,6 @@ Public MustInherit Class Publish_Facebook
         Return Integer.MaxValue ' no limits
     End Function
 
-    Public Overrides Async Function SendFiles(oPicki As List(Of Vblib.OnePic)) As Task(Of String)
-        ' *TODO* na razie i tak nie bêdzie wykorzystywane, podobnie jak w LocalStorage
-        Throw New NotImplementedException()
-    End Function
-
     Public Overrides Async Function GetFile(oPic As Vblib.OnePic) As Task(Of String)
         Dim sLink As String = Await GetShareLink(oPic)
         If sLink = "" Then Return "ERROR: nie mam zapisanego ID pliku"
@@ -129,7 +190,7 @@ Public MustInherit Class Publish_Facebook
         Dim sId As String = oPic.GetCloudPublishedId(konfiguracja.nazwa)
         If sId = "" Then Return ""
 
-        Return "https://www.instagram.com/p/" & sId & "/"
+        Return "https://www.facebook.com/" & sId & "/"
     End Function
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
@@ -179,7 +240,7 @@ Public MustInherit Class Publish_Facebook
 #Region "ramtinak/FacebookApiSharp"
     ' https://dotnetthoughts.net/how-to-upload-image-on-facebook-using-graph-api-and-c/
 
-    Private mMordkaApi As API.IFacebookApi = Nothing
+    Protected mMordkaApi As API.IFacebookApi = Nothing
 
 
     Private Async Function FacebookLoginAsync() As Task(Of Boolean)

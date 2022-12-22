@@ -1,6 +1,8 @@
 ﻿
 ' https://community.cryptomator.org/t/webdav-urls-of-common-cloud-storage-services/75
 
+Public Delegate Sub JedenWiecejPlik()
+
 Public Interface AnyStorage
 
     ''' <summary>
@@ -31,7 +33,7 @@ Public Interface AnyStorage
     ''' </summary>
     ''' <param name="oPic"></param>
     ''' <returns>"" gdy OK, lub error message</returns>
-    Function SendFiles(oPicki As List(Of OnePic)) As Task(Of String)
+    Function SendFiles(oPicki As List(Of OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
 
 
     ''' <summary>
