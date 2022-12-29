@@ -14,7 +14,7 @@ Public MustInherit Class PicSourceBase
 	Public Property Recursive As Boolean
 	Public Property sourcePurgeDelay As TimeSpan = TimeSpan.FromDays(7)
 	Public Property defaultPublish As List(Of String)   ' lista IDs
-	Public Property includeMask As String = "*.jpg;*.tif;*.png" ' maski regexp
+	Public Property includeMask As String = "*.jpg;*.tif;*.png;*.nar;*.avi;*.mp4;*.jpg.thumb;*.mov;*.raf" ' maski regexp
 	Public Property excludeMask As String  ' maski regexp
 	Public Property lastDownload As DateTime
 	Public Property defaultExif As ExifTag
@@ -30,11 +30,18 @@ Public MustInherit Class PicSourceBase
 	End Sub
 
 
-	<Newtonsoft.Json.JsonIgnore>
-	Public Shared Property _dataFolder As String    ' dla JSON, żeby mógł wczytać
+	'<Newtonsoft.Json.JsonIgnore>
+	'Public Shared Property _dataFolder As String    ' dla JSON, żeby mógł wczytać
 
+	''' <summary>
+	''' datafolder potrzebny na plik PURGE
+	''' </summary>
+	''' <param name="typSource"></param>
+	''' <param name="sDataFolder"></param>
 	Public Sub New(typSource As PicSourceType, sDataFolder As String)
-		_purgeFile = IO.Path.Combine(sDataFolder, $"purge.{SourceName}.txt")
+		If sDataFolder IsNot Nothing Then
+			_purgeFile = IO.Path.Combine(sDataFolder, $"purge.{SourceName}.txt")
+		End If
 		Typ = typSource
 	End Sub
 

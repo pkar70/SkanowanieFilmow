@@ -19,11 +19,11 @@ Public Class Process_FaceRemove
         If oExif Is Nothing Then oExif = oPic.GetExifOfType(Vblib.ExifSource.AutoWinFace)
 
         If oExif?.AzureAnalysis?.Faces?.lista Is Nothing Then
-            oPic.SkipEdit(bPipeline)
+            oPic.SkipEdit()
             Return True
         End If
         If oExif.AzureAnalysis.Faces.lista.Count < 1 Then
-            oPic.SkipEdit(bPipeline)
+            oPic.SkipEdit()
             Return True
         End If
 

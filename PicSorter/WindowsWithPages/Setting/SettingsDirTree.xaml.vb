@@ -149,6 +149,7 @@ Public Class SettingsDirTree
         ' nie trzeba we flat wszystkich katalogów, bo wystarczy prefix
         Dim bHasKeys As Boolean = False
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If oPic.TargetDir Is Nothing Then Continue For
             If oPic.TargetDir.StartsWith(oItem.sId) Then
                 bHasKeys = True
                 Exit For

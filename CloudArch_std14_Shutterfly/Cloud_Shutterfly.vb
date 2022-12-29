@@ -127,11 +127,9 @@ Public Class Cloud_Shutterfly
         If String.IsNullOrWhiteSpace(konfiguracja.sUsername) Then Return "ERROR: use username for App ID"
         If String.IsNullOrWhiteSpace(konfiguracja.sPswd) Then Return "ERROR: use password for App Secret"
 
-        Dim sUrl As String = "https://graph.facebook.com/oauth/access_token"
-        sUrl &= $"?client_id={konfiguracja.sUsername}&client_secret={konfiguracja.sPswd}"
-        sUrl &= "&grant_type=client_credentials"
 
-        Dim sPage As String = Await Vblib.HttpPageAsync(sUrl)
+        Dim sPage As String = Await Vblib.HttpPageAsync("https://accounts.shutterfly.com/")
+
 
 
     End Function

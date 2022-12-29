@@ -35,7 +35,8 @@
     <ProjectReference Include="..\Taggers_OCR\VbLibCore31-Auto_WinOCR_lib.vbproj" />
     <ProjectReference Include="..\vblib46ram\vblib46ram.vbproj" />
     <ProjectReference Include="..\VbLibCore3-mediaDevices\VbLibCore3-mediaDevices.vbproj" />
-    <ProjectReference Include="..\VbLibCore3\VbLibCore3-picSource.vbproj" />
+    <ProjectReference Include="..\VbLibCore3-picSource\VbLibCore3-picSource.vbproj" />
+    <ProjectReference Include="..\VblibStd2-mov2jpg\VblibStd2-mov2jpg.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>
 

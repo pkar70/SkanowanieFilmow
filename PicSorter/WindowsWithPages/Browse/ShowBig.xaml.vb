@@ -520,8 +520,7 @@ Public Class ShowBig
         End Select
 
         If transf IsNot Nothing Then
-            Dim oDesc As New Vblib.OneDescription(sHistory, "")
-            _picek.oPic.AddDescription(oDesc)
+            _picek.oPic.AddEditHistory(sHistory)
 
             Dim oExif As Vblib.ExifTag = _picek.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
             If oExif IsNot Nothing Then

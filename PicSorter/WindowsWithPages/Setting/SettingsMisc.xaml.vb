@@ -12,6 +12,7 @@ Class SettingsMisc
         uiBakDelayDays.GetSettingsInt()
         uiJpgQuality.GetSettingsInt()
         uiMaxThumbs.GetSettingsInt()
+        uiCacheThumbs.GetSettingsBool()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -29,6 +30,7 @@ Class SettingsMisc
         uiBakDelayDays.SetSettingsInt
         uiJpgQuality.SetSettingsInt()
         uiMaxThumbs.SetSettingsInt()
+        uiCacheThumbs.SetSettingsBool()
 
         Me.NavigationService.GoBack()
     End Sub

@@ -17,17 +17,7 @@
 ' EXIF per oglądany obrazek, oraz per zaznaczone (EXIFSource: MANUAL & yyMMdd-HHmmss)
 
 
-Imports System.Collections.ObjectModel
-Imports System.Data
-Imports System.Globalization
-Imports System.IO
-Imports System.Net.WebRequestMethods
-Imports System.Security.Policy
-Imports System.Xml
-Imports Microsoft.Windows.Themes
 Imports Vblib
-Imports Windows.Media.Ocr
-Imports Windows.Web.Http.Headers
 Imports vb14 = Vblib.pkarlibmodule14
 
 
@@ -36,21 +26,30 @@ Public Class ProcessBrowse
 
     ' Private Const THUMBS_LIMIT As Integer = 9999
 
-    Private _thumbsy As New ObservableCollection(Of ThumbPicek)
+    Private _thumbsy As New System.Collections.ObjectModel.ObservableCollection(Of ThumbPicek)
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć
     Private _redrawPending As Boolean = False
     Private _oBufor As Vblib.Buffer
+    Private _onlyBrowse As Boolean  ' to będzie wyłączać różne funkcjonalności
     ' Private _MetadataWindow As ShowExifs
+
+    Private Const THUMB_SUFIX As String = ".PicSortThumb.jpg"
 
 #Region "called on init"
 
-    Public Sub New(bufor As Vblib.Buffer)
+    ''' <summary>
+    ''' przeglądarka na liście plików BUFOR, w pełnej wersji bądź ograniczonej do view (czyli gdy już na archiwum a nie na bufurze wejściowym)
+    ''' </summary>
+    ''' <param name="bufor"></param>
+    ''' <param name="onlyBrowse"></param>
+    Public Sub New(bufor As Vblib.Buffer, onlyBrowse As Boolean)
 
         ' This call is required by the designer.
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
         _oBufor = bufor
+        _onlyBrowse = onlyBrowse
     End Sub
 
 
@@ -63,12 +62,26 @@ Public Class ProcessBrowse
         RefreshMiniaturki(True)
 
         WypelnMenuAutotagerami(uiMenuAutotags, AddressOf AutoTagRun)
-        WypelnMenuBatchProcess(uiBatchProcessors, AddressOf PostProcessRun)
         WypelnMenuCloudPublish(Nothing, uiMenuPublish, AddressOf PublishRun)
 
-        Await EwentualneKasowanieBak()
-        Await EwentualneKasowanieArchived()
-        ' *TODO* Await EwentualneKasowanieArchived() -
+        If _onlyBrowse Then
+            ' działamy na archiwum
+
+            uiBatchProcessors.Visibility = Visibility.Collapsed
+            uiSplit.IsEnabled = False
+
+        Else
+            ' działamy na buforze - wszystkie akcje dozwolone
+
+            WypelnMenuBatchProcess(uiBatchProcessors, AddressOf PostProcessRun)
+            uiBatchProcessors.Visibility = Visibility.Visible
+
+            uiSplit.IsEnabled = True
+
+
+            Await EwentualneKasowanieBak()
+            Await EwentualneKasowanieArchived()
+        End If
 
         Application.ShowWait(False)
     End Sub
@@ -100,6 +113,7 @@ Public Class ProcessBrowse
         Dim iArchCount As Integer = Application.GetArchivesList.Count
         Dim iCloudArchCount As Integer = Application.GetCloudArchives.GetList.Count
 
+        If iArchCount + iCloudArchCount < 1 Then Return ' jeśli nie mamy żadnego zdefiniowanego, to nie kasujemy i tak
 
         Dim lista As New List(Of ThumbPicek)
         For Each oThumb As ThumbPicek In _thumbsy
@@ -173,12 +187,24 @@ Public Class ProcessBrowse
         uiProgBar.Value = 0
         uiProgBar.Visibility = Visibility.Visible
 
+        Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
+        If _onlyBrowse Then bCacheThumbs = False    ' w archiwum nie robimy tego!
+
         For Each oItem As ThumbPicek In _thumbsy
 
-            ' *TODO* tymczasowe, by wyłapywać tylko to co chcemy
-            'If Not oItem.oThumb.MatchesMasks("*.avi") Then Continue For
+            Dim bitmapa As BitmapImage = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
+            oItem.oImageSrc = bitmapa
 
-            oItem.oImageSrc = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
+            If bCacheThumbs AndAlso Not IO.File.Exists(oItem.oPic.InBufferPathName & THUMB_SUFIX) Then
+                Dim encoder As New JpegBitmapEncoder()
+                encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
+                encoder.Frames.Add(BitmapFrame.Create(bitmapa))
+
+                Using fileStream = IO.File.Create(oItem.oPic.InBufferPathName & THUMB_SUFIX)
+                    encoder.Save(fileStream)
+                End Using
+            End If
+
             uiProgBar.Value += 1
 
         Next
@@ -196,6 +222,7 @@ Public Class ProcessBrowse
 
         _thumbsy.Clear()
         Dim iMax As String = vb14.GetSettingsInt("uiMaxThumbs")
+        If iMax < 10 Then iMax = 100
 
         Dim lista As List(Of ThumbPicek) = Await WczytajIndeks()   ' tu ewentualne kasowanie jest znikniętych, to wymaga YNAsync
         For Each oItem As ThumbPicek In From c In lista Order By c.dateMin Take iMax
@@ -253,12 +280,12 @@ Public Class ProcessBrowse
         End If
 
         ' step 1: znajdź pierwszy geotag
-        Dim oNewGeoTag As New Vblib.ExifTag(ExifSource.ManualGeo)
+        Dim oNewGeoTag As New Vblib.ExifTag(Vblib.ExifSource.ManualGeo)
         Dim oExifOSM As Vblib.ExifTag = Nothing
         Dim oExifImgw As Vblib.ExifTag = Nothing
 
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Dim oGeo As MyBasicGeoposition = oItem.oPic.GetGeoTag
+            Dim oGeo As Vblib.MyBasicGeoposition = oItem.oPic.GetGeoTag
             If oGeo Is Nothing Then Continue For
             oNewGeoTag.GeoTag = oGeo
             oExifOSM = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
@@ -272,7 +299,7 @@ Public Class ProcessBrowse
         ' step 2: sprawdź czy wszystkie zaznaczone zdjęcia, jeśl mają geotagi, to z tych samych okolic
         Dim iMaxOdl As Integer = 0
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Dim oCurrGeo As MyBasicGeoposition = oItem.oPic.GetGeoTag
+            Dim oCurrGeo As Vblib.MyBasicGeoposition = oItem.oPic.GetGeoTag
             If oCurrGeo IsNot Nothing Then iMaxOdl = Math.Max(iMaxOdl, oNewGeoTag.GeoTag.DistanceTo(oCurrGeo))
         Next
 
@@ -314,7 +341,7 @@ Public Class ProcessBrowse
         Dim oWnd As New EnterGeoTag
         If Not oWnd.ShowDialog Then Return
 
-        Dim oNewGeoTag As New Vblib.ExifTag(ExifSource.ManualGeo)
+        Dim oNewGeoTag As New Vblib.ExifTag(Vblib.ExifSource.ManualGeo)
         oNewGeoTag.GeoTag = oWnd.GetGeoPos
 
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
@@ -398,14 +425,19 @@ Public Class ProcessBrowse
         bitmap.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
         bitmap.Rotation = iRotation
 
-        ' *TODO* reakcja jakaś na inne typy niż JPG
-        ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
-
         Dim sExt As String = IO.Path.GetExtension(sPathName).ToLower
-        If sExt = ".nar" Or sExt = ".avi" Or sExt = ".mov" Or sExt = ".mp4" Then
-            ' *TODO* pierwsza klatka z filmików, overwrite na tym obrazek z Ext pliku?
-            ' *TODO* z .NAR wyciagnięcie zdjęcia pierwszego/lepszego (wybranego w kodzie) do tempfilename
-            Dim sBreakMe = "make break here"
+
+        If IO.File.Exists(sPathName & THUMB_SUFIX) Then
+            ' jak mamy Thumb, to jego wczytaj
+            ' *TODO* później także dla zwykłych JPG, wersje zmniejszone - dlatego teraz test istnienia jest przed testem rozszerzenia
+            sPathName = sPathName & THUMB_SUFIX
+        ElseIf IO.File.Exists(sPathName & THUMB_SUFIX & ".png") Then
+            sPathName = sPathName & THUMB_SUFIX & ".png"
+        Else
+            If sExt = ".nar" Or sExt = ".avi" Or sExt = ".mov" Or sExt = ".mp4" Then
+                Dim sRet As String = Await MakeThumbFromFile(sPathName)
+                If sRet <> "" Then sPathName = sRet
+            End If
         End If
 
         bitmap.UriSource = New Uri(sPathName)
@@ -439,6 +471,40 @@ Public Class ProcessBrowse
         Return bitmap
 
 
+
+    End Function
+
+    ''' <summary>
+    ''' stwórz coś do pokazywania (dla nieJPG), 
+    ''' </summary>
+    ''' <param name="sPathName">obrazek źródłowy</param>
+    ''' <returns>filename do TempFile obrazka</returns>
+    Private Shared Async Function MakeThumbFromFile(sPathName As String) As Task(Of String)
+        ' THUMB_SUFIX
+
+        Dim sExt As String = IO.Path.GetExtension(sPathName).ToLower
+
+        Dim sOutfilename As String = sPathName & THUMB_SUFIX
+        ' *TODO* skalowanie tego?
+        Select Case sExt
+            Case ".nar"
+                'Dim sTempFile As String = IO.Path.GetTempFileName
+                Await Vblib.Auto_AzureTest.Nar2Jpg(sPathName, sOutfilename)
+                Return sOutfilename
+            Case ".avi"
+                Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(sPathName, sOutfilename & ".png")
+                Return sOutfilename & ".png"
+            Case ".mov"
+                Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(sPathName, sOutfilename & ".png")
+                Return sOutfilename & ".png"
+            Case ".mp4"
+                Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(sPathName, sOutfilename & ".png")
+                Return sOutfilename & ".png"
+            Case Else
+                Return ""    ' nie umiem zrobić - nie wiem co to za plik
+        End Select
+
+        Return ""    ' raczej tu nie doszedł...
 
     End Function
 
@@ -576,6 +642,10 @@ Public Class ProcessBrowse
         ' usuń z bufora (z listy i z katalogu), ale nie zapisuj indeksu (jakby to była seria kasowania)
         If Not _oBufor.DeleteFile(oPicek.oPic) Then Return   ' nieudane skasowanie
 
+        ' kasujemy różne miniaturki i tak dalej. Delete nie robi Exception jak pliku nie ma.
+        IO.File.Delete(oPicek.oPic.InBufferPathName & THUMB_SUFIX)
+        IO.File.Delete(oPicek.oPic.InBufferPathName & THUMB_SUFIX & ".png")
+
         ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
         Application.GetSourcesList.AddToPurgeList(oPicek.oPic.sSourceName, oPicek.oPic.sInSourceID)
 
@@ -677,7 +747,7 @@ Public Class ProcessBrowse
 
     Private Sub ApplyAutoSplitGeo(kiloms As Integer)
 
-        Dim lastGeo As Vblib.MyBasicGeoposition = MyBasicGeoposition.EmptyGeoPos ' (0, -150)    ' raczej tam nie będę, środek oceanu
+        Dim lastGeo As Vblib.MyBasicGeoposition = Vblib.MyBasicGeoposition.EmptyGeoPos ' (0, -150)    ' raczej tam nie będę, środek oceanu
 
         For Each oItem As ThumbPicek In _thumbsy
             Dim geoExif As Vblib.MyBasicGeoposition = oItem.oPic.GetGeoTag
@@ -878,6 +948,76 @@ Public Class ProcessBrowse
         RefreshMiniaturki(False)
     End Sub
 
+    Private Async Sub uiFilterAzure_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+
+        Dim allAzure As Boolean = True
+        For Each oItem In _thumbsy
+            If oItem.oPic.GetExifOfType("AUTO_AZURE") Is Nothing Then
+                allAzure = False
+                Exit For
+            End If
+        Next
+        If Not allAzure Then
+            If Not Await vb14.DialogBoxYNAsync("Niektóre zdjęcia nie mają analizy Azure, kontynuować?") Then Return
+        End If
+
+        Dim oMI As MenuItem = sender
+        uiFilters.Content = oMI.Header
+
+        Dim bNot As Boolean = oMI.Header.ToString.ToLower.StartsWith("no")
+        Dim bPerson As Boolean = oMI.Header.ToString.ToLower.Contains("person") ' false: faces
+
+        For Each oItem In _thumbsy
+            oItem.opacity = 1   ' domyślnie: pokazujemy (także gdy nie ma Azure)
+            Dim oAzure As Vblib.ExifTag = oItem.oPic.GetExifOfType("AUTO_AZURE")
+            If oAzure IsNot Nothing Then
+                If bPerson Then
+                    ' czy są osoby
+                    ' w tags, oraz w objects, albo po prostu w UserComment (gdzie jest dump)
+                    If oAzure.UserComment.ToLowerInvariant.Contains("person") Then
+                        If bNot Then oItem.opacity = _OpacityWygas
+                    Else
+                        If Not bNot Then oItem.opacity = _OpacityWygas
+                    End If
+                Else
+                    ' faces
+                    If oAzure.AzureAnalysis?.Faces IsNot Nothing Then
+                        If oAzure.AzureAnalysis?.Faces.lista.Count > 0 Then
+                            If bNot Then oItem.opacity = _OpacityWygas
+                        Else
+                            If Not bNot Then oItem.opacity = _OpacityWygas
+                        End If
+                    Else
+                        ' nie ma twarzy
+                        If Not bNot Then oItem.opacity = _OpacityWygas
+                    End If
+                End If
+            End If
+        Next
+
+        _isGeoFilterApplied = False
+
+        RefreshMiniaturki(False)
+    End Sub
+
+    Private Sub uiFilterAzureAdult_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "adult"
+
+        For Each oItem In _thumbsy
+            oItem.opacity = _OpacityWygas   ' domyślnie: nie pokazujemy 
+            Dim oAzure As Vblib.ExifTag = oItem.oPic.GetExifOfType("AUTO_AZURE")
+            If oAzure IsNot Nothing Then
+                If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then oItem.opacity = 1
+            End If
+        Next
+
+        _isGeoFilterApplied = False
+
+        RefreshMiniaturki(False)
+    End Sub
+
 
     Private Sub uiFilterNoTarget_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
@@ -1046,7 +1186,7 @@ Public Class ProcessBrowse
         uiActionsPopup.IsOpen = False
 
         Dim oFE As FrameworkElement = sender
-        Dim oEngine As AutotaggerBase = oFE?.DataContext
+        Dim oEngine As Vblib.AutotaggerBase = oFE?.DataContext
         If oEngine Is Nothing Then Return
 
         uiProgBar.Value = 0
@@ -1156,7 +1296,7 @@ Public Class ProcessBrowse
 
             If Not Await vb14.DialogBoxYNAsync($"{iCnt} {sMsg} ograniczenia wiekowe, kontynuować? ") Then
                 vb14.ClipPut(sNames)
-                DialogBox("Lista plików - w clipboard")
+                vb14.DialogBox("Lista plików - w clipboard")
                 Return
             End If
         End If
@@ -1168,7 +1308,7 @@ Public Class ProcessBrowse
 
         Dim bSendNow As Boolean = True
 
-        If oSrc.sProvider = Publish_AdHoc.PROVIDERNAME Then
+        If oSrc.sProvider = Vblib.Publish_AdHoc.PROVIDERNAME Then
             Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
             If sFolder = "" Then Return
             oSrc.sZmienneZnaczenie = sFolder
@@ -1202,12 +1342,17 @@ Public Class ProcessBrowse
 
     End Sub
 
-    Private Async Function PublishAllFilesTo(oSrc As CloudPublish, lista As List(Of Vblib.OnePic)) As Task
+    Private Async Function PublishAllFilesTo(oSrc As Vblib.CloudPublish, lista As List(Of Vblib.OnePic)) As Task
         Dim sErr As String = Await oSrc.Login
         If sErr <> "" Then
             Await vb14.DialogBoxAsync(sErr)
             Return
         End If
+
+        ' to pozwala robić dwie publikacje po kolei
+        For Each oFile As Vblib.OnePic In lista
+            oFile.ResetPipeline()
+        Next
 
         sErr = Await oSrc.SendFiles(lista, AddressOf ProgBarInc)
         If sErr <> "" Then Await vb14.DialogBoxAsync(sErr)
@@ -1430,7 +1575,7 @@ Public Class KonwersjaPasekKolor
         If temp = SplitBeforeEnum.geo Then Return New SolidColorBrush(Colors.OrangeRed)
 
         ' i tak będzie niewidoczny, więc w sumie nie jest takie ważne, ale po co robić nowe obiekty
-        Return ThemeColor.NormalColor
+        Return Microsoft.Windows.Themes.ThemeColor.NormalColor
     End Function
 
 
@@ -1442,7 +1587,7 @@ End Class
 Public Class KonwersjaPasekWysok
     Implements IMultiValueConverter
 
-    Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IMultiValueConverter.Convert
+    Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
 
         Dim splitBefore As Integer = CType(values.ElementAt(0), Integer)
         Dim height As Integer = CType(values.ElementAt(1), Integer)
@@ -1457,7 +1602,7 @@ Public Class KonwersjaPasekWysok
     End Function
 
 
-    Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
+    Public Function ConvertBack(value As Object, targetTypes() As Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object() Implements IMultiValueConverter.ConvertBack
         Throw New NotImplementedException()
     End Function
 End Class

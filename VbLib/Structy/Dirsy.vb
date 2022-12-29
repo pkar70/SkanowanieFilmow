@@ -126,15 +126,6 @@ Public Class DirsList
         Return lista
     End Function
 
-    Public Overloads Function Load() As Boolean
-        If MyBase.Load() Then Return True
-
-        TryAddFolder(OneDir.RootId, "Główny katalog")
-
-        Return False
-
-    End Function
-
     Public Function GetFolder(sKey As String) As OneDir
         For Each oItem As OneDir In _lista
             If oItem.sId = sKey Then Return oItem
@@ -143,15 +134,17 @@ Public Class DirsList
         Return Nothing
     End Function
 
-    Public Function TryAddFolder(sKey As String, sOpis As String) As Boolean
-        If GetFolder(sKey) IsNot Nothing Then Return False
+    'Public Function TryAddFolder(sFolderPath As String, sOpis As String) As Boolean
+    '    ' trudne, bo musimy iść całą ścieżką
+    '    ' *TODO* zrobić może, choc tylko wykorzystane w (Local|Cloud)Archive, gdzie aktualnie jest REM
+    '    If GetFolder(sFolderPath) IsNot Nothing Then Return False
 
-        Dim oNew As New OneDir
-        oNew.sId = sKey
-        If Not String.IsNullOrWhiteSpace(sOpis) Then oNew.notes = sOpis
-        _lista.Add(New OneDir() With {.sId = sKey})
-        Return True
-    End Function
+    '    Dim oNew As New OneDir
+    '    oNew.sId = sFolderPath
+    '    If Not String.IsNullOrWhiteSpace(sOpis) Then oNew.notes = sOpis
+    '    _lista.Add(New OneDir() With {.sId = sFolderPath})
+    '    Return True
+    'End Function
 
     Public Function TryAddSubdir(oItem As OneDir, sId As String, sOpis As String) As OneDir
         If oItem.SubItems IsNot Nothing Then
@@ -185,6 +178,19 @@ Public Class DirsList
 
             AddSubfolderTree(oNew, sDir)
         Next
+
+    End Sub
+
+    Protected Overloads Sub InsertDefaultContent()
+
+        Dim oRoot As New OneDir With {.sId = OneDir.RootId, .notes = "Główny katalog"}
+
+        oRoot.SubItems.Add(New OneDir With {.sId = "Imprezy", .notes = "wydarzenia"})
+        oRoot.SubItems.Add(New OneDir With {.sId = "Wyjazdy", .notes = "wakacje, itp."})
+        oRoot.SubItems.Add(New OneDir With {.sId = "Rodzina", .notes = "inne"})
+        oRoot.SubItems.Add(New OneDir With {.sId = "Muzeum", .notes = "na wieczną rzeczy pamiątkę"})
+
+        _lista.Add(oRoot)
 
     End Sub
 

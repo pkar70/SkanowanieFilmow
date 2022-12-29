@@ -80,7 +80,7 @@ Class ProcessPic
 
 
     Private Sub uiBrowse_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New ProcessBrowse(Application.GetBuffer)
+        Dim oWnd As New ProcessBrowse(Application.GetBuffer, False)
         oWnd.ShowDialog()
         AktualizujGuziki()
     End Sub

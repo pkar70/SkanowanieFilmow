@@ -69,14 +69,14 @@ Partial Class Application
     End Sub
 
 
-    Private Shared gSourcesList As VbLibCore3.PicSourceList
+    Private Shared gSourcesList As VbLibCore3_picSource.PicSourceList
     Private Shared gBuffer As Vblib.Buffer
 
-    Public Shared Function GetSourcesList() As VbLibCore3.PicSourceList
+    Public Shared Function GetSourcesList() As VbLibCore3_picSource.PicSourceList
 
         If gSourcesList Is Nothing Then
-            Vblib.PicSourceBase._dataFolder = Application.GetDataFolder ' żeby JSON mógł wczytać sources
-            gSourcesList = New VbLibCore3.PicSourceList(Application.GetDataFolder)
+            'Vblib.PicSourceBase._dataFolder = Application.GetDataFolder ' żeby JSON mógł wczytać sources
+            gSourcesList = New VbLibCore3_picSource.PicSourceList(Application.GetDataFolder)
             gSourcesList.Load()
             gSourcesList.InitDataDirectory()
         End If
@@ -90,11 +90,11 @@ Partial Class Application
         Return gBuffer
     End Function
 
-    Private Shared gArchiveList As Vblib.MojaLista(Of VbLibCore3.LocalStorageMiddle)
-    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of VbLibCore3.LocalStorageMiddle)
+    Private Shared gArchiveList As Vblib.MojaLista(Of VbLibCore3_picSource.LocalStorageMiddle)
+    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of VbLibCore3_picSource.LocalStorageMiddle)
 
         If gArchiveList Is Nothing OrElse gArchiveList.Count < 1 Then
-            gArchiveList = New Vblib.MojaLista(Of VbLibCore3.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
+            gArchiveList = New Vblib.MojaLista(Of VbLibCore3_picSource.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
             gArchiveList.Load()
         End If
         Return gArchiveList
@@ -163,9 +163,9 @@ Partial Class Application
         New Process_EmbedBasicExif,
         New Process_EmbedExif,
         New Process_RemoveExif,
-        New Process_Watermark,
+        New Process_Signature.Process_FaceRemove,
         New Process_Signature.Process_Signature,
-        New Process_Signature.Process_FaceRemove
+        New Process_Watermark
     }
 
     ' Public Shared gCloudProviders As New CloudProviders

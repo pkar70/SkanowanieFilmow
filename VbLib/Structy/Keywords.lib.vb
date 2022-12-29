@@ -73,19 +73,17 @@ Public Class KeywordsList
         MyBase.New(sFolder, "keywords.json")
     End Sub
 
-    Public Overloads Function Load() As Boolean
-        If MyBase.Load() Then
-            CalculateMinMaxDateTree()
-            Return True
-        End If
+    Protected Overloads Function Load() As Boolean
+        If Not MyBase.Load() Then Return False
+        CalculateMinMaxDateTree()
+        Return True
+    End Function
 
+    Protected Overloads Sub InsertDefaultContent()
         _lista.Add(New OneKeyword With {.sId = "-", .sDisplayName = "osoby"})
         _lista.Add(New OneKeyword With {.sId = "#", .sDisplayName = "miejsca"})
         _lista.Add(New OneKeyword With {.sId = "=", .sDisplayName = "inne"})
-
-        Return False
-
-    End Function
+    End Sub
 
     Public Function GetKeyword(sKey As String) As OneKeyword
         For Each oItem As OneKeyword In ToFlatList()

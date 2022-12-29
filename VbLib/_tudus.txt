@@ -1,8 +1,92 @@
+vimeo: 25 video total, 2 miesiecznie, darmowe;
 
-przemyslec "scheduled" publishing, jak sie to ma do "dziwnosci"
+PicSorter, milestones:
+*) tagownik, sprawdzic w WinPhotoGall jak oni to zrobili - może podkraść pomysły na UI
+*) moze import tagów z WPhGal?
+*) FB do folderu
+*) dirtree: Imprezy, Wyjazdy, Rodzina, Muzeum
+*) chomik foldery? czy wstawia do odpowiedniego folderu?
+*) shutterfly or degoo, choć zastanowic sie na ile to dobre jest (shutterfly - udostepnianie lepsze niz FB? Degoo - nie tylko zdjecia, np. filmiki?)
 
-po jednym publish mamy closed stream przy probie nastepnego publish? - i slusznie, bo infrastruct tego nie umie
-- nalezy pipelineoutput resetowac po publikacji (nullować)
+*) browse po podkatalogach, może być z FIND w nazwie katalogu (wedle dirtree)
+*) wyszukiwarka z wszystkich zdjec (archive.json) - wirtualne foldery obrazkowe; SEARCH: tagtree, z checkbox MUSI_BYC i NIE_MOZE
+*) slideshow wirtualnego katalogu - może to zresztą do Browse zrobić? (czyli już teraz) - wszystko z oBuffer, filtrowanie jest przed wywołaniem oBuffer na tym. Wywoływanie z Browse, albo z Process.
+ contextMenu: pause, set delay, end
+
+Próba przejścia PicSort na 7.0 (z Core 3.1):
+C:\Program Files\dotnet\sdk\7.0.101\Sdks\Microsoft.NET.Sdk\targets\Microsoft.NET.Sdk.targets(1027,5):
+	error NETSDK1149: VbLibCore31-Auto_WinFace.dll cannot be referenced because it uses built-in support for WinRT, which is no longer supported in .NET 5 and higher.  An updated version of the component supporting .NET 5 is needed. For more information, see https://aka.ms/netsdk1149
+	error NETSDK1149: VbLibCore31-Auto_WinOCR_lib.dll cannot be referenced because it uses built-in support for WinRT, which is no longer supported in .NET 5 and higher.  An updated version of the component supporting .NET 5 is needed. For more information, see https://aka.ms/netsdk1149
+ewentualnie
+https://learn.microsoft.com/en-us/windows/apps/desktop/modernize/desktop-to-uwp-enhance
+bo 
+https://github.com/microsoft/cswinrt
+nie działa (wymaga C#)
+
+więc migracja do nowszego .Net niekoniecznie zadziała, ale można dać do Net Core 3.1
+
+
+DIRTREE: usunąć katalogi które są "datowalne", i zobaczyć co zostanie
+DIRTREE: <jsonignore>fullpath, uzupełniane na OnLoad?
+
+NUGET prywatny, wersja "jak było", choc problem z Resw by był (bo jak przekazać?); kolejna wersja z uzyciem NetConfigs, kolejna z DataLog, i tak dalej.
+
+App.GetCoverters(sourcefilename, list<Target extensions>) - GetStream (publish), ConvertFile
+
+<menu> i <contextmenu>?
+<DropDownButton przy WinUI2>
+
+BROWSER wczytajObrazek: nie dowolny z NAR/ZIP, tylko konkretne próbować wybrać?
+
+Od Aśki, uruchomienie:
+po retrieve nie odblokowało browse, albo po zdefiniowaniu source nie odblokowalo retrieve - sprawdzic
+kasowanie menu flyout po kliknięciu poza nim
+
+ARCHIWIZ: podczas archiwizacji robi FlattenExif, który jest pomijany przy iteratorach, ale za to wykorzystywany przy wyszukiwaniach (łatwiej tak niż sprawdzać coś we wszystkich kolejnych chyba)
+DBASE: wstawianie tam Flattened, co pozwala na w miarę normalne query
+
+STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
+
+BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
+
+MAINPAGE: "open folder in-place", bez import jako takiego? tylko lokalny buffer.json?
+
+* PUBLISH konwertery z NAR do JPG, 
+
+* EWENTUALNIE NEW PAGE: osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać (do ściągania komentarzy do zdjęć)
+
+* ALL: powoli robić refactor obiektowy (OneKey i OneDir, OnePic jak najwiecej, je jako podstawa i bez uzywania innych. Dostęp do Property tylko XAML i Settings, reszta przez Methods?
+
+* wszystkie po drodze, autoExif, postprocesory, publishy, uczulic na thumb, nar, avi; takze w settingsach to trzeba zrobic
+
+co zrobic jak bedzie select do publish ale publisher nie uwzglednia typu? albo gdy postproc nie działa na nim? anulowanie pipeline (i publisha)?
+
+* ARCHIVE podczas archiwizacji nadawanie uniq picid (z daty i czasu, dla telefon/aparat będzie OK, dla skanów - jeszcze nie wiem)
+
+* AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI
+
+* BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
+
+* PUBLISH jednego - może być pytanie, np. o opis.
+
+* SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
+
+* PUBLISH, default mask, i to przekopiowywane, albo includeMask nieruszalne, albo dwa poziomy (includemask - supported by service, includemask publikatora - co chcemy wysyłać)
+
+* BROWSER: dodać "security" (że ukrywany, taki nie idzie do PUBLISH - choć to też można zrobić przez TAG=private)
+
+* BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
+
+* DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
+
+* ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
+
+* na App.GetArchives - GetPicture(oPic), uzupełnia oContent wedle wszystkich istniejących, próbując znaleźć takie które plik ma.
+
+* oPic: inSourceId oraz suggested, na jpg.thumb i .jpg, ale żeby działało w Purge
+
+przemyslec "scheduled" publishing, jak sie to ma do "dziwnosci" (NAR itp., chyba o to chodziło? a może że będzie zaznaczone że do publikacji, ale wedle maski nie podlega publikacji; no i link może być zły (że link zawiera .jpg, a automat może dokleić .nar)
+
 
 
 H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Autotagger\Auto_Azure.lib.vb 19 KB Visual Basic Source file 13/12/2022 15:43:53 20/11/2022 16:43:14 21/12/2022 20:51:38 6
@@ -115,9 +199,6 @@ H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Browse
 
 
 
-AZURE z NAR: stworzyc nowy oPic z pierwszego JPG wypakowanego do %temp%, i to zwrocic (kasujac plik Temp)
-
-ThumbPic: publ prop IsMovie, jesli tak to pierwsza klatka jako miniaturka, a dorysowany |> na dole)
 
 WPF jako Microsoft Store? Jeśli tak (coś sprawdzić czy się uda) to migracja tych UWP które już nie są telefoniczne? Ale najpierw na pół roku wersja z .Net settings, by przemigrować settingsy z UWP do .Net
 
@@ -130,15 +211,6 @@ Mój NUGET:
 * Nuget2: MojaLista, MojaStruct
 * może coś jeszcze z vblib, co da się zamknąć "razem" w jedno
 
-CloudPublish: SSC, additInfo jako nazwa grupy, może nawet Combo threadów gdzie jest się zapisanym (na poziomie settings) - wszak do różnych thread mogą być różne pipelines
-Reply się chyba nie da tak ściągnąć
-
-na start można sprawdzać czy jest plik %data%\movie.jpg, jeśli nie ma, to tworzyć (tak jak watermarka), i jego wyświetlać dla filmików w Browser.
-
-publikacja/itp., konwertery z NAR do JPG, 
-
-ShowBig, menu z CloudArch które mają publikacje (do sciagania komentarzy itp.)
-Chyba że to zrobić jako w ogóle osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać.
 
 jeszcze raz sprawdzić różnice w API między .Net (Std14, Std2, Core 3, 5, 6, 7, FW4.6, FW4.8)
 WinUI3 zamiast WPF? Może byłby ProgressRing?
@@ -171,9 +243,6 @@ To może być nie z browser, tylko gdzieś później, z wyszukiwnaia.
 Albo z BigPic, gdy menu już można IsEnable robić per item.
 To może być w ogóle później jako stałe do robienia, np. raz na miesiąc ściągnij nowe komentarze.
 
-Resize błąd: ze gdy plik jest mniejszy? ale czemu co drugie uruchomienie? czegoś nie zwalnia?
- ale nawet jeśli, to w pipeline powinien po prostu przekopiować, zamiast stopować.
-
 gdy jest tylko jpg.thumb, to przerabia na JPG - dla uproszczenia (i zgodnosci z AcdSee na przyklad)
 wszystkie po drodze, autoExif, postprocesory, publishy, uczulic na thumb, nar, avi; takze w settingsach to trzeba zrobic
 
@@ -184,7 +253,6 @@ Albo z keyword owndir - wybór katalogu z drzewka tematycznego
 
 dopisywanie do arch.JSON: seek(-1, end); append; i z "]" - ale nie wiem czy to ma sens.
 
-podczas archiwizacji nadawanie uniq picid (z daty i czasu, dla telefon/aparat będzie OK, dla skanów - jeszcze nie wiem)
 
 okienko katalogu (set target) możliwość dodania description dłuższego.
 Może w ogóle jako dwie opcje z menu: pojedynczy dir, albo ze splitem.
@@ -211,17 +279,6 @@ sprawdzić zamazywanie twarzy
 
 POSTPROCESS: ma maski, default: jpg, jpg.thumb
 
-tylko pilnowac autoexifów zeby nie poszly na NAR/AVI
-
-BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
-
-CLOUDARCH i z Azure " ADULTPIC" - pytanie czy sure? 
-Albo Property w definicji, true/false.
-
-PUBLISH jednego - może być pytanie, np. o opis.
-
-czy robić default/temp EXIF przy Publish? Dla grupowych, czy także dla pojedynczych (z ShowBig)?
-jak uwzgledniac EXIF w publish, którego przeciez nie dopisuje sie do pliku :)
 
 Facebook: special folders, typu "jaNaCyfrowo" dla zdjęć z -JA
 Instagram: reguły tworzenia description
@@ -235,8 +292,6 @@ sprawdzic Azure rozpoznawanie ze zmniejszaniem obrazka
 może zrobić na koniec otwieranie dowolnego katalogu, bez zabierania do bufora, ale i bez EXIFów itp? A może i z "exifnij do lokalnego picsort.json"?
 
 sprawdzic autorotate?
-
-OneDir analogicznie do OneKeyword, może nawet ta sama struktura?
 
 Shuterfly, degoo?
 Degoo sharing ma?
@@ -347,7 +402,6 @@ SETTINGSMISC: OCR language, combobox, i w Taggers_OCR\Auto_WinOCR.vb zmieniać (
 To jest trochę jak (Microsoft) Windows Photo Gallery
 Tam było też export Flicker
 Microsoft Photos (jego następca) ma do FB, Twitter, Instagram, GroupMe
-
 
 
 ' https://cloud.google.com/vision?&gclsrc=3p.ds&

@@ -33,7 +33,7 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">
-                <Button Content="Filters" Click="uiFilter_Click" Name="uiFilters"/>
+                <Button Click="uiFilter_Click"  Content="Filters" Name="uiFilters"/>
                 <Popup IsOpen="False" Name="uiFilterPopup" PlacementTarget="{Binding ElementName=uiFilters}">
                     <Menu Name="uiMenuFilters">
                         <Menu.ItemsPanel>
@@ -43,12 +43,21 @@
                         </Menu.ItemsPanel>
                         <MenuItem Header="all" Click="uiFilterAll_Click" />
                         <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" />
-                        <MenuItem Header="bez AZURE" Click="uiFilterNoAzure_Click" />
+                        <MenuItem Header="AZURE">
+                            <MenuItem Header="bez tagu" Click="uiFilterNoAzure_Click" />
+                            <Separator/>
+                            <MenuItem Header="face" Click="uiFilterAzure_Click" />
+                            <MenuItem Header="no face" Click="uiFilterAzure_Click" />
+                            <MenuItem Header="person" Click="uiFilterAzure_Click" />
+                            <MenuItem Header="no person" Click="uiFilterAzure_Click" />
+                            <Separator/>
+                            <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
+                        </MenuItem>
                         <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" />
                     </Menu>
-                </Popup>
-                
-                <ComboBox Name="uiComboSize" Margin="15,0,15,0">
+                    </Popup>
+
+                    <ComboBox Name="uiComboSize" Margin="15,0,15,0">
                     <ComboBoxItem Content="fit all" IsSelected="true" />
                     <ComboBoxItem Content="fit run"/>
                     <ComboBoxItem Content="400" />
@@ -57,7 +66,7 @@
                     <ComboBoxItem Content="160" />
                     <ComboBoxItem Content="100" />
                 </ComboBox>
-                <Button Content=" Split " Height="Auto" Width="Auto" Click="uiSplitMode_Click" />
+                <Button Content=" Split " Height="Auto" Width="Auto" Click="uiSplitMode_Click" Name="uiSplit"/>
             </StackPanel>
 
             <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" >
@@ -125,6 +134,7 @@
                                 </ContextMenu>
                             </Image.ContextMenu>
                         </Image>
+                        <TextBlock Margin="-4,0,0,0" VerticalAlignment="Top" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="30" Foreground="LimeGreen" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

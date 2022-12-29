@@ -182,6 +182,23 @@ Public Class Buffer
 
         oPic.InBufferPathName = sDstPathName
         ' oPic.sortOrder = oExif.DateMax.ToExifString 'ToString("yyyy.MM.dd HH.mm.ss")
+
+
+        If oPic.MatchesMasks("*.nar") Then
+            oPic.fileTypeDiscriminator = "*"
+        End If
+
+        If oPic.MatchesMasks("*.avi") Then
+            oPic.fileTypeDiscriminator = "►"
+        End If
+        If oPic.MatchesMasks("*.mov") Then
+            oPic.fileTypeDiscriminator = "►"
+        End If
+        If oPic.MatchesMasks("*.mp4") Then
+            oPic.fileTypeDiscriminator = "►"
+        End If
+
+
         _pliki.Add(oPic)
 
         Return True
@@ -189,15 +206,23 @@ Public Class Buffer
     End Function
 
 
-End Class
-
-Public Class FilesInBuffer
-    Inherits Vblib.MojaLista(Of OnePic)
-
-    Public Sub New(sFolder As String)
-        MyBase.New(sFolder, "buffer.json")
+    Public Sub ResetPipelines()
+        For Each oItem As OnePic In _pliki.GetList
+            oItem.ResetPipeline()
+        Next
     End Sub
 
+    Public Class FilesInBuffer
+        Inherits Vblib.MojaLista(Of OnePic)
+
+        Public Sub New(sFolder As String)
+            MyBase.New(sFolder, "buffer.json")
+        End Sub
+
+    End Class
+
+
 End Class
+
 
 

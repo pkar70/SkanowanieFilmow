@@ -156,8 +156,8 @@ Public Class LocalArchive
             Await oSrc.engine.SendFile(oPic)
             If Not oPic.IsArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
 
-            ' aktualizujemy DirList - to tylko ostateczność, bo powinno być wcześniej zrobione
-            If Application.GetDirTree.TryAddFolder(oPic.TargetDir, "") Then bDirTreeToSave = True
+            ' aktualizujemy DirList - to tylko ostateczność, bo powinno być wcześniej zrobione.
+            ' If Application.GetDirTree.TryAddFolder(oPic.TargetDir, "") Then bDirTreeToSave = True
 
             ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
             Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)

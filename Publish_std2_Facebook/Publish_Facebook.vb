@@ -352,7 +352,15 @@ Public MustInherit Class Publish_Facebook
         Dim oRet = Await mMordkaApi.MediaProcessor.UploadPhotoAsync(sCaption, ImageBytes, False) ' ostatnie: disable comments
         If Not oRet.Succeeded Then Return "ERROR: " & oRet.Info.Message
 
-        oPic.AddCloudPublished(konfiguracja.nazwa, oRet.Value.Story.Id)
+        Dim sLink As String = oRet.Value.Story.Tracking
+        ' Tracking = "{\"top_level_post_id\":\"6144616548904797\",\"content_owner_id_new\":\"100000695378362\",
+        ' \"photo_id\":\"6144615472238238\",\"story_location\":9,\"story_attachment_style\":\"photo\",\"ent_attachement_type\":\"MediaAttachment\",\"actrs\":\"100000695378362\",...
+        Dim iInd As Integer = sLink.IndexOf("photo_id")
+        sLink = sLink.Substring(iInd + "photo_id"":""")
+        iInd = sLink.IndexOf("""")
+        sLink = sLink.Substring(0, iInd)
+
+        oPic.AddCloudPublished(konfiguracja.nazwa, "photo/?fbid=" & sLink)
 
         Return ""
     End Function

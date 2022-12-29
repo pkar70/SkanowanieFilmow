@@ -102,15 +102,20 @@ Public Class Process_AutoRotate
 
     End Sub
 
-    Public Shared Async Function GetJpgEncoderAsync(oStream As winstreams.InMemoryRandomAccessStream) As Task(Of wingraph.BitmapEncoder)
+    Public Shared Function GetJpgEncoderProperty() As wingraph.BitmapPropertySet
         Dim qualityValue As New wingraph.BitmapTypedValue(
                     vb14.GetSettingsInt("uiJpgQuality") / 100.0,
                     Windows.Foundation.PropertyType.Single)
         Dim oPropertySet As New wingraph.BitmapPropertySet
         oPropertySet.Add("ImageQuality", qualityValue)
 
+        Return oPropertySet
+    End Function
+
+    Public Shared Async Function GetJpgEncoderAsync(oStream As winstreams.InMemoryRandomAccessStream) As Task(Of wingraph.BitmapEncoder)
+
         Dim oEncoder As wingraph.BitmapEncoder =
-            Await wingraph.BitmapEncoder.CreateAsync(wingraph.BitmapEncoder.JpegEncoderId, oStream, oPropertySet)
+            Await wingraph.BitmapEncoder.CreateAsync(wingraph.BitmapEncoder.JpegEncoderId, oStream, GetJpgEncoderProperty)
 
         Return oEncoder
     End Function

@@ -90,7 +90,7 @@ Public MustInherit Class Process_ResizeBase
                 End If
 
                 If dScale >= 1 Then
-                    oPic.SkipEdit(bPipeline)
+                    oPic.SkipEdit()
                     Return True ' nie skalujemy, bo plik jest mniejszy
                 End If
             Else

@@ -77,11 +77,11 @@ Class SettingsSources
         Dim oMI As MenuItem = sender
         Select Case oMI.Header.ToString.Trim.ToLowerInvariant
             Case "folder"
-                oNewSrc = New VbLibCore3.PicSourceImplement(Vblib.PicSourceType.FOLDER, Application.GetDataFolder)
+                oNewSrc = New VbLibCore3_picSource.PicSourceImplement(Vblib.PicSourceType.FOLDER, Application.GetDataFolder)
             Case "mtp"
-                oNewSrc = New VbLibCore3.PicSourceImplement(Vblib.PicSourceType.MTP, Application.GetDataFolder)
+                oNewSrc = New VbLibCore3_picSource.PicSourceImplement(Vblib.PicSourceType.MTP, Application.GetDataFolder)
             Case "adhoc"
-                oNewSrc = New VbLibCore3.PicSourceImplement(Vblib.PicSourceType.AdHOC, Application.GetDataFolder)
+                oNewSrc = New VbLibCore3_picSource.PicSourceImplement(Vblib.PicSourceType.AdHOC, Application.GetDataFolder)
             Case Else
                 Return
         End Select
@@ -204,7 +204,7 @@ Class SettingsSources
 
         Select Case _item.Typ
             Case Vblib.PicSourceType.FOLDER
-                sPath = VbLibCore3.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
+                sPath = VbLibCore3_picSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
                 SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaz folder na archiwum")
             Case Vblib.PicSourceType.MTP
                 Dim oWnd As New BrowseMtpDevice(sVolLabel, sPath)

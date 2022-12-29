@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>VbLibCore3_picSource</RootNamespace>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VbLibCore3-mediaDevices\VbLibCore3-mediaDevices.vbproj" />
+    <ProjectReference Include="..\VbLib\VbLib.vbproj" />
+  </ItemGroup>
+
+</Project>

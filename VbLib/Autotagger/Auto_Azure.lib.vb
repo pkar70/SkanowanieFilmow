@@ -7,6 +7,7 @@
 ' OCR tutaj nie ma!
 
 
+Imports System.ComponentModel
 Imports System.IO
 Imports Microsoft.Azure.CognitiveServices.Vision
 Imports Microsoft.Azure.CognitiveServices.Vision.ComputerVision.ComputerVisionClientExtensions
@@ -45,7 +46,6 @@ Public Class Auto_AzureTest
 
     Private Async Function GetStreamForSending(oFile As Vblib.OnePic) As Task(Of Stream)
 
-        If oFile.MatchesMasks("*.nar") Then Return Await GetStreamFromZip(oFile)
 
         Dim sFilename As String = oFile.InBufferPathName
 
@@ -57,7 +57,6 @@ Public Class Auto_AzureTest
         ' przeskalujemy
         If Not Await _resizeEngine.Apply(oFile, True) Then Return Nothing
 
-        ' *TODO* można byłoby zrobić zapętlenie, kilka kolejnych poziomów zmniejszania obrazka
         If oFile._PipelineOutput.Length > MaxSize * 1024 Then Return Nothing
 
         oFile._PipelineOutput.Seek(0, SeekOrigin.Begin)
@@ -66,32 +65,44 @@ Public Class Auto_AzureTest
 
     End Function
 
-    Private Async Function GetStreamFromZip(oFile As Vblib.OnePic) As Task(Of Stream)
-        Dim oStream As MemoryStream = Nothing
+    Private Async Function GetFileFromZip(oFile As Vblib.OnePic) As Task(Of String)
 
-        Using oArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
+        Dim sTempFileName As String = IO.Path.GetTempFileName
+        Await Nar2Jpg(oFile.InBufferPathName, sTempFileName)
+        Return sTempFileName
+    End Function
 
-            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
-                ' mamy JPGa (a nie XML na przykład)
+    Public Shared Async Function Nar2Jpg(sNarFileName As String, sJpgFileName As String) As Task
+        Using oWrite As Stream = IO.File.Create(sJpgFileName)
 
-                ' *TODO* jesteśmy w NAR, tu nie będzie zmniejszania - przynajmniej na razie
-                ' ale dużo jest > 4 MB
-                If oInArch.Length > MaxSize * 1024 Then Continue For
+            Using oArchive = IO.Compression.ZipFile.OpenRead(sNarFileName)
 
-                ' mamy wystarczająco mały, to wysyłamy
-                oStream = New MemoryStream
-                Await oInArch.Open.CopyToAsync(oStream)
-                Exit For
-            Next
+                For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                    If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                    ' mamy JPGa (a nie XML na przykład)
+
+                    Await oInArch.Open.CopyToAsync(oWrite)
+                    Exit For
+                Next
+            End Using
+            Await oWrite.FlushAsync
         End Using
 
-        Return oStream
     End Function
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
-        ' *TODO* reakcja jakaś na inne typy niż JPG
-        ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
+
+        If oFile.MatchesMasks("*.nar") Then
+            Dim sTempfilename As String = Await GetFileFromZip(oFile)
+
+            ' tworzymy nowy oPic, dla wypakowanego pliku
+            Dim oPic As New OnePic("TempForAzure", "", sTempfilename)
+            oPic.InBufferPathName = sTempfilename
+            Dim oAzureTag As ExifTag = Await GetForFile(oPic)
+
+            IO.File.Delete(sTempfilename)
+            Return oAzureTag
+        End If
 
         Dim oStream As Stream = Await GetStreamForSending(oFile)
         If oStream Is Nothing Then Return Nothing

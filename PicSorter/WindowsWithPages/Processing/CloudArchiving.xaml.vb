@@ -137,30 +137,31 @@ Public Class CloudArchiving
             Dim sIndexJson As String = ""
             Dim bDirTreeToSave As Boolean = False
 
-            For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
-                uiProgBarInEngine.Value += 1
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            uiProgBarInEngine.Value += 1
 
-                If Not IO.File.Exists(oPic.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
-                If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+            If Not IO.File.Exists(oPic.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
+            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
 
             If oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For
 
+            oPic.ResetPipeline()
             Await oSrc.engine.SendFile(oPic)
             If Not oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
 
             ' aktualizujemy DirList - to tylko ostateczność, bo powinno być wcześniej zrobione
-            If Application.GetDirTree.TryAddFolder(oPic.TargetDir, "") Then bDirTreeToSave = True
+            ' If Application.GetDirTree.TryAddFolder(oPic.TargetDir, "") Then bDirTreeToSave = True
 
-                ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
-                Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
+            ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
+            Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
 
-                If sIndexJson <> "" Then sIndexJson &= ","
-                sIndexJson &= oPic.DumpAsJSON
+            If sIndexJson <> "" Then sIndexJson &= ","
+            sIndexJson &= oPic.DumpAsJSON
 
-                Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
-            Next
+            Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
+        Next
 
-            uiProgBarInEngine.Visibility = Visibility.Collapsed
+        uiProgBarInEngine.Visibility = Visibility.Collapsed
 
             Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
             If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi

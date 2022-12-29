@@ -31,7 +31,7 @@ Public Class ProcessDownload
         oWnd.ShowDialog()
 
         Application.ShowWait(True)
-        Await RetrieveFilesFromSource(oSrc)
+        Dim iCount As Integer = Await RetrieveFilesFromSource(oSrc)
         Application.ShowWait(False)
 
         Dim iToPurge As Integer = oSrc.Purge(False)
@@ -39,7 +39,11 @@ Public Class ProcessDownload
             If Await vb14.DialogBoxYNAsync($"Zrobić purge? ({iToPurge} plików)") Then oSrc.Purge(True)
         End If
 
-        vb14.DialogBox("Done.")
+        If iCount > 0 Then
+            vb14.DialogBox($"Done ({iCount} new files).")
+        Else
+            vb14.DialogBox($"Done.")
+        End If
 
     End Sub
 
@@ -78,23 +82,29 @@ Public Class ProcessDownload
 
     End Sub
 
-    Private Async Function RetrieveFilesFromSource(oSrc As Vblib.PicSourceBase) As Task
+    Private Async Function RetrieveFilesFromSource(oSrc As Vblib.PicSourceBase) As Task(Of Integer)
         vb14.DumpCurrMethod(oSrc.VolLabel)
 
         Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
         'Await vb14.DialogBoxAsync($"read {iCount} files")
         vb14.DumpMessage($"Read {iCount} files")
 
-        If iCount < 1 Then Return
+        If iCount < 1 Then Return 0
 
         uiProgBar.Maximum = iCount
         uiProgBar.Value = 0
         uiProgBar.Visibility = Visibility.Visible
 
         Dim oSrcFile As Vblib.OnePic = oSrc.GetFirst
-        If oSrcFile Is Nothing Then Return
+        If oSrcFile Is Nothing Then Return 0
 
         Do
+            ' obsługa WP_20221119_10_39_05_Rich.jpg.thumb
+            ' raczej nie będzie wtedy JPGa pełnego, więc ignorujemy dokładniejsze testowanie
+            If oSrcFile.sSuggestedFilename.EndsWith(".thumb") Then
+                oSrcFile.sSuggestedFilename = oSrcFile.sSuggestedFilename.Replace(".thumb", "")
+            End If
+
             ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
             Await Application.GetBuffer.AddFile(oSrcFile)
             oSrcFile = oSrc.GetNext
@@ -108,6 +118,7 @@ Public Class ProcessDownload
 
         uiProgBar.Visibility = Visibility.Collapsed
 
+        Return iCount
     End Function
 
 End Class

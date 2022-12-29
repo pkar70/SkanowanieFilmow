@@ -29,7 +29,10 @@ Public Class OnePic
     Public Property sSuggestedFilename As String ' miało być że np. scinanie WP_. ale jednak tego nie robię (bo moge posortowac po dacie, albo po nazwach - i w tym drugim przypadku mam rozdział na np. telefon i aparat)
 
     Public Property descriptions As List(Of OneDescription)
+    Public Property editHistory As List(Of OneDescription)
     Public Property TagsChanged As Boolean = False
+
+    Public Property fileTypeDiscriminator As String = Nothing   ' tu "|>", "*", które mają być dodawane do miniaturek
 
     'Public Property sortOrder As String
 
@@ -391,6 +394,7 @@ Public Class OnePic
 
         For Each oExif As ExifTag In Exifs
             If oExif.ExifSource = ExifSource.AutoAzure Then Continue For
+            If oExif.ExifSource = ExifSource.Flattened Then Continue For
             sRet = ConcatenateWithComma(sRet, oExif.UserComment)
         Next
 
@@ -456,6 +460,21 @@ Public Class OnePic
 
 #End Region
 
+#Region "edit history"
+    ''' <summary>
+    ''' dodaje jedno entry w historii, datując na Now
+    ''' </summary>
+    ''' <param name="sHistory"></param>
+    Public Sub AddEditHistory(sHistory As String)
+        If editHistory Is Nothing Then editHistory = New List(Of OneDescription)
+
+        Dim oNew As New OneDescription(sHistory, Nothing)
+        editHistory.Add(oNew)
+
+        TagsChanged = True
+    End Sub
+
+#End Region
 
 #Region "start/end edycji"
 
@@ -468,8 +487,14 @@ Public Class OnePic
     <Newtonsoft.Json.JsonIgnore>
     Public Property _PipelineOutput As Stream
 
-    Public Sub SkipEdit(bPipeline As Boolean)
-        If Not bPipeline Then Return
+    Public Sub ResetPipeline()
+        ' kasowanie pipeline, żeby można było zrobić drugą
+        _PipelineOutput?.Dispose()
+        _PipelineOutput = Nothing
+    End Sub
+
+    Public Sub SkipEdit()
+        If Not _EditPipeline Then Return
 
         ' po prostu symulujemy pusty krok - kopiujemy in/out
         _PipelineOutput = New MemoryStream
@@ -664,9 +689,11 @@ Public Class OnePic
     ''' </summary>
     ''' <returns></returns>
     Public Function FlattenExifs() As ExifTag
+        Dim oNew As ExifTag = GetExifOfType(ExifSource.Flattened)
+        If oNew IsNot Nothing Then Return oNew
 
         ' defaulty mamy z FileSourceDeviceType
-        Dim oNew As New ExifTag(ExifSource.Flattened)
+        oNew = New ExifTag(ExifSource.Flattened)
         Dim oExif_SourceDefault As ExifTag = GetExifOfType(ExifSource.SourceDefault)
         If oExif_SourceDefault IsNot Nothing Then
             oNew = oExif_SourceDefault.Clone

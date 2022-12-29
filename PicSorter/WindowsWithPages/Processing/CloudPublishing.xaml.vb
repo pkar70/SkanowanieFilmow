@@ -100,6 +100,8 @@ Public Class CloudPublishing
 
         Dim sIndexJson As String = ""
 
+
+
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             uiProgBarInEngine.Value += 1
 
@@ -107,6 +109,8 @@ Public Class CloudPublishing
             If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
 
             If Not oPic.IsCloudPublishScheduledIn(oSrc.nazwa) Then Continue For
+
+            oPic.ResetPipeline()
 
             Await oSrc.engine.SendFile(oPic)
             If Not oPic.IsArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
