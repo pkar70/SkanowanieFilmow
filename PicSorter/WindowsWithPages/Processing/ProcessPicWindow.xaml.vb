@@ -9,7 +9,7 @@ Class ProcessPic
 
         Dim currentArchs As New List(Of String)
         For Each oArch As Vblib.CloudArchive In Application.GetCloudArchives.GetList
-            If oArch.konfiguracja.enabled Then currentArchs.Add(oArch.konfiguracja.nazwa.ToLower)
+            If oArch.konfiguracja.enabled Then currentArchs.Add(oArch.konfiguracja.nazwa.ToLowerInvariant)
         Next
 
         If currentArchs.Count < 1 Then Return 0
@@ -21,7 +21,7 @@ Class ProcessPic
             If oPic.CloudArchived Is Nothing Then
                 iCnt += 1
             Else
-                Dim sArchiwa As String = oPic.CloudArchived.ToLower
+                Dim sArchiwa As String = oPic.CloudArchived.ToLowerInvariant
                 For Each sArch As String In currentArchs
                     If Not sArchiwa.Contains(sArch) Then
                         iCnt += 1

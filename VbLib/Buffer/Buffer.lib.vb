@@ -1,14 +1,45 @@
 ﻿
-
-
-
-Imports System.ComponentModel
+'Imports System.ComponentModel
 Imports System.IO
+'Imports pkar
+Imports pkar.DotNetExtensions
 
-Public Class Buffer
+Imports Vblib.BufferSortowania
+
+Public Interface IBufor
+    Sub SaveData()
+    Function Count() As Integer
+
+    Function GetList() As List(Of OnePic)
+
+    Function BakDelete(iDays As Integer, bRealDelete As Boolean) As Boolean
+
+    ''' <summary>
+    ''' tu nie ma Save - bo jeśli kasujemy serię, to zapis lepiej zrobić tylko raz
+    ''' nie usuwa też ze źródła (AddToPurge), gdyż VbLib nie widzi SourceList - użyj PicSourceList.AddToPurge
+    ''' </summary>
+    Function DeleteFile(oPic As OnePic) As Boolean
+
+    ''' <summary>
+    ''' BuforSortowania: skopiuj plik (skorzystaj z OnePic.oContent - stream do pliku)
+    ''' BuforFromQuery: po prostu dodaj do listy
+    ''' </summary>
+    ''' <param name="pic">BuforSortowania: tu jest wazne suggestedfileName oraz oContent</param>
+    ''' <returns>OnePic uzupelniony o BufferFileName, FALSE: error (lub ten plik z tą zawartością już jest)</returns>
+    Function AddFile(oPic As OnePic) As Task(Of Boolean)
+
+    Sub ResetPipelines()
+
+End Interface
+
+
+Public Class BufferSortowania
+    Implements IBufor
+
     Private _RootDataPath As String
     Private _rootPictures As String
     Private _pliki As FilesInBuffer
+
     Public Sub New(sRootDataPath As String)
         _RootDataPath = sRootDataPath
         _pliki = New FilesInBuffer(_RootDataPath)
@@ -41,7 +72,6 @@ Public Class Buffer
 
         If bBylyZmiany Then SaveData()
     End Sub
-#End If
 
     Private Sub AddTyp3()
         For Each oItem As OnePic In _pliki.GetList
@@ -53,21 +83,21 @@ Public Class Buffer
         SaveData()
     End Sub
 
+#End If
 
-
-    Public Sub SaveData()
+    Public Sub SaveData() Implements IBufor.SaveData
         _pliki.Save(True)
     End Sub
 
-    Public Function Count() As Integer
+    Public Function Count() As Integer Implements IBufor.Count
         Return _pliki.Count
     End Function
 
-    Public Function GetList() As List(Of OnePic)
+    Public Function GetList() As List(Of OnePic) Implements IBufor.GetList
         Return _pliki.GetList
     End Function
 
-    Public Function BakDelete(iDays As Integer, bRealDelete As Boolean) As Boolean
+    Public Function BakDelete(iDays As Integer, bRealDelete As Boolean) As Boolean Implements IBufor.BakDelete
         Dim oDate As Date = Date.Now.AddDays(-iDays)
 
         Dim aFiles As String() = IO.Directory.GetFiles(_rootPictures, "*.bak")
@@ -87,8 +117,7 @@ Public Class Buffer
     ''' tu nie ma Save - bo jeśli kasujemy serię, to zapis lepiej zrobić tylko raz
     ''' nie usuwa też ze źródła (AddToPurge), gdyż VbLib nie widzi SourceList - użyj PicSourceList.AddToPurge
     ''' </summary>
-    ''' <param name="oPic"></param>
-    Public Function DeleteFile(oPic As OnePic) As Boolean
+    Public Function DeleteFile(oPic As OnePic) As Boolean Implements IBufor.DeleteFile
         Try
             IO.File.Delete(oPic.InBufferPathName)
             _pliki.Remove(oPic)
@@ -100,37 +129,12 @@ Public Class Buffer
     End Function
 
 
-    Private Async Function IsSameFileContents(oStream1 As Stream, oStream2 As Stream) As Task(Of Boolean)
-        ' This is not merely an optimization, as incrementing one stream's position
-        ' should Not affect the position of the other.
-        If oStream1.Equals(oStream2) Then Return True
-
-        If oStream1.Length <> oStream2.Length Then Return False
-
-        Dim oBuf1 As Byte() = New Byte(4100) {}
-        Dim oBuf2 As Byte() = New Byte(4100) {}
-
-        Do
-            Dim iBytes1 As Integer = Await oStream1.ReadAsync(oBuf1, 0, 4096)
-            Dim iBytes2 As Integer = Await oStream2.ReadAsync(oBuf2, 0, 4096)
-
-            If iBytes1 = 0 Then Return True
-
-            For iLp As Integer = 0 To iBytes1
-                If oBuf1(iLp) <> oBuf2(iLp) Then Return False
-            Next
-
-        Loop
-
-        Return True
-    End Function
-
     ''' <summary>
     ''' zabierz plik (skorzystaj z OnePic.oContent - stream do pliku)
     ''' </summary>
     ''' <param name="pic">tu jest wazne suggestedfileName oraz oContent</param>
     ''' <returns>OnePic uzupelniony o BufferFileName, FALSE: error (lub ten plik z tą zawartością już jest)</returns>
-    Public Async Function AddFile(oPic As OnePic) As Task(Of Boolean)
+    Public Async Function AddFile(oPic As OnePic) As Task(Of Boolean) Implements IBufor.AddFile
         DumpCurrMethod($"({oPic.sSuggestedFilename}")
 
         Dim sDstPathName As String = IO.Path.Combine(_rootPictures, oPic.sSuggestedFilename)
@@ -145,7 +149,7 @@ Public Class Buffer
             Dim oExistingStream As Stream = IO.File.OpenRead(sDstPathName)
             oTempStream.Seek(0, SeekOrigin.Begin)
 
-            Dim bSame As Boolean = Await IsSameFileContents(oTempStream, oExistingStream)
+            Dim bSame As Boolean = Await oTempStream.IsSameStreamContent(oExistingStream)
             oExistingStream.Dispose()
 
             If bSame Then
@@ -206,14 +210,14 @@ Public Class Buffer
     End Function
 
 
-    Public Sub ResetPipelines()
+    Public Sub ResetPipelines() Implements IBufor.ResetPipelines
         For Each oItem As OnePic In _pliki.GetList
             oItem.ResetPipeline()
         Next
     End Sub
 
     Public Class FilesInBuffer
-        Inherits Vblib.MojaLista(Of OnePic)
+        Inherits pkar.BaseList(Of OnePic)
 
         Public Sub New(sFolder As String)
             MyBase.New(sFolder, "buffer.json")
@@ -225,4 +229,67 @@ Public Class Buffer
 End Class
 
 
+Public Class BufferFromQuery
+    Implements IBufor
+
+    Private _pliki As List(Of OnePic)
+
+    Public Sub New()
+        _pliki = New List(Of OnePic)
+    End Sub
+
+    Public Sub New(sFilepathname As String)
+        DumpCurrMethod()
+
+        Dim sFolder As String = IO.Path.GetDirectoryName(sFilepathname)
+        Dim lista As New pkar.BaseList(Of OnePic)(sFolder, IO.Path.GetFileName(sFilepathname))
+
+        lista.Load()
+        _pliki = New List(Of OnePic)
+
+        For Each oPic As OnePic In lista.GetList
+            oPic.InBufferPathName = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
+            _pliki.Add(oPic)
+        Next
+
+    End Sub
+
+    Public Sub SaveData() Implements IBufor.SaveData
+        ' empty - nie zapisujemy NIC
+        ' *TODO* zapisywanie zmian do pliku archive i folder\picsort
+    End Sub
+
+    Public Sub ResetPipelines() Implements IBufor.ResetPipelines
+        For Each oItem As OnePic In _pliki
+            oItem.ResetPipeline()
+        Next
+    End Sub
+
+    Public Function Count() As Integer Implements IBufor.Count
+        Return _pliki.Count
+    End Function
+
+    Public Function GetList() As List(Of OnePic) Implements IBufor.GetList
+        Return _pliki
+    End Function
+
+    Public Function BakDelete(iDays As Integer, bRealDelete As Boolean) As Boolean Implements IBufor.BakDelete
+        Return True
+    End Function
+
+    Public Function DeleteFile(oPic As OnePic) As Boolean Implements IBufor.DeleteFile
+        Return False
+    End Function
+
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+    ''' <summary>
+    ''' po prostu dodaj do listy, nie tykając danych; ważne żeby InBufferPathName było poprawne
+    ''' </summary>
+    Public Async Function AddFile(oPic As OnePic) As Task(Of Boolean) Implements IBufor.AddFile
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+        _pliki.Add(oPic)
+        Return True
+    End Function
+
+End Class
 

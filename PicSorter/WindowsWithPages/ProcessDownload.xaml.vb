@@ -1,7 +1,9 @@
 ﻿
 ' ściąganie ze źródeł
 
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 Public Class ProcessDownload
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -53,7 +55,7 @@ Public Class ProcessDownload
         Dim oDrives = IO.DriveInfo.GetDrives()
         For Each oDrive As IO.DriveInfo In oDrives
             If oDrive.IsReady Then
-                If dirToGet.StartsWith(oDrive.RootDirectory.FullName) Then
+                If dirToGet.StartsWithOrdinal(oDrive.RootDirectory.FullName) Then
                     Return oDrive.VolumeLabel & " (" & oDrive.RootDirectory.FullName & ")"
                 End If
             End If
@@ -98,10 +100,12 @@ Public Class ProcessDownload
         Dim oSrcFile As Vblib.OnePic = oSrc.GetFirst
         If oSrcFile Is Nothing Then Return 0
 
+        iCount = 0
+
         Do
             ' obsługa WP_20221119_10_39_05_Rich.jpg.thumb
             ' raczej nie będzie wtedy JPGa pełnego, więc ignorujemy dokładniejsze testowanie
-            If oSrcFile.sSuggestedFilename.EndsWith(".thumb") Then
+            If oSrcFile.sSuggestedFilename.EndsWithOrdinal(".thumb") Then
                 oSrcFile.sSuggestedFilename = oSrcFile.sSuggestedFilename.Replace(".thumb", "")
             End If
 
@@ -110,12 +114,14 @@ Public Class ProcessDownload
             oSrcFile = oSrc.GetNext
             If oSrcFile Is Nothing Then Exit Do
             uiProgBar.Value += 1
+            iCount += 1
         Loop
 
         Application.GetBuffer.SaveData()
         oSrc.lastDownload = Date.Now
         Application.GetSourcesList.Save()   ' zmieniona data
 
+        uiProgBar.Value = 0
         uiProgBar.Visibility = Visibility.Collapsed
 
         Return iCount

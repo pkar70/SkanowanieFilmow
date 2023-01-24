@@ -1,0 +1,14 @@
+﻿<Window x:Class="SimpleKeywords"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="Keywords" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow">
+    <StackPanel Margin="5,2,5,2">
+        <TextBlock Name="uiFileName" FontWeight="Bold"/>
+        <TextBox Name="uiAllKeywords" HorizontalAlignment="Stretch" Margin="5,5,5,5" />
+        <Button Content="Apply" HorizontalAlignment="Right" Click="uiApply_Click" Name="uiApply"/>
+    </StackPanel>
+</Window>

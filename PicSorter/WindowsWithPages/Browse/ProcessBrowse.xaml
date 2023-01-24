@@ -11,6 +11,7 @@
         <local:KonwersjaPasekKolor x:Key="KonwersjaPasekKolor"/>
         <local:KonwersjaPasekVisibility x:Key="KonwersjaPasekVisibility"/>
         <local:KonwersjaPasekWysok x:Key="KonwersjaPasekWysok"/>
+        <local:KonwersjaFileDiscrVisibility x:Key="KonwersjaFileDiscrVisibility"/>
     </Window.Resources>
     
     <Grid Margin="5,5,5,5">
@@ -28,13 +29,13 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal" >
-                <Button Content=" Histogram " Height="Auto" Width="Auto" Click="uiOpenHistoragam_Click" Margin="5,0,15,0"/>
+                <Button Content=" Datogram " Height="Auto" Width="Auto" Click="uiOpenHistoragam_Click" Margin="5,0,15,0"/>
                 <Button Content=" Mapogram " Height="Auto" Width="Auto" IsEnabled="False" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">
                 <Button Click="uiFilter_Click"  Content="Filters" Name="uiFilters"/>
-                <Popup IsOpen="False" Name="uiFilterPopup" PlacementTarget="{Binding ElementName=uiFilters}">
+                <Popup IsOpen="False" Name="uiFilterPopup" PlacementTarget="{Binding ElementName=uiFilters}" StaysOpen="False">
                     <Menu Name="uiMenuFilters">
                         <Menu.ItemsPanel>
                             <ItemsPanelTemplate>
@@ -42,8 +43,9 @@
                             </ItemsPanelTemplate>
                         </Menu.ItemsPanel>
                         <MenuItem Header="all" Click="uiFilterAll_Click" />
+                        <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
                         <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" />
-                        <MenuItem Header="AZURE">
+                        <MenuItem Header="AZURE »">
                             <MenuItem Header="bez tagu" Click="uiFilterNoAzure_Click" />
                             <Separator/>
                             <MenuItem Header="face" Click="uiFilterAzure_Click" />
@@ -53,7 +55,7 @@
                             <Separator/>
                             <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
                         </MenuItem>
-                        <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" />
+                        <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget"/>
                     </Menu>
                     </Popup>
 
@@ -70,26 +72,45 @@
             </StackPanel>
 
             <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" >
-                <Button Name="uiKeywords" Content=" # Wnd " Height="Auto" Width="Auto" Click="uiKeywords_Click"  Margin="0,0,10,0"/>
+                <Button Name="uiOkna" Content=" Wnds " Height="Auto" Width="Auto" Click="uiOkna_Click"  Margin="0,0,10,0"/>
+                <Popup IsOpen="False" Name="uiOknaPopup" PlacementTarget="{Binding ElementName=uiOkna}" StaysOpen="False">
+                    <Menu >
+                        <Menu.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </Menu.ItemsPanel>
+                        <MenuItem Header="View metadata" Click="uiOknaShowMetadata_Click" />
+                        <MenuItem Header="View real EXIF" Click="uiOknaShowExif_Click" />
+                        <MenuItem Header="Keywords small" Click="uiOknaEditKwds_Click" />
+                        <MenuItem Header="Keywords tree" Click="uiOknaKwdsTree_Click" />
+                        <MenuItem Header="Describe" Click="uiOknaDescribe_Click" />
+                        <MenuItem Header="OCR" Click="uiOknaOCR_Click" />
+                        <MenuItem Header="Manual Exif" Click="uiOknaManualExif_Click" />
+                        <MenuItem Header="Azure Exif" Click="uiOknaManualAzureExif_Click" />
+                        <MenuItem Header="Target dir" Click="uiOknaTargetDir_Click" Name="uiOknaTargetDir" />
+                    </Menu>
+                </Popup>
                 <Button Name="uiAction" Content=" Action " Height="Auto" Width="Auto" Click="uiActionOpen_Click" />
-            <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}">
+            <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}" StaysOpen="False">
                 <Menu >
                     <Menu.ItemsPanel>
                         <ItemsPanelTemplate>
                             <VirtualizingStackPanel Orientation="Vertical"/>
                         </ItemsPanelTemplate>
                     </Menu.ItemsPanel>
-                    <MenuItem Header="Delete" Click="uiDeleteSelected_Click" />
-                        <MenuItem Header="Autotags" Name="uiMenuAutotags" IsEnabled="False">
-                            <MenuItem Header="empty" />
+                        <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
+                        <MenuItem Header="Autotags  »" Name="uiMenuAutotags" IsEnabled="False">
                         </MenuItem>
-                        <MenuItem Header="Describe" Click="uiDescribeSelected_Click" />
-                        <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
-                        <MenuItem Header="Create GeoTag" Click="uiMenuCreateGeoTag_Click" />
-                        <MenuItem Header="Batch process" Name="uiBatchProcessors" />
-                        <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click"/>
-                    <MenuItem Header="Publish" Name="uiMenuPublish"  />
-                        <MenuItem Header="Remote tags" Name="uiMenuRemoteTags"  />
+                        <MenuItem Header="Describe" Click="uiDescribeSelected_Click" Name="uiDescribeSelected"/>
+                        <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" Name="uiMenuCopyGeoTag" />
+                        <MenuItem Header="Create GeoTag" Click="uiMenuCreateGeoTag_Click" Name="uiMenuCreateGeoTag" />
+                        <MenuItem Header="Batch process »" Name="uiBatchProcessors"  />
+                        <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>
+                        <MenuItem Header="Publish  »" Name="uiMenuPublish"  />
+                        <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
+                        <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
+                        <MenuItem Header="Copy out" Click="uiCopyOut_Click" />
                     </Menu>
             </Popup>
             </StackPanel>
@@ -123,18 +144,19 @@
                             <Image.ContextMenu>
                                 <ContextMenu>
                                     <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
-                                    <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
+                                    <MenuItem Header="Metadata" Click="uiShowExifs_Click"/>
                                     <MenuItem Header="Show big" Click="uiShowBig_Click"/>
                                     <MenuItem Header="Describe" Click="uiDescribe_Click" />
                                     <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click"/>
-                                    <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" />
                                     <MenuItem Header="Create GeoTag" Click="uiMenuCreateGeoTag_Click" />
+                                    <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
+                                    <MenuItem Header="Wiki for month" Click="uiGoWiki_Click" />
                                     <Separator/>
                                     <MenuItem Header="Delete" Click="uiDelOne_Click"/>
                                 </ContextMenu>
                             </Image.ContextMenu>
                         </Image>
-                        <TextBlock Margin="-4,0,0,0" VerticalAlignment="Top" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="30" Foreground="LimeGreen" />
+                        <TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>

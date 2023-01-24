@@ -37,16 +37,16 @@ Class SettingsGlobal
     End Sub
 
 
-    Private Sub uiBrowseDataFolder(sender As Object, e As RoutedEventArgs)
-        Dim sPathLocal As String = uiFolderData.Text
-        If Not IO.Directory.Exists(sPathLocal) Then
-            Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
-            Dim sLocalAppData As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-            sPathLocal = IO.Path.Combine(sLocalAppData, sAppName)
-            IO.Directory.CreateDirectory(sPathLocal)
-        End If
-        FolderBrowser(uiFolderData, sPathLocal, "Select folder for program data")
-    End Sub
+    'Private Sub uiBrowseDataFolder(sender As Object, e As RoutedEventArgs)
+    '    Dim sPathLocal As String = uiFolderData.Text
+    '    If Not IO.Directory.Exists(sPathLocal) Then
+    '        Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
+    '        Dim sLocalAppData As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+    '        sPathLocal = IO.Path.Combine(sLocalAppData, sAppName)
+    '        If Not IO.Directory.Exists(sPathLocal) Then IO.Directory.CreateDirectory(sPathLocal)
+    '    End If
+    '    FolderBrowser(uiFolderData, sPathLocal, "Select folder for program data")
+    'End Sub
 
     Private Sub uiBrowseBufferFolder(sender As Object, e As RoutedEventArgs)
         Dim iMax As Long = 0
@@ -70,14 +70,15 @@ Class SettingsGlobal
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiFolderBuffer.GetSettingsString()
-        uiFolderData.GetSettingsString()
+        'uiFolderData.GetSettingsString()
+        uiUseOneDrive.GetSettingsBool
     End Sub
 
-    Private Shared Function CheckDirsExists(oTBox1 As TextBox, oTBox2 As TextBox) As Boolean
-        If Not IO.Directory.Exists(oTBox1.Text) Then
-            oTBox1.Text = ""
-            Return False
-        End If
+    Private Shared Function CheckDirsExists(oTBox2 As TextBox) As Boolean
+        'If Not IO.Directory.Exists(oTBox1.Text) Then
+        '    oTBox1.Text = ""
+        '    Return False
+        'End If
         If Not IO.Directory.Exists(oTBox2.Text) Then
             oTBox2.Text = ""
             Return False
@@ -85,11 +86,11 @@ Class SettingsGlobal
         Return True
     End Function
 
-    Private Shared Function CheckDirsOnFixed(oTBox1 As TextBox, oTBox2 As TextBox) As Boolean
-        If Not (New IO.DriveInfo(oTBox1.Text)).DriveType = IO.DriveType.Fixed Then
-            oTBox1.Text = ""
-            Return False
-        End If
+    Private Shared Function CheckDirsOnFixed(oTBox2 As TextBox) As Boolean
+        'If Not (New IO.DriveInfo(oTBox1.Text)).DriveType = IO.DriveType.Fixed Then
+        '    oTBox1.Text = ""
+        '    Return False
+        'End If
         If Not (New IO.DriveInfo(oTBox2.Text)).DriveType = IO.DriveType.Fixed Then
             oTBox2.Text = ""
             Return False
@@ -100,18 +101,19 @@ Class SettingsGlobal
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
 
-        If Not CheckDirsExists(uiFolderData, uiFolderBuffer) Then
+        If Not CheckDirsExists(uiFolderBuffer) Then
             vb14.DialogBox("ERROR: popraw katalogi - muszą istnieć")
             Return
         End If
 
-        If Not CheckDirsOnFixed(uiFolderData, uiFolderBuffer) Then
+        If Not CheckDirsOnFixed(uiFolderBuffer) Then
             vb14.DialogBox("ERROR: popraw katalogi - muszą być na dyskach wewnętrznych")
             Return
         End If
 
         uiFolderBuffer.SetSettingsString()
-        uiFolderData.SetSettingsString()
+        'uiFolderData.SetSettingsString()
+        uiUseOneDrive.SetSettingsBool
 
         Me.NavigationService.GoBack()
     End Sub

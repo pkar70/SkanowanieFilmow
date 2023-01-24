@@ -44,9 +44,12 @@ Public MustInherit Class CloudPublish
         For Each oPic As OnePic In oPicki
             If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Continue For
 
+            Dim sRet As String = oPic.CanRunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+            ' If sRet <> "" Then Return sRet
+
             oPic.oOstatniExif = konfiguracja.defaultExif
-            Dim sRet As String = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
-            If sRet <> "" Then Return $"ERROR pipeline for file {oPic.sSuggestedFilename}: {sRet}"
+            sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+            If sRet <> "" Then Await DialogBoxAsync($"ERROR pipeline for file {oPic.sSuggestedFilename}: {sRet}")
 
             lista.Add(oPic)
         Next
@@ -61,9 +64,13 @@ Public MustInherit Class CloudPublish
         ' sprawdź maski
         If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Return ""
 
+        Dim sRet As String = oPic.CanRunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+        If sRet <> "" Then Return sRet
+
+
         ' przeslij plik przez pipeline
         oPic.oOstatniExif = konfiguracja.defaultExif
-        Dim sRet As String = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+        sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
         If sRet <> "" Then Return sRet
 
         Return Await SendFileMain(oPic)

@@ -17,7 +17,7 @@
         <Grid>
             <TextBlock FontWeight="Bold" Text="Keywords:" />
             <Button Content=" + " HorizontalAlignment="Right" Name="uiAdd" Click="uiAdd_Click"/>
-            <Popup IsOpen="False" Name="uiAddPopup" PlacementTarget="{Binding ElementName=uiAdd}" HorizontalOffset="-10" >
+            <Popup IsOpen="False" Name="uiAddPopup" PlacementTarget="{Binding ElementName=uiAdd}" HorizontalOffset="-10" StaysOpen="False" >
                 <Menu Name="uiMenuKeywords">
                     <Menu.ItemsPanel>
                         <ItemsPanelTemplate>

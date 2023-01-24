@@ -5,11 +5,12 @@
 
 
 Imports System.IO
+Imports pkar
 ''' <summary>
 ''' Tags that can be added to file
 ''' </summary>
 Public Class ExifTag
-    Inherits MojaStruct
+    Inherits pkar.BaseStruct
 
     ' najpierw te, które mogą być narzucone przez SOURCE_DIR
 
@@ -45,7 +46,7 @@ Public Class ExifTag
     Public Property Orientation As OrientationEnum  ' do usuwania z pliku, bo jego rotate podczas import?
     Public Property PicGuid As String   ' 0xA420 ImageUniqueID ASCII!
     Public Property ReelName As String   ' 0xc789	ReelName	string	IFD0
-    Public Property GeoTag As MyBasicGeoposition    ' 0x87b1	GeoTiffAsciiParams IFD0 (string)
+    Public Property GeoTag As pkar.BasicGeopos    ' 0x87b1	GeoTiffAsciiParams IFD0 (string)
     Public Property GeoName As String ' GeoTiffAsciiParams
 
     Public Property OriginalRAW As String   ' Tag 0xc68b (9 bytes, string[9])
@@ -53,16 +54,17 @@ Public Class ExifTag
     'Public Property AlienTags As List(Of String)    ' importowane z różnych miejsc, autorozpoznawanie -> ExifSource
 
     Public Property AzureAnalysis As MojeAzure
+    Public Property PogodaAstro As CacheAutoWeather_Item
 
     Public Sub New(sSource As String)
         ExifSource = sSource
     End Sub
 
-    Public Function Clone() As ExifTag
-        Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(Me, Newtonsoft.Json.Formatting.Indented)
-        Dim oNew As ExifTag = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ExifTag))
-        Return oNew
-    End Function
+    'Public Function Clone() As ExifTag
+    '    Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(Me, Newtonsoft.Json.Formatting.Indented)
+    '    Dim oNew As ExifTag = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ExifTag))
+    '    Return oNew
+    'End Function
 
 End Class
 
@@ -85,10 +87,10 @@ Partial Public Module Extensions
     ''' </summary>
     ''' <param name="oDate"></param>
     ''' <returns></returns>
-    <Runtime.CompilerServices.Extension()>
-    Public Function ToExifString(ByVal oDate As Date) As String
-        Return oDate.ToString("yyyy.MM.dd HH:mm:ss")
-    End Function
+    ' <Runtime.CompilerServices.Extension()>
+    ' Public Function ToExifString(ByVal oDate As Date) As String
+    '     Return oDate.ToString("yyyy.MM.dd HH:mm:ss")
+    ' End Function
 
 
     ''' <summary>
@@ -119,6 +121,8 @@ Partial Public Module Extensions
         Return oDate1
     End Function
 
+    ' to nie może być w Nuget, bo mamy tu specjalne traktowanie dla "=" oraz "-"
+
     <Runtime.CompilerServices.Extension()>
     Public Function ConcatenateWithComma(ByVal sFirstString As String, sSecondString As String) As String
         Return sFirstString.ConcatenateWithSeparator(sSecondString, ", ")
@@ -140,6 +144,98 @@ Partial Public Module Extensions
     End Function
 
 End Module
+
+Public Class CacheAutoWeather_Item
+    Inherits BaseStruct
+
+    Public Property queryCost As Integer
+    Public Property latitude As Single
+    Public Property longitude As Single
+    'Public Property resolvedAddress As String
+    'Public Property address As String
+    Public Property timezone As String
+    'Public Property tzoffset As Double
+    Public Property days As List(Of AutoWeatherDay)
+    Public Property day As AutoWeatherDay
+    'Public Property stations As AutoWeatherStations
+
+    Public Property currentConditions As AutoWeatherHourSingle  ' tylko przy jednogodzinnym
+End Class
+
+Public Class AutoWeatherDay
+    Inherits AutoWeatherHourCommon
+
+    Public Property tempmax As Double
+    Public Property tempmin As Double
+    Public Property feelslikemax As Double
+    Public Property feelslikemin As Double
+    Public Property precipprob As Double
+    Public Property precipcover As Double
+    'Public Property solarradiation As Single   ' nie w darmowym
+    'Public Property solarenergy As Single  ' nie w darmowym
+    Public Property sunrise As String ' HH:mm:ss, local time
+    Public Property sunriseEpoch As Long ' UTC
+    Public Property sunset As String ' HH:mm:ss, local time
+    Public Property sunsetEpoch As Long ' UTC
+    Public Property moonphase As Double
+    Public Property moonrise As String ' HH:mm:ss, local time
+    Public Property moonset As String ' HH:mm:ss, local time
+
+    Public Property description As String
+
+    'Public Property stations() As String
+    'Public Property source As String
+    ' Public Property hours() As AutoWeatherHourInDay ' tylko przy dobowym, przy request dla godziny tego nie ma
+End Class
+
+'Public Class AutoWeatherHourInDay
+'    Inherits AutoWeatherHourCommon
+
+'    Public Property source As String
+'End Class
+
+Public Class AutoWeatherHourSingle
+    Inherits AutoWeatherHourCommon
+
+    'Public Property severerisk As Single ' tylko w forecast
+    'Public Property sunrise As String  ' jest w dniu
+    'Public Property sunriseEpoch As Integer
+    'Public Property sunset As String ' jest w dniu
+    'Public Property sunsetEpoch As Integer
+    'Public Property moonphase As Single ' jest w dniu
+End Class
+
+Public Class AutoWeatherHourCommon
+    Public Property datetime As String ' HH:mm:ss
+    Public Property datetimeEpoch As Integer ' to jest w UTC :) , używam
+    Public Property temp As Double
+    Public Property feelslike As Double
+    Public Property humidity As Double
+    Public Property dew As Double
+    Public Property precip As Double
+    'Public Property precipprob As Integer
+    Public Property snow As Double
+    Public Property snowdepth As Double
+    Public Property preciptype As String()
+    Public Property windgust As Double
+    Public Property windspeed As Double
+    Public Property winddir As Double
+    Public Property pressure As Double
+    Public Property visibility As Double
+    Public Property cloudcover As Double
+    Public Property solarradiation As Double  ' nie w darmowej
+    Public Property solarenergy As Double ' nie w darmowej
+    Public Property uvindex As Double
+    Public Property conditions As String
+    Public Property icon As String
+    'Public Property stations() As String
+
+    Public Property sunhour As Double   ' mój dodatek
+
+End Class
+
+
+
 
 'Image title	ImageDescription ASCII(any)
 'Person who created the image	Artist	ASCII(any)

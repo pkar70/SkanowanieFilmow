@@ -2,7 +2,9 @@
 ' edycja listy źródeł oraz ich parametrów
 ' *TODO* defaultPublish być może dodać
 
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 
 Class SettingsSources
@@ -128,7 +130,7 @@ Class SettingsSources
             Else
                 For Each sDevice As String In lLista
                     iInd = uiSrcVolume.Items.Add(sDevice)
-                    If sDevice.ToLower.StartsWith(sCurrentVolLabel & " (") Then
+                    If sDevice.ToLowerInvariant.StartsWithOrdinal(sCurrentVolLabel & " (") Then
                         uiSrcVolume.SelectedIndex = iInd
                     End If
                 Next
@@ -204,7 +206,7 @@ Class SettingsSources
 
         Select Case _item.Typ
             Case Vblib.PicSourceType.FOLDER
-                sPath = VbLibCore3_picSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
+                sPath = VbLibCore3_picSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath, "")
                 SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaz folder na archiwum")
             Case Vblib.PicSourceType.MTP
                 Dim oWnd As New BrowseMtpDevice(sVolLabel, sPath)

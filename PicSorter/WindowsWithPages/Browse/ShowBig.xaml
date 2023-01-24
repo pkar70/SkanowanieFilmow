@@ -43,6 +43,7 @@
             </Slider.RenderTransform>
         </Slider>
 
+        <!--- radioButtony, w tych samych miejscach co Slidery -->
         <RadioButton Name="uiRotateUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" Checked="uiRotate_Checked"/>
         <RadioButton Name="uiRotateDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" Checked="uiRotate_Checked"/>
         <RadioButton Name="uiRotateLeft" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"  Checked="uiRotate_Checked" />
@@ -51,19 +52,20 @@
         <!--<Slider Name="uiSizingDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiSizing_ValueChanged"  Minimum="0" Maximum="1"/>-->
 
 
-        <ScrollViewer Grid.Row="1" Grid.Column="1" Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click">
+        <ScrollViewer Grid.Row="1" Grid.Column="1" Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid Name="uiUsunLeft" HorizontalAlignment="Left" Opacity="0.5" VerticalAlignment="Stretch" />
+            <!--<Grid Name="uiUsunLeft" HorizontalAlignment="Left" Opacity="0.5" VerticalAlignment="Stretch" />-->
             <!-- ZoomMode="Enabled" -->
             <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center" >
                 <Image.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
-                        <MenuItem Header="Exifs" Click="uiShowExifs_Click"/>
-                        <MenuItem Header="Delete" Click="uiDelPic_Click" />
+                        <MenuItem Header="Metadata" Click="uiShowMetadata_Click"/>
+                            <MenuItem Header="File EXIF" Click="uiShowExif_Click" Name="uiShowExif"/>
+                            <MenuItem Header="Delete" Click="uiDelPic_Click" Name="uiDelete" />
                         <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
                             <MenuItem Header="Describe" Click="uiDescribe_Click" />
-                            <MenuItem Header="Pic edit" Name="uiEditModes">
+                            <MenuItem Header="Pic edit" Name="uiEditModes" >
                             <MenuItem Header="Crop" Click="uiCrop_Click" />
                             <!--<MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>-->
                             <MenuItem Header="Rotate" Click="uiRotate_Click" />
@@ -76,9 +78,13 @@
                             <MenuItem Header="Publish" Name="uiMenuPublish"  />
                             <!--<MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />-->
                         <MenuItem Header="On map" Name="uiOnMap" />
-                    </ContextMenu>
+                            <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
+                            <MenuItem Header="Wiki for month" Click="uiGoWiki_Click" />
+                        </ContextMenu>
                 </Image.ContextMenu>
             </Image>
+                <MediaElement Name="uiMovie" Visibility="Collapsed" MediaEnded="uiMovie_Ended" LoadedBehavior="Manual"/>
+                <Button VerticalAlignment="Bottom" HorizontalAlignment="Right" Name="uiIkonkaTypu" FontSize="20" Foreground="LimeGreen" Background="Yellow" Click="uiIkonkaTypu_Click" />
             </Grid>
         </ScrollViewer>
     </Grid>

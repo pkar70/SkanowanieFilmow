@@ -14,10 +14,11 @@ uiGeoGapInt=20
 uiHourGapInt=36
 uiGeoGapOn=True
 uiHourGapOn=True
-uiMaxThumbs=100
+uiMaxThumbs=500
 uiTree0Dekada=True
 uiTree2Miesiac=True
 uiCacheThumbs=True
+uiSlideShowSeconds=5
 
 # remark
 ' remark

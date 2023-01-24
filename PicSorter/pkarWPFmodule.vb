@@ -115,203 +115,45 @@ Public Module pkar
     ' -- Get/Set Settings ---------------------------------------------
 
 #Region "Get/Set settings"
+
+    ' wersja z NUGET pełnym
+
+    Public Function GetAppName() As String
+        Dim sAssemblyFullName = System.Reflection.Assembly.GetEntryAssembly().FullName
+        Dim oAss As New AssemblyName(sAssemblyFullName)
+        Return oAss.Name
+    End Function
+
+    Public Function GetAppDataFolder(Optional bRoam As Boolean = False) As String
+
+        Dim sAppName As String = GetAppName()
+
+        If bRoam Then
+            Return IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), sAppName)
+        Else
+            Return IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), sAppName)
+        End If
+
+    End Function
+
     ''' <summary>
     ''' inicjalizacja pełnych zmiennych, bez tego wywołania będą tylko defaulty z pliku INI (i nie będzie pamiętania)
     ''' </summary>
-#If CONFIG_NUGET_PROVIDERS Then
-    ' wersja z NUGET tylko jako Providers
-
-    Private Sub InitSettings(aCmdLineArgs As List(Of String))
-        Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
-
-        Dim oBuilder As New Microsoft.Extensions.Configuration.ConfigurationBuilder()
-
-#If DEBUG Then
-        oBuilder = oBuilder.AddIniReleaseDebugSettings(IniLikeDefaults.sIniContent, True)
-#Else
-        oBuilder = oBuilder.AddIniReleaseDebugSettings(IniLikeDefaults.sIniContent, false)
-#End If
-
-#If False Then
-        oBuilder = oBuilder.AddIniRelDebugSettings(Vblib.IniLikeDefaults.sIniContent)   ' defaults.ini w głównym katalogu Project, sekcje [main] oraz [debug]
-#End If
-
-        ' ale i tak jest Empty
-        Dim oDict As IDictionary = Environment.GetEnvironmentVariables()    ' że, w 1.4, zwraca HashTable?
-        oBuilder = oBuilder.AddEnvironmentVariablesROConfigurationSource(sAppName, oDict) ' Environment.GetEnvironmentVariables, Std 2.0
-
-        Dim sPathLocal As String = IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), sAppName)
-        Dim sPathRoam As String = IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), sAppName)
-
-        oBuilder = oBuilder.AddJsonRwSettings(sPathLocal, sPathRoam)
-        If aCmdLineArgs IsNot Nothing Then oBuilder = oBuilder.AddCommandLineRO(aCmdLineArgs)  ' Environment.GetCommandLineArgs, Std 1.5, ale nie w UWP?
-
-        Dim settings As Microsoft.Extensions.Configuration.IConfigurationRoot = oBuilder.Build
-
-        Vblib.LibInitSettings(settings)
-    End Sub
-#Else
-    ' wersja z NUGET pełnym
     Private Sub InitSettings(aCmdLineArgs As List(Of String))
 
-        Dim sAssemblyFullName = System.Reflection.Assembly.GetEntryAssembly().FullName
-        Dim oAss As New AssemblyName(sAssemblyFullName)
-        Dim sAppName = oAss.Name
+        Dim sPathLocal As String = GetAppDataFolder(False)
+        Dim sPathRoam As String = GetAppDataFolder(True)
 
-        Dim sPathLocal As String = IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), sAppName)
-        Dim sPathRoam As String = IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), sAppName)
+        If Not IO.Directory.Exists(sPathLocal) Then IO.Directory.CreateDirectory(sPathLocal)
+        If Not IO.Directory.Exists(sPathRoam) Then IO.Directory.CreateDirectory(sPathRoam)
 
         Vblib.InitSettings(
-                sAppName, Environment.GetEnvironmentVariables(),
+                GetAppName, Environment.GetEnvironmentVariables(),
                 Nothing,
                 sPathLocal, sPathRoam,
                 Environment.GetCommandLineArgs.ToList)
     End Sub
-#End If
 
-    ' wersja z przeskokami do UWP
-#If CONFIG_UWP_PROXY Then
-
-#Region "String"
-
-    Private Sub FromLibSetSettings(sName As String, oVal As Object, bRoam As Boolean)
-        If oVal.GetType Is GetType(Integer) Then
-            FromLibSetSettingsInt(sName, CType(oVal, Integer), bRoam)
-            Return
-        End If
-        If oVal.GetType Is GetType(Long) Then
-            FromLibSetSettingsLong(sName, CType(oVal, Long), bRoam)
-            Return
-        End If
-        If oVal.GetType Is GetType(Boolean) Then
-            FromLibSetSettingsBool(sName, CType(oVal, Boolean), bRoam)
-            Return
-        End If
-        FromLibSetSettingsString(sName, CType(oVal, String), bRoam)
-    End Sub
-
-
-    Public Function FromLibGetSettingsString(sName As String, sDefault As String) As String
-        Dim sTmp As String
-
-        sTmp = sDefault
-
-        With Windows.Storage.ApplicationData.Current
-            If .RoamingSettings.Values.ContainsKey(sName) Then
-                sTmp = .RoamingSettings.Values(sName).ToString
-            End If
-            If .LocalSettings.Values.ContainsKey(sName) Then
-                sTmp = .LocalSettings.Values(sName).ToString
-            End If
-        End With
-
-        Return sTmp
-
-    End Function
-
-    Private Function FromLibSetSettingsString(sName As String, sValue As String, Optional bRoam As Boolean = False) As Boolean
-        Try
-            If bRoam Then Windows.Storage.ApplicationData.Current.RoamingSettings.Values(sName) = sValue
-            Windows.Storage.ApplicationData.Current.LocalSettings.Values(sName) = sValue
-            Return True
-        Catch ex As Exception
-            ' jesli przepełniony bufor (za długa zmienna) - nie zapisuj dalszych błędów
-            Return False
-        End Try
-    End Function
-
-
-#End Region
-#Region "Int"
-    Public Function FromLibGetSettingsInt(sName As String, iDefault As Integer) As Integer
-        Dim sTmp As Integer
-
-        sTmp = iDefault
-
-        With Windows.Storage.ApplicationData.Current
-            If .RoamingSettings.Values.ContainsKey(sName) Then
-                sTmp = CInt(.RoamingSettings.Values(sName).ToString)
-            End If
-            If .LocalSettings.Values.ContainsKey(sName) Then
-                sTmp = CInt(.LocalSettings.Values(sName).ToString)
-            End If
-        End With
-
-        Return sTmp
-
-    End Function
-
-    Private Sub FromLibSetSettingsInt(sName As String, sValue As Integer, Optional bRoam As Boolean = False)
-        With Windows.Storage.ApplicationData.Current
-            If bRoam Then .RoamingSettings.Values(sName) = sValue.ToString
-            .LocalSettings.Values(sName) = sValue.ToString
-        End With
-    End Sub
-#End Region
-#Region "Long"
-    Public Function GetSettingsLongNIEMA(sName As String, Optional iDefault As Long = 0) As Long
-        Dim sTmp As Long
-
-        sTmp = iDefault
-
-        With Windows.Storage.ApplicationData.Current
-            If .RoamingSettings.Values.ContainsKey(sName) Then
-                sTmp = CLng(.RoamingSettings.Values(sName).ToString)
-            End If
-            If .LocalSettings.Values.ContainsKey(sName) Then
-                sTmp = CLng(.LocalSettings.Values(sName).ToString)
-            End If
-        End With
-
-        Return sTmp
-
-    End Function
-
-    Private Sub FromLibSetSettingsLong(sName As String, sValue As Long, Optional bRoam As Boolean = False)
-        With Windows.Storage.ApplicationData.Current
-            If bRoam Then .RoamingSettings.Values(sName) = sValue.ToString
-            .LocalSettings.Values(sName) = sValue.ToString
-        End With
-    End Sub
-#End Region
-#Region "Bool"
-    Private Function FromLibGetSettingsBool(sName As String, iDefault As Boolean) As Boolean
-        Dim sTmp As Boolean
-
-        sTmp = iDefault
-        With Windows.Storage.ApplicationData.Current
-            If .RoamingSettings.Values.ContainsKey(sName) Then
-                sTmp = CBool(.RoamingSettings.Values(sName).ToString)
-            End If
-            If .LocalSettings.Values.ContainsKey(sName) Then
-                sTmp = CBool(.LocalSettings.Values(sName).ToString)
-            End If
-        End With
-
-        Return sTmp
-
-    End Function
-
-
-    Public Sub FromLibSetSettingsBool(sName As String, sValue As Boolean, Optional bRoam As Boolean = False)
-        With Windows.Storage.ApplicationData.Current
-            If bRoam Then .RoamingSettings.Values(sName) = sValue.ToString
-            .LocalSettings.Values(sName) = sValue.ToString
-        End With
-    End Sub
-
-
-#End Region
-#Region "Date"
-    '    Public Sub SetSettingsDate(sName As String)
-    '        Dim sValue As String = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-    '        SetSettingsString(sName, sValue)
-    '    End Sub
-
-
-#End Region
-
-#End If
 
 #End Region
 
@@ -378,7 +220,7 @@ Public Module pkar
     ''' Ale to chyba przestało działać...
     ''' </summary>
     Public Function IsThisMoje() As Boolean
-        Dim sTmp As String = GetHostName.ToLower
+        Dim sTmp As String = GetHostName.ToLowerInvariant
         If sTmp = "home-pkar" Then Return True
         If sTmp = "lumia_pkar" Then Return True
         If sTmp = "kuchnia_pk" Then Return True
@@ -637,7 +479,7 @@ Public Module pkar
 
         ' If sCommand.StartsWith("debug loglevel") Then - vbLib
 
-        Select Case sCommand.ToLower()
+        Select Case sCommand.ToLowerInvariant
             ' Case "ping" - vblib
             Case "ver"
                 Return GetAppVers()

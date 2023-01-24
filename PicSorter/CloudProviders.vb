@@ -1,12 +1,14 @@
 ﻿
-Imports Vblib
+Imports System.Reflection
+Imports pkar
+'Imports Vblib
 
 
 Public Class CloudPublishersList
     ' Inherits Vblib.MojaLista(Of CloudConfig)
 
     Private gCloudProviders As Vblib.CloudPublish() = {
-        New Publish_AdHoc,
+        New Vblib.Publish_AdHoc,
         New CloudPubl_std14_SSC.Cloud_Skyscraper,
         New Publish_Instagram.Publish_Instagram,
         New Publish_std2_Facebook.Publish_Facebook_Post,
@@ -15,7 +17,7 @@ Public Class CloudPublishersList
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)
 
-    Private gCloudConfigs As New MojaLista(Of CloudConfig)(Application.GetDataFolder, "cloudPublishers.json")
+    Private gCloudConfigs As New BaseList(Of Vblib.CloudConfig)(Application.GetDataFolder, "cloudPublishers.json")
 
     Private _DataDir As String
 
@@ -34,7 +36,7 @@ Public Class CloudPublishersList
             Dim oNew As Vblib.CloudPublish = GetCloudPublishInstantion(oItem, _DataDir)
             If oNew IsNot Nothing Then
                 gCloudPublishers.Add(oNew)
-                If oNew.konfiguracja.sProvider.ToLower.Contains("adhoc") Then bMamAdHoc = True
+                If oNew.konfiguracja.sProvider.ToLowerInvariant.Contains("adhoc") Then bMamAdHoc = True
             End If
         Next
 
@@ -42,8 +44,8 @@ Public Class CloudPublishersList
         If bMamAdHoc Then Return True
 
         ' ale ono zawsze powinno być, więc dodajemy
-        Dim oNewAdHoc As New Publish_AdHoc
-        oNewAdHoc.konfiguracja = Publish_AdHoc.DefaultConfig
+        Dim oNewAdHoc As New Vblib.Publish_AdHoc
+        oNewAdHoc.konfiguracja = Vblib.Publish_AdHoc.DefaultConfig
         gCloudPublishers.Add(oNewAdHoc)
 
         Return True
@@ -83,7 +85,7 @@ Public Class CloudPublishersList
         gCloudPublishers.Remove(oItem)
     End Sub
 
-    Public Sub Add(oNewConfig As CloudConfig)
+    Public Sub Add(oNewConfig As Vblib.CloudConfig)
         gCloudPublishers.Add(GetCloudPublishInstantion(oNewConfig, _DataDir))
     End Sub
 
@@ -102,7 +104,8 @@ Public Class CloudArchivesList
 
     Private gCloudArchives As List(Of Vblib.CloudArchive)
 
-    Private gCloudConfigs As New MojaLista(Of CloudConfig)(Application.GetDataFolder, "cloudArchives.json")
+    Private Const CLOUDARCH_FILENAME As String = "cloudArchives.json"
+    Private gCloudConfigs As New BaseList(Of Vblib.CloudConfig)(Application.GetDataFolder, CLOUDARCH_FILENAME)
 
     Private _DataDir As String
 
@@ -126,6 +129,17 @@ Public Class CloudArchivesList
         Return True
     End Function
 
+    Public Shared Sub CopyToOneDrive(sSourceFileName As String, sSettName As String)
+        If Not Vblib.GetSettingsBool(sSettName) Then Return
+
+        Dim srcFile As String = IO.Path.Combine(Application.GetDataFolder, sSourceFileName)
+        If Not IO.File.Exists(srcFile) Then Return
+
+        Dim dstFile As String = IO.Path.Combine(Application.GetOneDrivePath, sSourceFileName)
+
+        IO.File.Copy(srcFile, dstFile)
+    End Sub
+
     Public Function Save(Optional bIgnoreNulls As Boolean = False) As Boolean
         gCloudConfigs.Clear()
 
@@ -133,7 +147,9 @@ Public Class CloudArchivesList
             gCloudConfigs.Add(oItem.konfiguracja)
         Next
 
-        Return gCloudConfigs.Save(bIgnoreNulls)
+        Dim bRet As Boolean = gCloudConfigs.Save(bIgnoreNulls)
+        CopyToOneDrive(CLOUDARCH_FILENAME, "uiUseOneDrive")
+        Return bRet
     End Function
 
 
@@ -159,7 +175,7 @@ Public Class CloudArchivesList
     Public Sub Remove(oItem As Vblib.CloudArchive)
         gCloudArchives.Remove(oItem)
     End Sub
-    Public Sub Add(oNewConfig As CloudConfig)
+    Public Sub Add(oNewConfig As Vblib.CloudConfig)
         gCloudArchives.Add(GetCloudInstantion(oNewConfig))
     End Sub
 

@@ -9,7 +9,7 @@ Public MustInherit Class LocalStorage
 	Public Property enabled As Boolean = True
 	Public Property Path As String
 	Public Property VolLabel As String
-	Public Property includeMask As String = "*.jpg;*.tif;*.png" ' maski regexp
+	Public Property includeMask As String = "*.jpg;*.tif;*.png;*.avi;*.mp4;*.mov;*.nar;*jpg.thumb" ' maski regexp
 	Public Property excludeMask As String  ' maski regexp
 
 	Public Property lastSave As DateTime
@@ -189,26 +189,39 @@ Public MustInherit Class LocalStorage
 
 	End Function
 
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-	Public Async Function VerifyFileExist(oPic As OnePic) As Task(Of String) Implements AnyStorage.VerifyFileExist
-#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+	Public Function VerifyFileExists(sTargetDir As String, sFilename As String) As String
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
-		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
-		Dim sFolder As String = GetConvertedPathForVol(VolLabel, oPic.TargetDir)
+		Dim sFolder As String = GetConvertedPathForVol(VolLabel, sTargetDir)
 
 		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: cannot get folder for file"
 
-		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
+		Dim sTargetFile As String = IO.Path.Combine(sFolder, sFilename)
 
 		If IO.File.Exists(sTargetFile) Then Return ""
 
 		Return "no file"
 	End Function
 
+	Public Function GetRealPath(sTargetDir As String, sFilename As String) As String
+		If Not IsPresent() Then Return ""
+
+		Dim sFolder As String = GetConvertedPathForVol(VolLabel, sTargetDir)
+		If String.IsNullOrEmpty(sFolder) Then Return ""
+		Dim sTargetFile As String = IO.Path.Combine(sFolder, sFilename)
+		If Not IO.File.Exists(sTargetFile) Then Return ""
+		Return sTargetFile
+	End Function
+
+
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+	Public Async Function VerifyFileExist(oPic As OnePic) As Task(Of String) Implements AnyStorage.VerifyFileExist
+
+		Return VerifyFileExists(oPic.TargetDir, oPic.sSuggestedFilename)
+	End Function
+
+
 	Public Async Function VerifyFile(oPic As OnePic, oFromArchive As LocalStorage) As Task(Of String) Implements AnyStorage.VerifyFile
-#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
@@ -224,7 +237,6 @@ Public MustInherit Class LocalStorage
 		Throw New NotImplementedException()
 	End Function
 
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 	Public Async Function GetFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.GetFile
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
@@ -243,30 +255,26 @@ Public MustInherit Class LocalStorage
 		Return ""
 	End Function
 
-	Public Shared Sub AddToJsonIndexMain(sIndexFilename As String, sContent As String)
+	' w archivequerender
+	'Public Shared Sub AddToJsonIndexMain(sIndexFilename As String, sContent As String)
 
-		If Not IO.File.Exists(sIndexFilename) Then
-			IO.File.WriteAllText(sIndexFilename, "[")
-		Else
-			' skoro już mamy coś w pliku, to teraz dodajemy do tego przecinek - pomiędzy itemami
-			sContent = "," & vbCrLf & sContent
-		End If
+	'	If Not IO.File.Exists(sIndexFilename) Then
+	'		IO.File.WriteAllText(sIndexFilename, "[")
+	'	Else
+	'		' skoro już mamy coś w pliku, to teraz dodajemy do tego przecinek - pomiędzy itemami
+	'		sContent = "," & vbCrLf & sContent
+	'	End If
 
-		IO.File.AppendAllText(sIndexFilename, sContent)
+	'	IO.File.AppendAllText(sIndexFilename, sContent)
 
-	End Sub
+	'End Sub
 
 	Private Sub AddToJsonIndex(sDirId As String, sContent As String)
 		If Not jsonInDir Then Return
 
-		'Dim sFolder As String = FindRealFolder(oPic.TargetDir)
 		Dim sFolder As String = GetConvertedPathForVol(VolLabel, sDirId)
-
 		If String.IsNullOrEmpty(sFolder) Then Return
-
-		Dim sJsonFile As String = IO.Path.Combine(sFolder, "picsort.arch.json")
-
-		AddToJsonIndexMain(sJsonFile, sContent)
+		ArchiveIndex.AddToFolderJsonIndex(sFolder, sContent)
 
 	End Sub
 
@@ -286,6 +294,8 @@ Public MustInherit Class LocalStorage
 		Dim sFolder As String = GetConvertedPathForVol(VolLabel, oPic.TargetDir)
 
 		If String.IsNullOrEmpty(sFolder) Then Return "ERROR: SendPhoto, cannot get folder for write"
+
+		IO.Directory.CreateDirectory(sFolder)
 
 		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
 		If IO.File.Exists(sTargetFile) Then Return $"ERROR: file {sTargetFile} already exist!"

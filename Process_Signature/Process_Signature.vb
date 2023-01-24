@@ -86,7 +86,7 @@ Public Class Process_Signature
 
     Private Function GetSignatureString(oPic As Vblib.OnePic) As String
 
-        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs
+        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs(False)
         Return oExif.Copyright
         'Dim sSignature As String = ""
 

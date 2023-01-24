@@ -47,10 +47,10 @@
 
     End Function
 
-    Private Shared _lastGeo As MyBasicGeoposition = MyBasicGeoposition.EmptyGeoPos
+    Private Shared _lastGeo As pkar.BasicGeopos = pkar.BasicGeopos.Empty
     Private Shared _lastName As String
 
-    Private Async Function GetNameForGeoPos(oPos As MyBasicGeoposition) As Task(Of String)
+    Private Async Function GetNameForGeoPos(oPos As pkar.BasicGeopos) As Task(Of String)
         DumpCurrMethod()
         EnsureCache()
 
@@ -65,7 +65,7 @@
         Return _lastName
     End Function
 
-    Private Async Function GetNameForGeoPosMain(oPos As MyBasicGeoposition) As Task(Of String)
+    Private Async Function GetNameForGeoPosMain(oPos As pkar.BasicGeopos) As Task(Of String)
         EnsureCache()
 
         Dim sGeoName As String = TryFromCache(oPos)
@@ -87,7 +87,7 @@
 
 
 
-    Private Async Function TryAddToCache(oPos As MyBasicGeoposition) As Task(Of String)
+    Private Async Function TryAddToCache(oPos As pkar.BasicGeopos) As Task(Of String)
         Dim sUri As String = $"https://nominatim.openstreetmap.org/reverse?lat={oPos.StringLat}&lon={oPos.StringLon}&format=jsonv2&zoom=17"
 
         ' z tego daje not found
@@ -130,7 +130,7 @@
         Return nowyItem.display_name
     End Function
 
-    Private Function TryFromCache(oPos As MyBasicGeoposition) As String
+    Private Function TryFromCache(oPos As pkar.BasicGeopos) As String
 
         Dim oBliskie As CacheOSMPOI_Item = FindNearestPoint(_CacheLista.GetList, oPos)
         If oBliskie Is Nothing Then Return ""
@@ -144,13 +144,13 @@
     Private Sub EnsureCache()
         If _CacheLista IsNot Nothing Then Return
 
-        _CacheLista = New MojaLista(Of CacheOSMPOI_Item)(_cacheDataFolder, Nazwa & ".json")
+        _CacheLista = New pkar.BaseList(Of CacheOSMPOI_Item)(_cacheDataFolder, Nazwa & ".json")
         _CacheLista.Load()
     End Sub
 
-    Private Shared _CacheLista As MojaLista(Of CacheOSMPOI_Item)
+    Private Shared _CacheLista As pkar.BaseList(Of CacheOSMPOI_Item)
 
-    Private Function FindNearestPoint(oLista As List(Of CacheOSMPOI_Item), oPos As MyBasicGeoposition) As CacheOSMPOI_Item
+    Private Function FindNearestPoint(oLista As List(Of CacheOSMPOI_Item), oPos As pkar.BasicGeopos) As CacheOSMPOI_Item
         Dim dMinOdl As Double = Double.MaxValue
         Dim Najblizsze As CacheOSMPOI_Item = Nothing
 
@@ -168,7 +168,7 @@
 
 
     Public Class CacheOSMPOI_Item
-        Inherits MojaStruct
+        Inherits pkar.BaseStruct
         Public Property place_id As String
         'Public Property licence As String
         Public Property osm_type As String
@@ -182,11 +182,11 @@
         'Public Property addresstype As String
         Public Property display_name As String
         'Public Property name As String
-        'Public Property address As Address
+        'Public Property address As CacheOSMPOI_Address
         'Public Property boundingbox() As String
     End Class
 
-    'Public Class Address
+    'Public Class CacheOSMPOI_Address
     '    Public Property road As String
     '    Public Property village As String
     '    Public Property state_district As String

@@ -14,12 +14,15 @@
         <Button Content="Cloud storage" Margin="5,10,5,5" FontSize="18" Click="uiCloudArchive_Click"/>
         <Button Content="Publishing" Margin="5,10,5,20" FontSize="18" Click="uiCloudPublish_Click"/>
 
+        <Button Content="Slideshow" Margin="5,10,5,20" FontSize="18" Click="uiSlideshow_Click"/>
+
         <Button Content="Dir tree" Margin="5,10,5,5" FontSize="18" Click="uiDirTree_Click"/>
         <Button Content="Tag tree" Margin="5,10,5,5" FontSize="18" Click="uiKeywords_Click"/>
-        <Button Content="Autotags" IsEnabled="false" Margin="5,10,5,20" FontSize="18"/>
+        <Button Content="Autotags" Margin="5,10,5,20" FontSize="18" Click="uiAutoTags_Click" />
 
         <Button Content="Listy" Margin="5,10,5,5" FontSize="18" Click="uiListSett_Click"/>
         <Button Content="Misc" Margin="5,5,5,5" FontSize="18" Click="uiMiscSett_Click"/>
+
         <Button Content="Backup as ZIP" Margin="5,15,5,5" FontSize="18" Click="uiBackup_Click"/>
 
     </StackPanel>

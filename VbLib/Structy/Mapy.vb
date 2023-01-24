@@ -3,7 +3,7 @@
 Imports System.Globalization
 
 Public Class Mapy
-    Inherits MojaLista(Of JednaMapa)
+    Inherits pkar.BaseList(Of JednaMapa)
 
     Public Sub New(sFolder As String)
         MyBase.New(sFolder, "mapy.json")
@@ -22,7 +22,7 @@ Public Class Mapy
 End Class
 
 Public Class JednaMapa
-    Inherits MojaStruct
+    Inherits pkar.BaseStruct
 
     Public Property nazwa As String
     Public Property link As String
@@ -32,7 +32,7 @@ Public Class JednaMapa
         link = sLink
     End Sub
 
-    Public Function LinkForGeo(oGeo As MyBasicGeoposition) As String
+    Public Function LinkForGeo(oGeo As pkar.BasicGeopos) As String
         If oGeo Is Nothing Then Return ""
 
         Dim sLink As String = link
@@ -42,7 +42,7 @@ Public Class JednaMapa
         Return sLink
     End Function
 
-    Public Function UriForGeo(oGeo As MyBasicGeoposition) As Uri
+    Public Function UriForGeo(oGeo As pkar.BasicGeopos) As Uri
         Return New Uri(LinkForGeo(oGeo))
     End Function
 

@@ -5,9 +5,6 @@ Imports vb14 = Vblib.pkarlibmodule14
 Class SettingsMisc
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiFullJSON.GetSettingsBool
-        uiAzureEndpoint.GetSettingsString
-        uiAzureSubscriptionKey.GetSettingsString
-        uiAzurePaid.GetSettingsBool
         uiNoDelConfirm.GetSettingsBool
         uiBakDelayDays.GetSettingsInt()
         uiJpgQuality.GetSettingsInt()
@@ -23,9 +20,6 @@ Class SettingsMisc
         End If
 
         uiFullJSON.SetSettingsBool
-        uiAzureEndpoint.SetSettingsString
-        uiAzureSubscriptionKey.SetSettingsString
-        uiAzurePaid.SetSettingsBool
         uiNoDelConfirm.SetSettingsBool
         uiBakDelayDays.SetSettingsInt
         uiJpgQuality.SetSettingsInt()

@@ -2,7 +2,7 @@
 ' w 2.0, bo PicSourceImplement
 
 Public Class PicSourceList
-    Inherits Vblib.MojaLista(Of PicSourceImplement)
+    Inherits pkar.BaseList(Of PicSourceImplement)
 
     Private _dataFolder As String
 
@@ -29,7 +29,7 @@ Public Class PicSourceList
         Next
     End Sub
 
-    Protected Overloads Sub InsertDefaultContent()
+    Protected Overrides Sub InsertDefaultContent()
 
         ' wzięte z Settings.Sources
         ' AdHoc nie potrzebuje folderu na plik PURGE, bo nie purgujemy

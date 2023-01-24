@@ -1,4 +1,5 @@
 ﻿Imports Vblib
+Imports pkar
 
 Public Class EnterGeoTag
     Private Sub uiLatLon_TextChanged(sender As Object, e As TextChangedEventArgs)
@@ -15,9 +16,9 @@ Public Class EnterGeoTag
     End Sub
 
     Private Function TryFromLink(sLink As String) As Boolean
-        If Not sLink.ToLowerInvariant.StartsWith("http") Then Return False
+        If Not sLink.ToLowerInvariant.StartsWithOrdinal("http") Then Return False
 
-        Dim oPos As MyBasicGeoposition = SettingsMapsy.Link2Geo(sLink)
+        Dim oPos As BasicGeopos = SettingsMapsy.Link2Geo(sLink)
         If oPos.IsEmpty Then Return False
 
         uiLatitude.Text = oPos.Latitude
@@ -31,8 +32,8 @@ Public Class EnterGeoTag
         Me.DialogResult = True
     End Sub
 
-    Public Function GetGeoPos() As Vblib.MyBasicGeoposition
-        Return New Vblib.MyBasicGeoposition(uiLatitude.Text, uiLongitude.Text)
+    Public Function GetGeoPos() As BasicGeopos
+        Return New BasicGeopos(uiLatitude.Text, uiLongitude.Text)
     End Function
 
     Private Sub uiUsePOI_Click(sender As Object, e As RoutedEventArgs)

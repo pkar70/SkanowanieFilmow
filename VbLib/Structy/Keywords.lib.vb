@@ -2,7 +2,7 @@
 Imports Newtonsoft.Json
 
 Public Class OneKeyword
-    Inherits MojaStruct
+    Inherits pkar.BaseStruct
 
     Public Property sId As String
     Public Property sDisplayName As String
@@ -14,7 +14,7 @@ Public Class OneKeyword
     Public Property maxDate As DateTime
 
     ' tag może mieć współrzędne geograficzne
-    Public Property oGeo As MyBasicGeoposition
+    Public Property oGeo As pkar.BasicGeopos
     Public Property iGeoRadius As Integer
 
     '' jak publikować / gdzie publikować
@@ -67,7 +67,7 @@ Public Class OneKeyword
 End Class
 
 Public Class KeywordsList
-    Inherits MojaLista(Of OneKeyword)
+    Inherits pkar.BaseList(Of OneKeyword)
 
     Public Sub New(sFolder As String)
         MyBase.New(sFolder, "keywords.json")
@@ -79,7 +79,7 @@ Public Class KeywordsList
         Return True
     End Function
 
-    Protected Overloads Sub InsertDefaultContent()
+    Protected Overrides Sub InsertDefaultContent()
         _lista.Add(New OneKeyword With {.sId = "-", .sDisplayName = "osoby"})
         _lista.Add(New OneKeyword With {.sId = "#", .sDisplayName = "miejsca"})
         _lista.Add(New OneKeyword With {.sId = "=", .sDisplayName = "inne"})
@@ -91,6 +91,29 @@ Public Class KeywordsList
         Next
 
         Return Nothing
+    End Function
+
+    Public Function GetKeywordsList(sKeys As String) As List(Of OneKeyword)
+        Dim sSlowka As String = sKeys.Replace("-", ",-").Replace("#", ",#").Replace("=", ",=")
+        sSlowka = sSlowka.Replace(",,", ",")
+        Dim aKwds As String() = sSlowka.Split(",")
+
+        Dim lista As New List(Of OneKeyword)
+        For Each sKwd As String In aKwds
+            Dim oNew As OneKeyword = GetKeyword(sKwd)
+            If oNew IsNot Nothing Then lista.Add(oNew)
+        Next
+
+        Return lista
+    End Function
+
+    Public Function IsAdultInAnyKeyword(sKeys As String) As Boolean
+        Dim lista As List(Of OneKeyword) = GetKeywordsList(sKeys)
+        If lista Is Nothing Then Return False
+        For Each kwd As OneKeyword In lista
+            If kwd.denyPublish Then Return True
+        Next
+        Return False
     End Function
 
 

@@ -3,19 +3,36 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:PicSorterNS"
       mc:Ignorable="d"
       Height="620" Width="350" 
+    xmlns:local="clr-namespace:PicSorterNS"
       Title="Dir tree" Loaded="Page_Loaded">
+    
+    <Window.Resources>
+        <local:KonwersjaVisibilyFromGlobal x:Key="KonwersjaVisibilyFromGlobal"/>
+        <local:KonwersjaVisibilyFromNotGlobal x:Key="KonwersjaVisibilyFromNotGlobal"/>
+        
+    </Window.Resources>
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" Name="naTitle"/>
+            <RowDefinition Height="Auto" Name="naQuery"/>
             <RowDefinition Height="*" Name="naListe"/>
             <RowDefinition Height="Auto" Name="naNewEdit_znikane"/>
             <RowDefinition Height="Auto" Name="naOK"/>
         </Grid.RowDefinitions>
         <TextBlock HorizontalAlignment="Center" FontSize="16" Text="Katalogi" />
-        <TreeView Grid.Row="1" Name="uiTreeView" HorizontalAlignment="Stretch" >
+
+        <Grid Grid.Row="1" Name="uiGridQuery" HorizontalAlignment="Stretch" Margin="5,5,5,2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Search:" />
+            <TextBox HorizontalAlignment="Stretch" Name="uiQuery" Margin="5,0,0,0" Grid.Column="1"/>
+        </Grid>
+        
+        <TreeView Grid.Row="2" Name="uiTreeView" HorizontalAlignment="Stretch" >
             <TreeView.ItemContainerStyle>
                 <Style TargetType="TreeViewItem">
                     <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
@@ -26,7 +43,7 @@
                 <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
                     <Grid HorizontalAlignment="Stretch" >
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="200" Name="naID" />
+                            <ColumnDefinition Width="150" Name="naID" />
                             <ColumnDefinition Width="*" Name="naName" />
                         </Grid.ColumnDefinitions>
 
@@ -34,23 +51,54 @@
                         <TextBlock Text="{Binding notes}" Grid.Column="1" Margin="5,0,5,0"/>
 
                         <Grid.ContextMenu>
-                            <ContextMenu>
+                            <ContextMenu  >
                                 <MenuItem Header="Edit" Click="uiEditKeyword_Click" />
-                                <MenuItem Header="Add subitem" Click="uiAddSubItem_Click" />
-                                <Separator/>
+                                <MenuItem Header="Add subitem" Click="uiAddSubItem_Click" Visibility="{Binding sId, Converter={StaticResource KonwersjaVisibilyFromGlobal}}"/>
+                                <Separator Name="uiSeparator1"/>
                                 <MenuItem Header="Export node" Click="uiExportItem_Click" />
-                                <MenuItem Header="Import subnode" Click="uiImportSubItem_Click" />
-                                <Separator/>
-                                <MenuItem Header="Delete" Click="uiDeleteItem_Click" />
-                                <Separator/>
-                                <MenuItem Header="Scan folders" Click="uiScanFolder_Click" />
+                                <MenuItem Header="Import subnode" Click="uiImportSubItem_Click"  Visibility="{Binding sId, Converter={StaticResource KonwersjaVisibilyFromGlobal}}"/>
+                                <Separator Name="uiSeparator2" Visibility="{Binding sId, Converter={StaticResource KonwersjaVisibilyFromGlobal}}"/>
+                                <MenuItem Header="Delete" Click="uiDeleteItem_Click" Visibility="{Binding sId, Converter={StaticResource KonwersjaVisibilyFromGlobal}}"/>
+                                <Separator Name="uiSeparator3"/>
+                                <MenuItem Header="Scan folders" Click="uiScanFolder_Click"  Visibility="{Binding sId, Converter={StaticResource KonwersjaVisibilyFromGlobal}}"/>
+                                <MenuItem Header="Open" Click="uiOpenFolder_Click"  Visibility="{Binding sId, Converter={StaticResource KonwersjaVisibilyFromNotGlobal}}"/>
                             </ContextMenu>
                         </Grid.ContextMenu>
                     </Grid>
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>
-        <Grid Grid.Row="2" Name="uiAddEdit" Visibility="Collapsed" >
+
+        <ListView Grid.Row="2" Name="uiLista" HorizontalAlignment="Stretch" Visibility="Collapsed">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate >
+                    <Grid HorizontalAlignment="Stretch" >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="150" Name="naID" />
+                            <ColumnDefinition Width="*" Name="naName" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{Binding sId}" />
+                        <TextBlock Text="{Binding notes}" Grid.Column="1" Margin="5,0,5,0"/>
+
+                        <Grid.ContextMenu>
+                            <ContextMenu >
+                                <MenuItem Header="Edit" Click="uiEditKeyword_Click" />
+                                <MenuItem Header="Open" Click="uiOpenFolder_Click" />
+                            </ContextMenu>
+                        </Grid.ContextMenu>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Grid Grid.Row="3" Name="uiAddEdit" Visibility="Collapsed" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
@@ -74,6 +122,6 @@
 
             <Button Content=" Done " HorizontalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2" Margin="5,10,5,15" Click="uiAddEditDone_Click"/>
         </Grid>
-        <Button Content=" OK " Click="uiOk_Click" Grid.Row="3" HorizontalAlignment="Center" />
+        <Button Content=" OK " Click="uiOk_Click" Grid.Row="4" HorizontalAlignment="Center" />
     </Grid>
 </Window>

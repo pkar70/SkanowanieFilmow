@@ -4,11 +4,13 @@ Imports System.Globalization
 Imports System.IO
 Imports System.Text.RegularExpressions
 Imports System.Threading
+Imports CompactExifLib
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
+Imports XmpCore.Impl
 
 Public Class OnePic
-    Inherits MojaStruct
+    Inherits pkar.BaseStruct
 
     Public Property Archived As String
     Public Property CloudArchived As String
@@ -34,6 +36,8 @@ Public Class OnePic
 
     Public Property fileTypeDiscriminator As String = Nothing   ' tu "|>", "*", które mają być dodawane do miniaturek
 
+    Public Property PicGuid As String = Nothing  ' 0xA420 ImageUniqueID ASCII!
+
     'Public Property sortOrder As String
 
     <Newtonsoft.Json.JsonIgnore>
@@ -52,7 +56,7 @@ Public Class OnePic
     Public Sub AddArchive(sArchName As String)
         If IsArchivedIn(sArchName) Then Return
         If Archived Is Nothing Then Archived = ""
-        Archived &= Archived & ";"
+        Archived &= sArchName & ";"
     End Sub
 
     Public Function IsArchivedIn(sArchName As String) As Boolean
@@ -187,8 +191,11 @@ Public Class OnePic
 
     End Sub
 
-
-    Public Function GetGeoTag() As MyBasicGeoposition
+    ''' <summary>
+    ''' ważniejsze jest z keywords, potem manual_geo, potem - dowolny; NULL jeśli nie znajdzie
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function GetGeoTag() As pkar.BasicGeopos
         DumpCurrMethod($"({InBufferPathName})")
         ' ważniejsze jest z keywords, potem manual_geo, potem - dowolny
 
@@ -279,15 +286,26 @@ Public Class OnePic
     End Function
 
     ''' <summary>
-    ''' Zwraca datę do sortowania tekstowego w formacie EXIF: 2022.05.06 12:27:47.
-    ''' Ważność: FileExif, ManualTag (min ze wszystkich), SourceFile
+    ''' Ważność: FileExif, SourceFile, ManualTag (min ze wszystkich)
     ''' </summary>
     ''' <returns></returns>
-    Public Function GetMostProbablyDate() As Date
+    Public Function GetMostProbablyDate(Optional bSkipTags As Boolean = False) As Date
 
         Dim retDate As Date = GetRealDate()
         If retDate.IsDateValid Then Return retDate
 
+        Dim oExif As ExifTag = GetExifOfType(ExifSource.SourceDefault)
+        If oExif IsNot Nothing Then
+            If oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital Then
+                ' gdy to aparat cyfrowy, przyjmujemy mniejszą datę pliku
+                oExif = GetExifOfType(ExifSource.SourceFile)
+                If oExif IsNot Nothing Then Return oExif.DateMin
+            End If
+        End If
+
+        If bSkipTags Then Return Date.MaxValue
+
+        ' nie mamy EXIF w pliku, to spróbujemy wyliczyć
         Dim dDateMin As Date = GetMinDate()
         Dim dDateMax As Date = GetMaxDate()
 
@@ -299,7 +317,7 @@ Public Class OnePic
         End If
 
         ' czyli tu właściwie juz nigdy nie wejdzie, bo ten EXIF już jest uwzględniony w pętli powyżej
-        Dim oExif As ExifTag = GetExifOfType(Vblib.ExifSource.SourceFile)
+        oExif = GetExifOfType(ExifSource.SourceFile)
         If oExif IsNot Nothing Then
             ' to właściwie na pewno jest, bo to data pliku
             Return oExif.DateMin
@@ -310,8 +328,14 @@ Public Class OnePic
 
     End Function
 
-#End Region
+    Public Function IsAdultInExifs() As Boolean
+        Dim oExif As Vblib.ExifTag = GetExifOfType(Vblib.ExifSource.AutoAzure)
+        If String.IsNullOrWhiteSpace(oExif?.AzureAnalysis?.Wiekowe) Then Return False
+        Return True
+    End Function
 
+
+#End Region
 #Region "operacje na maskach"
     Public Function MatchesMasks(sIncludeMasks As String, Optional sExcludeMasks As String = "") As Boolean
 
@@ -375,7 +399,20 @@ Public Class OnePic
         TagsChanged = True
     End Sub
 
-    Private Function GetSumOfDescriptionsText() As String
+    Public Function AreTagsInDescription() As Boolean
+        If descriptions Is Nothing Then Return False
+        For Each oDesc As OneDescription In descriptions
+            If Not String.IsNullOrWhiteSpace(oDesc.keywords) Then Return True
+        Next
+        Return False
+    End Function
+
+    Public Sub ReplaceAllDescriptions(sDesc As String)
+        descriptions = New List(Of OneDescription)
+        AddDescription(New OneDescription(sDesc, ""))
+    End Sub
+
+    Public Function GetSumOfDescriptionsText() As String
         If descriptions Is Nothing Then Return ""
 
         Dim sRet As String = ""
@@ -389,7 +426,7 @@ Public Class OnePic
         Return sRet
     End Function
 
-    Private Function GetSumOfCommentText() As String
+    Public Function GetSumOfCommentText() As String
         Dim sRet As String = ""
 
         For Each oExif As ExifTag In Exifs
@@ -616,8 +653,27 @@ Public Class OnePic
         Return ""
     End Function
 
+    Public Function CanRunPipeline(sProcessingSteps As String, aPostProcesory As Vblib.PostProcBase()) As String
+        DumpCurrMethod()
 
+        Dim sErrors As String = ""
 
+        If String.IsNullOrEmpty(sProcessingSteps) Then
+            Return ""
+        End If
+
+        Dim aSteps As String() = sProcessingSteps.Split(";")
+        For Each sStep As String In aSteps
+            For Each oEngine As Vblib.PostProcBase In aPostProcesory
+                If oEngine.Nazwa.ToLowerInvariant = sStep.ToLowerInvariant Then
+                    If Not oEngine.CanRun(Me) Then sErrors &= oEngine.Nazwa & ";"
+                End If
+            Next
+
+        Next
+
+        Return sErrors
+    End Function
 
 
 #End Region
@@ -683,12 +739,72 @@ Public Class OnePic
 
     End Sub
 
+    Public Function GetSuggestedGuid() As String
+
+        If Exifs Is Nothing Then Return "" ' nie umiemy!
+
+        Dim tempData As DateTime
+        Dim oExif As ExifTag
+
+        ' jeśli jakiś ID jest odczytany w EXIFach
+        For Each oExif In Exifs
+            If String.IsNullOrWhiteSpace(oExif.PicGuid) Then Continue For
+            If oExif.PicGuid.Length < 15 Then Continue For
+            If oExif.PicGuid.Length > 20 Then Continue For
+
+            ' nasze ID to coś typu:
+            ' [typ]yyyyMMddHHmmss[-a]
+            '     12345678901234567
+            If Not Date.TryParseExact(oExif.PicGuid.Substring(1), "yyyyMMddHHmmss", CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal, tempData) Then Continue For
+
+            ' Samsung Marcina Kurcza powtarzał L12XLLD00SM oraz X10LLLB00AM, więc sprawdzam czy ja mam datę.
+
+            Return oExif.PicGuid
+        Next
+
+        Dim realData As Date = GetRealDate()
+        If realData.IsDateValid Then
+            ' jeśli mamy rzeczywistą datę, to próbujemy wziąć sekundy z filename
+            ' (różnią się od real o sekundę, ale być może nie zawsze)
+            ' a do szukania "spoza" PicSort lepiej żeby ID był w takich wypadkach taki jak filename
+
+            ' wersja WP_
+            Dim sRealDate As String = realData.ToString("yyyyMMdd")
+            If sSuggestedFilename.StartsWith($"WP_{sRealDate}_{realData.ToString("HH")}_") Then
+                ' telefon		WP_20221117_11_32_45_Pro
+                '			0123
+                '			...12345678901234567890123456
+                '			WP_20221117_11_45_21_Rich
+                Return GuidPrefix.DateTaken & sSuggestedFilename.Substring(3, 17).Replace("_", "")
+            End If
+
+            ' telefon Marcina, 20220723_170151
+            '				 123456789012345
+            If sSuggestedFilename.StartsWith($"{sRealDate}_{realData.ToString("HH")}") Then
+                Return GuidPrefix.DateTaken & sSuggestedFilename.Substring(0, 15).Replace("_", "")
+            End If
+
+            Return GuidPrefix.DateTaken & realData.ToString("yyyyMMddHHmmss")
+        End If
+
+        oExif = GetExifOfType(ExifSource.SourceDefault)
+        If oExif IsNot Nothing Then
+            If oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital Then
+                ' gdy to aparat cyfrowy, przyjmujemy mniejszą datę pliku
+                oExif = GetExifOfType(ExifSource.SourceFile)
+                If oExif IsNot Nothing Then Return GuidPrefix.FileDate & oExif.DateMin.ToString("yyyyMMddHHmmss")
+            End If
+        End If
+
+        DialogBox("zapomniales ze nie umiem stworzyc ID dla bezdatowych?")
+        Return ""
+    End Function
 
     ''' <summary>
     ''' sprowadza wszystkie EXIFy do jednego - ale dalej jeszcze z dodatkowymi polami!
     ''' </summary>
     ''' <returns></returns>
-    Public Function FlattenExifs() As ExifTag
+    Public Function FlattenExifs(bWithAzureAsComment As Boolean) As ExifTag
         Dim oNew As ExifTag = GetExifOfType(ExifSource.Flattened)
         If oNew IsNot Nothing Then Return oNew
 
@@ -722,21 +838,42 @@ Public Class OnePic
             Next
         End If
 
-        ' azure analysis - doklejamy jako usercomment
-        For Each oExif As ExifTag In Exifs
-            If oExif.AzureAnalysis IsNot Nothing Then
-                oNew.UserComment = oNew.UserComment.ConcatenateWithPipe(oExif.AzureAnalysis.DumpAsText)
-            End If
-        Next
+        If bWithAzureAsComment Then
+            ' azure analysis - doklejamy jako usercomment
+            For Each oExif As ExifTag In Exifs
+                If oExif.AzureAnalysis IsNot Nothing Then
+                    oNew.UserComment = oNew.UserComment.ConcatenateWithPipe(oExif.AzureAnalysis.DumpAsText)
+                End If
+            Next
+        End If
 
         If oOstatniExif IsNot Nothing Then MergeTwoExifs(oNew, oOstatniExif)
 
         Return oNew
     End Function
 
+    'Public Function Clone() As OnePic
+    '    Dim sTxt As String = Newtonsoft.Json.JsonConvert.SerializeObject(Me, Newtonsoft.Json.Formatting.Indented)
+    '    Dim oNew As OnePic = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(OnePic))
+    '    Return oNew
+    'End Function
+
+    ''' <summary>
+    ''' zrobienie kopii OnePic, ale w wersji skróconej (dla archiwizacji i bazy danych)
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function GetFlatOnePic() As OnePic
+        Dim oNew As OnePic = Clone()
+        oNew.Exifs = New List(Of ExifTag)
+        oNew.Exifs.Add(FlattenExifs(False))
+        oNew.InBufferPathName = Nothing
+        oNew.editHistory = Nothing
+        Return oNew
+    End Function
+
     Public Function GetAllKeywords() As String
 
-        Dim oFlat As ExifTag = FlattenExifs()
+        Dim oFlat As ExifTag = FlattenExifs(False)
         Return oFlat.Keywords
     End Function
 
@@ -748,6 +885,27 @@ Public Class OnePic
         Next
 
         Return False
+    End Function
+
+    Public Function HasKeyword(sKey As String) As Boolean
+        If Exifs Is Nothing Then Return False
+
+        For Each oExif As ExifTag In Exifs
+            If oExif.Keywords.Contains(sKey) Then Return True
+        Next
+
+        Return False
+    End Function
+
+    Public Function MatchesKeywords(aTags As String()) As Boolean
+        For Each sTag As String In aTags
+            If sTag.StartsWith("!") Then
+                If HasKeyword(sTag.Substring(1)) Then Return False
+            Else
+                If Not HasKeyword(sTag.Substring(1)) Then Return False
+            End If
+        Next
+        Return True
     End Function
 
     Public Function GetDescriptionForCloud() As String

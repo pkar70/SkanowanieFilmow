@@ -17,6 +17,8 @@ Public Class LocalArchive
     End Sub
 
     Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
+        vb14.DumpCurrMethod()
+
         Dim oFE As FrameworkElement = sender
         Dim oSrc As DisplayArchive = oFE?.DataContext
         If oSrc Is Nothing Then Return
@@ -73,7 +75,7 @@ Public Class LocalArchive
 
         Dim currentArchs As New List(Of String)
         For Each oArch As Vblib.LocalStorage In Application.GetArchivesList.GetList
-            If oArch.enabled Then currentArchs.Add(oArch.StorageName.ToLower)
+            If oArch.enabled Then currentArchs.Add(oArch.StorageName.ToLowerInvariant)
         Next
 
         If currentArchs.Count < 1 Then Return 0
@@ -85,7 +87,7 @@ Public Class LocalArchive
             If oPic.Archived Is Nothing Then
                 iCnt += 1
             Else
-                Dim sArchiwa As String = oPic.Archived.ToLower
+                Dim sArchiwa As String = oPic.Archived.ToLowerInvariant
                 For Each sArch As String In currentArchs
                     If Not oPic.IsArchivedIn(sArch) Then
                         iCnt += 1
@@ -132,6 +134,7 @@ Public Class LocalArchive
     End Sub
 
     Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
+        vb14.DumpCurrMethod()
 
         If Not oSrc.engine.IsPresent Then
             Await vb14.DialogBoxAsync($"Ale Archiwum '{oSrc.nazwa}' jest aktualnie niewidoczne!")
@@ -142,7 +145,9 @@ Public Class LocalArchive
         uiProgBarInEngine.Value = 0
         uiProgBarInEngine.Visibility = Visibility.Visible
 
-        Dim sIndexJson As String = ""
+        Dim sIndexShortJson As String = ""
+        Dim sIndexLongJson As String = ""
+
         Dim bDirTreeToSave As Boolean = False
 
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
@@ -162,8 +167,11 @@ Public Class LocalArchive
             ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
             Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
 
-            If sIndexJson <> "" Then sIndexJson &= ","
-            sIndexJson &= oPic.DumpAsJSON
+            If sIndexLongJson <> "" Then sIndexLongJson &= ","
+            sIndexLongJson &= oPic.DumpAsJSON
+
+            If sIndexShortJson <> "" Then sIndexShortJson &= ","
+            sIndexShortJson &= oPic.GetFlatOnePic.DumpAsJSON
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
@@ -172,7 +180,7 @@ Public Class LocalArchive
 
         Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
         If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
-        Application.AddToGlobalJsonIndex(sIndexJson)    ' aktualizacja indeksu archiwalnego
+        Application.GetArchIndex.AddToGlobalJsonIndex(sIndexShortJson, sIndexLongJson)    ' aktualizacja indeksu archiwalnego
 
     End Function
 

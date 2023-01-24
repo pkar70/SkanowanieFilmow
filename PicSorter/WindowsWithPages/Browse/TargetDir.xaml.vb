@@ -8,6 +8,7 @@ Imports System.Security.Policy
 Imports Vblib
 Imports Windows.Devices
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 
 Public Class TargetDir
@@ -91,6 +92,10 @@ Public Class TargetDir
 
     Private Sub PokazOpcjeCzasowe(iFirstSelected As Integer)
 
+        ' data z zaznaczonego zdjęcia - szczególnie gdy jest to pierwsze zdjęcie...
+        uiManualDateName.Text = _thumbsy(iFirstSelected).dateMin.ExifDateWithWeekDay
+
+        ' próbujemy znaleźć początek serii, data byłaby wtedy z początku (a nie z konkretnego zdjęcia)
         For iLp As Integer = iFirstSelected To 0 Step -1
             If _thumbsy(iLp).splitBefore = SplitBeforeEnum.czas Then
                 ' w ten sposób mamy datę z dniem tygodnia (wspólne dla całego programu)
@@ -141,7 +146,7 @@ Public Class TargetDir
     Private Shared Function CountSubdirInDate(sData As String) As Char
         Dim iCount As Integer = 65
         For Each oDir As Vblib.OneDir In Application.GetDirTree.ToFlatList
-            If oDir.sId.StartsWith(sData) Then iCount += 1
+            If oDir.sId.StartsWithOrdinal(sData) Then iCount += 1
         Next
 
         Return Chr(iCount)
@@ -307,7 +312,7 @@ Public Class TargetDir
     End Sub
 
     Private Sub uiOpenDirTree_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New SettingsDirTree
+        Dim oWnd As New SettingsDirTree(True)
         If Not oWnd.ShowDialog Then Return
         Window_Loaded(Nothing, Nothing)
     End Sub
@@ -356,23 +361,25 @@ Partial Public Module Extensions
 
     <Runtime.CompilerServices.Extension>
     Public Function ExifDateWithWeekDay(ByVal oDate As Date) As String
-        Dim sId As String = oDate.ToString("yyyy.MM.dd.")
-        Select Case oDate.DayOfWeek
-            Case DayOfWeek.Monday
-                sId &= "pn"
-            Case DayOfWeek.Tuesday
-                sId &= "wt"
-            Case DayOfWeek.Wednesday
-                sId &= "sr"
-            Case DayOfWeek.Thursday
-                sId &= "cz"
-            Case DayOfWeek.Friday
-                sId &= "pt"
-            Case DayOfWeek.Saturday
-                sId &= "sb"
-            Case DayOfWeek.Sunday
-                sId &= "nd"
-        End Select
+        Dim sId As String = oDate.ToString("yyyy.MM.dd.")   ' nie może być ToExifString, bo nie chcemy tu czasu
+        sId &= oDate.TwoLetterWeekDayPL
+
+        'Select Case oDate.DayOfWeek
+        '    Case DayOfWeek.Monday
+        '        sId &= "pn"
+        '    Case DayOfWeek.Tuesday
+        '        sId &= "wt"
+        '    Case DayOfWeek.Wednesday
+        '        sId &= "sr"
+        '    Case DayOfWeek.Thursday
+        '        sId &= "cz"
+        '    Case DayOfWeek.Friday
+        '        sId &= "pt"
+        '    Case DayOfWeek.Saturday
+        '        sId &= "sb"
+        '    Case DayOfWeek.Sunday
+        '        sId &= "nd"
+        'End Select
 
         Return sId
     End Function

@@ -37,12 +37,13 @@ Public Class Cloud_Skyscraper
         Throw New NotImplementedException()
     End Function
 
-    Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
-        Return Integer.MaxValue
-    End Function
-
     Public Overrides Async Function Login() As Task(Of String)
         Return Await EnsureLogin()
+    End Function
+
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+    Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
+        Return Integer.MaxValue
     End Function
 
     Protected Overrides Async Function GetRemoteTagsMain(oPic As Vblib.OnePic) As Task(Of String)
@@ -57,6 +58,7 @@ Public Class Cloud_Skyscraper
         Return "https://www.skyscrapercity.com/threads/" & oPic.GetCloudPublishedId(konfiguracja.nazwa)
     End Function
 
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Function GetShareLink(oOneDir As Vblib.OneDir) As Task(Of String)
         Throw New NotImplementedException()
     End Function

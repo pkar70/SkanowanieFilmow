@@ -69,7 +69,7 @@ Public Class CloudArchiving
 
             Dim currentArchs As New List(Of String)
         For Each oArch As Vblib.CloudArchive In Application.GetCloudArchives.GetList
-            If oArch.konfiguracja.enabled Then currentArchs.Add(oArch.konfiguracja.nazwa.ToLower)
+            If oArch.konfiguracja.enabled Then currentArchs.Add(oArch.konfiguracja.nazwa.ToLowerInvariant)
         Next
 
         If currentArchs.Count < 1 Then Return 0
@@ -81,7 +81,7 @@ Public Class CloudArchiving
             If oPic.CloudArchived Is Nothing Then
                 iCnt += 1
             Else
-                Dim sArchiwa As String = oPic.CloudArchived.ToLower
+                Dim sArchiwa As String = oPic.CloudArchived.ToLowerInvariant
                 For Each sArch As String In currentArchs
                     If Not oPic.IsCloudArchivedIn(sArch) Then
                         iCnt += 1
@@ -149,23 +149,12 @@ Public Class CloudArchiving
             Await oSrc.engine.SendFile(oPic)
             If Not oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
 
-            ' aktualizujemy DirList - to tylko ostateczność, bo powinno być wcześniej zrobione
-            ' If Application.GetDirTree.TryAddFolder(oPic.TargetDir, "") Then bDirTreeToSave = True
-
-            ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
-            Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
-
-            If sIndexJson <> "" Then sIndexJson &= ","
-            sIndexJson &= oPic.DumpAsJSON
-
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed
 
-            Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
-            If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
-            Application.AddToGlobalJsonIndex(sIndexJson)    ' aktualizacja indeksu archiwalnego
+        Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
 
         Application.ShowWait(False)
     End Function

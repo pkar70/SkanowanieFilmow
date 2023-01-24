@@ -23,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Auto_WinFace\VbLibCore31-Auto_WinFace.vbproj" />
+    <ProjectReference Include="..\Auto_std2_Astro\Auto_std2_Astro.vbproj" />
+    <ProjectReference Include="..\Auto_WinFace\Auto_cr31_WinFace.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Chomikuj\CloudArch_std20_Chomikuj.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Degoo\CloudArch_std14_Degoo.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Shutterfly\CloudArch_std14_Shutterfly.vbproj" />
@@ -32,9 +33,8 @@
     <ProjectReference Include="..\Process_Signature\Process_SigAndFace.vbproj" />
     <ProjectReference Include="..\Publish_Instagram\CloudPubl_std2_Instagram.vbproj" />
     <ProjectReference Include="..\Publish_std2_Facebook\CloudPubl_std2_Facebook.vbproj" />
-    <ProjectReference Include="..\Taggers_OCR\VbLibCore31-Auto_WinOCR_lib.vbproj" />
+    <ProjectReference Include="..\Taggers_OCR\Auto_cr31_WinOCR_lib.vbproj" />
     <ProjectReference Include="..\vblib46ram\vblib46ram.vbproj" />
-    <ProjectReference Include="..\VbLibCore3-mediaDevices\VbLibCore3-mediaDevices.vbproj" />
     <ProjectReference Include="..\VbLibCore3-picSource\VbLibCore3-picSource.vbproj" />
     <ProjectReference Include="..\VblibStd2-mov2jpg\VblibStd2-mov2jpg.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
@@ -44,14 +44,15 @@
     <Folder Include="Autotags\" />
     <Folder Include="WindowsWithPages\HashTags\" />
     <Folder Include="WindowsWithPages\SlideShow\" />
-    <Folder Include="WindowsWithPages\Search\" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="BasicGeopos" Version="1.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="StructList" Version="1.0.1" />
   </ItemGroup>
 
 </Project>

@@ -31,18 +31,21 @@ Public Class EditExifTag
     End Sub
 
     Private Sub WypelnComboDeviceType(eTypZrodla As Vblib.FileSourceDeviceTypeEnum)
-        uiFileSourceDeviceType.Items.Clear()
+        WypelnComboDeviceType(uiFileSourceDeviceType, eTypZrodla)
+        If _addRemove Then uiFileSourceDeviceType.Items.Add("-")
 
-        uiFileSourceDeviceType.Items.Add(" ")
+    End Sub
+    Public Shared Sub WypelnComboDeviceType(uiCombo As ComboBox, eTypZrodla As Vblib.FileSourceDeviceTypeEnum)
+        uiCombo.Items.Clear()
+
+        uiCombo.Items.Add(" ")
 
         For iLp = 0 To 6
             Dim devType As Vblib.FileSourceDeviceTypeEnum = iLp
             If devType.ToString = iLp.ToString Then Exit For
-            Dim iInd As Integer = uiFileSourceDeviceType.Items.Add(iLp & ": " & devType.ToString)
-            If eTypZrodla = iLp Then uiFileSourceDeviceType.SelectedIndex = iInd
+            Dim iInd As Integer = uiCombo.Items.Add(iLp & ": " & devType.ToString)
+            If eTypZrodla = iLp Then uiCombo.SelectedIndex = iInd
         Next
-
-        If _addRemove Then uiFileSourceDeviceType.Items.Add("-")
 
         'uiFileSourceDeviceType.SelectedValue = _exifTag.FileSourceDeviceType
     End Sub

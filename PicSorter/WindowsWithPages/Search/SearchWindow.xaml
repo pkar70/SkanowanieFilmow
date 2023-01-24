@@ -1,0 +1,372 @@
+﻿<Window x:Class="SearchWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="Wyszukiwanie" Height="850" Width="600" Loaded="Window_Loaded">
+    <Grid Margin="5,5,5,5">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" Name="naQueryBuilder"/>
+            <ColumnDefinition Width="*" Name="naListeTrafien"/> 
+        </Grid.ColumnDefinitions>
+        <StackPanel Margin="0,0,10,0" CanVerticallyScroll="True" >
+            <TextBlock Text="Podaj warunki szukania:" Margin="0,0,0,5" FontSize="14" FontWeight="Bold"/>
+                <!--<Expander Header="Ogólne" IsExpanded="true" FlowDirection="RightToLeft">
+                <StackPanel FlowDirection="LeftToRight">-->
+                <Expander Header="Ogólne" IsExpanded="true" ToolTip="Parametry ogólne" BorderThickness="1" BorderBrush="Blue">
+                    <StackPanel >
+                        <CheckBox Content="Data minimalna" Name="uiMinDateCheck" ToolTip="Czy ta data ma być używana?"/>
+                        <DatePicker Name="uiMinDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01" IsEnabled="{Binding IsChecked, ElementName=uiMinDateCheck}" ToolTip="Zdjęcie zrobione od tej daty"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <CheckBox Content="Data maksymalna" Name="uiMaxDateCheck" ToolTip="Czy ta data ma być używana?"/>
+                            <Button Grid.Column="1" Content=" copy " Click="uiCopyDateMinToMax" ToolTip="Kopiuj datę min do daty max"/>
+                        </Grid>
+                        <DatePicker Name="uiMaxDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01" IsEnabled="{Binding IsChecked, ElementName=uiMinDateCheck}" ToolTip="Zdjęcie zrobione do tej daty"/>
+                        <CheckBox Name="uiIgnoreYear" Margin="0,5,0,0" ToolTip="Ignore year (use only month and day)" Content="Ignore year"/>
+
+                        <TextBlock Text="GUID" Margin="0,5,0,0"/>
+                        <TextBox Name="uiGuid" ToolTip="Enter fragment of GUID"/>
+
+                        <TextBlock Text="Tags" Margin="0,5,0,0"/>
+                        <TextBox Name="uiTags" ToolTip="Space separated tags, prefixed with '!' to negate" />
+
+                        <TextBlock Text="Descriptions" Margin="0,5,0,0"/>
+                        <TextBox Name="uiDescriptions" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+
+                        <Expander Header="Geography" ToolTip="Dane geograficzne" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
+                            <StackPanel >
+                                <CheckBox Name="uiGeoDefault" Content="Dołącz zdjęcia z nieznaną lokalizacją" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia których lokalizacja jest nieznana" IsChecked="true"/>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBox Name="uiLatLon" IsReadOnly="true"/>
+                                    <Button Content=" ... " Grid.Column="1" Click="uiGetGeo_Click" />
+                                </Grid>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Text="Radius (km): " Grid.Row="0"/>
+                                    <TextBox Name="uiGeoRadius" Grid.Row="0" Grid.Column="1" InputScope="Digits" ToolTip="Max. odległość" Text="20"/>
+                                    <TextBlock Text="Nazwa: " Grid.Row="1"/>
+                                    <TextBox Name="uiGeoName" Grid.Row="1" Grid.Column="1" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                                </Grid>
+                            </StackPanel>
+                        </Expander>
+
+                        <Expander Header="Ogólne/Advanced" ToolTip="Parametry ogólne" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
+                            <StackPanel>
+                                <TextBlock Text="Źródło:" Margin="0,5,0,0"/>
+                                <ComboBox Name="uiComboSource" ToolTip="Select source"/>
+
+                                <TextBlock Text="Target dir" Margin="0,5,0,0"/>
+                                <TextBox Name="uiTargetDir" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+
+                                <TextBlock Text="Filename" Margin="0,5,0,0"/>
+                                <TextBox Name="uiFilename" ToolTip="Enter DOS filename mask"/>
+
+                                <TextBlock Text="Published" Margin="0,5,0,0"/>
+                                <TextBox Name="uiPublished" ToolTip="Space separated name's fragments, prefixed with '!' to negate" />
+
+                                <TextBlock Text="Cloud archived" Margin="0,5,0,0"/>
+                                <TextBox Name="uiCloudArchived" ToolTip="Space separated name's fragments, prefixed with '!' to negate" />
+                            </StackPanel>
+                        </Expander>
+                        <!--<Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text=" + " />
+                        <TextBox Name="uiPublishYES" ToolTip="Pulished to" Grid.Column="1"/>
+                        <TextBlock Text=" - " Grid.Row="1"/>
+                        <TextBox Name="uiPublishNO" ToolTip="Not pulished to" Grid.Column="1"/>
+                    </Grid>-->
+                    </StackPanel>
+                </Expander>
+
+                <Expander Header="Source" ToolTip="Parametry znacznika SourceDefault" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
+                    <StackPanel >
+                        <ComboBox Name="uiComboDevType" ToolTip="Select device type (not selected means all)"/>
+                        <TextBlock Text="Autor:" />
+                        <TextBox Name="uiAuthor" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                    </StackPanel>
+                </Expander>
+
+                <Expander Header="File EXIF" ToolTip="Parametry odczytane z pliku zdjęcia" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
+                    <StackPanel >
+                        <TextBlock Text="Camera:" />
+                        <TextBox Name="uiCamera" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                    </StackPanel>
+                </Expander>
+
+
+                <Expander Header="OCR" ToolTip="Rozpoznany tekst" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
+                    <StackPanel >
+                        <TextBox Name="uiOCR" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                    </StackPanel>
+                </Expander>
+
+                <Expander Header="Astronomia" ToolTip="Dane astronomiczne (ASTRO, MOON, POGODA)" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
+                    <StackPanel >
+                        <CheckBox Name="uiAstroDefault" Content="Dołącz zdjęcia bez danych astronomicznych" ToolTip="Odznacz jeśli w wynikach wyszukiwania nie powinny się znaleźć zdjęcia które nie mają danych astronomicznych" IsChecked="true" />
+
+                        <CheckBox Name="uiMoonPhase" Content="Dopuszczalna faza Księżyca" ToolTip="Czy sprawdzać fazy Księżyca?"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <TextBlock FontSize="24" Grid.Column="0" Text="🌑" ToolTip="Nów (&lt; 10 %)"/>
+                            <TextBlock FontSize="24" Grid.Column="1" Text="🌒" ToolTip="10 do 35 %"/>
+                            <TextBlock FontSize="24" Grid.Column="2" Text="🌓" ToolTip="Pierwsza kwadra (35 do 65 %)"/>
+                            <TextBlock FontSize="24" Grid.Column="3" Text="🌔" ToolTip="65 do 90 %"/>
+                            <TextBlock FontSize="24" Grid.Column="4" Text="🌕" ToolTip="Pełnia (≥ 90 %)"/>
+                            <TextBlock FontSize="24" Grid.Column="5" Text="🌖" ToolTip="90 do 65 %"/>
+                            <TextBlock FontSize="24" Grid.Column="6" Text="🌗" ToolTip="Trzecia kwadra (65 do 35 %)"/>
+                            <TextBlock FontSize="24" Grid.Column="7" Text="🌘" ToolTip="35 do 10 %"/>
+
+                            <CheckBox Grid.Column="0" Grid.Row="1" Name="uiMoon00" HorizontalAlignment="Center" IsChecked="true" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
+                            <CheckBox Grid.Column="1" Grid.Row="1" Name="uiMoonD25" HorizontalAlignment="Center" IsChecked="true" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
+                            <CheckBox Grid.Column="2" Grid.Row="1" Name="uiMoonD50" HorizontalAlignment="Center" IsChecked="true" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
+                            <CheckBox Grid.Column="3" Grid.Row="1" Name="uiMoonD75" HorizontalAlignment="Center" IsChecked="true" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
+                            <CheckBox Grid.Column="4" Grid.Row="1" Name="uiMoon100" HorizontalAlignment="Center" IsChecked="true" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
+                            <CheckBox Grid.Column="5" Grid.Row="1" Name="uiMoonC75" HorizontalAlignment="Center" IsChecked="true" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
+                            <CheckBox Grid.Column="6" Grid.Row="1" Name="uiMoonC50" HorizontalAlignment="Center" IsChecked="true" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
+                            <CheckBox Grid.Column="7" Grid.Row="1" Name="uiMoonC25" HorizontalAlignment="Center" IsChecked="true" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
+
+                        </Grid>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <CheckBox Name="uiSunHourMin" Grid.Row="0" Content="Minimalna godzina słoneczna" ToolTip="Tylko przy ASTRO/POGODA"/>
+                            <TextBox Grid.Row="0" Text="{Binding Value, ElementName=uiSunHourMinSlider}" HorizontalAlignment="Right"/>
+                            <Slider Grid.ColumnSpan="2" Grid.Row="1" Name="uiSunHourMinSlider" Minimum="-12" Maximum="12"  ToolTip="0..12 to godziny dnia od wschodu do zachodu, MINUS oznacza noc"/>
+
+                            <CheckBox Name="uiSunHourMax" Grid.Row="2" Content="Maksymalna godzina słoneczna"  ToolTip="Tylko przy ASTRO/POGODA"/>
+                            <TextBox Grid.Row="2" Text="{Binding Value, ElementName=uiSunHourMaxSlider}" HorizontalAlignment="Right"/>
+                            <Slider Grid.ColumnSpan="2" Grid.Row="3" Name="uiSunHourMaxSlider" Minimum="-12" Maximum="12" ToolTip="0..12 to godziny dnia od wschodu do zachodu, MINUS oznacza noc"/>
+
+                        </Grid>
+
+
+                    </StackPanel>
+                </Expander>
+
+                <Expander Header="Faces" ToolTip="Rozpoznawanie twarzy (WINFACE/AZURE)" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
+                    <StackPanel >
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <CheckBox Name="uiFacesMin" Grid.Row="0" Content="Minimalna liczba twarzy"/>
+                            <TextBox Grid.Row="0" Text="{Binding Value, ElementName=uiFacesMinSlider}" HorizontalAlignment="Right"/>
+                            <Slider Grid.ColumnSpan="2" Grid.Row="1" Name="uiFacesMinSlider" Minimum="0" Maximum="7" ToolTip="Liczba twarzy" />
+
+                            <CheckBox Name="uiFacesMax" Grid.Row="2" Content="Maksymalna liczba twarzy"/>
+                            <TextBox Grid.Row="2" Text="{Binding Value, ElementName=uiFacesMaxSlider}" HorizontalAlignment="Right"/>
+                            <Slider Grid.ColumnSpan="2" Grid.Row="3" Name="uiFacesMaxSlider" Minimum="0" Maximum="7" ToolTip="Liczba twarzy" />
+
+                        </Grid>
+
+                    </StackPanel>
+                </Expander>
+
+                <Expander Header="Azure" ToolTip="Dane Azure, ignorowane dla zdjęć bez AzureAnalysis" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
+                    <StackPanel>
+                        <CheckBox Name="uiAzureDefault" Content="Dołącz zdjęcia bez Azure" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają analizy Azure" />
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+
+                            <TextBox Grid.Row="0" Name="uiAzureField0" ToolTip="Nazwa pola w Azure"/>
+                            <TextBox Grid.Row="0" Grid.Column="2" Name="uiAzureValue0" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                            <TextBox Grid.Row="1" Name="uiAzureField1" ToolTip="Nazwa pola w Azure"/>
+                            <TextBox Grid.Row="1" Grid.Column="2" Name="uiAzureValue1" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                            <TextBox Grid.Row="2" Name="uiAzureField2" ToolTip="Nazwa pola w Azure"/>
+                            <TextBox Grid.Row="2" Grid.Column="2" Name="uiAzureValue2" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                            <TextBox Grid.Row="3" Name="uiAzureField3" ToolTip="Nazwa pola w Azure"/>
+                            <TextBox Grid.Row="3" Grid.Column="2" Name="uiAzureValue3" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                        </Grid>
+                    </StackPanel>
+                </Expander>
+
+
+                <Expander Header="Pogoda" ToolTip="Dane pogodowe, ignorowane dla zdjęć bez Pogody" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
+                    <StackPanel>
+                        <CheckBox Name="uiPogodaDefault" Content="Dołącz zdjęcia bez pogody" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają przypisanej pogody" />
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Row="0" Name="uiPogodaField0" ToolTip="Nazwa pola w Pogoda"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBox Grid.Row="0" Grid.Column="2" Name="uiPogodaValue0" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                            <TextBox Grid.Row="1" Name="uiPogodaField1" ToolTip="Nazwa pola w Pogoda"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBox Grid.Row="1" Grid.Column="2" Name="uiPogodaValue1" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                            <TextBox Grid.Row="2" Name="uiPogodaField2" ToolTip="Nazwa pola w Pogoda"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBox Grid.Row="2" Grid.Column="2" Name="uiPogodaValue2" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                            <TextBox Grid.Row="3" Name="uiPogodaField3" ToolTip="Nazwa pola w Pogoda"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBox Grid.Row="3" Grid.Column="2" Name="uiPogodaValue3" ToolTip="Space separated fragments, prefixed with '!' to negate"/>
+                        </Grid>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="35" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="35" />
+                            </Grid.ColumnDefinitions>
+
+
+                            <TextBlock Grid.Row="0" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBlock Grid.Row="1" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBlock Grid.Row="2" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Margin="5,0,5,0" Text=":" />
+
+                            <TextBlock Grid.Row="0" Grid.Column="3" Margin="5,0,5,0" Text="–" />
+                            <TextBlock Grid.Row="1" Grid.Column="3" Margin="5,0,5,0" Text="–" />
+                            <TextBlock Grid.Row="2" Grid.Column="3" Margin="5,0,5,0" Text="–" />
+                            <TextBlock Grid.Row="3" Grid.Column="3" Margin="5,0,5,0" Text="–" />
+
+                            <TextBox Grid.Row="0" Name="uiPogodaFieldNum0" ToolTip="Pełna nazwa pola w Pogoda"/>
+                            <TextBox Grid.Row="0" Grid.Column="2" Name="uiPogodaValueMin0" ToolTip="Minimalna wartość" InputScope="Number"/>
+                            <TextBox Grid.Row="0" Grid.Column="4" Name="uiPogodaValueMax0" ToolTip="Maksymalna wartość" InputScope="Number"/>
+                            <TextBox Grid.Row="1" Name="uiPogodaFieldNum1" ToolTip="Pełna nazwa w Pogoda"/>
+                            <TextBox Grid.Row="1" Grid.Column="2" Name="uiPogodaValueMin1" ToolTip="Minimalna wartość" InputScope="Number"/>
+                            <TextBox Grid.Row="1" Grid.Column="4" Name="uiPogodaValueMax1" ToolTip="Maksymalna wartość" InputScope="Number"/>
+                            <TextBox Grid.Row="2" Name="uiPogodaFieldNum2" ToolTip="Pełna nazwa w Pogoda"/>
+                            <TextBox Grid.Row="2" Grid.Column="2" Name="uiPogodaValueMin2" ToolTip="Minimalna wartość" InputScope="Number"/>
+                            <TextBox Grid.Row="2" Grid.Column="4" Name="uiPogodaValueMax2" ToolTip="Maksymalna wartość" InputScope="Number"/>
+                            <TextBox Grid.Row="3" Name="uiPogodaFieldNum3" ToolTip="Pełna nazwa w Pogoda"/>
+                            <TextBox Grid.Row="3" Grid.Column="2" Name="uiPogodaValueMin3" ToolTip="Minimalna wartość" InputScope="Number"/>
+                            <TextBox Grid.Row="3" Grid.Column="4" Name="uiPogodaValueMax3" ToolTip="Maksymalna wartość" InputScope="Number"/>
+                        </Grid>
+
+                    </StackPanel>
+                </Expander>
+
+            <CheckBox Name="uiFullDirs" Content="Dołączaj całe katalogi" Margin="0,15,0,0" ToolTip="Zaznacz, jeśli do wyników należy dołączyć także wszystkie inne pliki w folderach znalezionych zdjęć" IsEnabled="False"/>
+
+            <Button Content="Search" HorizontalAlignment="Center" Margin="0,10,0,0" Click="uiSearch_Click" />
+                
+        </StackPanel>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+                <ListView Grid.Row="1" Name="uiLista" HorizontalAlignment="Stretch" SelectionChanged="uiLista_SelChanged">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate >
+                            <Grid HorizontalAlignment="Stretch" >
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="150" Name="naID" />
+                                    <ColumnDefinition Width="*" Name="naFolder" />
+                                <ColumnDefinition Width="*" Name="naName" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="{Binding PicGuid}" />
+                            <TextBlock Text="{Binding TargetDir}" Grid.Column="1" Margin="5,0,5,0"/>
+                            <TextBlock Text="{Binding sSuggestedFilename}" Grid.Column="2"/>
+
+                            <Grid.ContextMenu>
+                                    <ContextMenu >
+                                    <MenuItem Header="Show metadata" Click="uiOpenExif_Click" />
+                                    <MenuItem Header="Open folder" Click="uiOpenFolder_Click" />
+                                    <MenuItem Header="Open big" Click="uiOpenBig_Click" />
+                                    </ContextMenu>
+                                </Grid.ContextMenu>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+            <TextBlock Name="uiResultsCount" Text="(no query)" />
+            <Button Grid.Row="2" Margin="20,10,10,5" Content="Szukaj w wynikach" Click="uiSubSearch_Click" HorizontalAlignment="Left"/>
+            <Button Grid.Row="2" Margin="10,10,20,5" Content="Miniaturki" Click="uiGoMiniaturki_Click" HorizontalAlignment="Right"/>
+        </Grid>
+
+    </Grid>
+</Window>

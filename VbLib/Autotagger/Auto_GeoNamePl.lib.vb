@@ -43,10 +43,10 @@ Public Class Auto_GeoNamePl
 
     End Function
 
-    Private Shared _lastGeo As MyBasicGeoposition = MyBasicGeoposition.EmptyGeoPos
+    Private Shared _lastGeo As pkar.BasicGeopos = pkar.BasicGeopos.Empty
     Private Shared _lastName As String
 
-    Private Async Function GetNameForGeoPos(oPos As MyBasicGeoposition) As Task(Of String)
+    Private Async Function GetNameForGeoPos(oPos As pkar.BasicGeopos) As Task(Of String)
         DumpCurrMethod()
         EnsureCache()
 
@@ -60,7 +60,7 @@ Public Class Auto_GeoNamePl
 
         Return _lastName
     End Function
-    Private Async Function GetNameForGeoPosMain(oPos As MyBasicGeoposition) As Task(Of String)
+    Private Async Function GetNameForGeoPosMain(oPos As pkar.BasicGeopos) As Task(Of String)
 
         Dim sGeoName As String = TryFromCache(oPos)
         If sGeoName <> "" Then
@@ -78,7 +78,7 @@ Public Class Auto_GeoNamePl
     End Function
 
 
-    Private Async Function TryAddToCache(oPos As MyBasicGeoposition) As Task(Of String)
+    Private Async Function TryAddToCache(oPos As pkar.BasicGeopos) As Task(Of String)
         Dim sUri As String = "https://meteo.imgw.pl/api/geo/v2/revers/search/" & oPos.StringLat & "/" & oPos.StringLon
 
         Dim sPage As String = Await HttpPageAsync(sUri)
@@ -118,7 +118,7 @@ Public Class Auto_GeoNamePl
         Return oBliskie.DisplayName
     End Function
 
-    Private Function TryFromCache(oPos As MyBasicGeoposition) As String
+    Private Function TryFromCache(oPos As pkar.BasicGeopos) As String
 
         Dim oBliskie As CacheImgw_Item = FindNearestPoint(_CacheLista.GetList, oPos)
         If oBliskie Is Nothing Then Return ""
@@ -132,13 +132,13 @@ Public Class Auto_GeoNamePl
     Private Sub EnsureCache()
         If _CacheLista IsNot Nothing Then Return
 
-        _CacheLista = New MojaLista(Of CacheImgw_Item)(_cacheDataFolder, Nazwa & ".json")
+        _CacheLista = New pkar.BaseList(Of CacheImgw_Item)(_cacheDataFolder, Nazwa & ".json")
         _CacheLista.Load()
     End Sub
 
-    Private Shared _CacheLista As MojaLista(Of CacheImgw_Item)
+    Private Shared _CacheLista As pkar.BaseList(Of CacheImgw_Item)
 
-    Private Function FindNearestPoint(oLista As List(Of CacheImgw_Item), oPos As MyBasicGeoposition) As CacheImgw_Item
+    Private Function FindNearestPoint(oLista As List(Of CacheImgw_Item), oPos As pkar.BasicGeopos) As CacheImgw_Item
         Dim dMinOdl As Double = Double.MaxValue
         Dim Najblizsze As CacheImgw_Item = Nothing
 
@@ -154,7 +154,7 @@ Public Class Auto_GeoNamePl
     End Function
 
     Public Class CacheImgw_Item
-        Inherits MojaStruct
+        Inherits pkar.BaseStruct
         'Public Property identifier As String
         Public Property name As String
         Public Property lat As String

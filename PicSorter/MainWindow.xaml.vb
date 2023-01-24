@@ -4,18 +4,26 @@
 Class MainWindow
     Inherits Window
 
-    Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+
         InitLib(Nothing)
         Me.Content = New MainPage
 
         ' *TODO* to tylko czasowo
         'Dim sChcemy As String = "Degoo"
         ' Dim sChcemy As String = "Shutterfly"
-        Dim sChcemy As String = "NIC"
-        For Each oItem In Application.GetCloudArchives.GetList
-            'If oItem.sProvider = "Degoo" Then
-            If oItem.sProvider = sChcemy Then Await oItem.Login
-        Next
+        'Dim sChcemy As String = "NIC"
+        'For Each oItem In Application.GetCloudArchives.GetList
+        '    'If oItem.sProvider = "Degoo" Then
+        '    If oItem.sProvider = sChcemy Then Await oItem.Login
+        'Next
+
+        'Dim proba As New probaKlasy
+        'proba.cosik = "alamakota"
+        'proba.ogps = Vblib.pkar.BasicGeopos.GetDomekGeopos
+
+        'Dim probaClone As probaKlasy = proba.Clone1
+
 
     End Sub
 
@@ -27,3 +35,10 @@ Class MainWindow
         End If
     End Sub
 End Class
+
+'Public Class probaKlasy
+'    Inherits pkar.BaseStruct
+
+'    Public Property cosik As String
+'    Public Property ogps As Vblib.pkar.BasicGeopos
+'End Class

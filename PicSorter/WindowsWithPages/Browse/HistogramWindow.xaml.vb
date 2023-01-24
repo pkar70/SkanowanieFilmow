@@ -4,9 +4,9 @@ Public Class HistogramWindow
 
     Private _listaDni As New List(Of JedenDzien)
 
-    Private _oBufor As Vblib.Buffer
+    Private _oBufor As Vblib.BufferSortowania
 
-    Public Sub New(pliki As Vblib.Buffer)
+    Public Sub New(pliki As Vblib.BufferSortowania)
 
         ' This call is required by the designer.
         InitializeComponent()

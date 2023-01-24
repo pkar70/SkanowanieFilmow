@@ -4,7 +4,7 @@
 Imports System.Text.RegularExpressions
 
 Public MustInherit Class PicSourceBase
-	Inherits MojaStruct
+	Inherits pkar.BaseStruct
 
 	Public Property Typ As PicSourceType  ' MTP, FOLDER, ADHOC, ONEDRIVE
 	Public Property SourceName As String  ' c:\xxxx, MTP\Lumia435, MTP\Lumia650 - per instance

@@ -9,6 +9,7 @@
 
 Imports System.ComponentModel
 Imports System.IO
+Imports MetadataExtractor.Formats.Jpeg
 Imports Microsoft.Azure.CognitiveServices.Vision
 Imports Microsoft.Azure.CognitiveServices.Vision.ComputerVision.ComputerVisionClientExtensions
 
@@ -65,40 +66,53 @@ Public Class Auto_AzureTest
 
     End Function
 
-    Private Async Function GetFileFromZip(oFile As Vblib.OnePic) As Task(Of String)
+    'Private Async Function GetFileFromZip(oFile As Vblib.OnePic) As Task(Of String)
 
-        Dim sTempFileName As String = IO.Path.GetTempFileName
-        Await Nar2Jpg(oFile.InBufferPathName, sTempFileName)
-        Return sTempFileName
-    End Function
+    '    Dim sTempFileName As String = IO.Path.GetTempFileName
+    '    Await Nar2Jpg(oFile.InBufferPathName, sTempFileName)
+    '    Return sTempFileName
+    'End Function
 
-    Public Shared Async Function Nar2Jpg(sNarFileName As String, sJpgFileName As String) As Task
-        Using oWrite As Stream = IO.File.Create(sJpgFileName)
+    Public Shared Async Function Nar2Jpg(sNarFileName As String, Optional sJpgFileName As String = "") As Task(Of String)
+        Vblib.DumpCurrMethod(sNarFileName)
 
-            Using oArchive = IO.Compression.ZipFile.OpenRead(sNarFileName)
+        Using oArchive = IO.Compression.ZipFile.OpenRead(sNarFileName)
 
-                For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                    If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
-                    ' mamy JPGa (a nie XML na przykład)
+            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                ' mamy JPGa (a nie XML na przykład)
 
+                If String.IsNullOrWhiteSpace(sJpgFileName) Then
+                    sJpgFileName = IO.Path.Combine(IO.Path.GetTempPath, oInArch.Name)
+                End If
+
+                Using oWrite As Stream = IO.File.Create(sJpgFileName)
                     Await oInArch.Open.CopyToAsync(oWrite)
-                    Exit For
-                Next
-            End Using
-            Await oWrite.FlushAsync
+                    Await oWrite.FlushAsync()
+                    oWrite.Dispose()
+                End Using
+                Return sJpgFileName
+
+            Next
         End Using
 
+        Return ""
     End Function
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
 
         If oFile.MatchesMasks("*.nar") Then
-            Dim sTempfilename As String = Await GetFileFromZip(oFile)
+            Dim sTempfilename As String = Await Nar2Jpg(oFile.InBufferPathName)
 
             ' tworzymy nowy oPic, dla wypakowanego pliku
             Dim oPic As New OnePic("TempForAzure", "", sTempfilename)
             oPic.InBufferPathName = sTempfilename
             Dim oAzureTag As ExifTag = Await GetForFile(oPic)
+
+            oPic._PipelineInput?.Dispose()
+            oPic._PipelineInput = Nothing
+            oPic._PipelineOutput?.Dispose()
+            oPic._PipelineOutput = Nothing
 
             IO.File.Delete(sTempfilename)
             Return oAzureTag
@@ -113,9 +127,10 @@ Public Class Auto_AzureTest
 
         Dim oNew As New Vblib.ExifTag(Nazwa)
         oNew.AzureAnalysis = Await AnalyzeImageLocal(oStream)
-        If oNew.AzureAnalysis IsNot Nothing Then oNew.UserComment = oNew.AzureAnalysis.ToComment
-
         oStream.Dispose()
+
+        If oNew.AzureAnalysis Is Nothing Then Return Nothing
+        oNew.UserComment = oNew.AzureAnalysis.ToUserComment
 
         Return oNew
 
@@ -155,7 +170,13 @@ Public Class Auto_AzureTest
         }
 
         Dim results As ComputerVision.Models.ImageAnalysis
-        results = Await _oClient.AnalyzeImageInStreamAsync(oStream, features)
+        Try
+            results = Await _oClient.AnalyzeImageInStreamAsync(oStream, features)
+        Catch ex As Exception
+            Return Nothing
+        End Try
+
+        If results Is Nothing Then Return Nothing
 
         Return New MojeAzure(results)
 
@@ -199,7 +220,7 @@ Public Class AzureColor
     Public Function ToDisplay() As String
         ' $"Colors: accent {AccentColor}, " &
         Dim sOut As String = $"Colors: dominant {DominantColorForeground} on {DominantColorBackground}"
-        if String.IsNullOrWhiteSpace(DominantColors) Then Return sOut
+        If String.IsNullOrWhiteSpace(DominantColors) Then Return sOut
 
         Return sOut & $", others: {DominantColors}"
     End Function
@@ -242,7 +263,7 @@ Public Class TextWithProbability
 
     Public Overridable Function ToDisplay() As String
         If probability = 1 Then Return tekst
-        Return $"{tekst} ({probability.ToPercentString})"
+        Return $"{tekst} ({probability.ToString("P")})"	' bylo: ToPercentString
     End Function
 
 End Class
@@ -378,7 +399,7 @@ End Class
 
 
 Public Class MojeAzure
-    Inherits Vblib.MojaStruct
+    Inherits pkar.BaseStruct
 
     Public Property Captions As ListTextWithProbability
     Public Property Categories As ListTextWithProbability
@@ -485,7 +506,7 @@ Public Class MojeAzure
 
     End Sub
 
-    Public Function ToComment() As String
+    Public Function ToUserComment() As String
         Dim sOutput As String = ""
 
         If Captions IsNot Nothing Then sOutput &= Captions.ToComment("Summary")

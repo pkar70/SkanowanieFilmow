@@ -57,6 +57,12 @@ Public Class ExifSource
     Public Const Flattened As String = "INTERNAL_FLATTENED"
     Public Const CloudPublish As String = "CLOUD_PUBLISH"
     Public Const FilenameToTags As String = "AUTO_TAG_FROM_NAME"
+    Public Const AutoWinOCR As String = "AUTO_WINOCR"
+    Public Const AutoGuid As String = "AUTO_GUID"
+    Public Const AutoVisCrosWeather As String = "AUTO_WEATHER"
+    Public Const AutoAstro As String = "AUTO_ASTRO"
+    Public Const AutoMoon As String = "AUTO_MOONPHASE"
+
 End Class
 
 Public Enum AutoTaggerType
@@ -64,4 +70,10 @@ Public Enum AutoTaggerType
     WebPublic = 2
     WebAccount = 3
 End Enum
+
+Public Class GuidPrefix
+    Public Const DateTaken As String = "t"
+    Public Const FileDate As String = "f"
+    Public Const ScannedDate As String = "s"
+End Class
 

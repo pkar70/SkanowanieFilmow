@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="BrowseKeywords" Height="800" Width="250" Loaded="Window_Loaded">
+        Title="BrowseKeywords" Height="800" Width="250" Loaded="Window_Loaded" DataContextChanged="Window_DataContextChanged" >
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" Name="naComboGrup" />
@@ -37,8 +37,8 @@
 
         </ListView>
 
-        <Button Grid.Row="2" Content=" Apply " HorizontalAlignment="Center" Click="uiApply_Click" />
-        <Button Grid.Row="2" Content=" Edit " HorizontalAlignment="Right" Click="uiEditKeyTree_Click" />
+        <Button Grid.Row="2" Content=" Apply " HorizontalAlignment="Center" Click="uiApply_Click" Name="uiApply"/>
+        <Button Grid.Row="2" Content=" Edit " HorizontalAlignment="Right" Click="uiEditKeyTree_Click" Name="uiEdit"/>
 
     </Grid>
 </Window>

@@ -39,6 +39,16 @@ Public MustInherit Class PostProcBase
         Return Await ApplyMain(oPic, bPipeline)
     End Function
 
+    ''' <summary>
+    ''' przetwórz plik, na ten sam bądź do nowego pliku
+    ''' </summary>
+    ''' <param name="oPic"></param>
+    ''' <param name="sNewName"></param>
+    ''' <returns></returns>
+    Public Function CanRun(oPic As OnePic) As Boolean
+        Return OnePic.MatchesMasks(oPic.InBufferPathName, include, "")
+    End Function
+
 #If SUPPORT_CALL_WITH_EXIF Then
 
     Protected MustOverride Async Function ApplyMain(oPic As OnePic, oExif As ExifTag, sNewName As String) As Task(Of Boolean)

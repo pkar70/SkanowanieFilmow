@@ -6,13 +6,13 @@ Public Class LocalStorageMiddle
 	Inherits Vblib.LocalStorage
 
 	Protected Overrides Function GetConvertedPathForVol(sVolLabel As String, sPath As String) As String
-		Return PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path)
+		Return PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path, sPath)
 	End Function
 
 
 	Public Overrides Function IsPresent() As Boolean
 
-		Dim sPath As String = PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path)
+		Dim sPath As String = PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path, "")
 		If sPath = "" Then Return False ' "nie ma takiego Vollabel"
 
 		Dim oDrive As IO.DriveInfo = New IO.DriveInfo(sPath) ' .Net 2.0
@@ -24,7 +24,7 @@ Public Class LocalStorageMiddle
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 	Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-		Dim sPath As String = PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path)
+		Dim sPath As String = PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path, "")
 		If sPath = "" Then Return -1
 
 		Dim oDrive As IO.DriveInfo = New IO.DriveInfo(sPath) ' .Net 2.0

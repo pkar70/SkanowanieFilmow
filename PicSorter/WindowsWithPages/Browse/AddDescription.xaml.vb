@@ -34,6 +34,7 @@ Public Class AddDescription
 
         WypelnMenuKeywords()
 
+        uiDescription.Focus()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -68,6 +69,7 @@ Public Class AddDescription
         For Each oItem As Vblib.OneKeyword In oSubTree
             Dim oNew As New MenuItem
             oNew.Header = oItem.sId & " " & oItem.sDisplayName
+            oNew.DataContext = oItem
             'oNew.Margin = New Thickness(2)
             DodajSubTree(oNew, oItem.SubItems)
             AddHandler oNew.Click, AddressOf DodajTenKeyword
@@ -87,13 +89,13 @@ Public Class AddDescription
             oNew.Header = oItem.sId
             'oNew.Margin = _DefMargin
             DodajSubTree(oNew, oItem.SubItems)
-            AddHandler oNew.Click, AddressOf DodajTenKeyword
+            ' AddHandler oNew.Click, AddressOf DodajTenKeyword ' nie można dodawać keywords głównego poziomu (#,-,=)
             uiMenuKeywords.Items.Add(oNew)
         Next
 
         If uiMenuKeywords.Items.Count < 1 Then
             uiAdd.IsEnabled = False
-            uiAdd.ToolTip = "(nie ma zdefiniowanych słów kluczowych"
+            uiAdd.ToolTip = "(nie ma zdefiniowanych słów kluczowych)"
         Else
             uiAdd.IsEnabled = True
             uiAdd.ToolTip = "Dodaj słowa kluczowe"

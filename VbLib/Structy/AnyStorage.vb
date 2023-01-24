@@ -43,8 +43,6 @@ Public Interface AnyStorage
     ''' <returns>oPic.oContent ustaw na Stream do wczytywania; "" gdy OK, lub error message</returns>
     Function GetFile(oPic As OnePic) As Task(Of String)
 
-
-
     ''' <summary>
     ''' ile wolnego miejsca jest
     ''' </summary>

@@ -168,6 +168,7 @@ Public Class Publish_Instagram
 
     End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetShareLink(oPic As Vblib.OnePic) As Task(Of String)
         Dim sId As String = oPic.GetCloudPublishedId(konfiguracja.nazwa)
         If sId = "" Then Return ""

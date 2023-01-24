@@ -4,6 +4,9 @@
 
 
 Imports System.Dynamic
+Imports System.Globalization
+
+Imports pkar.DotNetExtensions
 
 Public Class AutoTag_EXIF
     Inherits AutotaggerBase
@@ -12,10 +15,10 @@ Public Class AutoTag_EXIF
     Public Overrides ReadOnly Property Nazwa As String = "AUTO_EXIF"
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Wczytuje znaczniki EXIF z pliku zdjęcia"
-    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.mov;*.mp4"
+    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.mov;*.mp4;*.avi"
 
-    ' *TODO* reakcja jakaś na inne typy niż JPG
     ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
+
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
@@ -29,7 +32,7 @@ Public Class AutoTag_EXIF
         If oFile.MatchesMasks("*.nar") Then Return GetForNARCompact(oFile)
 
         ' filmy: mov, mp4
-        If oFile.MatchesMasks("*.mp4;*.mov") Then Return GetForMovieFile(oFile)
+        If oFile.MatchesMasks("*.mp4;*.mov;*.avi") Then Return GetForMovieFile(oFile)
 
         ' filmy: avi
         'If oFile.MatchesMasks("*.avi", "") Then Return GetForAviFile(oFile)
@@ -45,6 +48,8 @@ Public Class AutoTag_EXIF
 
         Dim oNewExif As New Vblib.ExifTag(Nazwa)
 
+        Dim oCos = MetadataExtractor.ImageMetadataReader.ReadMetadata(oFile.InBufferPathName)
+
         For Each oDir As MetadataExtractor.Directory In MetadataExtractor.ImageMetadataReader.ReadMetadata(oFile.InBufferPathName)
             ' MP4 title, subtitle, tags, comments, contributing artist, year, producers, publisher, media created, copyright, parenting rating
             ' MOV title, subtitle, comments, contributing artist, year, producers, publisher, media created, copyright, parenting rating
@@ -56,10 +61,22 @@ Public Class AutoTag_EXIF
 
                 ' table 7, D
                 ' oNewExif.UserComment = oRdr.GetString(CompactExifLib.ExifTag.UserComment) ' ANY(ANY)
+                ' .MOV
                 If oTag.Name = "Creation Date" Then
                     Dim sData As String = oTag.Description  ' 2022-07-22T17:29:03+0200  -> "yyyy.MM.dd HH:mm:ss"
                     sData = sData.Replace("-", ".").Replace("T", " ")
                     oNewExif.DateTimeOriginal = sData.Substring(0, 19)
+                End If
+
+                ' .MP4
+                If oTag.Name = "Created" Then
+                    Dim sData As String = oTag.Description  ' Thu Feb 10 15:04:49 2022
+                    Dim dData As DateTime
+                    If DateTime.TryParseExact(sData, "ddd MMM dd HH:mm:ss yyyy", New CultureInfo("en-US"), Globalization.DateTimeStyles.AllowWhiteSpaces Or Globalization.DateTimeStyles.AssumeLocal, dData) Then
+                        oNewExif.DateTimeOriginal = dData.ToExifString
+                    Else
+                        oNewExif.DateTimeOriginal = sData
+                    End If
                 End If
 
                 '        oNewExif.DateTimeScanned = oRdr.GetDate(CompactExifLib.ExifTag.DateTimeDigitized) ' ASCII(20)?
@@ -87,7 +104,7 @@ Public Class AutoTag_EXIF
                         Dim sLat As String = sVal.Substring(0, iInd)
                         Dim sLon As String = sVal.Substring(iInd)
                         sLon = sLon.Replace("/", "") ' nie wiem po co on tam jest, ale jest
-                        oNewExif.GeoTag = New MyBasicGeoposition(sLat, sLon)
+                        oNewExif.GeoTag = New pkar.BasicGeopos(sLat, sLon)
                     End If
                 End If
                 '| | GPSCoordinates = ...+50.0940+20.0244/
@@ -282,7 +299,7 @@ Partial Public Module Extensions
 
 
     <Runtime.CompilerServices.Extension>
-    Public Function GetGeoPos(ByVal oExifData As CompactExifLib.ExifData) As MyBasicGeoposition
+    Public Function GetGeoPos(ByVal oExifData As CompactExifLib.ExifData) As pkar.BasicGeopos
         Dim latit As CompactExifLib.GeoCoordinate
         If Not oExifData.GetGpsLatitude(latit) Then Return Nothing
         Dim longit As CompactExifLib.GeoCoordinate
@@ -291,7 +308,7 @@ Partial Public Module Extensions
         If Not oExifData.GetGpsAltitude(altit) Then altit = 0 ' altitude być nie musi, ale może
 
 
-        Return New MyBasicGeoposition(latit.ToDecimal, longit.ToDecimal, altit)
+        Return New pkar.BasicGeopos(latit.ToDecimal, longit.ToDecimal, altit)
     End Function
 
 End Module

@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\VbLibCore3-mediaDevices\VbLibCore3-mediaDevices.vbproj" />
+    <ProjectReference Include="..\VbLibCore3-mediaDevices1\VbLibCore3-mediaDevices.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>
 

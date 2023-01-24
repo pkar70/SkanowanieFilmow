@@ -14,6 +14,8 @@
     ''' <param name="oFile"></param>
     ''' <returns></returns>
     Public MustOverride Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
+
+
 End Class
 
 

@@ -121,7 +121,7 @@ Public Class PicSourceImplement
     End Function
 
 
-    Public Shared Function GetConvertedPathForVol_Folder(sVolLabel As String, sPath As String) As String
+    Public Shared Function GetConvertedPathForVol_Folder(sVolLabel As String, sPath As String, sTargetDir As String) As String
         sVolLabel = sVolLabel.ToLowerInvariant
         Dim iInd As Integer = sVolLabel.IndexOf("(")
         If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd).Trim
@@ -130,7 +130,7 @@ Public Class PicSourceImplement
         For Each oDrive As IO.DriveInfo In oDrives
             If oDrive.IsReady AndAlso oDrive.VolumeLabel.ToLowerInvariant = sVolLabel Then
                 If String.IsNullOrWhiteSpace(sPath) Then Return oDrive.RootDirectory.Name
-                Return oDrive.RootDirectory.Name.Substring(0, 1) & sPath.Substring(1)
+                Return IO.Path.Combine(oDrive.RootDirectory.Name.Substring(0, 1) & sPath.Substring(1), sTargetDir)
             End If
         Next
 
@@ -144,7 +144,7 @@ Public Class PicSourceImplement
     Private Function PoprawPathWedleVolLabel_Folder(sVolLabel As String) As Boolean
         sVolLabel = sVolLabel.ToLowerInvariant
 
-        Dim sPath As String = GetConvertedPathForVol_Folder(sVolLabel, Path)
+        Dim sPath As String = GetConvertedPathForVol_Folder(sVolLabel, Path, "")
         If sPath = "" Then Return False
 
         Path = sPath

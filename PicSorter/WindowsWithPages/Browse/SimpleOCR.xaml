@@ -1,0 +1,19 @@
+﻿<Window x:Class="SimpleOCR"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="OCR" Height="200" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow">
+    <Grid Margin="5,2,5,2">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Name="uiFileName" FontWeight="Bold"/>
+        <TextBox Name="uiAllOCR" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="5,5,5,5" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
+        <Button Content="Apply" Grid.Row="2" HorizontalAlignment="Right" Click="uiApply_Click" Name="uiApply"/>
+    </Grid>
+</Window>

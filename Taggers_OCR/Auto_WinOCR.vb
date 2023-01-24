@@ -4,11 +4,12 @@
 Imports Windows.Media.Ocr
 Imports Windows.Graphics.Imaging
 Imports System.IO
+Imports Vblib
 
 Public Class AutoTag_WinOCR
     Inherits Vblib.AutotaggerBase
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
-    Public Overrides ReadOnly Property Nazwa As String = "AUTO_WINOCR"
+    Public Overrides ReadOnly Property Nazwa As String = ExifSource.AutoWinOCR ' "AUTO_WINOCR"
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje zrobiæ OCR u¿ywaj¹c Windows." & vbCrLf & "U¿ywa pola UserComment"
     Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"

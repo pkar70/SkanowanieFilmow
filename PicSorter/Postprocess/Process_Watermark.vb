@@ -22,7 +22,7 @@ Public Class Process_Watermark
 
     Private Shared _watermark As HiddenWatermark.Watermark
 
-    Private Function EnsureWatermarkData() As Boolean
+    Private Shared Function EnsureWatermarkData() As Boolean
         If _watermark IsNot Nothing Then Return True
 
         Dim sWatermarkFile As String = Application.GetDataFile("", "watermark.jpg")

@@ -111,7 +111,7 @@ Class SettingsArchive
         Dim sPath As String = uiSrcPath.Text
         If String.IsNullOrWhiteSpace(sPath) Then sPath = "" ' nie chcemy NULLa
 
-        sPath = VbLibCore3_picSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath)
+        sPath = VbLibCore3_picSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath, "")
         SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaz folder na archiwum")
 
     End Sub

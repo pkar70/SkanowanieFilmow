@@ -5,7 +5,12 @@ Public Class Mov2jpg
 
     Public Shared Async Function ExtractFirstFrame(sMovieFilename As String, sFilenameForFrame As String, Optional iMaxSize As Integer = 0) As Task(Of Boolean)
         ' FFMpeg umie tylko PNG zrobiæ
-        If Not Await FFMpeg.SnapshotAsync(sMovieFilename, sFilenameForFrame & ".png") Then Return False
+        Try
+            ' bêdzie z dodatkiem PNG
+            If Not Await FFMpeg.SnapshotAsync(sMovieFilename, sFilenameForFrame) Then Return False
+        Catch ex As Exception
+            Return False    ' zapewne: brak FFMPEG
+        End Try
 
         Return True
 

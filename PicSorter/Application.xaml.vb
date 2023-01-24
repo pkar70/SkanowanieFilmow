@@ -1,5 +1,8 @@
 ﻿
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar
+Imports Vblib
+Imports System.Reflection
 
 Partial Class Application
 
@@ -21,16 +24,34 @@ Partial Class Application
     End Sub
 
 
-    Public Shared Function GetDataFolder(Optional bThrowNotExist As Boolean = True) As String
-        Dim sFolder As String = vb14.GetSettingsString("uiFolderData")
-        If bThrowNotExist Then
-            If sFolder = "" OrElse Not IO.Directory.Exists(sFolder) Then
-                vb14.DialogBox("Katalog danych musi istnieć - uruchom app jeszcze raz, i przejdź do Settings")
-                Throw New Exception("uiFolderData is not set or directory doesn't exist")
-            End If
-        End If
+    Public Shared Function GetOneDrivePath() As String
+        Dim sOneDrivePath As String = Environment.GetEnvironmentVariable("OneDriveConsumer")
+        If sOneDrivePath Is Nothing Then Return ""
 
-        Return sFolder
+        If Not IO.Directory.Exists(sOneDrivePath) Then Return ""
+
+        sOneDrivePath = IO.Path.Combine(sOneDrivePath, "Apps")
+        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
+
+        Dim appName As String = GetAppName()
+
+        sOneDrivePath = IO.Path.Combine(sOneDrivePath, appName)
+        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
+
+        Return sOneDrivePath
+    End Function
+
+    Public Shared Function GetDataFolder(Optional bThrowNotExist As Boolean = True) As String
+        Return GetAppDataFolder()
+        'Dim sFolder As String = vb14.GetSettingsString("uiFolderData")
+        'If bThrowNotExist Then
+        '    If sFolder = "" OrElse Not IO.Directory.Exists(sFolder) Then
+        '        vb14.DialogBox("Katalog danych musi istnieć - uruchom app jeszcze raz, i przejdź do Settings")
+        '        Throw New Exception("uiFolderData is not set or directory doesn't exist")
+        '    End If
+        'End If
+
+        'Return sFolder
     End Function
 
     Public Shared Function GetDataFolder(sSubfolder As String, Optional bThrowNotExist As Boolean = True) As String
@@ -60,17 +81,20 @@ Partial Class Application
 
     End Function
 
+    ' przeniesione do ArchiveQuerender
+    'Public Shared Sub AddToGlobalJsonIndex(sIndexShortJson As String, sIndexLongJson As String)
 
-    Public Shared Sub AddToGlobalJsonIndex(sContent As String)
+    '    Dim sJsonFile As String = GetDataFile("", "archIndex.json", False)
+    '    Vblib.LocalStorage.AddToJsonIndexMain(sJsonFile, sIndexShortJson)
 
-        Dim sJsonFile As String = GetDataFile("", "archIndex.json", False)
-        Vblib.LocalStorage.AddToJsonIndexMain(sJsonFile, sContent)
+    '    sJsonFile = GetDataFile("", "archIndex.full.json", False)
+    '    Vblib.LocalStorage.AddToJsonIndexMain(sJsonFile, sIndexLongJson)
 
-    End Sub
+    'End Sub
 
 
     Private Shared gSourcesList As VbLibCore3_picSource.PicSourceList
-    Private Shared gBuffer As Vblib.Buffer
+    Private Shared gBuffer As Vblib.BufferSortowania
 
     Public Shared Function GetSourcesList() As VbLibCore3_picSource.PicSourceList
 
@@ -83,18 +107,18 @@ Partial Class Application
         Return gSourcesList
     End Function
 
-    Public Shared Function GetBuffer() As Vblib.Buffer
+    Public Shared Function GetBuffer() As Vblib.BufferSortowania
         If gBuffer Is Nothing Then
-            gBuffer = New Vblib.Buffer(Application.GetDataFolder)
+            gBuffer = New Vblib.BufferSortowania(Application.GetDataFolder)
         End If
         Return gBuffer
     End Function
 
-    Private Shared gArchiveList As Vblib.MojaLista(Of VbLibCore3_picSource.LocalStorageMiddle)
-    Public Shared Function GetArchivesList() As Vblib.MojaLista(Of VbLibCore3_picSource.LocalStorageMiddle)
+    Private Shared gArchiveList As BaseList(Of VbLibCore3_picSource.LocalStorageMiddle)
+    Public Shared Function GetArchivesList() As BaseList(Of VbLibCore3_picSource.LocalStorageMiddle)
 
         If gArchiveList Is Nothing OrElse gArchiveList.Count < 1 Then
-            gArchiveList = New Vblib.MojaLista(Of VbLibCore3_picSource.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
+            gArchiveList = New BaseList(Of VbLibCore3_picSource.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
             gArchiveList.Load()
         End If
         Return gArchiveList
@@ -145,10 +169,14 @@ Partial Class Application
 
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
         New Vblib.AutoTag_EXIF,
-        New Taggers_OCR.AutoTag_WinOCR,
-        New Auto_WinFace.Auto_WinFace,
+        New Auto_std2_Astro.Auto_MoonPhase,
+        New Auto_std2_Astro.Auto_Astro,
+        New Auto_std2_Astro.Auto_Pogoda,
         New Vblib.Auto_GeoNamePl(Application.GetDataFolder),
         New Vblib.Auto_OSM_POI(Application.GetDataFolder),
+        New Auto_CreateId(New UniqID(Application.GetDataFolder)),
+        New Taggers_OCR.AutoTag_WinOCR,
+        New Auto_WinFace.Auto_WinFace,
         New Vblib.Auto_AzureTest(New Process_ResizeHalf)
     }
 
@@ -169,5 +197,22 @@ Partial Class Application
     }
 
     ' Public Shared gCloudProviders As New CloudProviders
+
+    Private Shared gUniqId As UniqID
+    Public Shared Function GetUniqId() As UniqID
+        If gUniqId Is Nothing Then
+            gUniqId = New UniqID(Application.GetDataFolder)
+        End If
+        Return gUniqId
+    End Function
+
+    Private Shared gArchQuerender As ArchiveIndex
+    Public Shared Function GetArchIndex() As ArchiveIndex
+        If gArchQuerender Is Nothing Then
+            gArchQuerender = New ArchiveIndex(Application.GetDataFolder)
+        End If
+        Return gArchQuerender
+    End Function
+
 
 End Class

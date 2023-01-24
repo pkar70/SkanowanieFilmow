@@ -1,0 +1,27 @@
+﻿<Page x:Class="SettingsSlideshow"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PicSorterNS"
+      mc:Ignorable="d" 
+      Title="Slideshow" Loaded="Page_Loaded">
+    <StackPanel Margin="5,5,5,5">
+        <TextBlock Margin="0,10,0,2" Text="Slideshow" FontWeight="Bold" FontSize="18" HorizontalAlignment="Center"/>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Change picture after seconds:" />
+            <TextBlock HorizontalAlignment="Right" Width="20" Text="{Binding Value, ElementName=uiSlideShowSeconds}" />
+        </Grid>
+        <!--<TextBox Name="uiSlideShowSeconds" InputScope="Digits" Width="20" HorizontalAlignment="Left"/>-->
+        <Slider HorizontalAlignment="Stretch" Minimum="1" Maximum="20" Name="uiSlideShowSeconds" SmallChange="1" LargeChange="5" IsSnapToTickEnabled="True"/>
+        <CheckBox Content="Show adult pics" Name="uiSlideShowAlsoX" Margin="0,5,0,0"/>
+
+        <Button Content=" OK " HorizontalAlignment="Center" Margin="5,20,5,0" Click="uiOK_Click" />
+
+    </StackPanel>
+</Page>

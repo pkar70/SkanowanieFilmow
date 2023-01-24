@@ -88,15 +88,16 @@ Public Class AutoTags
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
 
+            ' tu dodawać True Or jakby miały być powtarzane przebiegi po zmianie w kodzie
             If oItem.GetExifOfType(oSrc.nazwa) Is Nothing Then
                 Dim oExif As Vblib.ExifTag = Await oSrc.engine.GetForFile(oItem)
                 If oExif IsNot Nothing Then
-                    oItem.Exifs.Add(oExif)
+                    oItem.ReplaceOrAddExif(oExif)
                     oItem.TagsChanged = True
                 End If
                 Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
-                End If
-                uiProgBarInEngine.Value += 1
+            End If
+            uiProgBarInEngine.Value += 1
         Next
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed

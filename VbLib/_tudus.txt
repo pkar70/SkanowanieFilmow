@@ -25,10 +25,6 @@ nie działa (wymaga C#)
 
 więc migracja do nowszego .Net niekoniecznie zadziała, ale można dać do Net Core 3.1
 
-
-DIRTREE: usunąć katalogi które są "datowalne", i zobaczyć co zostanie
-DIRTREE: <jsonignore>fullpath, uzupełniane na OnLoad?
-
 NUGET prywatny, wersja "jak było", choc problem z Resw by był (bo jak przekazać?); kolejna wersja z uzyciem NetConfigs, kolejna z DataLog, i tak dalej.
 
 App.GetCoverters(sourcefilename, list<Target extensions>) - GetStream (publish), ConvertFile
@@ -36,24 +32,87 @@ App.GetCoverters(sourcefilename, list<Target extensions>) - GetStream (publish),
 <menu> i <contextmenu>?
 <DropDownButton przy WinUI2>
 
-BROWSER wczytajObrazek: nie dowolny z NAR/ZIP, tylko konkretne próbować wybrać?
-
 Od Aśki, uruchomienie:
 po retrieve nie odblokowało browse, albo po zdefiniowaniu source nie odblokowalo retrieve - sprawdzic
 kasowanie menu flyout po kliknięciu poza nim
 
-ARCHIWIZ: podczas archiwizacji robi FlattenExif, który jest pomijany przy iteratorach, ale za to wykorzystywany przy wyszukiwaniach (łatwiej tak niż sprawdzać coś we wszystkich kolejnych chyba)
-DBASE: wstawianie tam Flattened, co pozwala na w miarę normalne query
+Czy app WPF mogłaby zaimportować sobie settings app.json z UWP (ze ścieżki)?
 
-STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
+WPF i WinUI2? (progressring)
 
+
+Ważne:
+* shutterfly na Bari
+* przegląd zdjęć, usuwanie/crop/rotate/resize
+* przydział targetDir
+* archiwizacja ostateczna - zmniejszenie ilości zdjęć w buforze
+	(może być tylko tych co SURE, bez tych pojedynczych ktorych nie wiadomo gdzie dać?)
+	(usunąć niektóre targetDiry?)
+* publish adhoc dla Shutterfly (znak wodny), i przesłanie kompletu zdjęć jako archiwum?
+
+== SORTED:
+
+ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
+na App.GetArchives - GetPicture(oPic), uzupełnia oContent wedle wszystkich istniejących, próbując znaleźć takie które plik ma.
+
+* AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
+
+* AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
+
+AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
+
+BROWSER wczytajObrazek: nie dowolny z NAR/ZIP, tylko konkretne próbować wybrać?
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
+BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
+BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
+BROWSER: skalowanie typeFile, bo dla 1000 itemów jest stanowczo za duże :)
+BROWSER SET-TARGET-DIR:po [+] nie ma refresh comboboxa?
+BROWSER: #Wnd KWD SMALL: dodanie Kwd, razem z opisem może jednak, bo do SEARCH byłoby dobrze mieć "Kurcz" w opisie
+
+DBASE: wstawianie tam Flattened, co pozwala na w miarę normalne query
+DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
+DBASE: tworzenie tabeli wedle pól z EXIF (flattened?)
+
+DIRTREE: <jsonignore>fullpath, uzupełniane na OnLoad?
+
+EXIF: przerobić na "metadata", i dodać "real exif", pełny dump, z Big/Browse
 
 MAINPAGE: "open folder in-place", bez import jako takiego? tylko lokalny buffer.json?
+MAINPAGE: ewentualnie osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać (do ściągania komentarzy do zdjęć)
 
-* PUBLISH konwertery z NAR do JPG, 
+MAIN:BROWSE: ewentualnie "recursive"?
+MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
 
-* EWENTUALNIE NEW PAGE: osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać (do ściągania komentarzy do zdjęć)
+POSTPROCESS: co robić gdy etap pipeline nie działa na danym typie? Error czy Ignore?
+POSTPROCESS: jeśli któryś etap nie da rady, to pytanie (DialogBoxYN) co zrobić
+POSTPROCESS: CanRunPipeline(oFile) na całej liście, co zwraca nazwę kroku który jest niedostępny dla pliku
+
+PUBLISH konwertery z NAR do JPG, 
+PUBLISH jednego - może być pytanie, np. o opis.
+PUBLISH, default mask, i to przekopiowywane, albo includeMask nieruszalne, albo dwa poziomy (includemask - supported by service, includemask publikatora - co chcemy wysyłać)
+PUBLISH progressbar niezbyt dobrze sie zachowuje
+PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwleka zanim zamknie pliki i sa widoczne
+
+SEARCH: chyba wszystko TAK/NIE
+SEARCH data od-do; godziny od-do; GPS+promień; keyword; opis; -fx; copyr LISTA; camermodel LISTA; TYP zrodla (0/1/2/3); WinOCR (lub jako OPIS); GeoName; source NAME; Azure caption; Azure category; Azure tag; dominant colors/foreground/background; dzień/noc (godzina słoneczna?); temp zwykła i odczuwalna od-do; wilgotność oraz opad; wiatr min/max/kierunek; ciśnienie; widoczność; zachmurzenie; UVindex
+SEARCH: i search z search, i kazdy poziom oddzielne okno, i browse do odpalania, ale najpierw lista
+SEARCH: textbox "+" oraz "-", każdy to maski rozdzielone spacjami
+SEARCH: keywords: button browse keywords
+SEARCH: target dir - button browse? choć np. "parowozjada" a nie konkretna
+
+STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
+STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
+
+SHOWBIG: jakoś NAR (możliwość zamiany NAR na wybrany JPG, bądź na rozpakowane JPGi?)
+SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
+
+SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku skopiowanym do bufora, nie wcześniej
+
+SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
+
+SHUTTERFLY: *) jako archiwum - pelne zdjęcia, takze do druku, sharelink - pelne zdjecie
+SHUTTERFLY: *) jako publish, do Sites, ktorych mozna stworzyc duzo, z niezaleznymi adresami, zmneijszone itp.
+
 
 * ALL: powoli robić refactor obiektowy (OneKey i OneDir, OnePic jak najwiecej, je jako podstawa i bez uzywania innych. Dostęp do Property tylko XAML i Settings, reszta przez Methods?
 
@@ -61,141 +120,20 @@ MAINPAGE: "open folder in-place", bez import jako takiego? tylko lokalny buffer.
 
 co zrobic jak bedzie select do publish ale publisher nie uwzglednia typu? albo gdy postproc nie działa na nim? anulowanie pipeline (i publisha)?
 
-* ARCHIVE podczas archiwizacji nadawanie uniq picid (z daty i czasu, dla telefon/aparat będzie OK, dla skanów - jeszcze nie wiem)
 
-* AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI
+cloudarchive.json; dirtree.json na OneDrive?
+pomijanie zdjęć jakos oznakowanych (=X?)
+app telefon własne: korzystanie z cloudarchive.json do pokazywania zdjęć z folderu
+app telefon cudze: publish/get cudzą listę katalogów i konto/hasło/folder do chomika?
 
-* BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
+Do opisu: "a temperatura nie przekroczyła 20°"
+Pogoda: jeden EXIFtype, ale różne źródła? Airly do lokalnych? Sprawdzic to aktualnie uzywane Sandomierz, itp., jakie uzywa stacje - jak gęsto ma dane.
+[mamy: Kraków, Sandomierz, Gdańsk, Bari, Praha, nie ma: Sucha Beskidzka, Wieliczka]
+może wyciągać dane Airly (ostatnie 24 godziny) - to mógłby robić zaraz po przekopiowaniu, albo program na telefonie
 
-* PUBLISH jednego - może być pytanie, np. o opis.
 
-* SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
-
-* PUBLISH, default mask, i to przekopiowywane, albo includeMask nieruszalne, albo dwa poziomy (includemask - supported by service, includemask publikatora - co chcemy wysyłać)
-
-* BROWSER: dodać "security" (że ukrywany, taki nie idzie do PUBLISH - choć to też można zrobić przez TAG=private)
-
-* BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
-
-* DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
-
-* ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
-
-* na App.GetArchives - GetPicture(oPic), uzupełnia oContent wedle wszystkich istniejących, próbując znaleźć takie które plik ma.
-
-* oPic: inSourceId oraz suggested, na jpg.thumb i .jpg, ale żeby działało w Purge
 
 przemyslec "scheduled" publishing, jak sie to ma do "dziwnosci" (NAR itp., chyba o to chodziło? a może że będzie zaznaczone że do publikacji, ale wedle maski nie podlega publikacji; no i link może być zły (że link zawiera .jpg, a automat może dokleić .nar)
-
-
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Autotagger\Auto_Azure.lib.vb 19 KB Visual Basic Source file 13/12/2022 15:43:53 20/11/2022 16:43:14 21/12/2022 20:51:38 6
-60         ' *TODO* można byłoby zrobić zapętlenie, kilka kolejnych poziomów zmniejszania obrazka
-78                 ' *TODO* jesteśmy w NAR, tu nie będzie zmniejszania - przynajmniej na razie
-93         ' *TODO* reakcja jakaś na inne typy niż JPG
-94         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
-351             ' *TODO*
-507     ' *TODO* czy Azure ma osobno 5000 OCRów? jeśli tak, to można spróbować
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Autotagger\AutoTag_EXIF.lib.vb 15 KB Visual Basic Source file 5/12/2022 14:31:49 3/11/2022 11:33:19 21/12/2022 20:51:38 3
-17     ' *TODO* reakcja jakaś na inne typy niż JPG
-18     ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
-55                 ' *TODO* z filmów mamy tylko wersję uproszczoną - tylko to co jest ustawiane będzie
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Processing\BatchEdit.xaml.vb 4 KB Visual Basic Source file 14/11/2022 16:38:24 14/11/2022 16:20:05 21/12/2022 18:30:38 1
-77             ' *TODO* później będzie dokładniej może, typu pytanie o Exif, i tak dalej
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Buffer\Buffer.lib.vb 7 KB Visual Basic Source file 17/12/2022 19:09:26 27/10/2022 17:08:37 21/12/2022 20:51:38 1
-22     ' *TODO* to później można wyłączyć, bo to uzupełnia to co się powinno zrobić wcześniej
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\CloudArch_std14_Chomikuj\Cloud_Chomikuj.vb 12 KB Visual Basic Source file 20/12/2022 12:52:42 9/12/2022 12:19:47 21/12/2022 20:51:38 5
-68         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-75         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-76         ' *TODO* raczej bedzie konieczny LOGIN
-175         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-184         ' *TODO* na razie i tak nie jest wykorzystywane chyba
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\CloudArch_std14_Degoo\Cloud_Degoo.vb 15 KB Visual Basic Source file 19/12/2022 13:14:47 9/12/2022 12:20:12 21/12/2022 20:51:35 7
-23         ' *TODO*
-42         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-50         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-51         ' *TODO* raczej bedzie konieczny LOGIN
-62         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-72         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-106         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\CloudArch_std14_Shutterfly\Cloud_Shutterfly.vb 6 KB Visual Basic Source file 19/12/2022 12:26:06 9/12/2022 12:21:01 21/12/2022 20:51:35 8
-15         ' *TODO*
-32         ' *TODO* wyślij plik, "" gdy bezpośrednio, Name gdy do albumu
-40         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-48         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-49         ' *TODO* raczej bedzie konieczny LOGIN
-60         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-70         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-105         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Structy\Keywords.lib.vb 5 KB Visual Basic Source file 14/12/2022 10:54:05 30/10/2022 09:32:22 21/12/2022 20:51:38 2
-23     ' *TODO* upload behaviour ' można, nie można, skasować - o co to chodziło? :)
-24     ' *TODO* można dodać Exif narzucany (chyba)
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\LocalStorage\LocalStorage.lib.vb 12 KB Visual Basic Source file 11/12/2022 15:21:24 22/11/2022 13:06:19 21/12/2022 20:51:38 1
-222 		' *TODO* jeśli nie, to spróbuj skopiować z oArchive
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Main\MainPage.xaml.vb 2 KB Visual Basic Source file 12/12/2022 17:13:38 28/10/2022 15:22:29 21/12/2022 20:51:38 1
-16         ' *TODO* guziki pozostałe wyłączane jak nie ma LocalStorage
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\MainWindow.xaml.vb 2 KB Visual Basic Source file 19/12/2022 14:57:57 28/10/2022 15:51:32 21/12/2022 20:51:38 1
-11         ' *TODO* to tylko czasowo
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\PicSources\PicSourceBase.lib.vb 14 KB Visual Basic Source file 17/12/2022 19:13:13 27/10/2022 16:44:07 21/12/2022 20:51:38 2
-117 			' *TODO* reszta -do userdescription
-150 		' *TODO* ewentualnie tak podmień, by suggested filename (a więc w buforze i dalej) było już bez tego
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\Postprocess\Process_AutoRotate.vb 5 KB Visual Basic Source file 2/12/2022 22:50:02 14/11/2022 13:42:46 21/12/2022 18:30:38 1
-97         '' *TODO* ten mechanizm dobrze byłoby przenieść do EndEdit
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Browse\ProcessBrowse.xaml.vb 50 KB Visual Basic Source file 21/12/2022 11:18:10 2/11/2022 11:49:44 21/12/2022 20:51:38 7
-71         ' *TODO* Await EwentualneKasowanieArchived() -
-178             ' *TODO* tymczasowe, by wyłapywać tylko to co chcemy
-401         ' *TODO* reakcja jakaś na inne typy niż JPG
-402         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
-406             ' *TODO* pierwsza klatka z filmików, overwrite na tym obrazek z Ext pliku?
-407             ' *TODO* z .NAR wyciagnięcie zdjęcia pierwszego/lepszego (wybranego w kodzie) do tempfilename
-582         ' przesunięcie "dzielnika" *TODO* bezpośrednio na liscie
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\VbLib\Publishery\Publish_AdHoc.vb 5 KB Visual Basic Source file 11/12/2022 15:19:49 7/12/2022 12:41:01 21/12/2022 20:51:38 2
-34         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-39         ' *TODO* jak w localstorage
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\Publish_std2_Facebook\Publish_Facebook.vb 12 KB Visual Basic Source file 19/12/2022 16:38:06 9/12/2022 10:18:42 21/12/2022 20:51:38 6
-94         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-102         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-103         ' *TODO* raczej bedzie konieczny LOGIN
-114         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-124         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-160         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\Publish_Instagram\Publish_Instagram.vb 14 KB Visual Basic Source file 21/12/2022 20:57:38 7/12/2022 12:32:59 21/12/2022 20:57:38 4
-90         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-98         ' *TODO* na razie i tak nie będzie wykorzystywane, podobnie jak w LocalStorage
-99         ' *TODO* raczej bedzie konieczny LOGIN
-141                     ' *TODO* pomijamy reply, tylko komentarze
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Setting\SettingsMapsy.xaml.vb 5 KB Visual Basic Source file 12/12/2022 16:59:05 5/11/2022 07:49:42 21/12/2022 20:51:38 1
-42         ' *TODO* wczytaj nazwę mapy
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Setting\SettingsSources.xaml.vb 10 KB Visual Basic Source file 11/12/2022 16:22:08 30/10/2022 15:32:02 21/12/2022 20:51:38 1
-3 ' *TODO* defaultPublish być może dodać
-
-H:\Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\WindowsWithPages\Browse\ShowBig.xaml.vb 27 KB Visual Basic Source file 21/12/2022 18:48:26 2/11/2022 18:58:56 21/12/2022 20:51:33 6
-74         ' *TODO* reakcja jakaś na inne typy niż JPG
-75         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
-497                 ' *TODO* resize
-634         ' *TODO* (może) do Settings:Misc, [] ask for confirm after EditSave (przy Crop, i ew. Rotate)
-698     '    ' *TODO* pokaż zmianę
-725         ' *TODO* (może) do Settings:Misc, [] autosave after manual rotate
-
-
 
 
 
@@ -230,8 +168,6 @@ wygaszanie autosplit gdy nie ma podziałów w selecteditems
 powoli robić refactor obiektowy,
 tzn. przenosić do OneKey i OneDir jak najwiecej, je jako podstawa i bez uzywania innych. Dostęp do Property tylko XAML i Settings, reszta przez Methods?
 potem do OnePic, ktory by wykorzystywał OneKey i OneDir
-
-ARCHIVE: stykówki?
 
 teraz jest 1150 katalogów w cyfrowe, więc trzeba liczyć >2k
 
@@ -1016,4 +952,111 @@ SQL pole JSON? (na tagi)
 
 2) wstawienie zmiennych do defs.ini w vblib
  [cel: porządek w zmiennych, a'la dokumentacja]
+
+
+
+
+
+
+ L:\HomeArchive\Fw1>exiftool -v DSCF0199.AVI
+  ExifToolVersion = 12.37
+  FileName = DSCF0199.AVI
+  Directory = .
+  FileSize = 18702808
+  FileModifyDate = 1638717494
+  FileAccessDate = 1672349740.67778
+  FileCreateDate = 1670852525.19175
+  FilePermissions = 33206
+  FileType = AVI
+  FileTypeExtension = AVI
+  MIMEType = video/x-msvideo
+RIFF 'LIST_hdrl' chunk (8818 bytes of data):
+  Hdrl (SubDirectory) -->
+  + [Hdrl directory, 8818 bytes]
+  | AVIHeader (SubDirectory) -->
+  | + [BinaryData directory, 56 bytes]
+  | | FrameRate = 33333
+  | | MaxDataRate = 1170432
+  | | FrameCount = 480
+  | | StreamCount = 2
+  | | ImageWidth = 640
+  | | ImageHeight = 480
+  | Stream (SubDirectory) -->
+  | + [Stream directory, 8642 bytes]
+  | | StreamHeader (SubDirectory) -->
+  | | + [BinaryData directory, 56 bytes]
+  | | | StreamType = vids
+  | | | VideoCodec = mjpg
+  | | | VideoFrameRate = 0.033333
+  | | | VideoFrameCount = 480
+  | | | Quality = 10000
+  | | | SampleSize = 0
+  | | VideoFormat (SubDirectory) -->
+  | | + [BinaryData directory, 40 bytes]
+  | | | BMPVersion = 40
+  | | | ImageWidth = 640
+  | | | ImageHeight = 480
+  | | | Planes = 1
+  | | | BitDepth = 24
+  | | | Compression = 1196444237
+  | | | ImageLength = 921600
+  | | | PixelsPerMeterX = 0
+  | | | PixelsPerMeterY = 0
+  | | | NumColors = 0
+  | | | NumImportantColors = 0
+  | | StreamData (SubDirectory) -->
+  | | + [StreamData directory, 8488 bytes]
+  | | | + [IFD0 directory with 7 entries]
+  | | | | 0)  Make = FUJIFILM
+  | | | | 1)  Model = FinePix S9600
+  | | | | 2)  ModifyDate = 2021:12:05 16:17:57
+  | | | | 3)  ThumbnailOffset = 438
+  | | | | 4)  ThumbnailLength = 8042
+  | | | | 5)  Copyright =
+  | | | | 6)  ExifOffset (SubDirectory) -->
+  | | | | + [ExifIFD directory with 3 entries]
+  | | | | | 0)  DateTimeOriginal = 2021:12:05 16:17:57
+  | | | | | 1)  CreateDate = 2021:12:05 16:17:57
+  | | | | | 2)  MakerNoteFujiFilm (SubDirectory) -->
+  | | | | | + [MakerNotes directory with 15 entries]
+  | | | | | | 0)  Version = 0130
+  | | | | | | 1)  Quality = NORMAL
+  | | | | | | 2)  Sharpness = 3
+  | | | | | | 3)  WhiteBalance = 0
+  | | | | | | 4)  FujiFlashMode = 2
+  | | | | | | 5)  FlashExposureComp = 0 (0/100)
+  | | | | | | 6)  Macro = 0
+  | | | | | | 7)  FocusMode = 0
+  | | | | | | 8)  SlowSync = 0
+  | | | | | | 9)  PictureMode = 0
+  | | | | | | 10) AutoBracketing = 0
+  | | | | | | 11) FujiFilm_0x1200 = 0
+  | | | | | | 12) BlurWarning = 0
+  | | | | | | 13) FocusWarning = 0
+  | | | | | | 14) ExposureWarning = 0
+  | | StreamName = FUJIFILM AVI STREAM 0100
+  | Stream (SubDirectory) -->
+  | + [Stream directory, 88 bytes]
+  | | StreamHeader (SubDirectory) -->
+  | | + [BinaryData directory, 56 bytes]
+  | | | StreamType = auds
+  | | | AudioCodec =
+  | | | AudioSampleRate = 6.25e-005
+  | | | AudioSampleCount = 256000
+  | | | Quality = 10000
+  | | | SampleSize = 1
+  | | AudioFormat (SubDirectory) -->
+  | | + [BinaryData directory, 16 bytes]
+  | | | Encoding = 1
+  | | | NumChannels = 1
+  | | | SampleRate = 16000
+  | | | AvgBytesPerSec = 16000
+  | | | BitsPerSample = 8
+RIFF 'JUNK' chunk (5474 bytes of data):
+  TextJunk =
+RIFF 'LIST_movi' chunk (18680528 bytes of data):
+RIFF 'idx1' chunk (7936 bytes of data):
+
+
+
 

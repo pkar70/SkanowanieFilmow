@@ -42,7 +42,7 @@ Public Class Process_EmbedExif
         oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
 
         ' dane z EXIF
-        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs
+        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs(True)
 
         If oExif.FileSourceDeviceType <> 0 Then
             oExifLib.SetTagValue(CompactExifLib.ExifTag.FileSource, oExif.FileSourceDeviceType, CompactExifLib.ExifTagType.Byte)
@@ -67,8 +67,11 @@ Public Class Process_EmbedExif
         If Not String.IsNullOrWhiteSpace(oExif.Restrictions) Then
             oExifLib.SetTagValue(CompactExifLib.ExifTag.PkarRestriction, oExif.Restrictions, CompactExifLib.StrCoding.UsAscii)
         End If
-        If Not String.IsNullOrWhiteSpace(oExif.PicGuid) Then
-            oExifLib.SetTagValue(CompactExifLib.ExifTag.ImageUniqueId, oExif.PicGuid, CompactExifLib.StrCoding.UsAscii)
+
+        Dim tempGUID As String = oPic.PicGuid
+        If String.IsNullOrWhiteSpace(tempGUID) Then tempGUID = oPic.GetSuggestedGuid
+        If Not String.IsNullOrWhiteSpace(tempGUID) Then
+            oExifLib.SetTagValue(CompactExifLib.ExifTag.ImageUniqueId, tempGUID, CompactExifLib.StrCoding.UsAscii)
         End If
 
         If Not String.IsNullOrWhiteSpace(oExif.ReelName) Then
@@ -157,7 +160,7 @@ Public Class Process_EmbedBasicExif
         oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
 
         ' dane z EXIF
-        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs
+        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs(False)
 
         If Not String.IsNullOrWhiteSpace(oExif.Author) Then
             oExifLib.SetTagValue(CompactExifLib.ExifTag.Artist, oExif.Author, CompactExifLib.StrCoding.UsAscii)
@@ -165,6 +168,11 @@ Public Class Process_EmbedBasicExif
         If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then
             oExifLib.SetTagValue(CompactExifLib.ExifTag.Copyright, oExif.Copyright, CompactExifLib.StrCoding.UsAscii)
         End If
+
+        Dim tempGUID As String = oPic.PicGuid
+        If String.IsNullOrWhiteSpace(tempGUID) Then tempGUID = oPic.GetSuggestedGuid
+        If String.IsNullOrWhiteSpace(tempGUID) Then tempGUID = oPic.sSuggestedFilename
+        oExifLib.SetTagValue(CompactExifLib.ExifTag.UserComment, tempGUID, CompactExifLib.StrCoding.UsAscii)
 
         'Using oFileStream As Stream = IO.File.Open(oPic.sFilenameEditDst, IO.FileMode.Create)
         ' oExifLib.Save(oStream.AsStream, oFileStream, 0) ' (orgFileName)

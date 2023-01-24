@@ -20,7 +20,7 @@ Public Class Publish_AdHoc
         Dim oNewFileStream As FileStream = IO.File.OpenWrite(sOutFilename)
         oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
         Await oPic._PipelineOutput.CopyToAsync(oNewFileStream)
-        Await oNewFileStream.FlushAsync()
+        oNewFileStream.Flush(True)  ' True: próba by widać było przybywające pliki (bez tego jakby dopiero po chwili, i wszystkie razem?)
         oNewFileStream.Dispose()
 
         ' w innych Publish: uzupelnij info w oPic o publishingu

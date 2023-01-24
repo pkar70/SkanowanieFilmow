@@ -6,6 +6,7 @@ Imports System.Security.Policy
 Imports MetadataExtractor.Formats
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 
 Public Class BrowseKeywordsWindow
@@ -13,20 +14,34 @@ Public Class BrowseKeywordsWindow
     ' Private _myKeywordsList As New List(Of Vblib.OneKeyword)
     Private _oPic As ProcessBrowse.ThumbPicek
     Private _oNewExif As New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
+    Private _readonly As Boolean
 
+    Public Sub New(bReadOnly As Boolean)
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        _readonly = bReadOnly
+    End Sub
 
 #Region "UI events"
 
-    Public Sub InitForPic(oPic As ProcessBrowse.ThumbPicek)
-        If oPic Is Nothing Then Return
-        _oPic = oPic
-        Me.Title = oPic.oPic.InBufferPathName
+    Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+        'Public Sub InitForPic(oPic As ProcessBrowse.ThumbPicek)
+        'If oPic Is Nothing Then Return
+        '_oPic = oPic
+        _oPic = DataContext
+        Me.Title = IO.Path.GetFileName(_oPic.oPic.InBufferPathName)
 
         _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
 
         UstalCheckboxy()    ' 50 ms
         ZablokujNiezgodne() ' 200 ms
         RefreshLista()      ' 60 ms
+
+        uiApply.IsEnabled = Not _readonly
+        uiEdit.IsEnabled = Not _readonly
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -98,26 +113,33 @@ Public Class BrowseKeywordsWindow
 
     End Function
 
+
+    Public Shared Sub ApplyKeywordsToExif(oExif As Vblib.ExifTag, lKeywords As List(Of Vblib.OneKeyword))
+        SetDatesByKeywords(oExif, lKeywords)
+        SetGeoByKeywords(oExif, lKeywords)
+
+        oExif.Keywords = ""
+        oExif.UserComment = ""
+
+        For Each oItem As OneKeyword In lKeywords
+            oExif.Keywords = oExif.Keywords & " " & oItem.sId
+            oExif.UserComment = oExif.UserComment & " | " & oItem.sDisplayName
+        Next
+    End Sub
+
     Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
 
-        Dim lKeys As List(Of Vblib.OneKeyword) = GetListOfSelectedKeywords()
+        Application.ShowWait(True)
 
-        SetDatesByKeywords(_oNewExif, lKeys)
-        SetGeoByKeywords(_oNewExif, lKeys)
+        Dim lKeys As List(Of Vblib.OneKeyword) = GetListOfSelectedKeywords()
+        ApplyKeywordsToExif(_oNewExif, lKeys)
         Await SetTargetDirByKeywords(_oPic, lKeys)
 
-        _oNewExif.Keywords = ""
-        _oNewExif.UserComment = ""
-
-        For Each oItem As OneKeyword In lKeys
-            _oNewExif.Keywords = _oNewExif.Keywords & " " & oItem.sId
-            _oNewExif.UserComment = _oNewExif.UserComment & " | " & oItem.sDisplayName
-        Next
-
-
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
-            If oBrowserWnd Is Nothing Then Return
+        If oBrowserWnd Is Nothing Then Return
         oBrowserWnd.ChangedKeywords(_oNewExif, _oPic)
+
+        Application.ShowWait(False)
 
     End Sub
 
@@ -168,7 +190,7 @@ Public Class BrowseKeywordsWindow
         Next
 
         For Each oItem As String In uiGrupy.Items
-            If oItem.Trim.StartsWith("-RO") Then
+            If oItem.Trim.StartsWithOrdinal("-RO") Then
                 uiGrupy.SelectedItem = oItem
                 Exit For
             End If
@@ -200,19 +222,19 @@ Public Class BrowseKeywordsWindow
     Private Sub UstalCheckboxy()
         vb14.DumpCurrMethod()
 
-        Dim sUsedTags As String = ""
+        Dim sUsedTags As String = _oPic.oPic.GetAllKeywords ' ""
 
-        For Each oExifTag As Vblib.ExifTag In _oPic.oPic.Exifs
-            If Not String.IsNullOrWhiteSpace(oExifTag.Keywords) Then
-                sUsedTags = sUsedTags & " " & oExifTag.Keywords
-            End If
-        Next
+        'For Each oExifTag As Vblib.ExifTag In _oPic.oPic.Exifs
+        '    If Not String.IsNullOrWhiteSpace(oExifTag.Keywords) Then
+        '        sUsedTags = sUsedTags & " " & oExifTag.Keywords
+        '    End If
+        'Next
 
-        If _oPic.oPic.descriptions IsNot Nothing Then
-            For Each oDesc As OneDescription In _oPic.oPic.descriptions
-                sUsedTags = sUsedTags & " " & oDesc.keywords & " "
-            Next
-        End If
+        'If _oPic.oPic.descriptions IsNot Nothing Then
+        '    For Each oDesc As OneDescription In _oPic.oPic.descriptions
+        '        sUsedTags = sUsedTags & " " & oDesc.keywords & " "
+        '    Next
+        'End If
 
         sUsedTags = sUsedTags.Replace("  ", " ")
 
@@ -327,8 +349,8 @@ Public Class BrowseKeywordsWindow
     Private Sub uiEditKeyTree_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New SettingsKeywords
         oWnd.ShowDialog()
-        InitForPic(_oPic)
+        Me.DataContext = _oPic
+        ' InitForPic(_oPic)
     End Sub
-
 
 End Class

@@ -1,16 +1,36 @@
-﻿Imports Vblib
+﻿Imports System.Globalization
+Imports System.Xaml.Schema
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
+Imports System.Security.Policy
 
 Public Class SettingsDirTree
 
-    ' skopiowane i przerobione z Keywords, więc trochę pozostałości nazewniczych stamtąd
+    Public Shared _EditMode As Boolean
+
+    ''' <summary>
+    ''' FALSE gdy jako browse w archiwum, TRUE gdy edytor tagów
+    ''' </summary>
+    ''' <param name="editMode"></param>
+    Public Sub New(editMode As Boolean)
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        _EditMode = editMode
+    End Sub
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         RefreshList()
+        uiGridQuery.Visibility = If(_EditMode, Visibility.Collapsed, Visibility.Visible)
     End Sub
+
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
         Application.GetDirTree.Save(True)
+        CloudArchivesList.CopyToOneDrive("dirstree.json", "uiUseOneDrive")
         Me.Close()
     End Sub
 
@@ -55,9 +75,11 @@ Public Class SettingsDirTree
 
         If bAdd Then
             uiId.IsReadOnly = False
+            uiId.Focus()
             'uiDisplayName.IsReadOnly = False
         Else
             uiId.IsReadOnly = True
+            uiNotes.Focus()
             'uiDisplayName.IsReadOnly = True
         End If
 
@@ -88,7 +110,7 @@ Public Class SettingsDirTree
             _editingItem.denyPublish = uiDenyPublish.IsChecked
 
             If Await vb14.DialogBoxYNAsync("Zmiana zakazu publikacji, propagować w subkeys?") Then
-                For Each oItem As OneDir In _editingItem.ToFlatList
+                For Each oItem As Vblib.OneDir In _editingItem.ToFlatList
                     oItem.denyPublish = _editingItem.denyPublish
                 Next
             End If
@@ -150,7 +172,7 @@ Public Class SettingsDirTree
         Dim bHasKeys As Boolean = False
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If oPic.TargetDir Is Nothing Then Continue For
-            If oPic.TargetDir.StartsWith(oItem.sId) Then
+            If oPic.TargetDir.StartsWithOrdinal(oItem.sId) Then
                 bHasKeys = True
                 Exit For
             End If
@@ -169,7 +191,6 @@ Public Class SettingsDirTree
     Private Sub uiScanFolder_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
         Dim oItem As Vblib.OneDir = oFE?.DataContext
-
         If oItem Is Nothing Then Return
 
         Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Wskaż drzewko katalogów")
@@ -183,6 +204,81 @@ Public Class SettingsDirTree
         RefreshList()
     End Sub
 
+    Private Sub uiOpenFolder_Click(sender As Object, e As RoutedEventArgs)
+        vb14.DumpCurrMethod()
 
+        Dim oFE As FrameworkElement = sender
+        Dim oItem As Vblib.OneDir = oFE?.DataContext
+        If oItem Is Nothing Then Return
+
+        OpenFolderInPicBrowser(Application.GetDirTree.GetFullPath(oItem.sId))
+
+    End Sub
+
+    Public Shared Sub OpenFolderInPicBrowser(sTargetDir As String)
+        ' Dim sTargetDir As String = Application.GetDirTree.GetFullPath(sFolderId)
+
+        For Each oArch As VbLibCore3_picSource.LocalStorageMiddle In Application.GetArchivesList.GetList
+            vb14.DumpMessage($"trying archive {oArch.StorageName}")
+            Dim sRealPath As String = oArch.GetRealPath(sTargetDir, Vblib.ArchiveIndex.FOLDER_INDEX_FILE)
+            vb14.DumpMessage($"real path of index file: {sRealPath}")
+            If Not String.IsNullOrWhiteSpace(sRealPath) Then
+
+                Dim oBuffer As New Vblib.BufferFromQuery(sRealPath)
+
+                Dim oWnd As New ProcessBrowse(oBuffer, True)
+                oWnd.Show()
+                Return
+            End If
+        Next
+        vb14.DialogBox("Wygląda na to że nie mam pliku indeksowego w tym katalogu w żadnym archiwum")
+
+    End Sub
+
+    Private Sub uiQuery_TextChanged(sender As Object, e As TextChangedEventArgs) Handles uiQuery.TextChanged
+
+        Dim query As String = uiQuery.Text.ToLowerInvariant
+        If query.Length < 3 Then
+            uiTreeView.Visibility = Visibility.Visible
+            uiLista.Visibility = Visibility.Collapsed
+            Return
+        End If
+        uiTreeView.Visibility = Visibility.Collapsed
+        uiLista.Visibility = Visibility.Visible
+
+        ' mamy jakieś query wpisane, to szukamy wedle niego
+        Dim lista As New List(Of Vblib.OneDir)
+        For Each oFold In Application.GetDirTree.ToFlatList
+            If oFold.notes.ToLowerInvariant.Contains(query) OrElse
+                    oFold.sId.ToLowerInvariant.Contains(query) Then
+                lista.Add(oFold)
+            End If
+        Next
+
+        uiLista.ItemsSource = From c In lista Order By c.sId
+    End Sub
 End Class
 
+Public Class KonwersjaVisibilyFromGlobal
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        Return If(SettingsDirTree._EditMode, Visibility.Visible, Visibility.Collapsed)
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+Public Class KonwersjaVisibilyFromNotGlobal
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        Return If(Not SettingsDirTree._EditMode, Visibility.Visible, Visibility.Collapsed)
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class

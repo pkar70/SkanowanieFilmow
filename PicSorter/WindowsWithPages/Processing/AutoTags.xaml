@@ -6,10 +6,18 @@
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="AutoTags" Height="450" Width="300" Loaded="Window_Loaded">
-    <Grid>
-        <StackPanel Margin="5,5,5,5">
-            <TextBlock Text="Auto-znakowanie zdjęć" HorizontalAlignment="Center" FontSize="18" />
-            <ListView Name="uiLista" Margin="0,5,0,10">
+    <Grid Margin="5,5,5,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Auto-znakowanie zdjęć" HorizontalAlignment="Center" FontSize="18" />
+
+            <ListView Name="uiLista" Margin="0,5,0,10" Grid.Row="1">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
@@ -39,11 +47,10 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Button Name="uiGetAll" HorizontalAlignment="Center" Width="Auto" Content=" Run all " Click="uiGetAll_Click"/>
+            <Button Grid.Row="2" Name="uiGetAll" HorizontalAlignment="Center" Width="Auto" Content=" Run all " Click="uiGetAll_Click"/>
 
-            <ProgressBar Name="uiProgBarEngines" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>
-            <ProgressBar Name="uiProgBarInEngine" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>
-        </StackPanel>
+        <ProgressBar Grid.Row="3" Name="uiProgBarEngines" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>
+        <ProgressBar Grid.Row="4" Name="uiProgBarInEngine" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>
 
     </Grid>
 </Window>

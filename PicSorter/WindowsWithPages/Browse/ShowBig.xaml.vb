@@ -10,18 +10,39 @@ Imports vb14 = Vblib.pkarlibmodule14
 Imports Windows.Storage.Streams
 Imports CompactExifLib
 Imports Vblib
+Imports pkar
 
 Public Class ShowBig
 
     Private _picek As ProcessBrowse.ThumbPicek
+    Private _inArchive As Boolean
+    Private _inSlideShow As Boolean
+    Private _timer As New System.Windows.Threading.DispatcherTimer
 
-    Public Sub New(oPicek As ProcessBrowse.ThumbPicek)
+    Public Sub New(oPicek As ProcessBrowse.ThumbPicek, bInArchive As Boolean, bSlideShow As Boolean)
 
         ' This call is required by the designer.
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
         _picek = oPicek
+        _inArchive = bInArchive
+        _inSlideShow = bSlideShow
+
+        AddHandler _timer.Tick, AddressOf Timer_Ticked
+    End Sub
+
+    Public Sub New(oPicek As Vblib.OnePic, bInArchive As Boolean, bSlideShow As Boolean)
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        _picek = New ProcessBrowse.ThumbPicek(oPicek, 0)
+        _inArchive = bInArchive
+        _inSlideShow = bSlideShow
+
+        AddHandler _timer.Tick, AddressOf Timer_Ticked
     End Sub
 
     Private _bitmap As BitmapImage
@@ -53,7 +74,7 @@ Public Class ShowBig
         End If
     End Sub
 
-    Private Function DetermineOrientation(oPic As Vblib.OnePic) As Rotation
+    Private Shared Function DetermineOrientation(oPic As Vblib.OnePic) As Rotation
         Dim oExif As Vblib.ExifTag
 
         'oExif = oPic.GetExifOfType(Vblib.ExifSource.ManualRotate)
@@ -113,17 +134,52 @@ Public Class ShowBig
             uiFullPicture.Height = _bitmap.PixelHeight / dDesiredScale
         End If
 
+        If _inArchive Then
+            uiBatchProcessors.Visibility = Visibility.Collapsed
+            uiEditModes.Visibility = Visibility.Collapsed
+            uiDelete.Visibility = Visibility.Collapsed
+            uiShowExif.Visibility = Visibility.Collapsed
+        Else
+            ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
+            uiBatchProcessors.Visibility = Visibility.Visible
+            uiEditModes.Visibility = Visibility.Visible
+            uiDelete.Visibility = Visibility.Visible
+            uiShowExif.Visibility = Visibility.Visible
+        End If
 
         ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
-        ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
         ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
         ProcessBrowse.WypelnMenuCloudArchives(_picek.oPic, uiMenuCloudArch, AddressOf ApplyCloudArch)
 
         OnOffMap()
         SettingsMapsy.WypelnMenuMapami(uiOnMap, AddressOf uiOnMap_Click)
 
+        If String.IsNullOrEmpty(_picek.oPic.fileTypeDiscriminator) Then
+            uiIkonkaTypu.Visibility = Visibility.Collapsed
+        Else
+            uiIkonkaTypu.Visibility = Visibility.Visible
+            uiIkonkaTypu.Content = _picek.oPic.fileTypeDiscriminator
+        End If
+
+        TimerOnOff()
+
         ' MenuAutoTaggerow()
 
+    End Sub
+
+    Private Sub TimerOnOff()
+        If _inSlideShow Then
+            uiSlideshow.Header = "Stop slideshow"
+            _timer.Interval = TimeSpan.FromSeconds(vb14.GetSettingsInt("uiSlideShowSeconds"))
+            _timer.Start()
+        Else
+            _timer.Stop()
+            uiSlideshow.Header = "Start slideshow"
+        End If
+    End Sub
+
+    Private Sub Timer_Ticked(sender As Object, e As EventArgs)
+        ChangePicture(False, False)
     End Sub
 
 
@@ -149,7 +205,7 @@ Public Class ShowBig
     End Function
 
     Private Sub OnOffMap()
-        Dim oGps As Vblib.MyBasicGeoposition = _picek.oPic.GetGeoTag
+        Dim oGps As BasicGeopos = _picek.oPic.GetGeoTag
         uiOnMap.IsEnabled = (oGps IsNot Nothing)
 
     End Sub
@@ -192,7 +248,7 @@ Public Class ShowBig
         Select Case oFE.Header.ToString.ToLowerInvariant
             Case "open"
                 Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
-                If sLink.ToLowerInvariant.StartsWith("http") Then
+                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
                     pkar.OpenBrowser(sLink)
                 Else
                     If sLink = "" Then sLink = "ERROR getting sharing link"
@@ -204,7 +260,7 @@ Public Class ShowBig
                 Await oCloud.GetRemoteTags(_picek.oPic)
             Case "share link"
                 Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
-                If sLink.ToLowerInvariant.StartsWith("http") Then
+                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
                     vb14.ClipPut(sLink)
                     vb14.DialogBox("Link in ClipBoard")
                 Else
@@ -246,7 +302,7 @@ Public Class ShowBig
         Select Case oFE.Header.ToString.ToLowerInvariant
             Case "open"
                 Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
-                If sLink.ToLowerInvariant.StartsWith("http") Then
+                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
                     pkar.OpenBrowser(sLink)
                 Else
                     If sLink = "" Then sLink = "ERROR getting sharing link"
@@ -257,7 +313,7 @@ Public Class ShowBig
                 SaveMetaData()  ' bo zmieniono info o publishingu
             Case "share link"
                 Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
-                If sLink.ToLowerInvariant.StartsWith("http") Then
+                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
                     vb14.ClipPut(sLink)
                     vb14.DialogBox("Link in ClipBoard")
                 Else
@@ -292,14 +348,22 @@ Public Class ShowBig
         vb14.ClipPut(_picek.oPic.InBufferPathName)
     End Sub
 
-    Private Sub uiShowExifs_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiShowExif_Click(sender As Object, e As RoutedEventArgs)
         'uiFlyout.IsOpen = False
-        Dim oWnd As New ShowExifs(_picek.oPic)
+        Dim oWnd As New ShowExifs(True) '(_picek.oPic)
+        oWnd.DataContext = _picek
+        oWnd.Show()
+    End Sub
+
+    Private Sub uiShowMetadata_Click(sender As Object, e As RoutedEventArgs)
+        'uiFlyout.IsOpen = False
+        Dim oWnd As New ShowExifs(False) '(_picek.oPic)
+        oWnd.DataContext = _picek
         oWnd.Show()
     End Sub
 
     Private Sub uiOnMap_Click(sender As Object, e As RoutedEventArgs)
-        Dim oGps As Vblib.MyBasicGeoposition = _picek.oPic.GetGeoTag
+        Dim oGps As BasicGeopos = _picek.oPic.GetGeoTag
         If oGps Is Nothing Then Return
 
         Dim oFE As FrameworkElement = sender
@@ -331,14 +395,14 @@ Public Class ShowBig
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
 
-        Dim picek As ProcessBrowse.ThumbPicek = oBrowserWnd.FromBig_Next(_picek, bGoBack)
+        Dim picek As ProcessBrowse.ThumbPicek = oBrowserWnd.FromBig_Next(_picek, bGoBack, _inSlideShow)
         If picek Is Nothing Then
             Me.Close()  ' koniec obrazków
         Else
 
             If bShifty Then
                 ' nowe okno
-                Dim oWnd As New ShowBig(picek)
+                Dim oWnd As New ShowBig(picek, _inArchive, _inSlideShow)
                 oWnd.Owner = Me.Owner
                 oWnd.Show()
                 oWnd.Focus()
@@ -490,8 +554,8 @@ Public Class ShowBig
                 transf.Bounds = bnds
 
                 sHistory = "Cropped to " &
-                 $"({Math.Min(uiCropUp.Value, uiCropDown.Value)} .. {Math.Max(uiCropUp.Value, uiCropDown.Value)} × " &
-                 $"({Math.Min(uiCropLeft.Value, uiCropRight.Value)} .. {Math.Max(uiCropLeft.Value, uiCropRight.Value)})"
+                 $"({Math.Min(uiCropUp.Value, uiCropDown.Value).ToString("F2")} .. {Math.Max(uiCropUp.Value, uiCropDown.Value).ToString("F2")} × " &
+                 $"({Math.Min(uiCropLeft.Value, uiCropRight.Value).ToString("F2")} .. {Math.Max(uiCropLeft.Value, uiCropRight.Value).ToString("F2")})"
 
             Case EditModeEnum.resize
                 ' *TODO* resize
@@ -657,6 +721,8 @@ Public Class ShowBig
 
         End Using
 
+        IO.File.Delete(_picek.oPic.InBufferPathName & ProcessBrowse.THUMB_SUFIX) ' no exception if not found
+
         _picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
 
         Return True
@@ -720,6 +786,9 @@ Public Class ShowBig
     End Sub
 
     Private Sub uiRotate_Checked(sender As Object, e As RoutedEventArgs)
+
+        If _editMode <> EditModeEnum.rotate Then Return
+
         ' równoważne Save - wybór góry zdjęcia automatycznie kończy operację, nie trzeba SAVE
         ' *TODO* (może) do Settings:Misc, [] autosave after manual rotate
 
@@ -754,6 +823,54 @@ Public Class ShowBig
 
     End Sub
 
+    Private Sub uiIkonkaTypu_Click(sender As Object, e As RoutedEventArgs)
+        ' kliknięcie na typie, znaczy "*" lub ">"
+
+        Select Case uiIkonkaTypu.Content
+            Case "*" ' plik NAR
+                ' otwórz trzy okienka? (po jednym na każdy JPG w NAR, z zablokowaniem DELETE itp.)? Ale mógłby być "wybierator", że wybieramy jeden JPG i zamieniamy buffer.OnePic(NAR) na (JPG)
+            Case "►" ' filmik
+                uiMovie.Source = New Uri(_picek.oPic.InBufferPathName)
+                uiMovie.Visibility = Visibility.Visible
+                uiFullPicture.Visibility = Visibility.Collapsed
+                uiIkonkaTypu.Content = "■"
+                uiMovie.Play()
+            Case "■"
+                uiMovie.Visibility = Visibility.Collapsed
+                uiFullPicture.Visibility = Visibility.Visible
+                uiIkonkaTypu.Visibility = Visibility.Visible
+                uiIkonkaTypu.Content = "►"
+                uiMovie.Stop()
+        End Select
+
+        Return
+    End Sub
+
+    Private Sub uiMovie_Ended(sender As Object, e As RoutedEventArgs)
+        uiMovie.Visibility = Visibility.Collapsed
+        uiFullPicture.Visibility = Visibility.Visible
+        uiIkonkaTypu.Visibility = Visibility.Visible
+        uiIkonkaTypu.Content = "►"
+    End Sub
+
+    Private Sub uiGoWiki_Click(sender As Object, e As RoutedEventArgs)
+        OpenWikiForMonth(_picek.oPic)
+    End Sub
+
+    Public Shared Sub OpenWikiForMonth(oPic As Vblib.OnePic)
+        Dim data As Date = oPic.GetMostProbablyDate
+
+        ' https://en.wikipedia.org/wiki/January_1970
+        Dim sLink As String = data.ToString("MMMM_yyyy", System.Globalization.CultureInfo.InvariantCulture)
+        sLink = "https://en.wikipedia.org/wiki/" & sLink
+
+        pkar.OpenBrowser(sLink)
+
+    End Sub
+
+    Private Sub uiSlideshow_Click(sender As Object, e As RoutedEventArgs)
+
+    End Sub
 
 #End Region
 

@@ -2,7 +2,7 @@
 Imports System.Text.RegularExpressions
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
-
+Imports pkar
 
 Class SettingsMapsy
 
@@ -84,17 +84,17 @@ Class SettingsMapsy
     ''' </summary>
     ''' <param name="sLink"></param>
     ''' <returns></returns>
-    Public Shared Function Link2Geo(sLink As String) As MyBasicGeoposition
+    Public Shared Function Link2Geo(sLink As String) As BasicGeopos
         initLista()
 
-        If sLink.Length < 15 Then Return MyBasicGeoposition.EmptyGeoPos
+        If sLink.Length < 15 Then Return BasicGeopos.Empty
 
         ' https://www.openstreetmap.org/way/830020459#map=18/50.01990/19.97866
         Dim iInd As Integer = sLink.IndexOf("/", 10)
         Dim sPrefix As String = sLink.Substring(0, iInd).ToLowerInvariant
 
         For Each oMapService As Vblib.JednaMapa In _lista.GetList
-            If Not oMapService.link.ToLowerInvariant.StartsWith(sPrefix) Then Continue For
+            If Not oMapService.link.ToLowerInvariant.StartsWithOrdinal(sPrefix) Then Continue For
 
             Dim iLat As Integer = oMapService.link.IndexOf("%lat")
             Dim iLon As Integer = oMapService.link.IndexOf("%lon")
@@ -103,17 +103,17 @@ Class SettingsMapsy
 
             Dim result As Match = Regex.Match(sLink, sRegMask, RegexOptions.IgnoreCase)
 
-            If Not result.Success Then Return MyBasicGeoposition.EmptyGeoPos
+            If Not result.Success Then Return BasicGeopos.Empty
 
             Try
                 If iLat < iLon Then
-                    Return New MyBasicGeoposition(result.Groups(1).Value, result.Groups(2).Value)
+                    Return New BasicGeopos(result.Groups(1).Value, result.Groups(2).Value)
                 Else
-                    Return New MyBasicGeoposition(result.Groups(2).Value, result.Groups(1).Value)
+                    Return New BasicGeopos(result.Groups(2).Value, result.Groups(1).Value)
                 End If
 
             Catch ex As Exception
-                Return MyBasicGeoposition.EmptyGeoPos
+                Return BasicGeopos.Empty
             End Try
 
             ' ok, to już mamy
@@ -121,16 +121,16 @@ Class SettingsMapsy
             '  no właśnie, jest inaczej :)
         Next
 
-        Return MyBasicGeoposition.EmptyGeoPos
+        Return BasicGeopos.Empty
 
-        'If Not sPrefix.Contains("openstreetmap") Then Return MyBasicGeoposition.EmptyGeoPos
+        'If Not sPrefix.Contains("openstreetmap") Then Return pkar.BasicGeopos.EmptyGeoPos
         'iInd = sLink.IndexOf("map=")
-        'If iInd < 10 Then Return MyBasicGeoposition.EmptyGeoPos
+        'If iInd < 10 Then Return pkar.BasicGeopos.EmptyGeoPos
         'Dim result As Match = Regex.Match(sLink.Substring(iInd + 4), "(\d+)/([\.0-9]*)/([\.0-9]*)", RegexOptions.IgnoreCase)
 
-        'If Not result.Success Then Return MyBasicGeoposition.EmptyGeoPos
+        'If Not result.Success Then Return pkar.BasicGeopos.EmptyGeoPos
 
-        'Dim oPos As New MyBasicGeoposition(result.Groups(2).Value, result.Groups(3).Value)
+        'Dim oPos As New pkar.BasicGeopos(result.Groups(2).Value, result.Groups(3).Value)
 
         'Return oPos
     End Function

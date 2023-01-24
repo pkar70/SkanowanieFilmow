@@ -2,26 +2,39 @@
 Imports vb14 = Vblib.pkarlibmodule14
 
 Class SettingsMain
-    Private Sub uiListSett_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingListy)
-    End Sub
-    Private Sub uiMiscSett_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingsMisc)
+
+    Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        uiVersion.ShowAppVers
+        If vb14.GetSettingsString("uiFolderBuffer") = "" Then
+            uiGlobalSett_Click(Nothing, Nothing)
+        End If
     End Sub
 
     Private Sub uiGlobalSett_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsGlobal)
     End Sub
 
-    Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        uiVersion.ShowAppVers
-        If App.GetDataFolder(False) = "" Then
-            uiGlobalSett_Click(Nothing, Nothing)
-        End If
-    End Sub
-
     Private Sub uiSettSources_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsSources)
+    End Sub
+
+    Private Sub uiArchives_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsArchive)
+    End Sub
+
+    Private Sub uiCloudArchive_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsCloudArchive)
+    End Sub
+
+    Private Sub uiCloudPublish_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsCloudPublisher)
+    End Sub
+
+
+
+    Private Sub uiDirTree_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New SettingsDirTree(True)
+        oWnd.ShowDialog()
     End Sub
 
     Private Sub uiKeywords_Click(sender As Object, e As RoutedEventArgs)
@@ -30,9 +43,16 @@ Class SettingsMain
         ' Me.NavigationService.Navigate(New SettingsKeywords)
     End Sub
 
-    Private Sub uiDirTree_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New SettingsDirTree
-        oWnd.ShowDialog()
+    Private Sub uiAutoTags_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsAutoTags)
+    End Sub
+
+
+    Private Sub uiListSett_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingListy)
+    End Sub
+    Private Sub uiMiscSett_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsMisc)
     End Sub
 
     Private Sub uiBackup_Click(sender As Object, e As RoutedEventArgs)
@@ -72,15 +92,8 @@ Class SettingsMain
 
     End Sub
 
-    Private Sub uiArchives_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingsArchive)
+    Private Sub uiSlideshow_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsSlideshow)
     End Sub
 
-    Private Sub uiCloudPublish_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingsCloudPublisher)
-    End Sub
-
-    Private Sub uiCloudArchive_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingsCloudArchive)
-    End Sub
 End Class

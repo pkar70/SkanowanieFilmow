@@ -4,7 +4,7 @@
 'Imports Newtonsoft.Json
 
 Public Class OneDir
-    Inherits MojaStruct
+    Inherits pkar.BaseStruct
 
     Public Property sId As String
     'Public Property sDisplayName As String
@@ -82,9 +82,10 @@ Public Class OneDir
 End Class
 
 Public Class DirsList
-    Inherits MojaLista(Of OneDir)
+    Inherits pkar.BaseList(Of OneDir)
 
     Public Sub New(sFolder As String)
+        ' uwaga: nazwa pliku takze w SettingsDirTree
         MyBase.New(sFolder, "dirstree.json")
     End Sub
 
@@ -181,10 +182,10 @@ Public Class DirsList
 
     End Sub
 
-    Protected Overloads Sub InsertDefaultContent()
+    Protected Overrides Sub InsertDefaultContent()
 
         Dim oRoot As New OneDir With {.sId = OneDir.RootId, .notes = "Główny katalog"}
-
+        oRoot.SubItems = New List(Of OneDir)
         oRoot.SubItems.Add(New OneDir With {.sId = "Imprezy", .notes = "wydarzenia"})
         oRoot.SubItems.Add(New OneDir With {.sId = "Wyjazdy", .notes = "wakacje, itp."})
         oRoot.SubItems.Add(New OneDir With {.sId = "Rodzina", .notes = "inne"})

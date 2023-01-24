@@ -1,5 +1,6 @@
 ﻿
 
+Imports pkar
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
@@ -141,7 +142,7 @@ Class SettingsKeywords
 
         If uiLatitude.Text.Length > 0 AndAlso uiLongitude.Text.Length > 0 AndAlso uiRadius.Text.Length > 0 Then
             Try
-                _editingItem.oGeo = New Vblib.MyBasicGeoposition(uiLatitude.Text, uiLongitude.Text)
+                _editingItem.oGeo = New BasicGeopos(uiLatitude.Text, uiLongitude.Text)
             Catch ex As Exception
                 vb14.DialogBox("Błędne współrzędne geograficzne")
                 Return
@@ -216,13 +217,13 @@ Class SettingsKeywords
     '    ' https://www.openstreetmap.org/way/830020459#map=18/50.01990/19.97866
     '    If Not uiLatitude.Text.StartsWith("http") Then Return
 
-    '    Dim oPos As MyBasicGeoposition = SettingsMapsy.Link2Geo(uiLatitude.Text)
+    '    Dim oPos As pkar.BasicGeopos = SettingsMapsy.Link2Geo(uiLatitude.Text)
     '    If oPos.IsEmpty Then Return
 
     '    SetGeo(oPos, 100)
     'End Sub
 
-    Private Sub SetGeo(oPos As MyBasicGeoposition, iRadius As Integer)
+    Private Sub SetGeo(oPos As BasicGeopos, iRadius As Integer)
         If oPos.IsEmpty Then Return
 
         _editingItem.oGeo = oPos
@@ -235,7 +236,7 @@ Class SettingsKeywords
         Dim oWnd As New EnterGeoTag
         If Not oWnd.ShowDialog Then Return
 
-        Dim oGeo As MyBasicGeoposition = oWnd.GetGeoPos
+        Dim oGeo As BasicGeopos = oWnd.GetGeoPos
         SetGeo(oGeo, 100)
 
     End Sub
@@ -276,7 +277,7 @@ Public Class KonwersjaGeo
     Implements IValueConverter
 
     Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
-        Dim temp As MyBasicGeoposition = CType(value, MyBasicGeoposition)
+        Dim temp As BasicGeopos = CType(value, BasicGeopos)
 
         If temp Is Nothing Then Return ""
         If temp.IsEmpty Then Return ""

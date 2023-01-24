@@ -3,7 +3,7 @@
 ' to są dane, które można wczytywać jako lista
 
 Public Class CloudConfig
-    Inherits MojaStruct
+    Inherits pkar.BaseStruct
 
     Public Property eTyp As CloudTyp    ' archiwum/publish
     Public Property sProvider As String '   e.g. "Instagram"

@@ -1,0 +1,31 @@
+﻿<Window x:Class="SimpleDescribe"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow">
+        <StackPanel Margin="5,2,5,2">
+            <TextBlock Name="uiFileName" FontWeight="Bold"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox Name="uiAllDescribe" HorizontalAlignment="Stretch" IsReadOnly="true" Margin="5,5,0,5" />
+            <Button Name="uiPastePrev" Margin="0,0,5,0" Grid.Column="1" Content="▼" Click="uiPastePrev_Click" IsEnabled="False"/>
+            <Popup Name="uiPrevMenuPopup" PlacementTarget="{Binding ElementName=uiPastePrev}" IsOpen="False" StaysOpen="False">
+                <Menu Name="uiPrevMenu">
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                </Menu>
+            </Popup>
+        </Grid>
+            <Button Content="Apply" HorizontalAlignment="Right" Click="uiApply_Click" Name="uiApply" />
+        </StackPanel>
+
+</Window>

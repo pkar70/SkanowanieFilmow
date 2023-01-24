@@ -2,7 +2,7 @@
 
 
 Public Class OneDirFlat1
-    Inherits MojaStruct
+    Inherits pkar.BaseStruct
 
     Public Property sId As String   ' 1981.01.23.sb_geo
     Public Property notes As String ' wyjazd do Wieliczki z dziadkami, pociągiem i psem
