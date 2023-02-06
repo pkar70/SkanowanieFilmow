@@ -11,7 +11,7 @@
     <Window.Resources>
         <local:KonwersjaVisibilyFromGlobal x:Key="KonwersjaVisibilyFromGlobal"/>
         <local:KonwersjaVisibilyFromNotGlobal x:Key="KonwersjaVisibilyFromNotGlobal"/>
-        
+        <local:KonwersjaSortujSubitemyDir x:Key="KonwersjaSortujSubitemyDir"/>
     </Window.Resources>
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
@@ -40,7 +40,7 @@
             </TreeView.ItemContainerStyle>
 
             <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding SubItems}">
+                <HierarchicalDataTemplate ItemsSource="{Binding SubItems, Converter={StaticResource KonwersjaSortujSubitemyDir}}">
                     <Grid HorizontalAlignment="Stretch" >
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="150" Name="naID" />

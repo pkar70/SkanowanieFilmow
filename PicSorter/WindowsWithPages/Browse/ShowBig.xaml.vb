@@ -488,52 +488,52 @@ Public Class ShowBig
         Return
     End Function
 
-    Private Shared Function RotateToDegree(iRot As Rotation) As Integer
-        Select Case iRot
-            Case Rotation.Rotate0
-                Return 0
-            Case Rotation.Rotate90
-                Return 90
-            Case Rotation.Rotate180
-                Return 180
-            Case Rotation.Rotate270
-                Return 270
-        End Select
-        ' tego nie powinno być, bo nie ma innej mozliwosci
-        Return 0
-    End Function
+    'Private Shared Function RotateToDegree(iRot As Rotation) As Integer
+    '    Select Case iRot
+    '        Case Rotation.Rotate0
+    '            Return 0
+    '        Case Rotation.Rotate90
+    '            Return 90
+    '        Case Rotation.Rotate180
+    '            Return 180
+    '        Case Rotation.Rotate270
+    '            Return 270
+    '    End Select
+    '    ' tego nie powinno być, bo nie ma innej mozliwosci
+    '    Return 0
+    'End Function
 
-    Private Shared Function DegreeToBitmapRotate(iKat As Integer) As wingraph.BitmapRotation
-        Select Case iKat
-            Case 0
-                Return wingraph.BitmapRotation.None
-            Case 90
-                Return wingraph.BitmapRotation.Clockwise90Degrees
-            Case 180
-                Return wingraph.BitmapRotation.Clockwise180Degrees
-            Case 270
-                Return wingraph.BitmapRotation.Clockwise270Degrees
-        End Select
-        ' tego nie powinno być, bo nie ma innej mozliwosci
-        Return wingraph.BitmapRotation.None
-    End Function
+    'Private Shared Function DegreeToBitmapRotate(iKat As Integer) As wingraph.BitmapRotation
+    '    Select Case iKat
+    '        Case 0
+    '            Return wingraph.BitmapRotation.None
+    '        Case 90
+    '            Return wingraph.BitmapRotation.Clockwise90Degrees
+    '        Case 180
+    '            Return wingraph.BitmapRotation.Clockwise180Degrees
+    '        Case 270
+    '            Return wingraph.BitmapRotation.Clockwise270Degrees
+    '    End Select
+    '    ' tego nie powinno być, bo nie ma innej mozliwosci
+    '    Return wingraph.BitmapRotation.None
+    'End Function
 
 
-    Public Shared Function KatToOrientationEnum(iKat As Integer) As Vblib.OrientationEnum
-        If iKat > 359 Then iKat -= 360
-        Select Case iKat
-            Case 0
-                Return Vblib.OrientationEnum.topLeft
-            Case 90
-                Return Vblib.OrientationEnum.rightTop
-            Case 180
-                Return Vblib.OrientationEnum.bottomRight
-            Case 270
-                Return Vblib.OrientationEnum.leftBottom
-        End Select
-        ' tego nie powinno być, bo nie ma innej mozliwosci
-        Return Vblib.OrientationEnum.topLeft
-    End Function
+    'Public Shared Function KatToOrientationEnum(iKat As Integer) As Vblib.OrientationEnum
+    '    If iKat > 359 Then iKat -= 360
+    '    Select Case iKat
+    '        Case 0
+    '            Return Vblib.OrientationEnum.topLeft
+    '        Case 90
+    '            Return Vblib.OrientationEnum.rightTop
+    '        Case 180
+    '            Return Vblib.OrientationEnum.bottomRight
+    '        Case 270
+    '            Return Vblib.OrientationEnum.leftBottom
+    '    End Select
+    '    ' tego nie powinno być, bo nie ma innej mozliwosci
+    '    Return Vblib.OrientationEnum.topLeft
+    'End Function
 
     Private Async Function SaveChanges() As Task
 

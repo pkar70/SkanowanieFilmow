@@ -237,7 +237,8 @@ Class SettingsKeywords
         If Not oWnd.ShowDialog Then Return
 
         Dim oGeo As BasicGeopos = oWnd.GetGeoPos
-        SetGeo(oGeo, 100)
+        Dim iRadius As Integer = If(oWnd.IsZgrubne, 20000, 100)
+        SetGeo(oGeo, iRadius)
 
     End Sub
 

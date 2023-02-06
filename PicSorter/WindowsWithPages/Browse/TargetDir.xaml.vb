@@ -49,9 +49,9 @@ Public Class TargetDir
 
 #Region "combo katalogów"
 
-    Private Shared Function KatalogiWgDaty(aboutDateOd As Date, aboutDateDo As Date) As List(Of String)
+    Private Shared Function KatalogiWgDaty(aboutDateOd As Date, aboutDateDo As Date) As List(Of OneDir)
 
-        Dim lLista As New List(Of String) ' poprzez listę pośrednią, bo chodzi o sortowanie
+        Dim lLista As New List(Of OneDir) ' poprzez listę pośrednią, bo chodzi o sortowanie
 
         'Dim sDataOd As String = Vblib.OneDirFlat.DateToDirId(aboutDateOd.AddDays(-5))
         'Dim sDataDo As String = Vblib.OneDirFlat.DateToDirId(aboutDateDo.AddDays(5))
@@ -62,7 +62,14 @@ Public Class TargetDir
         For Each oDir As Vblib.OneDir In Application.GetDirTree.ToFlatList
             ' If oDir.sId.StartsWith("_") Then lLista.Add(oDir.ToComboDisplayName)
             If Not oDir.IsFromDate Then Continue For
-            If oDir.sId > sDataOd AndAlso oDir.sId < sDataDo Then lLista.Add(oDir.ToComboDisplayName)
+            If oDir.sId > sDataOd AndAlso oDir.sId < sDataDo Then
+                'Dim sName As String = oDir.ToComboDisplayName
+                'If oDir.sParentId <> OneDir.RootId Then
+                '    If sName.Contains("_") Then sName = "...\" & sName
+                '    sName = "...\" & sName
+                'End If
+                lLista.Add(oDir)
+            End If
         Next
 
         Return lLista
@@ -71,19 +78,22 @@ Public Class TargetDir
     Private Sub PokazIstniejaceKatalogi(aboutDateOd As Date, aboutDateDo As Date)
 
         ' z sortowaniem według daty
-        Dim lLista As List(Of String) = KatalogiWgDaty(aboutDateOd, aboutDateDo)
-        For Each sId As String In From c In lLista Order By c
-            uiComboExisting.Items.Add(sId)
+        Dim lLista As List(Of OneDir) = KatalogiWgDaty(aboutDateOd, aboutDateDo)
+        For Each oDir As OneDir In From c In lLista Order By c.fullPath
+            Dim oNew As New ComboBoxItem
+            oNew.Content = ".\" & oDir.fullPath
+            oNew.DataContext = oDir
+            uiComboExisting.Items.Add(oNew)
         Next
 
         ' a teraz bez sortowania
 
         ' te ze słów kluczowych
-        For Each oKwd As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
-            If Not String.IsNullOrWhiteSpace(oKwd.ownDir) Then
-                uiComboExisting.Items.Add(oKwd.ToComboDisplayName)
-            End If
-        Next
+        'For Each oKwd As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+        '    If Not String.IsNullOrWhiteSpace(oKwd.ownDir) Then
+        '        uiComboExisting.Items.Add(oKwd.ToComboDisplayName)
+        '    End If
+        'Next
 
         ' a na koniec te normalne, jako drzewko
         SettingsKeywords.FillDirCombo(uiComboExisting, "", True)
@@ -93,13 +103,13 @@ Public Class TargetDir
     Private Sub PokazOpcjeCzasowe(iFirstSelected As Integer)
 
         ' data z zaznaczonego zdjęcia - szczególnie gdy jest to pierwsze zdjęcie...
-        uiManualDateName.Text = _thumbsy(iFirstSelected).dateMin.ExifDateWithWeekDay
+        uiManualDateName.Text = _thumbsy(iFirstSelected).dateMin.ExifDateWithWeekDay.DropAccents
 
         ' próbujemy znaleźć początek serii, data byłaby wtedy z początku (a nie z konkretnego zdjęcia)
         For iLp As Integer = iFirstSelected To 0 Step -1
             If _thumbsy(iLp).splitBefore = SplitBeforeEnum.czas Then
                 ' w ten sposób mamy datę z dniem tygodnia (wspólne dla całego programu)
-                _lastCzasDir = _thumbsy(iLp).dateMin.ExifDateWithWeekDay
+                _lastCzasDir = _thumbsy(iLp).dateMin.ExifDateWithWeekDay.DropAccents
                 uiManualDateName.Text = _lastCzasDir & " "
                 Exit For
             End If
@@ -125,7 +135,8 @@ Public Class TargetDir
 
 
         For iLp As Integer = iFirstSelected To 0 Step -1
-            If _thumbsy(iLp).splitBefore = SplitBeforeEnum.geo Then
+            ' dowolny podział uwzględniamy, nie można samego GEO - bo czasowy i geo w tym samym miejscu daje czasowy tylko
+            If _thumbsy(iLp).splitBefore <> SplitBeforeEnum.none Then
                 _lastGeoDir = PicekToGeoName(_thumbsy(iLp).oPic)
                 If _lastGeoDir <> "" Then uiManualGeoName.Text += _lastGeoDir
                 Exit For
@@ -152,11 +163,16 @@ Public Class TargetDir
         Return Chr(iCount)
     End Function
 
+    ''' <summary>
+    ''' zwraca zDropAccents Auto_OSM_POI
+    ''' </summary>
+    ''' <param name="oPic"></param>
+    ''' <returns></returns>
     Private Shared Function PicekToGeoName(oPic As Vblib.OnePic) As String
         Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
         If oExif Is Nothing Then Return ""
 
-        Dim sNazwa As String = Vblib.Auto_OSM_POI.FullGeoNameToFolderName(oExif.GeoName)
+        Dim sNazwa As String = Vblib.Auto_OSM_POI.FullGeoNameToFolderName(oExif.GeoName).DropAccents
         Return sNazwa
 
     End Function
@@ -215,7 +231,12 @@ Public Class TargetDir
         oDir = GetSubdirDate(oPicek, oDir)
         oDir = GetSubdirGeo(oPicek, oDir)
 
-        oPicek.oPic.TargetDir = Application.GetDirTree.GetFullPath(oDir)
+        If oDir Is Nothing Then
+            vb14.DialogBox("Got NULL OneDir?")
+            Return
+        End If
+
+        oPicek.oPic.TargetDir = oDir.fullPath.DropAccents
         oPicek.ZrobDymek()
 
     End Sub
@@ -232,7 +253,7 @@ Public Class TargetDir
         If uiNoDateSplit.IsChecked Then Return oParent
 
         If uiManualDateSplit.IsChecked Then
-            Dim sDir As String = uiManualDateName.Text.Replace("__", "_").Trim
+            Dim sDir As String = uiManualDateName.Text.Replace("__", "_").Trim.DropAccents
             'If Not String.IsNullOrWhiteSpace(uiManualDateName.Text) Then
             '    sDir = sDir & " " & uiManualDateName.Text
             'End If
@@ -253,14 +274,14 @@ Public Class TargetDir
         If uiNoGeoSplit.IsChecked Then Return oParent
 
         If uiManualGeoSplit.IsChecked Then
-            Dim sDir As String = uiManualGeoName.Text.Trim
+            Dim sDir As String = uiManualGeoName.Text.Trim.DropAccents
             'If Not String.IsNullOrWhiteSpace(uiManualGeoName.Text) Then
             '    sDir = sDir & " " & uiManualGeoName.Text
             'End If
             Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
         End If
 
-        If uiAutoDateSplit.IsChecked Then
+        If uiAutoGeoSplit.IsChecked Then
             Dim sDir As String = KatalogNaCzas(oPicek)
             sDir = sDir & "_" & KatalogNaGeo(oPicek)
             Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
@@ -272,6 +293,12 @@ Public Class TargetDir
     End Function
 
     Private _lastGeoDir As String = ""
+
+    ''' <summary>
+    ''' zwraca zDropAccents nazwę
+    ''' </summary>
+    ''' <param name="oPicek"></param>
+    ''' <returns></returns>
     Private Function KatalogNaGeo(oPicek As ProcessBrowse.ThumbPicek) As String
         ' dla AUTO geo, bierze geo z serii, zmienia tylko na przedziałku
         ' pierwotne ustawienie _lastCzasDir jest w WindowLoad:PokazOpcjeGeo
@@ -283,11 +310,17 @@ Public Class TargetDir
     End Function
 
     Private _lastCzasDir As String = ""
+
+    ''' <summary>
+    ''' zwraca zDropAccents ExifDateWithWeekDay
+    ''' </summary>
+    ''' <param name="oPicek"></param>
+    ''' <returns></returns>
     Private Function KatalogNaCzas(oPicek As ProcessBrowse.ThumbPicek) As String
         ' dla AUTO czas, bierze czas z serii, i zmienia tylko na przedziałku
         ' pierwotne ustawienie _lastCzasDir jest w WindowLoad:PokazOpcjeCzasowe
         If oPicek.splitBefore = SplitBeforeEnum.czas Then
-            _lastCzasDir = oPicek.dateMin.ExifDateWithWeekDay
+            _lastCzasDir = oPicek.dateMin.ExifDateWithWeekDay.DropAccents
         End If
 
         Return _lastCzasDir

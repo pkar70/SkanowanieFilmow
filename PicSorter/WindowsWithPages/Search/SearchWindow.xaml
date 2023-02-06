@@ -214,6 +214,29 @@
                 <Expander Header="Azure" ToolTip="Dane Azure, ignorowane dla zdjęć bez AzureAnalysis" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
                     <StackPanel>
                         <CheckBox Name="uiAzureDefault" Content="Dołącz zdjęcia bez Azure" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają analizy Azure" />
+                    <!--<Grid HorizontalAlignment="Stretch">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="35" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="35" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,0,5,0" Text="faces:" />
+                        <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,0,5,0" Text="persons:" />
+                        <TextBlock Grid.Row="0" Grid.Column="2" Margin="5,0,5,0" Text="–" />
+                        <TextBlock Grid.Row="1" Grid.Column="2" Margin="5,0,5,0" Text="–" />
+
+                        <TextBox Grid.Row="0" Grid.Column="1" Name="uiAzureFacesMin" ToolTip="Minimalna wartość" InputScope="Number"/>
+                        <TextBox Grid.Row="0" Grid.Column="3" Name="uiAzureFacesMax" ToolTip="Maksymalna wartość" InputScope="Number"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" Name="uiAzurePersonsMin" ToolTip="Minimalna wartość" InputScope="Number"/>
+                        <TextBox Grid.Row="1" Grid.Column="3" Name="uiAzurePersonsMax" ToolTip="Maksymalna wartość" InputScope="Number"/>
+                    </Grid>-->
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto" />

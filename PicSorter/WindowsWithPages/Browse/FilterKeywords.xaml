@@ -1,0 +1,27 @@
+﻿<Window x:Class="FilterKeywords"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="FilterKeywords" Height="150" Width="200" Loaded="Window_Loaded">
+    <StackPanel Margin="5,5,5,5">
+        <TextBlock Name="uiTitle" HorizontalAlignment="Center" />
+        <Grid>
+            <TextBlock FontWeight="Bold" Text="Keywords:" />
+            <Button Content=" + " HorizontalAlignment="Right" Name="uiAdd" Click="uiAdd_Click"/>
+            <Popup IsOpen="False" Name="uiAddPopup" PlacementTarget="{Binding ElementName=uiAdd}" HorizontalOffset="-10" StaysOpen="False" >
+                <Menu Name="uiMenuKeywords">
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                </Menu>
+            </Popup>
+        </Grid>
+        <TextBox Name="uiKeywords" />
+        <Button Content=" Search " HorizontalAlignment="Center" Margin="5,10,5,5" Click="Button_Click" />
+    </StackPanel>
+</Window>

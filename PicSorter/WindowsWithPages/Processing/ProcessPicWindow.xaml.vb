@@ -53,7 +53,7 @@ Class ProcessPic
 
         ' z licznika z bufora
         Dim counter As Integer = Application.GetBuffer.Count
-        uiBrowse.Content = $"Browse ({counter})"
+        uiBrowse.Content = $"Buffer ({counter})"
         uiAutotag.Content = $"Try autotag ({counter})"
 
 

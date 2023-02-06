@@ -42,7 +42,10 @@ Class SettingsArchive
         ShowSourcesList()
     End Sub
 
-    Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
+        If Application.GetArchivesList.Count < 2 Then
+            If Await vb14.DialogBoxYNAsync("Sugeruję stworzenie przynajmniej dwu archiwów, chcesz wrócić do ich definiowania?") Then Return
+        End If
         Application.GetArchivesList().Save()
         Me.NavigationService.GoBack()
     End Sub
@@ -97,7 +100,7 @@ Class SettingsArchive
         'uiTree4geo.IsChecked = _item.tree4Geo
 
         ' uiSrcSaveToExif.IsChecked = _item.saveToExif
-        uiSrcJSONinside.IsChecked = _item.jsonInDir
+        uiSrcJSONinside.IsChecked = True ' _item.jsonInDir
 
     End Sub
 
@@ -145,7 +148,7 @@ Class SettingsArchive
         '_item.tree4Geo = uiTree4geo.IsChecked
 
         '_item.saveToExif = uiSrcSaveToExif.IsChecked
-        _item.jsonInDir = uiSrcJSONinside.IsChecked
+        _item.jsonInDir = True ' uiSrcJSONinside.IsChecked
 
         ShowSourcesList()
     End Sub

@@ -45,6 +45,7 @@
                         <MenuItem Header="all" Click="uiFilterAll_Click" />
                         <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
                         <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" />
+                        <MenuItem Header="wg keywords" Click="uiFilterKeywords_Click" />
                         <MenuItem Header="AZURE »">
                             <MenuItem Header="bez tagu" Click="uiFilterNoAzure_Click" />
                             <Separator/>
@@ -99,7 +100,7 @@
                             <VirtualizingStackPanel Orientation="Vertical"/>
                         </ItemsPanelTemplate>
                     </Menu.ItemsPanel>
-                        <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
+                        <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
                         <MenuItem Header="Autotags  »" Name="uiMenuAutotags" IsEnabled="False">
                         </MenuItem>
                         <MenuItem Header="Describe" Click="uiDescribeSelected_Click" Name="uiDescribeSelected"/>
@@ -107,10 +108,14 @@
                         <MenuItem Header="Create GeoTag" Click="uiMenuCreateGeoTag_Click" Name="uiMenuCreateGeoTag" />
                         <MenuItem Header="Batch process »" Name="uiBatchProcessors"  />
                         <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>
+                        <MenuItem Header="Clear target dir" Click="uiActionClearTargetDir_Click" Name="uiActionClearTargetDir"/>
                         <MenuItem Header="Publish  »" Name="uiMenuPublish"  />
                         <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
                         <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                         <MenuItem Header="Copy out" Click="uiCopyOut_Click" />
+                        <Separator/>
+                        <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
+                        <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
                     </Menu>
             </Popup>
             </StackPanel>

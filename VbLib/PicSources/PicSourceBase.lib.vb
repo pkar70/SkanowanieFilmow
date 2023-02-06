@@ -132,6 +132,10 @@ Public MustInherit Class PicSourceBase
 			'		0123456789012345
 			If Regex.IsMatch(sFilename, "^DSCF[0-9][0-9][0-9][0-9]") Then sFilename = sFilename.Substring(8)
 
+
+			' Motorola Aśki, IMG_20230128_111119345
+			If Regex.IsMatch(sFilename, "^IMG_2[0-1][0-9][0-9]_[0-2][0-9][0-5][0-9][0-5][0-9]") Then sFilename = sFilename.Substring(22)
+
 			' iPhone	IMG_E5513.JPG
 			'		0123456789012345
 			If Regex.IsMatch(sFilename, "^IMG_E[0-9][0-9][0-9][0-9]") Then sFilename = sFilename.Substring(9)

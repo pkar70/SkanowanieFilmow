@@ -36,6 +36,10 @@ Public Class EnterGeoTag
         Return New BasicGeopos(uiLatitude.Text, uiLongitude.Text)
     End Function
 
+    Public Function IsZgrubne() As Boolean
+        Return uiZgrubne.IsChecked
+    End Function
+
     Private Sub uiUsePOI_Click(sender As Object, e As RoutedEventArgs)
         Dim oFe As FrameworkElement = sender
         Dim oPOI As OSMnominatim = oFe?.DataContext

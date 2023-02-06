@@ -17,12 +17,15 @@ Public MustInherit Class LocalStorage
 	Public Property jsonInDir As Boolean = True
 	'	Public Property saveToExif As Boolean = True
 
+#If False Then
+	' tego jednak nie wykorzystujemy, teraz jest inna struktura katalogów
 	Public Property tree0Dekada As Boolean = False
 	Public Property tree1Rok As Boolean = True
 	Public Property tree2Miesiac As Boolean = True
 	Public Property tree3Dzien As Boolean
 	Public Property tree3DzienWeekDay As Boolean = True
 	Public Property tree4Geo As Boolean = True
+#End If
 
 #Region "to co musi być w vblib 2.0"
 	Public MustOverride Function IsPresent() As Boolean

@@ -326,7 +326,6 @@ Public Class SearchWindow
             If oExif?.PogodaAstro Is Nothing Then
                 If Not uiPogodaDefault.IsChecked Then Continue For
             Else
-
                 Dim sTextDump As String = oExif.PogodaAstro.DumpAsJSON
                 If Not CheckFieldValue(sTextDump, uiPogodaField0.Text, uiPogodaValue0.Text) Then Continue For
                 If Not CheckFieldValue(sTextDump, uiPogodaField1.Text, uiPogodaValue1.Text) Then Continue For
@@ -357,14 +356,37 @@ Public Class SearchWindow
 
     Private Function CheckFieldValue(textDump As String, fieldName As String, fieldValue As String) As Boolean
         If String.IsNullOrWhiteSpace(fieldValue) Then Return True
-
         If String.IsNullOrWhiteSpace(fieldName) Then Return CheckStringMasks(textDump, fieldValue)
 
         Dim aDump As String() = textDump.ToLowerInvariant.Split(vbCr)
 
+        Dim bInDay As Boolean = False
+        Dim bInCurrent As Boolean = False
+
+        Dim bWantDay As Boolean = False 'fieldName.Substring(0, 2) = "d."
+        Dim bWantCurr As Boolean = True ' fieldName.Substring(0, 2) = "c."
+        If fieldName.Substring(1, 1) = "." Then
+            bWantDay = (fieldName.Substring(0, 2) = "d.")
+            bWantCurr = (fieldName.Substring(0, 2) = "c.")
+            fieldName = fieldName.Substring(2)
+        End If
+
         For Each sDumpLine As String In aDump
+
+            If sDumpLine.Contains("""day"": {") Then
+                bInDay = True
+                Continue For
+            End If
+            If sDumpLine.Contains("""currentConditions"": {") Then
+                bInCurrent = True
+                Continue For
+            End If
+            If bInCurrent AndAlso Not bWantCurr Then Continue For
+            If bInDay AndAlso Not bWantDay Then Continue For
+
             Dim iInd As Integer = sDumpLine.IndexOf(":")
             If iInd < 1 Then Continue For
+
             If Not sDumpLine.Substring(0, iInd).Contains(fieldName.ToLowerInvariant) Then Continue For
 
             Return CheckStringMasks(sDumpLine.Substring(iInd + 1), fieldValue)
@@ -378,6 +400,17 @@ Public Class SearchWindow
 
         If String.IsNullOrWhiteSpace(fieldName) Then Return True
 
+        Dim bInDay As Boolean = False
+        Dim bInCurrent As Boolean = False
+
+        Dim bWantDay As Boolean = False 'fieldName.Substring(0, 2) = "d."
+        Dim bWantCurr As Boolean = True ' fieldName.Substring(0, 2) = "c."
+        If fieldName.Substring(1, 1) = "." Then
+            bWantDay = (fieldName.Substring(0, 2) = "d.")
+            bWantCurr = (fieldName.Substring(0, 2) = "c.")
+            fieldName = fieldName.Substring(2)
+        End If
+
         Dim dMinVal As Double = Double.MinValue
         If Not String.IsNullOrWhiteSpace(fieldMinValue) Then dMinVal = fieldMinValue
         Dim dMaxValue As Double = Double.MaxValue
@@ -387,6 +420,17 @@ Public Class SearchWindow
         fieldName = fieldName.ToLowerInvariant
 
         For Each sDumpLine As String In aDump
+            If sDumpLine.Contains("""day"": {") Then
+                bInDay = True
+                Continue For
+            End If
+            If sDumpLine.Contains("""currentConditions"": {") Then
+                bInCurrent = True
+                Continue For
+            End If
+            If bInCurrent AndAlso Not bWantCurr Then Continue For
+            If bInDay AndAlso Not bWantDay Then Continue For
+
             Dim iInd As Integer = sDumpLine.IndexOf(":")
             If iInd < 1 Then Continue For
             If sDumpLine.Substring(0, iInd).Replace("""", "").Trim <> fieldName Then Continue For
@@ -469,6 +513,7 @@ Public Class SearchWindow
         If Not oWnd.ShowDialog Then Return
         _geoTag = oWnd.GetGeoPos
         uiLatLon.Text = $"szer. {_geoTag.StringLat(3)}, dług. {_geoTag.StringLon(3)}"
+        uiGeoRadius.Text = If(oWnd.IsZgrubne, 20, 5)
     End Sub
 
     Private Sub uiSubSearch_Click(sender As Object, e As RoutedEventArgs)

@@ -64,7 +64,8 @@ Public Class ProcessBrowse
         uiMenuCreateGeoTag.Visibility = oVis
         uiBatchProcessors.Visibility = oVis
         uiSetTargetDir.Visibility = oVis
-
+        uiActionClearTargetDir.Visibility = oVis
+        uiDeleteThumbsSelected.Visibility = oVis
     End Sub
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -193,7 +194,7 @@ Public Class ProcessBrowse
 
         If lDeleted.Count > 0 Then
 
-            If Await Vblib.DialogBoxYNAsync($"Niektóre pliki są zniknięte ({lDeleted.Count}, usunąć je z indeksu?") Then
+            If Await Vblib.DialogBoxYNAsync($"Niektóre pliki są zniknięte ({lDeleted.Count}), usunąć je z indeksu?") Then
 
                 For Each oItem As Vblib.OnePic In lDeleted
                     _oBufor.GetList.Remove(oItem)
@@ -223,23 +224,30 @@ Public Class ProcessBrowse
         If _inArchive Then bCacheThumbs = False    ' w archiwum nie robimy tego!
 
         For Each oItem As ThumbPicek In _thumbsy
-
-            Dim bitmapa As BitmapImage = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
-            oItem.oImageSrc = bitmapa
-
-            If bCacheThumbs AndAlso Not IO.File.Exists(oItem.oPic.InBufferPathName & THUMB_SUFIX) Then
-                Dim encoder As New JpegBitmapEncoder()
-                encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
-                encoder.Frames.Add(BitmapFrame.Create(bitmapa))
-
-                Using fileStream = IO.File.Create(oItem.oPic.InBufferPathName & THUMB_SUFIX)
-                    encoder.Save(fileStream)
-                End Using
-            End If
-
+            Await DoczytajMiniaturke(bCacheThumbs, oItem)
             uiProgBar.Value += 1
-
         Next
+
+    End Function
+
+    Private Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oItem As ThumbPicek, Optional bRecreate As Boolean = False) As Task
+
+        ' wymuszone odtworzenie miniaturki
+        If bRecreate Then IO.File.Exists(oItem.oPic.InBufferPathName & THUMB_SUFIX)
+
+        Dim bitmapa As BitmapImage = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
+        oItem.oImageSrc = bitmapa
+
+
+        If bCacheThumbs AndAlso Not IO.File.Exists(oItem.oPic.InBufferPathName & THUMB_SUFIX) Then
+            Dim encoder As New JpegBitmapEncoder()
+            encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
+            encoder.Frames.Add(BitmapFrame.Create(bitmapa))
+
+            Using fileStream = IO.File.Create(oItem.oPic.InBufferPathName & THUMB_SUFIX)
+                encoder.Save(fileStream)
+            End Using
+        End If
 
     End Function
 
@@ -278,6 +286,8 @@ Public Class ProcessBrowse
             oPicek.oImageSrc = Nothing
         Next
 
+        SaveMetaData()  '  po Describe, OCR, i tak dalej - lepiej zapisać nawet jak nie było zmian niż je zgubić
+
         GC.Collect()    ' usuwamy, bo dużo pamięci zwolniliśmy
     End Sub
 
@@ -306,6 +316,8 @@ Public Class ProcessBrowse
         vb14.ClipPut(oPicek.oPic.InBufferPathName)
     End Sub
 
+
+#End Region
 #Region "menu actions"
     Private Sub uiMenuCopyGeoTag_Click(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
@@ -371,6 +383,15 @@ Public Class ProcessBrowse
         SaveMetaData()
     End Sub
 
+    Private Sub DodajManualGeoTag(oItem As ThumbPicek, oNewGeoTag As Vblib.ExifTag)
+        oItem.oPic.ReplaceOrAddExif(oNewGeoTag)
+        oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
+        oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
+        oItem.ZrobDymek()
+
+        If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
+    End Sub
+
     Private Sub uiMenuCreateGeoTag_Click(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
 
@@ -379,13 +400,15 @@ Public Class ProcessBrowse
 
         Dim oNewGeoTag As New Vblib.ExifTag(Vblib.ExifSource.ManualGeo)
         oNewGeoTag.GeoTag = oWnd.GetGeoPos
+        oNewGeoTag.GeoZgrubne = oWnd.IsZgrubne
 
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            oItem.oPic.ReplaceOrAddExif(oNewGeoTag)
-            oItem.ZrobDymek()
-
-            If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
-        Next
+        If uiPicList.SelectedItems.Count = 1 Then
+            DodajManualGeoTag(uiPicList.SelectedItems.Item(0), oNewGeoTag)
+        Else
+            For Each oItem As ThumbPicek In uiPicList.SelectedItems
+                If oItem.oPic.GetGeoTag Is Nothing Then DodajManualGeoTag(oItem, oNewGeoTag)
+            Next
+        End If
 
         ' pokaz na nowo obrazki
         RefreshMiniaturki(True)
@@ -411,7 +434,32 @@ Public Class ProcessBrowse
         SaveMetaData()
     End Sub
 
-#End Region
+
+    Private Sub uiActionClearTargetDir_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        If uiPicList.SelectedItems.Count < 1 Then Return
+
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            oItem.oPic.TargetDir = Nothing
+        Next
+
+        ' pokaz na nowo obrazki
+        RefreshMiniaturki(False)
+
+        SaveMetaData()
+    End Sub
+
+    Private Sub uiActionSelectFilter_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        uiPicList.SelectedItems.Clear()
+
+        For Each oItem As ThumbPicek In uiPicList.ItemsSource
+            If oItem.opacity = 1 Then uiPicList.SelectedItems.Add(oItem)
+        Next
+
+    End Sub
 
 #End Region
 
@@ -767,6 +815,8 @@ Public Class ProcessBrowse
     End Sub
 
     Private Async Sub uiDeleteSelected_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
         ' delete selected
         If uiPicList.SelectedItems Is Nothing Then Return
 
@@ -776,7 +826,7 @@ Public Class ProcessBrowse
         Next
 
         If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
-            If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcia? ({lLista.Count}") Then Return
+            If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcia? ({lLista.Count})") Then Return
         End If
 
         _ReapplyAutoSplit = False
@@ -790,6 +840,20 @@ Public Class ProcessBrowse
         ' pokaz na nowo obrazki
         RefreshMiniaturki(_ReapplyAutoSplit)
     End Sub
+
+    Private Async Sub uiDeleteThumbsSelected_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+        If uiPicList.SelectedItems Is Nothing Then Return
+
+        Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
+
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            Await DoczytajMiniaturke(bCacheThumbs, oItem, True)
+        Next
+
+    End Sub
+
+
 #End Region
 
     ''' <summary>
@@ -1010,28 +1074,36 @@ Public Class ProcessBrowse
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "no geo"
 
+        Dim bMamy As Boolean = False
         For Each oItem In _thumbsy
             If oItem.oPic.GetGeoTag IsNot Nothing Then
                 oItem.opacity = _OpacityWygas
             Else
                 oItem.opacity = 1
+                bMamy = True
             End If
         Next
 
-        _isGeoFilterApplied = True
+        If bMamy Then _isGeoFilterApplied = True
 
-        RefreshMiniaturki(False)
+        KoniecFiltrowania(bMamy)
     End Sub
 
     Private Sub uiFilterDwaSek_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "dwa/sek"
 
-        If _thumbsy.Count < 2 Then Return
+        If _thumbsy.Count < 2 Then
+            uiFilterAll_Click(sender, e)
+            Return
+        End If
+
+        Dim bMamy As Boolean = False
 
         ' element 1
         If _thumbsy(0).oPic.GetMostProbablyDate = _thumbsy(1).oPic.GetMostProbablyDate Then
             _thumbsy(0).opacity = 1
+            bMamy = True
         Else
             _thumbsy(0).opacity = _OpacityWygas
         End If
@@ -1039,6 +1111,7 @@ Public Class ProcessBrowse
         ' element LAST
         If _thumbsy(_thumbsy.Count - 1).oPic.GetMostProbablyDate = _thumbsy(_thumbsy.Count - 2).oPic.GetMostProbablyDate Then
             _thumbsy(_thumbsy.Count - 1).opacity = 1
+            bMamy = True
         Else
             _thumbsy(_thumbsy.Count - 1).opacity = _OpacityWygas
         End If
@@ -1050,19 +1123,26 @@ Public Class ProcessBrowse
 
             If _thumbsy(iLp).oPic.GetMostProbablyDate = _thumbsy(iLp - 1).oPic.GetMostProbablyDate Then
                 _thumbsy(iLp).opacity = 1
+                bMamy = True
             End If
 
             If _thumbsy(iLp + 1).oPic.GetMostProbablyDate = _thumbsy(iLp).oPic.GetMostProbablyDate Then
                 _thumbsy(iLp).opacity = 1
+                bMamy = True
             End If
+
         Next
 
-        RefreshMiniaturki(False)
+        KoniecFiltrowania(bMamy)
     End Sub
 
     Private Sub uiFilterNoAzure_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "no azure"
+
+        _isGeoFilterApplied = False
+
+        Dim bMamy As Boolean = False
 
         For Each oItem As ThumbPicek In _thumbsy
             If oItem.oPic.fileTypeDiscriminator = "►" OrElse
@@ -1070,12 +1150,12 @@ Public Class ProcessBrowse
                 oItem.opacity = _OpacityWygas
             Else
                 oItem.opacity = 1
+                bMamy = True
             End If
         Next
 
-        _isGeoFilterApplied = False
+        KoniecFiltrowania(bMamy)
 
-        RefreshMiniaturki(False)
     End Sub
 
     Private Async Sub uiFilterAzure_Click(sender As Object, e As RoutedEventArgs)
@@ -1097,6 +1177,8 @@ Public Class ProcessBrowse
 
         Dim bNot As Boolean = oMI.Header.ToString.ToLowerInvariant.StartsWith("no")
         Dim bPerson As Boolean = oMI.Header.ToString.ToLowerInvariant.Contains("person") ' false: faces
+
+        Dim bMamy As Boolean = False
 
         For Each oItem In _thumbsy
             oItem.opacity = 1   ' domyślnie: pokazujemy (także gdy nie ma Azure)
@@ -1124,28 +1206,34 @@ Public Class ProcessBrowse
                     End If
                 End If
             End If
+            If oItem.opacity = 1 Then bMamy = True
         Next
 
         _isGeoFilterApplied = False
 
-        RefreshMiniaturki(False)
+        KoniecFiltrowania(bMamy)
     End Sub
 
     Private Sub uiFilterAzureAdult_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "adult"
 
+        Dim bMamy As Boolean = False
+
         For Each oItem In _thumbsy
             oItem.opacity = _OpacityWygas   ' domyślnie: nie pokazujemy 
             Dim oAzure As Vblib.ExifTag = oItem.oPic.GetExifOfType("AUTO_AZURE")
             If oAzure IsNot Nothing Then
-                If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then oItem.opacity = 1
+                If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then
+                    oItem.opacity = 1
+                    bMamy = True
+                End If
             End If
         Next
 
         _isGeoFilterApplied = False
 
-        RefreshMiniaturki(False)
+        KoniecFiltrowania(bMamy)
     End Sub
 
 
@@ -1153,21 +1241,58 @@ Public Class ProcessBrowse
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "no dir"
 
-        For Each oItem In _thumbsy
+        Dim bMamy As Boolean = False
+
+        For Each oItem As ThumbPicek In _thumbsy
             If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then
                 oItem.opacity = 1
+                bMamy = True
             Else
                 oItem.opacity = _OpacityWygas
             End If
         Next
 
         _isGeoFilterApplied = False
+        KoniecFiltrowania(bMamy)
+    End Sub
 
-        RefreshMiniaturki(False)
+    Private Async Sub uiFilterKeywords_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+
+        Dim oWnd As New FilterKeywords
+        oWnd.ShowDialog()
+
+        Dim sQuery As String = oWnd.GetKwerenda 'Await vb14.DialogBoxInputAllDirectAsync("Podaj kwerendę słów kluczowych")
+        If String.IsNullOrWhiteSpace(sQuery) Then Return
+
+        Dim aKwds As String() = sQuery.Split(" ")
+
+        Dim bMamy As Boolean = False
+
+        For Each thumb As ThumbPicek In _thumbsy
+            If thumb.oPic.MatchesKeywords(aKwds) Then
+                thumb.opacity = 1
+                bMamy = True
+            Else
+                thumb.opacity = _OpacityWygas
+            End If
+        Next
+
+        _isGeoFilterApplied = False
+        KoniecFiltrowania(bMamy)
     End Sub
 
     Private Sub uiFilter_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = Not uiFilterPopup.IsOpen
+    End Sub
+
+    Private Sub KoniecFiltrowania(bMamy As Boolean)
+        If Not bMamy Then
+            vb14.DialogBox("Nie ma takich zdjęć, wyłączam filtrowanie")
+            uiFilterAll_Click(Nothing, Nothing)
+        Else
+            RefreshMiniaturki(False)
+        End If
     End Sub
 
 #End Region

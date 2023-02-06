@@ -100,7 +100,7 @@
             <CheckBox Grid.Row="6" Grid.Column="1" Name="uiSrcSaveToExif" IsEnabled="false" />
 
             <TextBlock Grid.Row="7" Text="JSON w katalogu:" />
-            <CheckBox Grid.Row="7" Grid.Column="1" Name="uiSrcJSONinside" />
+            <CheckBox Grid.Row="7" Grid.Column="1" Name="uiSrcJSONinside" IsChecked="True" IsEnabled="False"/>
 
             <TextBlock Grid.Row="8" Text="Ostatni zapis:" />
             <TextBlock Grid.Row="8" Grid.Column="1" Name="uiSrcLastSave" />

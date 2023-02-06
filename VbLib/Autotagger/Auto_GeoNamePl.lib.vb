@@ -35,7 +35,7 @@ Public Class Auto_GeoNamePl
 
             Dim oNew As New ExifTag(Nazwa)
             oNew.GeoTag = oItem.GeoTag
-            oNew.GeoName = Await GetNameForGeoPos(oItem.GeoTag)
+            oNew.GeoName = Await GetNameForGeoPos(oItem.GeoTag, oItem.GeoZgrubne)
             Return oNew
         Next
 
@@ -46,7 +46,7 @@ Public Class Auto_GeoNamePl
     Private Shared _lastGeo As pkar.BasicGeopos = pkar.BasicGeopos.Empty
     Private Shared _lastName As String
 
-    Private Async Function GetNameForGeoPos(oPos As pkar.BasicGeopos) As Task(Of String)
+    Private Async Function GetNameForGeoPos(oPos As pkar.BasicGeopos, bZgrubne As Boolean) As Task(Of String)
         DumpCurrMethod()
         EnsureCache()
 
@@ -55,20 +55,20 @@ Public Class Auto_GeoNamePl
             Return _lastName
         End If
 
-        _lastName = Await GetNameForGeoPosMain(oPos)
+        _lastName = Await GetNameForGeoPosMain(oPos, bZgrubne)
         _lastGeo = oPos
 
         Return _lastName
     End Function
-    Private Async Function GetNameForGeoPosMain(oPos As pkar.BasicGeopos) As Task(Of String)
+    Private Async Function GetNameForGeoPosMain(oPos As pkar.BasicGeopos, bZgrubne As Boolean) As Task(Of String)
 
-        Dim sGeoName As String = TryFromCache(oPos)
+        Dim sGeoName As String = TryFromCache(oPos, bZgrubne)
         If sGeoName <> "" Then
             DumpMessage("AUTO_GEONAME_PL from cache")
             Return sGeoName
         End If
 
-        sGeoName = Await TryAddToCache(oPos)
+        sGeoName = Await TryAddToCache(oPos, bZgrubne)
         If sGeoName <> "" Then
             DumpMessage("AUTO_GEONAME_PL from web")
             Return sGeoName
@@ -78,7 +78,7 @@ Public Class Auto_GeoNamePl
     End Function
 
 
-    Private Async Function TryAddToCache(oPos As pkar.BasicGeopos) As Task(Of String)
+    Private Async Function TryAddToCache(oPos As pkar.BasicGeopos, bZgrubne As Boolean) As Task(Of String)
         Dim sUri As String = "https://meteo.imgw.pl/api/geo/v2/revers/search/" & oPos.StringLat & "/" & oPos.StringLon
 
         Dim sPage As String = Await HttpPageAsync(sUri)
@@ -115,15 +115,15 @@ Public Class Auto_GeoNamePl
         _CacheLista.Save()
 
         Dim oBliskie As CacheImgw_Item = FindNearestPoint(nowaLista, oPos)
-        Return oBliskie.DisplayName
+        Return oBliskie.DisplayName(bZgrubne)
     End Function
 
-    Private Function TryFromCache(oPos As pkar.BasicGeopos) As String
+    Private Function TryFromCache(oPos As pkar.BasicGeopos, bZgrubne As Boolean) As String
 
         Dim oBliskie As CacheImgw_Item = FindNearestPoint(_CacheLista.GetList, oPos)
         If oBliskie Is Nothing Then Return ""
 
-        If oPos.DistanceTo(oBliskie.lat, oBliskie.lon) < 500 Then Return oBliskie.DisplayName
+        If oPos.DistanceTo(oBliskie.lat, oBliskie.lon) < 500 Then Return oBliskie.DisplayName(bZgrubne)
 
         Return ""
 
@@ -168,7 +168,8 @@ Public Class Auto_GeoNamePl
         'Public Property dist As String
         'Public Property synoptic As Boolean
 
-        Public Function DisplayName() As String
+        Public Function DisplayName(bZgrubne As Boolean) As String
+            If bZgrubne Then Return province & " » " & district & " » " & commune
             Return province & " » " & district & " » " & commune & " » " & name
         End Function
     End Class

@@ -1,0 +1,20 @@
+﻿<Page
+    x:Class="PicSorter.Settings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PicSorter"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
+
+    <StackPanel Margin="5,5,5,5">
+        <TextBlock HorizontalAlignment="Center" FontSize="18" Text="Settings" />
+        <TextBlock HorizontalAlignment="Center" FontSize="10" Margin="5,2,5,10" Name="uiVersion" />
+
+        <TextBlock Text="Using data from " Name="uiDataTimestamp" />
+        <Button Content="Check OneDrive" Click="uiCheckOneDrive_Click" Margin="0,5,0,5"/>
+        <ComboBox Header="Use this Cloud Archive:" Name="uiArchives" />
+        <Button HorizontalAlignment="Center" Content="OK" Margin="5,30,5,0" Click="uiOk_Click"/>
+    </StackPanel>
+</Page>

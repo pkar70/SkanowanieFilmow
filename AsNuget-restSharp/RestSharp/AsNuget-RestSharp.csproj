@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+      <TargetFrameworks>netstandard1.4;</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup Condition="$(TargetFramework) != 'net6.0'">
+        <PackageReference Include="System.Text.Json" Version="5.0.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="RestSharp.csproj.DotSettings" />
+    </ItemGroup>
+</Project>

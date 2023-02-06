@@ -64,15 +64,15 @@ Public Class AddDescription
 
     Private _DefMargin As New Thickness(-10, 0, 0, 0)
 
-    Private Sub DodajSubTree(oMenuItem As MenuItem, oSubTree As List(Of Vblib.OneKeyword))
+    Private Shared Sub DodajSubTree(oMenuItem As MenuItem, oSubTree As List(Of Vblib.OneKeyword), oEventHandler As RoutedEventHandler)
         If oSubTree Is Nothing Then Return
         For Each oItem As Vblib.OneKeyword In oSubTree
             Dim oNew As New MenuItem
             oNew.Header = oItem.sId & " " & oItem.sDisplayName
             oNew.DataContext = oItem
             'oNew.Margin = New Thickness(2)
-            DodajSubTree(oNew, oItem.SubItems)
-            AddHandler oNew.Click, AddressOf DodajTenKeyword
+            DodajSubTree(oNew, oItem.SubItems, oEventHandler)
+            AddHandler oNew.Click, oEventHandler
             'oNew.Margin = _DefMargin
             'oNew.Background = New SolidColorBrush(Colors.White)
             oMenuItem.Items.Add(oNew)
@@ -80,20 +80,37 @@ Public Class AddDescription
 
     End Sub
 
-
-    Private Sub WypelnMenuKeywords()
-        uiMenuKeywords.Items.Clear()
+    Public Shared Function WypelnMenuKeywords(oMenu As Menu, oEventHandler As RoutedEventHandler) As Integer
+        oMenu.Items.Clear()
 
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
             Dim oNew As New MenuItem
             oNew.Header = oItem.sId
             'oNew.Margin = _DefMargin
-            DodajSubTree(oNew, oItem.SubItems)
+            DodajSubTree(oNew, oItem.SubItems, oEventHandler)
             ' AddHandler oNew.Click, AddressOf DodajTenKeyword ' nie można dodawać keywords głównego poziomu (#,-,=)
-            uiMenuKeywords.Items.Add(oNew)
+            oMenu.Items.Add(oNew)
         Next
 
-        If uiMenuKeywords.Items.Count < 1 Then
+        Return oMenu.Items.Count
+    End Function
+
+
+    Private Sub WypelnMenuKeywords()
+
+        Dim count As Integer = WypelnMenuKeywords(uiMenuKeywords, AddressOf DodajTenKeyword)
+        'uiMenuKeywords.Items.Clear()
+
+        'For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        '    Dim oNew As New MenuItem
+        '    oNew.Header = oItem.sId
+        '    'oNew.Margin = _DefMargin
+        '    DodajSubTree(oNew, oItem.SubItems)
+        '    ' AddHandler oNew.Click, AddressOf DodajTenKeyword ' nie można dodawać keywords głównego poziomu (#,-,=)
+        '    oMenu.Items.Add(oNew)
+        'Next
+
+        If count < 1 Then
             uiAdd.IsEnabled = False
             uiAdd.ToolTip = "(nie ma zdefiniowanych słów kluczowych)"
         Else

@@ -7,6 +7,8 @@ Imports vb14 = Vblib.pkarlibmodule14
 
 ' chomikuj: https://github.com/brogowski/ChomikujApi
 
+' Std 2.0 dla MimeType
+
 
 Public Class Cloud_Chomikuj
     Inherits Vblib.CloudArchive

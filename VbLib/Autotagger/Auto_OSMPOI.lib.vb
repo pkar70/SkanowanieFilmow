@@ -1,4 +1,6 @@
-﻿Public Class Auto_OSM_POI
+﻿Imports pkar
+
+Public Class Auto_OSM_POI
     Inherits AutotaggerBase
 
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.WebPublic
@@ -13,7 +15,11 @@
         _cacheDataFolder = dataFolder
     End Sub
 
-
+    ''' <summary>
+    ''' zwraca zDepolitowaną nazwę
+    ''' </summary>
+    ''' <param name="sFullGeoName"></param>
+    ''' <returns></returns>
     Public Shared Function FullGeoNameToFolderName(sFullGeoName As String) As String
         Dim sNazwa As String = sFullGeoName
         Dim iInd As Integer
@@ -23,7 +29,7 @@
         Next
         iInd = sNazwa.LastIndexOf(",")
         If iInd > 0 Then sNazwa = sNazwa.Substring(iInd + 1).Trim
-        Return sNazwa
+        Return sNazwa.Depolit ' DropAccents gdy bedzie tu .NetStd2
     End Function
 
 
@@ -39,7 +45,7 @@
 
             Dim oNew As New ExifTag(Nazwa)
             oNew.GeoTag = oItem.GeoTag
-            oNew.GeoName = Await GetNameForGeoPos(oItem.GeoTag)
+            oNew.GeoName = OSMnameZgrubne(Await GetNameForGeoPos(oItem.GeoTag), oItem.GeoZgrubne)
             Return oNew
         Next
 
@@ -85,7 +91,33 @@
 
     Private Shared _oHttp As Net.Http.HttpClient
 
+    Private Function OSMnameZgrubne(OSMname As String, zgrubne As Boolean)
+        If Not zgrubne Then Return OSMname
 
+        ' "Rynek, Osiedle 70-lecia Niepodległości Polski, Zatyle, Lanckorona, gmina Lanckorona, powiat wadowicki, województwo małopolskie, 34-143, Polska"
+        ' od 6 przecinka od konca
+
+        ' "Zakościele, Podkościele, Podksięże, Sucha Beskidzka, powiat suski, województwo małopolskie, 34-200, Polska"
+        ' od 5 przecinka od konca
+
+        ' "Nowosądecka, Kozłówka, Bieżanów-Prokocim, Kraków, województwo małopolskie, 30-681, Polska" 
+        ' od 4 przecinka od konca
+
+
+        Dim iPrzecinkow As Integer = 4
+        If OSMname.Contains("powiat") Then iPrzecinkow += 1
+        If OSMname.Contains("gmina") Then iPrzecinkow += 1
+
+        Dim iInd As Integer = OSMname.Length - 1
+        For iLp As Integer = 1 To iPrzecinkow
+            Dim iInd1 As Integer = OSMname.LastIndexOf(",", iInd)
+            If iInd1 < 0 Then Return OSMname
+            iInd = iInd1
+        Next
+
+        Return OSMname.Substring(iInd + 1).Trim
+
+    End Function
 
     Private Async Function TryAddToCache(oPos As pkar.BasicGeopos) As Task(Of String)
         Dim sUri As String = $"https://nominatim.openstreetmap.org/reverse?lat={oPos.StringLat}&lon={oPos.StringLon}&format=jsonv2&zoom=17"

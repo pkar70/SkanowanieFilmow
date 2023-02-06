@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="EnterGeoTag" Height="250" Width="150">
+        Title="EnterGeoTag" Height="270" Width="150">
     <Grid Margin="5,5,5,5">
 
         <Grid.RowDefinitions>
@@ -18,8 +18,9 @@
         <TextBlock Text="Latitude:" Margin="0,5,0,0"/>
         <TextBox Name="uiLatitude" TextChanged="uiLatLon_TextChanged"/>
         <TextBlock Text="Longitude:" Margin="0,5,0,0"/>
-            <TextBox Name="uiLongitude" InputScope="Number" TextChanged="uiLatLon_TextChanged"/>
-        <Button Content=" OK " Click="uiOk_Click" HorizontalAlignment="Center" Margin="5,10,5,10" Name="uiOK" IsEnabled="false"/>
+        <TextBox Name="uiLongitude" InputScope="Number" TextChanged="uiLatLon_TextChanged"/>
+            <CheckBox Name="uiZgrubne" Content="cały rejon" Margin="0,5,0,0" />
+            <Button Content=" OK " Click="uiOk_Click" HorizontalAlignment="Center" Margin="5,10,5,10" Name="uiOK" IsEnabled="false"/>
         <Rectangle HorizontalAlignment="Stretch" Margin="20,0,20,0" Height="5" Fill="Blue" />
 
         <TextBlock Text="POI name:" Margin="0,5,0,0"/>

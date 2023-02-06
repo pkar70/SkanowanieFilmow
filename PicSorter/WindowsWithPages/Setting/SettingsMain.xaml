@@ -18,7 +18,7 @@
 
         <Button Content="Dir tree" Margin="5,10,5,5" FontSize="18" Click="uiDirTree_Click"/>
         <Button Content="Tag tree" Margin="5,10,5,5" FontSize="18" Click="uiKeywords_Click"/>
-        <Button Content="Autotags" Margin="5,10,5,20" FontSize="18" Click="uiAutoTags_Click" />
+        <Button Content="Web autotags" Margin="5,10,5,20" FontSize="18" Click="uiAutoTags_Click" />
 
         <Button Content="Listy" Margin="5,10,5,5" FontSize="18" Click="uiListSett_Click"/>
         <Button Content="Misc" Margin="5,5,5,5" FontSize="18" Click="uiMiscSett_Click"/>

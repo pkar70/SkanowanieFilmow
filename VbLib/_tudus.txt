@@ -50,10 +50,21 @@ Ważne:
 	(usunąć niektóre targetDiry?)
 * publish adhoc dla Shutterfly (znak wodny), i przesłanie kompletu zdjęć jako archiwum?
 
+
+* od zera wlasny chomikuj read (dla telefonu)
+* jak GUID dla nowo otrzymanych zdjec od Anki jak wlasne juz zGUIDowalem i wyslalem do archiwum?
+* dirtree, <ignore>fullpath zamiast odwolywac sie do dirtree.getfullpath? dla Display byloby wskazane (telefon, emulacja dirtree, replace("/[*^/]", "   ") )
+* zastanowic sie gdzie zbierac zdjecia dla udostepnien? bo moze zrezygnowac z Degoo, Shutterfly (jak juz nie ma sharesites) - moze w efekcie sprobowac ten facebook/albums?
+* search: combo z listą pól pogodowych?
+
 == SORTED:
+pliki znikniete z indeksu - usuwanie, wstawianie do clipboard czy tylko gdy nie usuwa?
+
 
 ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
 na App.GetArchives - GetPicture(oPic), uzupełnia oContent wedle wszystkich istniejących, próbując znaleźć takie które plik ma.
+ARCHIVE: kiedy dopisuje do data\arch.json? żeby nie przy każdym archiwizowaniu (bo by były powtórki)
+
 
 * AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 
@@ -68,14 +79,20 @@ BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
 BROWSER: skalowanie typeFile, bo dla 1000 itemów jest stanowczo za duże :)
 BROWSER SET-TARGET-DIR:po [+] nie ma refresh comboboxa?
 BROWSER: #Wnd KWD SMALL: dodanie Kwd, razem z opisem może jednak, bo do SEARCH byłoby dobrze mieć "Kurcz" w opisie
+BROWSER action:keywords, brakuje jednego poziomu słów kliczowych?
+BROWSER crop - kasowanie thumba potrzebne
+BROWSER.Action: LOCK/UNLOCK - tych zdjec nie wysyla nigdzie
+
+CHOMIK: katalogi robić hidden
+CHOMIK: importer, między ludźmi
 
 DBASE: wstawianie tam Flattened, co pozwala na w miarę normalne query
 DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
 DBASE: tworzenie tabeli wedle pól z EXIF (flattened?)
+DBASE: https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-ver16
+DBASE: lokalny SQL; ale czy także Azure.Cosmo? Telefonicnzie i tak nie ma jak zrobić wyszukiwania (screen estate za mały)
 
-DIRTREE: <jsonignore>fullpath, uzupełniane na OnLoad?
-
-EXIF: przerobić na "metadata", i dodać "real exif", pełny dump, z Big/Browse
+KEYWORDS/GEO: może przy dodawaniu manual geo automatycznie dopisywać keywordy?
 
 MAINPAGE: "open folder in-place", bez import jako takiego? tylko lokalny buffer.json?
 MAINPAGE: ewentualnie osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać (do ściągania komentarzy do zdjęć)
@@ -86,19 +103,19 @@ MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
 POSTPROCESS: co robić gdy etap pipeline nie działa na danym typie? Error czy Ignore?
 POSTPROCESS: jeśli któryś etap nie da rady, to pytanie (DialogBoxYN) co zrobić
 POSTPROCESS: CanRunPipeline(oFile) na całej liście, co zwraca nazwę kroku który jest niedostępny dla pliku
+POSTPROCESS: autorotate, jeśli nie ma FileExif jest crash; ale co wteyd powinno się zrobić? zignorować krok? tak! bo przecież mamy skany, gdzie nie ma Rotate
 
 PUBLISH konwertery z NAR do JPG, 
 PUBLISH jednego - może być pytanie, np. o opis.
 PUBLISH, default mask, i to przekopiowywane, albo includeMask nieruszalne, albo dwa poziomy (includemask - supported by service, includemask publikatora - co chcemy wysyłać)
 PUBLISH progressbar niezbyt dobrze sie zachowuje
+PUBLISH: SendFiles(.., delegate ProgbarInc)
 PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwleka zanim zamknie pliki i sa widoczne
 
-SEARCH: chyba wszystko TAK/NIE
-SEARCH data od-do; godziny od-do; GPS+promień; keyword; opis; -fx; copyr LISTA; camermodel LISTA; TYP zrodla (0/1/2/3); WinOCR (lub jako OPIS); GeoName; source NAME; Azure caption; Azure category; Azure tag; dominant colors/foreground/background; dzień/noc (godzina słoneczna?); temp zwykła i odczuwalna od-do; wilgotność oraz opad; wiatr min/max/kierunek; ciśnienie; widoczność; zachmurzenie; UVindex
-SEARCH: i search z search, i kazdy poziom oddzielne okno, i browse do odpalania, ale najpierw lista
-SEARCH: textbox "+" oraz "-", każdy to maski rozdzielone spacjami
-SEARCH: keywords: button browse keywords
-SEARCH: target dir - button browse? choć np. "parowozjada" a nie konkretna
+RETRIEVE NAR - rozpakowywanie do pojedynczych moze robic?
+RETRIEVE typ: chomikuj? z podanego katalogu? do dzielenia się z innymi?
+
+SEARCH: dwie tabs, files oraz folders
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
 STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
@@ -107,18 +124,23 @@ SHOWBIG: jakoś NAR (możliwość zamiany NAR na wybrany JPG, bądź na rozpakow
 SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
 
 SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku skopiowanym do bufora, nie wcześniej
+SETTINGS: to o tyle istotne, że AutoRotate wymaga AutoExif!
+SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
 
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
 
 SHUTTERFLY: *) jako archiwum - pelne zdjęcia, takze do druku, sharelink - pelne zdjecie
 SHUTTERFLY: *) jako publish, do Sites, ktorych mozna stworzyc duzo, z niezaleznymi adresami, zmneijszone itp.
 
+TELEFON: eksporter do chomikuj różnych
 
 * ALL: powoli robić refactor obiektowy (OneKey i OneDir, OnePic jak najwiecej, je jako podstawa i bez uzywania innych. Dostęp do Property tylko XAML i Settings, reszta przez Methods?
 
 * wszystkie po drodze, autoExif, postprocesory, publishy, uczulic na thumb, nar, avi; takze w settingsach to trzeba zrobic
 
 co zrobic jak bedzie select do publish ale publisher nie uwzglednia typu? albo gdy postproc nie działa na nim? anulowanie pipeline (i publisha)?
+
+NAR ma datę z pliku, nie z JFIF - i jest to pozniej niz JFIF
 
 
 cloudarchive.json; dirtree.json na OneDrive?

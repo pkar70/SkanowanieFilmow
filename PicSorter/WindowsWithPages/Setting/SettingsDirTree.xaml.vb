@@ -4,6 +4,7 @@ Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
 Imports System.Security.Policy
+Imports System.ComponentModel
 
 Public Class SettingsDirTree
 
@@ -59,7 +60,8 @@ Public Class SettingsDirTree
 
         Dim oNew As New Vblib.OneDir
         oNew.denyPublish = oItem.denyPublish    ' domyślnie schodzi zakaz w dół
-        oNew.sParentId = oItem.sId
+        'oNew.sParentId = oItem.sId
+        oNew.fullPath = oItem.fullPath    ' tylko tymczasowo! na OK trzeba zmienić path
 
         oItem.SubItems.Add(oNew)
         Item2Edit(oNew, True)
@@ -102,7 +104,8 @@ Public Class SettingsDirTree
                 End If
             Next
             _editingItem.notes = uiNotes.Text
-            _editingItem.sId = uiId.Text
+            _editingItem.sId = uiId.Text.DropAccents
+            _editingItem.fullPath = IO.Path.Combine(_editingItem.fullPath, _editingItem.sId)
         End If
 
         '_editingItem.defaultPublish = uiDefPublish.Text
@@ -168,11 +171,12 @@ Public Class SettingsDirTree
             If Not Await vb14.DialogBoxYNAsync("Ten katalog zawiera pod-katalogi, skasować całe drzewko?") Then Return
         End If
 
-        ' nie trzeba we flat wszystkich katalogów, bo wystarczy prefix
+        ' nie trzeba we flat wszystkich katalogów, bo wystarczy prefix (tylko o co chodziło w tym zapisie?)
         Dim bHasKeys As Boolean = False
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If oPic.TargetDir Is Nothing Then Continue For
-            If oPic.TargetDir.StartsWithOrdinal(oItem.sId) Then
+            ' tu było StartsWith, ale przecież teraz mamy pełne ścieżki więc musimy Contains
+            If oPic.TargetDir.Contains(oItem.sId) Then
                 bHasKeys = True
                 Exit For
             End If
@@ -185,6 +189,7 @@ Public Class SettingsDirTree
 
         ' kasowanie
         Application.GetDirTree.Remove(oItem)
+        RefreshList()
     End Sub
 
 
@@ -211,7 +216,7 @@ Public Class SettingsDirTree
         Dim oItem As Vblib.OneDir = oFE?.DataContext
         If oItem Is Nothing Then Return
 
-        OpenFolderInPicBrowser(Application.GetDirTree.GetFullPath(oItem.sId))
+        OpenFolderInPicBrowser(oItem.fullPath)
 
     End Sub
 
@@ -276,6 +281,23 @@ Public Class KonwersjaVisibilyFromNotGlobal
 
     Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
         Return If(Not SettingsDirTree._EditMode, Visibility.Visible, Visibility.Collapsed)
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Throw New NotImplementedException()
+    End Function
+End Class
+
+Public Class KonwersjaSortujSubitemyDir
+    Implements IValueConverter
+
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        If value Is Nothing Then Return Nothing
+        Dim subdiry As IList = TryCast(value, IList)
+        Dim oView As New ListCollectionView(subdiry)
+        Dim sort As New SortDescription("sId", ListSortDirection.Ascending)
+        oView.SortDescriptions.Add(sort)
+        Return oView
     End Function
 
     Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack

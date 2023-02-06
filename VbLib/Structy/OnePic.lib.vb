@@ -784,6 +784,15 @@ Public Class OnePic
                 Return GuidPrefix.DateTaken & sSuggestedFilename.Substring(0, 15).Replace("_", "")
             End If
 
+            ' telefon Aski 
+            ' 01234567890123456789
+            ' IMG_20230128_111119345
+            ' ....1234567890123456789
+            If sSuggestedFilename.StartsWith($"IMG_{sRealDate}_{realData.ToString("HH")}") Then
+                Return GuidPrefix.DateTaken & sSuggestedFilename.Substring(4, 15).Replace("_", "")
+            End If
+
+
             Return GuidPrefix.DateTaken & realData.ToString("yyyyMMddHHmmss")
         End If
 
@@ -891,14 +900,20 @@ Public Class OnePic
         If Exifs Is Nothing Then Return False
 
         For Each oExif As ExifTag In Exifs
-            If oExif.Keywords.Contains(sKey) Then Return True
+            If oExif.Keywords IsNot Nothing AndAlso oExif.Keywords.Contains(sKey) Then Return True
         Next
 
         Return False
     End Function
 
+    ''' <summary>
+    ''' sprawdza czy spełnione są warunki keywords (z ! jako zaprzeczeniem)
+    ''' </summary>
+    ''' <param name="aTags"></param>
+    ''' <returns></returns>
     Public Function MatchesKeywords(aTags As String()) As Boolean
         For Each sTag As String In aTags
+            If String.IsNullOrWhiteSpace(sTag) Then Continue For
             If sTag.StartsWith("!") Then
                 If HasKeyword(sTag.Substring(1)) Then Return False
             Else

@@ -97,10 +97,11 @@ Public Class CloudArchivesList
     ' Inherits Vblib.MojaLista(Of CloudConfig)
 
     Private gCloudProviders As Vblib.CloudArchive() = {
-            New CloudArch_std14_Chomikuj.Cloud_Chomikuj,
-            New CloudArch_std14_Degoo.Cloud_Degoo,
-            New CloudArch_std14_Shutterfly.Cloud_Shutterfly
-        }
+            New CloudArch_std14_Chomikuj.Cloud_Chomikuj
+           }
+    'New CloudArch_std14_Degoo.Cloud_Degoo,
+    'New CloudArch_std14_Shutterfly.Cloud_Shutterfly
+    ' }
 
     Private gCloudArchives As List(Of Vblib.CloudArchive)
 
@@ -137,7 +138,7 @@ Public Class CloudArchivesList
 
         Dim dstFile As String = IO.Path.Combine(Application.GetOneDrivePath, sSourceFileName)
 
-        IO.File.Copy(srcFile, dstFile)
+        IO.File.Copy(srcFile, dstFile, True)
     End Sub
 
     Public Function Save(Optional bIgnoreNulls As Boolean = False) As Boolean

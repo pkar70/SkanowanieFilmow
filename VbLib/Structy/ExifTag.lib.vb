@@ -48,7 +48,7 @@ Public Class ExifTag
     Public Property ReelName As String   ' 0xc789	ReelName	string	IFD0
     Public Property GeoTag As pkar.BasicGeopos    ' 0x87b1	GeoTiffAsciiParams IFD0 (string)
     Public Property GeoName As String ' GeoTiffAsciiParams
-
+    Public Property GeoZgrubne As Boolean = False
     Public Property OriginalRAW As String   ' Tag 0xc68b (9 bytes, string[9])
 
     'Public Property AlienTags As List(Of String)    ' importowane z różnych miejsc, autorozpoznawanie -> ExifSource

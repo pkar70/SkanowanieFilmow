@@ -101,6 +101,8 @@ Public Class Auto_AzureTest
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
 
+        If Not oFile.MatchesMasks(includeMask) Then Return Nothing
+
         If oFile.MatchesMasks("*.nar") Then
             Dim sTempfilename As String = Await Nar2Jpg(oFile.InBufferPathName)
 

@@ -3,6 +3,9 @@
 'Imports Microsoft.Rest
 'Imports Newtonsoft.Json
 
+Imports Newtonsoft.Json
+Imports Newtonsoft.Json.Schema
+
 Public Class OneDir
     Inherits pkar.BaseStruct
 
@@ -14,9 +17,14 @@ Public Class OneDir
     Public Property SubItems As List(Of OneDir)
     Public Property sParentId As String
 
-    Public Function ToComboDisplayName() As String
-        If String.IsNullOrWhiteSpace(notes) Then Return sId
-        Dim sRet As String = sId & " ("
+    <JsonIgnore>
+    Public Property fullPath As String
+
+    Public Function ToComboDisplayName(Optional bPath As Boolean = False) As String
+
+        Dim sRet As String = If(bPath, fullPath, sId)
+        If String.IsNullOrWhiteSpace(notes) Then Return sRet
+        sRet &= " ("
         If notes.Length < 24 Then Return sRet & notes & ")"
 
         Return sRet & notes.Substring(0, 23) & "…)"
@@ -89,6 +97,42 @@ Public Class DirsList
         MyBase.New(sFolder, "dirstree.json")
     End Sub
 
+    Public Overrides Function Load() As Boolean
+        Dim bRet As Boolean = MyBase.Load()
+        If Count() < 1 Then Return bRet
+
+        CalculateFullPaths()
+
+        Return bRet
+    End Function
+
+    Private Sub CalculateFullPaths()
+
+        ' teoretycznie będzie tylko jeden item na tym poziomie: root
+        For Each oItem As OneDir In _lista
+
+            If oItem.SubItems Is Nothing Then Return
+
+            ' iterujemy te pod ROOT
+            For Each oSubitem As OneDir In oItem.SubItems
+                CalculateFullPaths(oSubitem, "")
+            Next
+        Next
+    End Sub
+
+    Private Sub CalculateFullPaths(oItem As OneDir, sParentPath As String)
+        If sParentPath = "" Then
+            oItem.fullPath = oItem.sId
+        Else
+            oItem.fullPath = IO.Path.Combine(sParentPath, oItem.sId)
+        End If
+        If oItem.SubItems Is Nothing Then Return
+
+        For Each oSubitem As OneDir In oItem.SubItems
+            CalculateFullPaths(oSubitem, oItem.fullPath)
+        Next
+    End Sub
+
     Public Function GetDir(sKey As String) As OneDir
         For Each oItem As OneDir In ToFlatList()
             If oItem.sId = sKey Then Return oItem
@@ -97,25 +141,24 @@ Public Class DirsList
         Return Nothing
     End Function
 
-    Public Function GetFullPath(sKey As String) As String
+    'Public Function GetFullPath(sKey As String) As String
 
-        Dim oItem As OneDir = GetDir(sKey)
-        If oItem Is Nothing Then Return ""
+    '    Dim oItem As OneDir = GetDir(sKey)
+    '    If oItem Is Nothing Then Return ""
 
-        If String.IsNullOrWhiteSpace(oItem.sParentId) Then Return oItem.sId
-        If oItem.sParentId = "(root)" Then Return oItem.sId
+    '    Return oItem.fullPath
 
-        Return IO.Path.Combine(GetFullPath(oItem.sParentId), oItem.sId)
+    'End Function
 
-    End Function
+    'Public Function GetFullPath(oDir As OneDir) As String
 
-    Public Function GetFullPath(oDir As OneDir) As String
+    '    If Not String.IsNullOrWhiteSpace(oDir.fullPath) Then Return oDir.fullPath
 
-        If String.IsNullOrWhiteSpace(oDir.sParentId) Then Return oDir.sId
-        If oDir.sParentId = "(root)" Then Return oDir.sId
-        Return IO.Path.Combine(GetFullPath(oDir.sParentId), oDir.sId)
+    '    If String.IsNullOrWhiteSpace(oDir.sParentId) Then Return oDir.sId
+    '    If oDir.sParentId = OneDir.RootId Then Return oDir.sId
+    '    Return IO.Path.Combine(GetFullPath(oDir.sParentId), oDir.sId)
 
-    End Function
+    'End Function
 
     Public Function ToFlatList() As List(Of OneDir)
         Dim lista As New List(Of OneDir)
@@ -155,9 +198,10 @@ Public Class DirsList
         End If
 
         Dim oNew As New OneDir
-        oNew.sParentId = oItem.sId
+        'oNew.sParentId = oItem.sId
         oNew.sId = sId
         oNew.notes = sOpis
+        oNew.fullPath = IO.Path.Combine(oItem.fullPath, oNew.sId)
         If oItem.SubItems Is Nothing Then oItem.SubItems = New List(Of OneDir)
         oItem.SubItems.Add(oNew)
 
@@ -170,10 +214,12 @@ Public Class DirsList
         For Each sDir As String In IO.Directory.EnumerateDirectories(sFolder)
             Dim oNew As New OneDir
             oNew.sId = IO.Path.GetFileName(sDir)
-            oNew.sParentId = IO.Path.GetFileName(sFolder)
+            'oNew.sParentId = IO.Path.GetFileName(sFolder)
+            oNew.fullPath = IO.Path.Combine(oItem.fullPath, oNew.sId)
             'Public Property notes As String
             'Public Property denyPublish As Boolean
             ' Public Property SubItems As List(Of OneDir)
+            oNew.fullPath = IO.Path.Combine(oItem.fullPath, oNew.sId)
             If oItem.SubItems Is Nothing Then oItem.SubItems = New List(Of OneDir)
             oItem.SubItems.Add(oNew)
 
