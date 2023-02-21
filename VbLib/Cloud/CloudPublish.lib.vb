@@ -42,6 +42,7 @@ Public MustInherit Class CloudPublish
 
         Dim lista As New List(Of OnePic)
         For Each oPic As OnePic In oPicki
+            If oPic.locked Then Continue For
             If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Continue For
 
             Dim sRet As String = oPic.CanRunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
@@ -62,6 +63,7 @@ Public MustInherit Class CloudPublish
     Public Async Function SendFile(oPic As OnePic) As Task(Of String)
         DumpCurrMethod()
         ' sprawdź maski
+        If oPic.locked Then Return ""
         If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Return ""
 
         Dim sRet As String = oPic.CanRunPipeline(konfiguracja.defaultPostprocess, _PostProcs)

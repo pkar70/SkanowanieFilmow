@@ -1,7 +1,11 @@
 ﻿
 
+Imports System.IO
+Imports System.Runtime.Serialization
+Imports System.Runtime.Serialization.Formatters.Binary
 Imports System.Security.Policy
 Imports System.Windows.Controls.Primitives
+Imports MetadataExtractor.Formats
 Imports Org.BouncyCastle.Crypto.Engines
 Imports pkar
 Imports Vblib
@@ -51,8 +55,30 @@ Public Class SearchWindow
         If _fullArchive IsNot Nothing Then Return
 
         Application.ShowWait(True)
-        _fullArchive = New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "buffer11.json") ' "archIndex.flat.json"
-        _fullArchive.Load()
+
+        Dim sDataFolder As String = Application.GetDataFolder
+        Dim sBinFile As String = IO.Path.Combine(sDataFolder, "archIndexFull.bin")
+        Dim sTxtFile As String = IO.Path.Combine(sDataFolder, "archIndexFull.json")
+
+        If IO.File.Exists(sBinFile) AndAlso (New IO.FileInfo(sBinFile)).Length > 100 AndAlso IO.File.GetLastWriteTime(sBinFile) > IO.File.GetLastWriteTime(sTxtFile) Then
+            ' plik BIN jest nowszy, więc bierzemy go
+            Dim fs As New FileStream(sBinFile, FileMode.Open)
+            Dim formatter As New BinaryFormatter
+            _fullArchive = DirectCast(formatter.Deserialize(fs), BaseList(Of Vblib.OnePic))
+        Else
+            ' mamy nowszy JSON, to musimy wczytać JSON i go zapisać
+            _fullArchive = New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json") ' "archIndex.flat.json"
+            _fullArchive.Load()
+
+            ' bin zapis
+#If False Then
+            ' nie serializujemy, bo "is not marked as serializable" - ale to znaczy że nigdy do tego powyżej IF nie wejdzie, zawsze będzie ELSE
+            Dim fs As New FileStream(sBinFile, FileMode.Create)
+            Dim formatter As New BinaryFormatter()
+            formatter.Serialize(fs, _fullArchive)
+#End If
+        End If
+
         _initialCount = _fullArchive.Count
         Application.ShowWait(False)
         ' potem: new ProcessBrowse.New(bufor As Vblib.IBufor, onlyBrowse As Boolean)
@@ -124,7 +150,7 @@ Public Class SearchWindow
 #Region "ogólne"
 
             If uiIgnoreYear.IsChecked Then
-                ' bierzemy daty oPic, i zmieniamy Year na taki jak w UI query
+                ' bierzemy daty oDir, i zmieniamy Year na taki jak w UI query
                 If maxDate.IsDateValid Then
                     Dim picMinDate As Date = oPicek.GetMinDate
                     picMinDate.AddYears(maxDate.Year - picMinDate.Year)
@@ -145,7 +171,7 @@ Public Class SearchWindow
             If Not CheckStringContains(oPicek.PicGuid, uiGuid.Text) Then Continue For
 
             If Not String.IsNullOrWhiteSpace(uiTags.Text) Then
-                If oPicek.MatchesKeywords(uiTags.Text.Split(" ")) Then Continue For
+                If Not oPicek.MatchesKeywords(uiTags.Text.Split(" ")) Then Continue For
             End If
 
             Dim descripsy As String = oPicek.GetSumOfDescriptionsText & " " & oPicek.GetSumOfCommentText
@@ -186,11 +212,13 @@ Public Class SearchWindow
 
 
             If _geoTag IsNot Nothing Then
-                Dim geotag As BasicGeopos = oPicek.GetGeoTag
+                Dim geotag As BasicGeoposWithRadius = oPicek.GetGeoTag
                 If geotag Is Nothing Then
                     If Not uiGeoDefault.IsChecked Then Continue For
                 Else
-                    If Not geotag.IsInsideCircle(_geoTag, iDistance * 1000) Then Continue For
+                    Dim maxRadius As Integer = iDistance * 1000 ' na metry
+                    maxRadius += geotag.iRadius ' dodaj dokładność lokalizacji
+                    If Not geotag.IsInsideCircle(_geoTag, maxRadius) Then Continue For
                 End If
             End If
 
@@ -492,10 +520,9 @@ Public Class SearchWindow
             iCount = Szukaj(_inputList)
         End If
 
-        ' *TODO* uwzględnienie uiFullDirs.IsChecked - wszystkie zdjęcia w folderach, 
-
         If iCount < 1 Then
             uiLista.ItemsSource = Nothing
+            uiListaKatalogow.ItemsSource = Nothing
             uiResultsCount.Text = $"Nic nie znalazłem (w {_initialCount})."
             Return
         End If
@@ -505,7 +532,24 @@ Public Class SearchWindow
             If Not Await vb14.DialogBoxYNAsync($"{iCount} to dużo elementów, pokazać listę mimo to?") Then Return
         End If
 
+
+
+        ' pokazanie rezultatów
         uiLista.ItemsSource = From c In _queryResults
+
+        ' oraz folderów
+        Dim listaNazwFolderow As New List(Of String)
+        For Each oPicek As Vblib.OnePic In _queryResults
+            listaNazwFolderow.Add(oPicek.TargetDir)
+        Next
+
+        Dim listaFolderow As New List(Of Vblib.OneDir)
+        For Each nazwa As String In From c In listaNazwFolderow Order By c Distinct
+            Dim oFolder As Vblib.OneDir = Application.GetDirTree.GetDirFromTargetDir(nazwa)
+            If oFolder IsNot Nothing Then listaFolderow.Add(oFolder)
+        Next
+
+        uiListaKatalogow.ItemsSource = listaFolderow
     End Sub
 
     Private Sub uiGetGeo_Click(sender As Object, e As RoutedEventArgs)
@@ -575,7 +619,7 @@ Public Class SearchWindow
         Dim oItem As FrameworkElement = sender
         Dim oPicek As Vblib.OnePic = oItem.DataContext
 
-        Dim oWnd As New ShowExifs(False) '(oPicek.oPic)
+        Dim oWnd As New ShowExifs(False) '(oPicek.oDir)
 
         ' możemy potem w nim robić zmiany...
         oWnd.Owner = Me
@@ -611,5 +655,14 @@ Public Class SearchWindow
 
         If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Return
         SettingsDirTree.OpenFolderInPicBrowser(oPic.TargetDir)
+    End Sub
+
+    Private Sub uiFoldersOpenFolder_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oDir As Vblib.OneDir = oFE.DataContext
+        If oDir Is Nothing Then Return
+
+        ' otwórz folder - ale z listy folderów
+        SettingsDirTree.OpenFolderInPicBrowser(oDir.fullPath)
     End Sub
 End Class

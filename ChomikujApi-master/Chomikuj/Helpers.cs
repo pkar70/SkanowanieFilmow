@@ -33,7 +33,27 @@ namespace Chomikuj
 
         public static DateTime ParseChomikujDate(string date)
         {
-            return DateTime.ParseExact(date, "d MMM yy HH:mm", GetCultureInfo());
+            try
+            {
+                DateTime data = DateTime.ParseExact(date, "d MMM yy HH:mm", GetCultureInfo());
+                // pkar: to nie zadziałało (2023.02.07), a wcześniej działało! niby jest dobry format!
+                return data;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                DateTime data = DateTime.ParseExact(date, "d MMM yy H:mm", GetCultureInfo());
+                // "9:23" było
+                return data;
+            }
+            catch
+            {
+                return DateTime.Now;
+            }
+
         }
 
         public static CultureInfo GetCultureInfo()

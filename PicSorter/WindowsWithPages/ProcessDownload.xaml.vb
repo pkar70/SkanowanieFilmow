@@ -100,7 +100,7 @@ Public Class ProcessDownload
         Dim oSrcFile As Vblib.OnePic = oSrc.GetFirst
         If oSrcFile Is Nothing Then Return 0
 
-        iCount = 0
+        iCount = 1
 
         Do
             ' obsługa WP_20221119_10_39_05_Rich.jpg.thumb

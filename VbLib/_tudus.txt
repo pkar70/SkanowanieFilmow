@@ -1,3 +1,16 @@
+
+
+
+AmazonPrime: unlimited photos? PL tego nie ma, to jest w US, $140 rocznie
+https://www.amazon.com/photos/storage
+100 GB / $20 rocznie
+1 TB / $60 rocznie
+
+Google Photos:
+100 GB / 90 zł rocznie
+200 GB / 140 zł rocznie
+2 TB / 470 zł rocznie
+
 vimeo: 25 video total, 2 miesiecznie, darmowe;
 
 PicSorter, milestones:
@@ -27,28 +40,12 @@ więc migracja do nowszego .Net niekoniecznie zadziała, ale można dać do Net 
 
 NUGET prywatny, wersja "jak było", choc problem z Resw by był (bo jak przekazać?); kolejna wersja z uzyciem NetConfigs, kolejna z DataLog, i tak dalej.
 
-App.GetCoverters(sourcefilename, list<Target extensions>) - GetStream (publish), ConvertFile
-
 <menu> i <contextmenu>?
 <DropDownButton przy WinUI2>
-
-Od Aśki, uruchomienie:
-po retrieve nie odblokowało browse, albo po zdefiniowaniu source nie odblokowalo retrieve - sprawdzic
-kasowanie menu flyout po kliknięciu poza nim
 
 Czy app WPF mogłaby zaimportować sobie settings app.json z UWP (ze ścieżki)?
 
 WPF i WinUI2? (progressring)
-
-
-Ważne:
-* shutterfly na Bari
-* przegląd zdjęć, usuwanie/crop/rotate/resize
-* przydział targetDir
-* archiwizacja ostateczna - zmniejszenie ilości zdjęć w buforze
-	(może być tylko tych co SURE, bez tych pojedynczych ktorych nie wiadomo gdzie dać?)
-	(usunąć niektóre targetDiry?)
-* publish adhoc dla Shutterfly (znak wodny), i przesłanie kompletu zdjęć jako archiwum?
 
 
 * od zera wlasny chomikuj read (dla telefonu)
@@ -63,14 +60,15 @@ pliki znikniete z indeksu - usuwanie, wstawianie do clipboard czy tylko gdy nie 
 
 ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
 na App.GetArchives - GetPicture(oPic), uzupełnia oContent wedle wszystkich istniejących, próbując znaleźć takie które plik ma.
-ARCHIVE: kiedy dopisuje do data\arch.json? żeby nie przy każdym archiwizowaniu (bo by były powtórki)
-
+ARCHIVE/PUBLISH: Amazon Photo
 
 * AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
-
 * AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
 
+AUTO_GUID: zawsze reset istniejących?
+
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
+AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
 
 BROWSER wczytajObrazek: nie dowolny z NAR/ZIP, tylko konkretne próbować wybrać?
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
@@ -78,10 +76,12 @@ BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
 BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
 BROWSER: skalowanie typeFile, bo dla 1000 itemów jest stanowczo za duże :)
 BROWSER SET-TARGET-DIR:po [+] nie ma refresh comboboxa?
+BROWSER SET-TARGET-DIR:jakos weryfikacja czy już nie ma takiego (żeby się nie pokryło)
 BROWSER: #Wnd KWD SMALL: dodanie Kwd, razem z opisem może jednak, bo do SEARCH byłoby dobrze mieć "Kurcz" w opisie
 BROWSER action:keywords, brakuje jednego poziomu słów kliczowych?
 BROWSER crop - kasowanie thumba potrzebne
 BROWSER.Action: LOCK/UNLOCK - tych zdjec nie wysyla nigdzie
+BROWSER: delete guids, albo na to override tego co w Base
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi
@@ -91,6 +91,9 @@ DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie 
 DBASE: tworzenie tabeli wedle pól z EXIF (flattened?)
 DBASE: https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-ver16
 DBASE: lokalny SQL; ale czy także Azure.Cosmo? Telefonicnzie i tak nie ma jak zrobić wyszukiwania (screen estate za mały)
+DBASE: Amazon.Dynamo (noSQL)
+DBASE: lokalny SQL: wrzucanie StoredProcedure?
+DBASE: aktualizowany także post-archive
 
 KEYWORDS/GEO: może przy dodawaniu manual geo automatycznie dopisywać keywordy?
 
@@ -99,6 +102,8 @@ MAINPAGE: ewentualnie osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać
 
 MAIN:BROWSE: ewentualnie "recursive"?
 MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
+
+MAIN:new: CHECKLIST, które prowadzi wedle "mojej" sekwencji (a może to w Browse? Retrieve resetuje progress)
 
 POSTPROCESS: co robić gdy etap pipeline nie działa na danym typie? Error czy Ignore?
 POSTPROCESS: jeśli któryś etap nie da rady, to pytanie (DialogBoxYN) co zrobić
@@ -111,11 +116,19 @@ PUBLISH, default mask, i to przekopiowywane, albo includeMask nieruszalne, albo 
 PUBLISH progressbar niezbyt dobrze sie zachowuje
 PUBLISH: SendFiles(.., delegate ProgbarInc)
 PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwleka zanim zamknie pliki i sa widoczne
+PUBLISH: Amazon Photos
+PUBLISH: gdy z Settings jest na to zgoda, dopisywanie danych do archfull
+
+PUBLISH: jakiś letsupload.io, i tym podobne; pojedyncze lub do ZIPa - do dzielenia się
+https://nugetmusthaves.com/Package/CloudRail.SDK
+https://location.foursquare.com/products/places/
+
 
 RETRIEVE NAR - rozpakowywanie do pojedynczych moze robic?
 RETRIEVE typ: chomikuj? z podanego katalogu? do dzielenia się z innymi?
+RETRIEVE: dla Purge, progressbar od nowa
 
-SEARCH: dwie tabs, files oraz folders
+SEARCH: błędna logika, nie zadziała na FLAT (gdzie nie ma tagu Azure itp.)
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
 STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
@@ -126,6 +139,8 @@ SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
 SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku skopiowanym do bufora, nie wcześniej
 SETTINGS: to o tyle istotne, że AutoRotate wymaga AutoExif!
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
+
+SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
 
@@ -268,17 +283,6 @@ dla Degoo, Shutterfly: postprocess: simpleEXIF, znak wodny, podpis?
 
 każdy PUBLISH/CLOUD ARCH jako oddzielny project.
 
-NAJBLIZSZE KROKI ZDJĘCIOWE:
-* w tle: przeglądać zdjęcia, kasować, obroty, crop, resize
-* w tle: Azure na zdjęciach
-* w tle: keywords
-
-* jakoś już wymyślać jak zrobić SEARCH itp.
-
-* cloudarch, czyli shutterfly oraz może degoo?
-* archive vs publish: archive zachowuje nazwy plików oraz ich pełen content (w tym EXIF), żadno skalowanie
-* publikacje proste (płaskie), Instagram
-
 * czy PUBLISHreverse, czyli ściąganie czyjegoś, np. Marcina Kurcz, miałoby sens?
 * IMPORT z googledrive (z Marcin Kurcz)
 
@@ -291,7 +295,6 @@ NAJBLIZSZE KROKI ZDJĘCIOWE:
 * zdjęcia z tego samego czasu, ale np ja Bari, Aśka - gdzieś, i impreza u rodziców?
 * ONEDIR: jak okrajać sId (który powinien być z geo) do różnych serwisów, gdzie jest płytsze drzewo katalogów dostępne, ale jednak nie całkiem płaskie?
 
-* czy Azure rozpozna logo przy żarówkach? jedną sprawdzić
 * zle z rotate po lewej stronie góra? bo po prawej - jest ok
 
 * przesuwanie na srodek ekranu showbig dla pionowych
@@ -334,8 +337,6 @@ BROWSE - SELECT - SENDTO ARCH, pyta o nazwę:
   przy autoarch nie pyta (nazwa = tylko data)
 
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Jak tak, to dołączyć do default includemask
-
-BROWSER: dodać "security" (że ukrywany, taki nie idzie do PUBLISH - choć to też można zrobić przez TAG=private)
 
 BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
 
@@ -1082,3 +1083,154 @@ RIFF 'idx1' chunk (7936 bytes of data):
 
 
 
+
+
+
+
+https://danepubliczne.imgw.pl/data/dane_pomiarowo_obserwacyjne/dane_meteorologiczne/dobowe/klimat
+k_d_format.txt
+Kod stacji                              9
+Nazwa stacji                           30
+Rok                                     4
+Miesiąc                                 2
+Dzień                                   2
+Maksymalna temperatura dobowa [°C]      6/1
+Status pomiaru TMAX                     1
+Minimalna temperatura dobowa [°C]       6/1
+Status pomiaru TMIN                     1
+Średnia temperatura dobowa [°C]         8/1
+Status pomiaru STD                      1
+Temperatura minimalna przy gruncie [°C] 6/1
+Status pomiaru TMNG                     1
+Suma dobowa opadów [mm]                 8/1
+Status pomiaru SMDB                     1
+Rodzaj opadu  [S/W/ ]                   1
+Wysokość pokrywy śnieżnej [cm]          5
+Status pomiaru PKSN                     1
+
+k_d_t_format.txt
+Kod stacji                                   9
+Nazwa stacji                                30
+Rok                                          4
+Miesiąc                                      2
+Dzień                                        2
+Średnia dobowa temperatura  [°C]             5/1
+Status pomiaru TEMP                          1
+Średnia dobowa wilgotność względna [%]       8/1
+Status pomiaru WLGS                          1
+Średnia dobowa prędkość wiatru [m/s]         6/1
+Status pomiaru FWS                           1
+Średnie dobowe zachmurzenie ogólne [oktanty] 6/1
+Status pomiaru NOS                           1
+
+
+https://danepubliczne.imgw.pl/data/dane_pomiarowo_obserwacyjne/dane_meteorologiczne/dobowe/opad/
+Kod stacji                           9
+Nazwa stacji                        30
+Rok                                  4
+Miesiąc                              2
+Dzień                                2
+Suma dobowa opadów [mm]              8/1
+Status pomiaru SMDB                  1
+Rodzaj opadu       [S/W/ ]           1
+Wysokość pokrywy śnieżnej [cm]       5
+Status pomiaru PKSN                  1
+Wysokość świeżo spadłego śniegu [cm] 5
+Status pomiaru HSS                   1
+Gatunek śniegu  [kod]                1
+Status pomiaru GATS                  1
+Rodzaj pokrywy śnieżnej [kod]        5
+Status pomiaru RPSN                  1
+
+https://danepubliczne.imgw.pl/data/dane_pomiarowo_obserwacyjne/dane_meteorologiczne/dobowe/synop/
+s_d_format.txt
+Kod stacji                                       9
+Nazwa stacji                                    30
+Rok                                              4
+Miesiąc                                          2
+Dzień                                            2
+Maksymalna temperatura dobowa [°C]               6/1
+Status pomiaru TMAX                              1
+Minimalna temperatura dobowa [°C]                6/1
+Status pomiaru TMIN                              1
+Średnia temperatura dobowa [°C]                  8/1
+Status pomiaru STD                               1
+Temperatura minimalna przy gruncie [°C]          6/1
+Status pomiaru TMNG                              1
+Suma dobowa opadu [mm]                           8/1
+Status pomiaru SMDB                              1
+Rodzaj opadu [S/W/ ]                             1
+Wysokość pokrywy śnieżnej [cm]                   5
+Status pomiaru PKSN                              1
+Równoważnik wodny śniegu  [mm/cm]                6/1
+Status pomiaru RWSN                              1
+Usłonecznienie [godziny]                         6/1
+Status pomiaru USL                               1
+Czas trwania opadu deszczu [godziny]             6/1
+Status pomiaru DESZ                              1
+Czas trwania opadu śniegu [godziny]              6/1
+Status pomiaru SNEG                              1
+Czas trwania opadu deszczu ze śniegiem [godziny] 6/1
+Status pomiaru DISN                              1
+Czas trwania gradu [godziny]                     6/1
+Status pomiaru GRAD                              1
+Czas trwania mgły [godziny]                      6/1
+Status pomiaru MGLA                              1
+Czas trwania zamglenia  [godziny]                6/1
+Status pomiaru ZMGL                              1
+Czas trwania sadzi [godziny]                     6/1
+Status pomiaru SADZ                              1
+Czas trwania gołoledzi [godziny]                 6/1
+Status pomiaru GOLO                              1
+Czas trwania zamieci śnieżnej niskiej [godziny]  6/1
+Status pomiaru ZMNI                              1
+Czas trwania zamieci śnieżnej wysokiej [godziny] 6/1
+Status pomiaru ZMWS                              1
+Czas trwania zmętnienia [godziny]                6/1
+Status pomiaru ZMET                              1
+Czas trwania wiatru >=10m/s [godziny]            6/1
+Status pomiaru FF10                              1
+Czas trwania wiatru >15m/s [godziny]             6/1
+Status pomiaru FF15                              1
+Czas trwania burzy  [godziny]                    6/1
+Status pomiaru BRZA                              1
+Czas trwania rosy  [godziny]                     6/1
+Status pomiaru ROSA                              1
+Czas trwania szronu [godziny]                    6/1
+Status pomiaru SZRO                              1
+Wystąpienie pokrywy śnieżnej  [0/1]              3
+Status pomiaru DZPS                              1
+Wystąpienie błyskawicy  [0/1]                    3
+Status pomiaru DZBL                              1
+Stan gruntu [Z/R]                                1
+Izoterma dolna  [cm]                             5
+Status pomiaru IZD                               1
+Izoterma górna [cm]                              5
+Status pomiaru IZG                               1
+Aktynometria  [J/cm2]                            7
+Status pomiaru AKTN                              1
+
+s_d_t_format.txt
+Kod stacji                                           9
+Nazwa stacji                                        30
+Rok                                                  4
+Miesiąc                                              2
+Dzień                                                2
+Średnie dobowe zachmurzenie ogólne [oktanty]         6/1
+Status pomiaru NOS                                   1
+Średnia dobowa prędkość wiatru [m/s]                 6/1
+Status pomiaru FWS                                   1
+Średnia dobowa temperatura [°C]                      5/1
+Status pomiaru TEMP                                  1
+Średnia dobowe ciśnienie pary wodnej [hPa]           5/1
+Status pomiaru CPW                                   1
+Średnia dobowa wilgotność względna [%]               8/1
+Status pomiaru WLGS                                  1
+Średnia dobowe ciśnienie na poziomie stacji [hPa]    7/1
+Status pomiaru PPPS                                  1
+Średnie dobowe ciśnienie na pozimie morza [hPa]      7/1
+Status pomiaru PPPM                                  1
+Suma opadu dzień  [mm]                               8/1
+Status pomiaru WODZ                                  1
+Suma opadu noc   [mm]                                8/1
+Status pomiaru WONO                                  1

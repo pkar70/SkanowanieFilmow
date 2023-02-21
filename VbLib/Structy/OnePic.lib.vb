@@ -9,6 +9,7 @@ Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
 Imports XmpCore.Impl
 
+<Serializable>
 Public Class OnePic
     Inherits pkar.BaseStruct
 
@@ -45,6 +46,9 @@ Public Class OnePic
     <Newtonsoft.Json.JsonIgnore>
     Public Property oOstatniExif As ExifTag
 
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property locked As Boolean = False
+
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()
         sSourceName = sourceName
@@ -61,7 +65,7 @@ Public Class OnePic
 
     Public Function IsArchivedIn(sArchName As String) As Boolean
         If Archived Is Nothing Then Return False
-        If Archived.Contains(sArchName & ";") Then Return True
+        If Archived.ToLowerInvariant.Contains(sArchName.ToLowerInvariant & ";") Then Return True
         Return False
     End Function
 
@@ -195,28 +199,28 @@ Public Class OnePic
     ''' ważniejsze jest z keywords, potem manual_geo, potem - dowolny; NULL jeśli nie znajdzie
     ''' </summary>
     ''' <returns></returns>
-    Public Function GetGeoTag() As pkar.BasicGeopos
+    Public Function GetGeoTag() As BasicGeoposWithRadius
         DumpCurrMethod($"({InBufferPathName})")
         ' ważniejsze jest z keywords, potem manual_geo, potem - dowolny
 
         Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualTag)
         If oExif?.GeoTag IsNot Nothing Then
             DumpMessage("not null ExifSource.ManualTag.GeoTag")
-            If Not oExif.GeoTag.IsEmpty Then Return oExif.GeoTag
+            If Not oExif.GeoTag.IsEmpty Then Return New BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
             DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
         End If
 
         oExif = GetExifOfType(ExifSource.ManualGeo)
         If oExif?.GeoTag IsNot Nothing Then
             DumpMessage("not null ExifSource.ManualGeo.GeoTag")
-            If Not oExif.GeoTag.IsEmpty Then Return oExif.GeoTag
+            If Not oExif.GeoTag.IsEmpty Then Return New BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
             DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
         End If
 
         For Each oExif In Exifs
             If oExif?.GeoTag IsNot Nothing Then
                 DumpMessage($"not null GeoTag in {oExif.ExifSource}")
-                If Not oExif.GeoTag.IsEmpty Then Return oExif.GeoTag
+                If Not oExif.GeoTag.IsEmpty Then Return New BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
                 DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
             End If
         Next
@@ -276,8 +280,17 @@ Public Class OnePic
         Return retDate
     End Function
 
+    ''' <summary>
+    '''  zwraca rzeczywistą datę - z MANUAL albo FileExif
+    ''' </summary>
+    ''' <returns></returns>
     Private Function GetRealDate() As Date
-        Dim oExif As ExifTag = GetExifOfType(ExifSource.FileExif)
+
+        Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualDate)
+        If oExif IsNot Nothing Then Return ExifDateToDate(oExif.DateTimeOriginal)
+
+
+        oExif = GetExifOfType(ExifSource.FileExif)
         If oExif Is Nothing Then Return Date.MaxValue
 
         ' zeskanowanie daty (string->date)
@@ -288,6 +301,7 @@ Public Class OnePic
     ''' <summary>
     ''' Ważność: FileExif, SourceFile, ManualTag (min ze wszystkich)
     ''' </summary>
+    ''' <param name="bSkipTags">True, gdy bez wyliczania (tylko real)</param>
     ''' <returns></returns>
     Public Function GetMostProbablyDate(Optional bSkipTags As Boolean = False) As Date
 
@@ -339,7 +353,13 @@ Public Class OnePic
 #Region "operacje na maskach"
     Public Function MatchesMasks(sIncludeMasks As String, Optional sExcludeMasks As String = "") As Boolean
 
-        Dim sFilenameNoPath As String = IO.Path.GetFileName(InBufferPathName)   ' dla edycji było GetSourceFilename, ale to poprzednia wersja
+        Dim sFilenameNoPath As String
+        If InBufferPathName IsNot Nothing Then
+            sFilenameNoPath = IO.Path.GetFileName(InBufferPathName)   ' dla edycji było GetSourceFilename, ale to poprzednia wersja
+        Else
+            sFilenameNoPath = IO.Path.GetFileName(sSuggestedFilename)   ' dla edycji było GetSourceFilename, ale to poprzednia wersja
+        End If
+
         Return MatchesMasks(sFilenameNoPath, sIncludeMasks, sExcludeMasks)
     End Function
 
@@ -880,10 +900,21 @@ Public Class OnePic
         Return oNew
     End Function
 
+    ''' <summary>
+    ''' pobiera (poprzez Flatten) wszystkie keywords, ale robi na tym uniq
+    ''' </summary>
+    ''' <returns></returns>
     Public Function GetAllKeywords() As String
 
         Dim oFlat As ExifTag = FlattenExifs(False)
-        Return oFlat.Keywords
+        Dim temp As String() = oFlat.Keywords.Replace(",", "").Split(" ")
+
+        Dim ret As String = ""
+        For Each kwd As String In From c In temp Distinct
+            ret = ret & kwd & " "
+        Next
+
+        Return ret.Trim
     End Function
 
     Public Function HasKeyword(oKey As OneKeyword) As Boolean
@@ -917,7 +948,7 @@ Public Class OnePic
             If sTag.StartsWith("!") Then
                 If HasKeyword(sTag.Substring(1)) Then Return False
             Else
-                If Not HasKeyword(sTag.Substring(1)) Then Return False
+                If Not HasKeyword(sTag) Then Return False
             End If
         Next
         Return True
@@ -940,7 +971,16 @@ Public Class OnePic
 
 End Class
 
+Public Class BasicGeoposWithRadius
+    Inherits pkar.BasicGeopos
 
+    Public Property iRadius As Double
+
+    Public Sub New(geopos As pkar.BasicGeopos, bZgrubne As Boolean)
+        MyBase.New(geopos.Latitude, geopos.Longitude)
+        iRadius = If(bZgrubne, 20000, 100)
+    End Sub
+End Class
 Public Class OneDescription
     Public Property data As String
     Public Property comment As String

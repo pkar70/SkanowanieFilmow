@@ -22,6 +22,7 @@ Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar
 Imports System.Runtime.InteropServices.WindowsRuntime
+Imports Org.BouncyCastle.Math.EC
 
 Public Class ProcessBrowse
 
@@ -62,6 +63,7 @@ Public Class ProcessBrowse
         uiDescribeSelected.Visibility = oVis
         uiMenuCopyGeoTag.Visibility = oVis
         uiMenuCreateGeoTag.Visibility = oVis
+        uiMenuDateRefit.Visibility = oVis
         uiBatchProcessors.Visibility = oVis
         uiSetTargetDir.Visibility = oVis
         uiActionClearTargetDir.Visibility = oVis
@@ -392,6 +394,63 @@ Public Class ProcessBrowse
         If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
     End Sub
 
+    Private Function GetDateBetween(oDate1 As Date, oDate2 As Date) As Date
+        Dim minutes As Integer = Math.Abs((oDate1 - oDate2).TotalMinutes)
+        If oDate1 < oDate2 Then Return oDate1.AddMinutes(minutes / 2)
+        Return oDate2.AddMinutes(minutes / 2)
+    End Function
+    Private Sub uiMenuDateRefit_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        If uiPicList.SelectedItems.Count <> 3 Then
+            vb14.DialogBox("Date refit działa tylko przy trzech zaznaczonych zdjęciach")
+            Return
+        End If
+
+        Dim oPic1 As ThumbPicek = uiPicList.SelectedItems(0)
+        Dim oPic2 As ThumbPicek = uiPicList.SelectedItems(1)
+        Dim oPic3 As ThumbPicek = uiPicList.SelectedItems(2)
+
+        Dim date1 As Date = oPic1.oPic.GetMostProbablyDate
+        Dim date2 As Date = oPic2.oPic.GetMostProbablyDate
+        Dim date3 As Date = oPic3.oPic.GetMostProbablyDate
+
+        If Math.Abs((date1 - date2).TotalHours) < 1 AndAlso Math.Abs((date2 - date3).TotalHours) < 1 AndAlso Math.Abs((date1 - date3).TotalHours) < 1 Then
+            vb14.DialogBox("Za mała różnica czasu pomiędzy zdjęciami")
+            Return
+        End If
+
+        Dim oNew As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
+
+        If Math.Abs((date1 - date2).TotalHours) < 1 Then
+            ' czyli date3 jest "za daleko"
+            Dim dNew As Date = GetDateBetween(date1, date2)
+            oNew.DateTimeOriginal = dNew.ToExifString
+            oPic3.oPic.ReplaceOrAddExif(oNew)
+            oPic3.dateMin = dNew
+        ElseIf Math.Abs((date2 - date3).TotalHours) < 1 Then
+            ' czyli date1 jest "za daleko"
+            Dim dNew As Date = GetDateBetween(date2, date3)
+            oNew.DateTimeOriginal = dNew.ToExifString
+            oPic1.oPic.ReplaceOrAddExif(oNew)
+            oPic1.dateMin = dNew
+        ElseIf Math.Abs((date1 - date3).TotalHours) < 1 Then
+            ' czyli date2 jest "za daleko"
+            Dim dNew As Date = GetDateBetween(date1, date3)
+            oNew.DateTimeOriginal = dNew.ToExifString
+            oPic2.oPic.ReplaceOrAddExif(oNew)
+            oPic2.dateMin = dNew
+        Else
+            vb14.DialogBox("Nie ma dwu zdjęć blisko siebie, nie mam jak policzyć średniej")
+            Return
+        End If
+
+
+        SaveMetaData()
+        RefreshMiniaturki(True)
+
+    End Sub
+
     Private Sub uiMenuCreateGeoTag_Click(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
 
@@ -432,6 +491,17 @@ Public Class ProcessBrowse
         RefreshMiniaturki(False)
 
         SaveMetaData()
+    End Sub
+
+    Private Sub uiActionLock_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        If uiPicList.SelectedItems.Count < 1 Then Return
+
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            oItem.oPic.locked = True
+        Next
+
     End Sub
 
 

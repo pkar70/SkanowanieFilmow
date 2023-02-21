@@ -137,6 +137,8 @@ Public Class CloudArchiving
             Dim sIndexJson As String = ""
             Dim bDirTreeToSave As Boolean = False
 
+        Dim sErr As String = ""
+
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             uiProgBarInEngine.Value += 1
 
@@ -146,11 +148,20 @@ Public Class CloudArchiving
             If oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For
 
             oPic.ResetPipeline()
-            Await oSrc.engine.SendFile(oPic)
+            Try
+                Await oSrc.engine.SendFile(oPic)
+            Catch ex As Exception
+                sErr = ex.Message
+                Exit For
+            End Try
             If Not oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
+
+        If sErr <> "" Then
+            Await vb14.DialogBoxAsync($"Encountered error: {sErr}, stopping sending next files")
+        End If
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed
 

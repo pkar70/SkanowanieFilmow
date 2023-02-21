@@ -354,39 +354,72 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-                <ListView Grid.Row="1" Name="uiLista" HorizontalAlignment="Stretch" SelectionChanged="uiLista_SelChanged">
-                    <ListView.ItemContainerStyle>
-                        <Style TargetType="ListViewItem">
-                            <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
-                        </Style>
-                    </ListView.ItemContainerStyle>
-
-                    <ListView.ItemTemplate>
-                        <DataTemplate >
-                            <Grid HorizontalAlignment="Stretch" >
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="150" Name="naID" />
-                                    <ColumnDefinition Width="*" Name="naFolder" />
-                                <ColumnDefinition Width="*" Name="naName" />
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="{Binding PicGuid}" />
-                            <TextBlock Text="{Binding TargetDir}" Grid.Column="1" Margin="5,0,5,0"/>
-                            <TextBlock Text="{Binding sSuggestedFilename}" Grid.Column="2"/>
-
-                            <Grid.ContextMenu>
-                                    <ContextMenu >
-                                    <MenuItem Header="Show metadata" Click="uiOpenExif_Click" />
-                                    <MenuItem Header="Open folder" Click="uiOpenFolder_Click" />
-                                    <MenuItem Header="Open big" Click="uiOpenBig_Click" />
-                                    </ContextMenu>
-                                </Grid.ContextMenu>
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-
             <TextBlock Name="uiResultsCount" Text="(no query)" />
+
+            <TabControl Grid.Row="1" >
+                <TabItem Header="Pliki" >
+                    <ListView Name="uiLista" HorizontalAlignment="Stretch" SelectionChanged="uiLista_SelChanged">
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate >
+                                <Grid HorizontalAlignment="Stretch" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150" Name="naID" />
+                                        <ColumnDefinition Width="*" Name="naFolder" />
+                                        <ColumnDefinition Width="*" Name="naName" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{Binding PicGuid}" />
+                                    <TextBlock Text="{Binding TargetDir}" Grid.Column="1" Margin="5,0,5,0"/>
+                                    <TextBlock Text="{Binding sSuggestedFilename}" Grid.Column="2"/>
+
+                                    <Grid.ContextMenu>
+                                        <ContextMenu >
+                                            <MenuItem Header="Show metadata" Click="uiOpenExif_Click" />
+                                            <MenuItem Header="Open folder" Click="uiOpenFolder_Click" />
+                                            <MenuItem Header="Open big" Click="uiOpenBig_Click" />
+                                        </ContextMenu>
+                                    </Grid.ContextMenu>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </TabItem>
+                <TabItem Header="Katalogi">
+                    <ListView Name="uiListaKatalogow" HorizontalAlignment="Stretch" >
+                        <ListView.ItemContainerStyle>
+                            <Style TargetType="ListViewItem">
+                                <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                            </Style>
+                        </ListView.ItemContainerStyle>
+
+                        <ListView.ItemTemplate>
+                            <DataTemplate >
+                                <Grid HorizontalAlignment="Stretch" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" Name="naFolder" />
+                                        <ColumnDefinition Width="*" Name="naName" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="{Binding fullPath}" Grid.Column="0" Margin="5,0,5,0"/>
+                                    <TextBlock Text="{Binding notes}" Grid.Column="1"/>
+
+                                    <Grid.ContextMenu>
+                                        <ContextMenu >
+                                            <MenuItem Header="Open folder" Click="uiFoldersOpenFolder_Click" />
+                                        </ContextMenu>
+                                    </Grid.ContextMenu>
+                                </Grid>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </TabItem>
+            </TabControl>
             <Button Grid.Row="2" Margin="20,10,10,5" Content="Szukaj w wynikach" Click="uiSubSearch_Click" HorizontalAlignment="Left"/>
             <Button Grid.Row="2" Margin="10,10,20,5" Content="Miniaturki" Click="uiGoMiniaturki_Click" HorizontalAlignment="Right"/>
         </Grid>

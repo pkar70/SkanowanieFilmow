@@ -170,7 +170,17 @@ Public Class BufferSortowania
             End If
             sDstPathName = sDstTmp
 
-            IO.File.Move(sTempName, sDstPathName)
+            Dim bErr As Boolean = False
+            Try
+                IO.File.Move(sTempName, sDstPathName)
+            Catch ex As Exception
+                bErr = True
+            End Try
+
+            If bErr Then
+                Await Task.Delay(250) '  próba opóźnienia, może antywir trzyma... mi się zdarzyło na dużym mp4
+                IO.File.Move(sTempName, sDstPathName)
+            End If
         Else
             Dim oWriteStream = IO.File.Create(sDstPathName, 1024 * 1024)
             Await oPic.oContent.CopyToAsync(oWriteStream, 1024 * 1024)

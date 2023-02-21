@@ -97,12 +97,10 @@ Public Class SettingsDirTree
     Private Async Sub uiAddEditDone_Click(sender As Object, e As RoutedEventArgs)
 
         If _addMode Then
-            For Each oItem As Vblib.OneDir In Application.GetDirTree.GetList
-                If oItem.sId = uiId.Text Then
-                    vb14.DialogBox("Taka nazwa już istnieje, wybierz inną")
-                    Return
-                End If
-            Next
+            If Application.GetDirTree.IdExists(uiId.Text) Then
+                vb14.DialogBox("Taka nazwa już istnieje, wybierz inną")
+                Return
+            End If
             _editingItem.notes = uiNotes.Text
             _editingItem.sId = uiId.Text.DropAccents
             _editingItem.fullPath = IO.Path.Combine(_editingItem.fullPath, _editingItem.sId)

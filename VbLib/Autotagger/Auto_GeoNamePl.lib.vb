@@ -23,19 +23,41 @@ Public Class Auto_GeoNamePl
     End Sub
 
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
-        If Not oFile.MatchesMasks(includeMask) Then Return Nothing
+        DumpCurrMethod("file: " & oFile.sSuggestedFilename)
+        If Not oFile.MatchesMasks(includeMask) Then
+            DumpMessage("nie spełnia maski")
+            Return Nothing
+        End If
 
-        If oFile.Exifs Is Nothing Then Return Nothing
+        If oFile.Exifs Is Nothing Then
+            DumpMessage("nie zainicjalizowane oExifs")
+            Return Nothing
+        End If
 
         For Each oItem As ExifTag In oFile.Exifs
-            If oItem.GeoName <> "" Then Continue For
-            If oItem.GeoTag Is Nothing Then Continue For
-            If oItem.GeoTag.IsEmpty Then Continue For
-            If Not oItem.GeoTag.IsInsidePoland Then Continue For
+            DumpMessage("EXIF " & oItem.ExifSource)
+
+            'If Not String.IsNullOrWhiteSpace(oItem.GeoName) Then
+            '    DumpMessage("już mam GeoName")
+            '    Continue For
+            'End If
+            If oItem.GeoTag Is Nothing Then
+                DumpMessage("nie mam danych geograficznych")
+                Continue For
+            End If
+            If oItem.GeoTag.IsEmpty Then
+                DumpMessage("empty geotag")
+                Continue For
+            End If
+            If Not oItem.GeoTag.IsInsidePoland Then
+                DumpMessage("poza Polską")
+                Continue For
+            End If
 
             Dim oNew As New ExifTag(Nazwa)
             oNew.GeoTag = oItem.GeoTag
             oNew.GeoName = Await GetNameForGeoPos(oItem.GeoTag, oItem.GeoZgrubne)
+            DumpMessage("geoname: " & oNew.GeoName)
             Return oNew
         Next
 

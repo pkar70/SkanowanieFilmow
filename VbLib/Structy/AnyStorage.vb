@@ -6,7 +6,7 @@ Public Delegate Sub JedenWiecejPlik()
 Public Interface AnyStorage
 
     ''' <summary>
-    '''  wyślij plik, ewentualnie z EXIFami, opisz jeśli trzeba, i w ogóle wszystko razem
+    '''  wyślij plik (PipelineOutput), ewentualnie z EXIFami, opisz jeśli trzeba, i w ogóle wszystko razem
     ''' </summary>
     ''' <param name="oPic"></param>
     ''' <returns>"" gdy OK, lub error message</returns>

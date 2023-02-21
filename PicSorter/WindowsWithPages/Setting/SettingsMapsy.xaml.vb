@@ -99,7 +99,9 @@ Class SettingsMapsy
             Dim iLat As Integer = oMapService.link.IndexOf("%lat")
             Dim iLon As Integer = oMapService.link.IndexOf("%lon")
 
-            Dim sRegMask As String = oMapService.link.Replace("%lon", "([\.0-9]*)").Replace("%lat", "([\.0-9]*)")
+            Dim sRegMask As String = oMapService.link.Replace("%lon", "([\.0-9]*)").
+            Replace("%lat", "([\.0-9]*)").
+            Replace("%zoom", "[0-9]*")
 
             Dim result As Match = Regex.Match(sLink, sRegMask, RegexOptions.IgnoreCase)
 

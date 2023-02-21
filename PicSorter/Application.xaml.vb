@@ -4,6 +4,7 @@ Imports pkar
 Imports Vblib
 Imports System.Reflection
 
+
 Partial Class Application
 
     ' Application-level events, such as Startup, Exit, and DispatcherUnhandledException
@@ -114,6 +115,11 @@ Partial Class Application
         Return gBuffer
     End Function
 
+    Public Shared Sub ResetBuffer()
+        IO.File.Delete(IO.Path.Combine(Application.GetDataFolder, "buffer.json"))
+        gBuffer = Nothing
+    End Sub
+
     Private Shared gArchiveList As BaseList(Of VbLibCore3_picSource.LocalStorageMiddle)
     Public Shared Function GetArchivesList() As BaseList(Of VbLibCore3_picSource.LocalStorageMiddle)
 
@@ -172,6 +178,7 @@ Partial Class Application
         New Auto_std2_Astro.Auto_MoonPhase,
         New Auto_std2_Astro.Auto_Astro,
         New Auto_std2_Astro.Auto_Pogoda,
+        New Auto_std2_Meteo.Auto_Meteo_Opad(Application.GetDataFolder),
         New Vblib.Auto_GeoNamePl(Application.GetDataFolder),
         New Vblib.Auto_OSM_POI(Application.GetDataFolder),
         New Auto_CreateId(New UniqID(Application.GetDataFolder)),

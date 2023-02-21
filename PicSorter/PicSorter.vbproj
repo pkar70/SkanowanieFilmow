@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Auto_std2_Astro\Auto_std2_Astro.vbproj" />
+    <ProjectReference Include="..\Auto_std2_Meteo\Auto_std2_Meteo.vbproj" />
     <ProjectReference Include="..\Auto_WinFace\Auto_cr31_WinFace.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Chomikuj\CloudArch_std20_Chomikuj.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Degoo\CloudArch_std14_Degoo.vbproj" />
@@ -47,7 +48,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BasicGeopos" Version="1.1.2" />
+    <PackageReference Include="BasicGeopos" Version="1.1.3" />
     <PackageReference Include="DotNetExts" Version="2.0.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0">
       <PrivateAssets>all</PrivateAssets>

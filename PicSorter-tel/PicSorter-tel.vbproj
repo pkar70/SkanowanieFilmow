@@ -132,6 +132,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="chomikowanie.vb" />
+    <Compile Include="chomikujOwn.vb" />
     <Compile Include="MainPage.xaml.vb">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>

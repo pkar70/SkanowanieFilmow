@@ -141,12 +141,38 @@ Public Class DirsList
         Return Nothing
     End Function
 
+    Public Function GetDirFromTargetDir(sTargetDir As String) As OneDir
+
+        ' najpierw wedle istniejącej ścieżki, bo może być taka sama nazwa w dwu miejscach
+        Dim bFound As Boolean = False
+
+        ' ten pierwszy to root
+        Dim oRet As OneDir = _lista.ElementAt(0)
+        For Each sPath As String In sTargetDir.Split(IO.Path.DirectorySeparatorChar)
+            If sPath.Trim.Length < 1 Then Continue For
+            For Each oSubDir As OneDir In oRet.SubItems
+                If oSubDir.sId <> sPath Then Continue For
+
+                oRet = oSubDir
+                bFound = True
+                Exit For
+            Next
+
+            If Not bFound Then Exit For
+        Next
+
+        If bFound Then Return oRet
+
+        ' a potem tylko ten ostatni człon szukamy - jakby ktoś przestawił
+        Return GetFolder(IO.Path.GetFileName(sTargetDir))
+    End Function
+
     'Public Function GetFullPath(sKey As String) As String
 
-    '    Dim oItem As OneDir = GetDir(sKey)
-    '    If oItem Is Nothing Then Return ""
+    '    Dim oParent As OneDir = GetDir(sKey)
+    '    If oParent Is Nothing Then Return ""
 
-    '    Return oItem.fullPath
+    '    Return oParent.fullPath
 
     'End Function
 
@@ -190,43 +216,52 @@ Public Class DirsList
     '    Return True
     'End Function
 
-    Public Function TryAddSubdir(oItem As OneDir, sId As String, sOpis As String) As OneDir
-        If oItem.SubItems IsNot Nothing Then
-            For Each oSub As OneDir In oItem.SubItems
+    Public Function TryAddSubdir(oParent As OneDir, sId As String, sOpis As String) As OneDir
+        If oParent.SubItems IsNot Nothing Then
+            For Each oSub As OneDir In oParent.SubItems
                 If oSub.sId = sId Then Return oSub
             Next
         End If
 
         Dim oNew As New OneDir
-        'oNew.sParentId = oItem.sId
+        'oNew.sParentId = oParent.sId
         oNew.sId = sId
         oNew.notes = sOpis
-        oNew.fullPath = IO.Path.Combine(oItem.fullPath, oNew.sId)
-        If oItem.SubItems Is Nothing Then oItem.SubItems = New List(Of OneDir)
-        oItem.SubItems.Add(oNew)
+        oNew.fullPath = IO.Path.Combine(oParent.fullPath, oNew.sId)
+        If oParent.SubItems Is Nothing Then oParent.SubItems = New List(Of OneDir)
+        oParent.SubItems.Add(oNew)
 
         Return oNew
     End Function
 
-    Public Sub AddSubfolderTree(oItem As OneDir, sFolder As String)
+    Public Sub AddSubfolderTree(oParent As OneDir, sFolder As String)
         DumpCurrMethod(sFolder)
 
         For Each sDir As String In IO.Directory.EnumerateDirectories(sFolder)
             Dim oNew As New OneDir
             oNew.sId = IO.Path.GetFileName(sDir)
             'oNew.sParentId = IO.Path.GetFileName(sFolder)
-            oNew.fullPath = IO.Path.Combine(oItem.fullPath, oNew.sId)
+            oNew.fullPath = IO.Path.Combine(oParent.fullPath, oNew.sId)
             'Public Property notes As String
             'Public Property denyPublish As Boolean
             ' Public Property SubItems As List(Of OneDir)
-            oNew.fullPath = IO.Path.Combine(oItem.fullPath, oNew.sId)
-            If oItem.SubItems Is Nothing Then oItem.SubItems = New List(Of OneDir)
-            oItem.SubItems.Add(oNew)
+            oNew.fullPath = IO.Path.Combine(oParent.fullPath, oNew.sId)
+            If oParent.SubItems Is Nothing Then oParent.SubItems = New List(Of OneDir)
+            oParent.SubItems.Add(oNew)
 
             AddSubfolderTree(oNew, sDir)
         Next
 
     End Sub
+
+    Public Function IdExists(sId As String) As Boolean
+        sId = sId.ToLowerInvariant
+        For Each oDir As OneDir In ToFlatList()
+            If oDir.sId.ToLowerInvariant = sId Then Return True
+        Next
+
+        Return False
+    End Function
 
     Protected Overrides Sub InsertDefaultContent()
 

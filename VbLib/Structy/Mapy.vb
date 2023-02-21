@@ -38,7 +38,7 @@ Public Class JednaMapa
         Dim sLink As String = link
         sLink = sLink.Replace("%lat", oGeo.Latitude)
         sLink = sLink.Replace("%lon", oGeo.Longitude.ToString(CultureInfo.InvariantCulture))
-
+        sLink = sLink.Replace("%zoom", "16")
         Return sLink
     End Function
 

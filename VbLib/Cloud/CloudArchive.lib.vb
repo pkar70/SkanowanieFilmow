@@ -36,11 +36,14 @@ Public MustInherit Class CloudArchive
         If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Return ""
 
         Dim sRet As String = oPic.CanRunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
-        If sRet <> "" Then Return sRet
-
-        ' przeslij plik przez pipeline
-        oPic.oOstatniExif = konfiguracja.defaultExif
-        sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+        If sRet = "" Then
+            ' przeslij plik przez pipeline
+            oPic.oOstatniExif = konfiguracja.defaultExif
+            sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+        Else
+            ' wypełnienie _PipelineOutput; tak jest prościej niż wklejać tu wczytywanie zdjęcia
+            sRet = Await oPic.RunPipeline("", _PostProcs)
+        End If
         If sRet <> "" Then Return sRet
 
         Return Await SendFileMain(oPic)

@@ -62,6 +62,8 @@ Public Class ExifSource
     Public Const AutoVisCrosWeather As String = "AUTO_WEATHER"
     Public Const AutoAstro As String = "AUTO_ASTRO"
     Public Const AutoMoon As String = "AUTO_MOONPHASE"
+    Public Const AutoHydro As String = "AUTO_HYDRO"
+    Public Const AutoMeteoOpad As String = "AUTO_METEO_OPAD"
 
 End Class
 

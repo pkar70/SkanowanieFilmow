@@ -69,8 +69,6 @@ Public Class LocalArchive
     ''' <summary>
     ''' liczy ile jest w buforze zdjęć które nie trafiły do wszystkich archiwów
     ''' </summary>
-    ''' <returns></returns>
-    ''' 
     Public Shared Function CountDoArchiwizacji() As Integer
 
         Dim currentArchs As New List(Of String)
@@ -167,11 +165,14 @@ Public Class LocalArchive
             ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
             Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
 
-            If sIndexLongJson <> "" Then sIndexLongJson &= ","
-            sIndexLongJson &= oPic.DumpAsJSON
+            ' zapisujemy do globalnego archiwum tylko raz, bez powtarzania przy zapisie do każdego LocalArch
+            If oPic.ArchivedCount < 1 Then
+                If sIndexLongJson <> "" Then sIndexLongJson &= ","
+                sIndexLongJson &= oPic.DumpAsJSON(True)
 
-            If sIndexShortJson <> "" Then sIndexShortJson &= ","
-            sIndexShortJson &= oPic.GetFlatOnePic.DumpAsJSON
+                If sIndexShortJson <> "" Then sIndexShortJson &= ","
+                sIndexShortJson &= oPic.GetFlatOnePic.DumpAsJSON(True)
+            End If
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next

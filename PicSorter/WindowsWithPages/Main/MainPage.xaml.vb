@@ -1,5 +1,6 @@
 ﻿
 Imports System.Globalization
+Imports pkar
 Imports vb14 = Vblib.pkarlibmodule14
 
 Class MainPage
@@ -22,6 +23,10 @@ Class MainPage
 
         uiBrowseArch.IsEnabled = IsAnyArchPresent()
 
+        ' 2023.02.06, poprawienie pliku w ktorym były NULLe. Z 31 MB do 16 MB zeszlo.
+        'Dim _fullArchive As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json") ' "archIndex.flat.json"
+        '_fullArchive.Load()
+        '_fullArchive.Save(True)
 
         'Vblib.PicSourceBase.UseTagsFromFilename(Application.GetBuffer.GetList, Application.GetKeywords.ToFlatList)
         'Application.GetBuffer.SaveData()

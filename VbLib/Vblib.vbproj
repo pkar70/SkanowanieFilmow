@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BasicGeopos" Version="1.1.2" />
+    <PackageReference Include="BasicGeopos" Version="1.1.3" />
     <PackageReference Include="Datalog" Version="1.0.0" />
     <PackageReference Include="DotNetExts" Version="1.1.3" />
     <PackageReference Include="MetadataExtractor.StrongName" Version="2.4.3" />

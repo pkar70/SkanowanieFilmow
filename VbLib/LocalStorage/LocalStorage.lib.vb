@@ -144,6 +144,7 @@ Public MustInherit Class LocalStorage
 	Private Const NO_MATCH_MASK As String = "nomatch"
 
 	Public Async Function SendFile(oPic As OnePic) As Task(Of String) Implements AnyStorage.SendFileMain
+		If oPic.locked Then Return ""
 		If Not IsPresent() Then Return "ERROR: archiwum aktualnie jest niewidoczne"
 
 		' zapisz plik, gdy błąd - wróć od razu
@@ -169,7 +170,7 @@ Public MustInherit Class LocalStorage
 		Dim sJsonContent As String = ""
 		Dim sError As String = ""
 		For Each oPic As OnePic In oPicki
-
+			If oPic.locked Then Continue For
 			If oPic.TargetDir <> sTargetDir Then Continue For
 
 			Dim temperr As String = Await SendPhoto(oPic)

@@ -106,11 +106,14 @@
                         <MenuItem Header="Describe" Click="uiDescribeSelected_Click" Name="uiDescribeSelected"/>
                         <MenuItem Header="Copy GeoTag" Click="uiMenuCopyGeoTag_Click" Name="uiMenuCopyGeoTag" />
                         <MenuItem Header="Create GeoTag" Click="uiMenuCreateGeoTag_Click" Name="uiMenuCreateGeoTag" />
+                        <MenuItem Header="Date refit" Click="uiMenuDateRefit_Click" Name="uiMenuDateRefit" />
                         <MenuItem Header="Batch process »" Name="uiBatchProcessors"  />
                         <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>
                         <MenuItem Header="Clear target dir" Click="uiActionClearTargetDir_Click" Name="uiActionClearTargetDir"/>
+                        <MenuItem Header="Lock" Click="uiActionLock_Click"  />
                         <MenuItem Header="Publish  »" Name="uiMenuPublish"  />
                         <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
+                        <Separator/>
                         <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                         <MenuItem Header="Copy out" Click="uiCopyOut_Click" />
                         <Separator/>

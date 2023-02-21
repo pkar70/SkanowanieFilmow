@@ -39,9 +39,10 @@ Public Class Auto_OSM_POI
         If oFile.Exifs Is Nothing Then Return Nothing
 
         For Each oItem As ExifTag In oFile.Exifs
-            If oItem.GeoName <> "" Then Continue For
+            'If Not String.IsNullOrWhiteSpace(oItem.GeoName) Then Continue For
             If oItem.GeoTag Is Nothing Then Continue For
             If oItem.GeoTag.IsEmpty Then Continue For
+            ' If Not oItem.GeoTag.IsInsidePoland Then Continue For
 
             Dim oNew As New ExifTag(Nazwa)
             oNew.GeoTag = oItem.GeoTag
