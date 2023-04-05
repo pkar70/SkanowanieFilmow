@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,7 +15,13 @@ namespace Chomikuj
     {
         public static string GetVerificationToken(this IRestHandler client)
         {
-            return client.GetCookies(new Uri(ChomikujBase.MainAddress))["__RequestVerificationToken_Lw__"].Value;   // było: 3
+            // PK: rozbite na dwie linie, by sprawdzać co jest cookiesem
+            var ciastka = client.GetCookies(new Uri(ChomikujBase.MainAddress));
+            // var ciastko = ciastka[3]; - wersja [int] dopiero od .Net Std 2.0
+            var ciastko = ciastka["__RequestVerificationToken_Lw__"];
+            Debug.WriteLine("Using cookie: " + ciastko.Name); // __RequestVerificationToken_Lw__
+            string token = ciastko.Value;
+            return token;
         }
 
         public static Dictionary<string, string> ToJsonDictionary(this Response result)
@@ -34,11 +41,31 @@ namespace Chomikuj
 
         public static DateTime ParseChomikujDate(string date)
         {
-            return DateTime.ParseExact(date, "d MMM yy HH:mm", GetCultureInfo());
+            try
+            {
+                DateTime data = DateTime.ParseExact(date, "d MMM yy HH:mm", GetCultureInfo());
+                // pkar: to nie zadziałało (2023.02.07), a wcześniej działało! niby jest dobry format!
+                return data;
+            }
+            catch
+            {
+            }
+
+            try
+            {
+                DateTime data = DateTime.ParseExact(date, "d MMM yy H:mm", GetCultureInfo());
+                // "9:23" było
+                return data;
+            }
+            catch
+            {
+                return DateTime.Now;
+            }
         }
 
         public static CultureInfo GetCultureInfo()
         {
+            // org:             return CultureInfo.GetCultureInfo("PL-pl");
             return new CultureInfo("PL-pl");
         }
 
@@ -155,16 +182,19 @@ namespace Chomikuj
 
             protected override void Dispose(bool disposing)
             {
+                // Array.ForEach(_streams.ToArray(), stream => stream.Dispose());
                 foreach (var stream in _streams.ToList())
                     stream.Dispose();
             }
 
+
+#if NETSTANDARD2_0
             // tego nie ma w Std 1.4
-            //public override void Close()
-            //{
-            //    foreach (var stream in _streams.ToList())
-            //        stream.Close();
-            //}
+            public override void Close()
+            {
+                Array.ForEach(_streams.ToArray(), stream => stream.Close());
+            }
+#endif
         }
     }
 }

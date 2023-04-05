@@ -380,7 +380,7 @@ Public Class OnePic
         If Not String.IsNullOrWhiteSpace(sExcludeMasks) Then
             aMaski = sExcludeMasks.ToLowerInvariant.Split(";")
             For Each maska As String In aMaski
-                Dim regExMaska As New Regex(DOSmask2regExp(maska))
+                Dim regExMaska As New Regex(DOSmask2regExp(maska.Trim))
                 If regExMaska.IsMatch(sFilename) Then Return False
             Next
         End If
@@ -393,7 +393,7 @@ Public Class OnePic
 
         Dim bMatch As Boolean = False
         For Each maska As String In aMaski
-            Dim regExMaska As New Regex(DOSmask2regExp(maska))
+            Dim regExMaska As New Regex(DOSmask2regExp(maska.Trim))
             If regExMaska.IsMatch(sFilename) Then
                 bMatch = True
                 Exit For

@@ -3,24 +3,22 @@
 Imports System.Globalization
 Imports System.IO
 Imports System.Net
-Imports CsvHelper.Configuration.Attributes
 Imports System.Linq
 
 Partial Public Class Auto_Meteo_Opad
-    Inherits Vblib.AutotaggerBase
+    Inherits Auto_Meteo_Base
 
-    Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.WebPublic
     Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoMeteoOpad
-    Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Dane meteo - opad (Polska)"
-    Public Overrides ReadOnly Property includeMask As String = "*.*"
 
-    Private _cacheDataFolder As String
-
-    Public Sub New(dataFolder As String)
-        _cacheDataFolder = IO.Path.Combine(dataFolder, "AutoMeteoOpad")
-        IO.Directory.CreateDirectory(_cacheDataFolder) ' nie ma exception gdy istnieje
+    Public Sub New(sDataFolder As String)
+        MyBase.New(sDataFolder)
     End Sub
+
+    'Public Sub New(dataFolder As String)
+    '    _cacheDataFolder = IO.Path.Combine(dataFolder, "AutoMeteoOpad")
+    '    IO.Directory.CreateDirectory(_cacheDataFolder) ' nie ma exception gdy istnieje
+    'End Sub
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
         If oFile.GetMostProbablyDate(True).Year < 1950 Then Return Nothing
@@ -94,8 +92,6 @@ Partial Public Class Auto_Meteo_Opad
         For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
             If Not oInArch.Name.ToLowerInvariant.EndsWith("csv") Then Continue For
 
-            '_dataMonth = New List(Of Meteo_Opad_Cache)
-
             ' mamy CSV (właściwie mogłoby być bez testowania, bo tam nic innego być nie powinno)
             Using oStreamTemp As Stream = oInArch.Open
                 Using txtRdr As New StreamReader(oStreamTemp)
@@ -104,15 +100,7 @@ Partial Public Class Auto_Meteo_Opad
                     csvConfig.HasHeaderRecord = False
 
                     Using csvRdr As New CsvHelper.CsvReader(txtRdr, csvConfig)
-
-                        'While csvRdr.Read
-                        '    Dim record = csvRdr.GetRecord(Of Meteo_Opad_Cache)
-                        '    _dataMonth.Add(record)
-                        'End While
-
-                        _dataMonth = csvRdr.GetRecords(Of Meteo_Opad_Cache).ToList ' _dataMonth 
-                        'Dim templist = temp.ToList
-
+                        _dataMonth = csvRdr.GetRecords(Of Meteo_Opad_Cache).ToList
                     End Using
                 End Using
             End Using
@@ -125,14 +113,41 @@ Partial Public Class Auto_Meteo_Opad
         Return True
     End Function
 
+    ''' <summary>
+    '''  uzupełnia Meteo_Opad_Cache o pole oItem.geopos, wedle _dataMonth
+    ''' </summary>
     Private Sub UzupelnijWspolrzedne()
         ' uzupełnij współrzędne w dataMonth wedle słownika
+        Dim prev As String = ""
         For Each oItem As Meteo_Opad_Cache In _dataMonth
-            If stacje.ContainsKey(oItem.Nazwa_stacji.ToUpperInvariant) Then
-                stacje.TryGetValue(oItem.Nazwa_stacji.ToUpperInvariant, oItem.geopos)
-                Vblib.DumpMessage($"dla stacji {oItem.Nazwa_stacji} dodaje geo {oItem.geopos.DumpAsJson}")
+            Dim key As String = GetKodMeteoFromKodStacji(oItem.Kod_stacji)
+            If String.IsNullOrWhiteSpace(key) Then
+                Vblib.DumpMessage($"brak kodu w słowniku ({oItem.Kod_stacji})")
+                Continue For
+            End If
+
+            'Dim key As String = oItem.Nazwa_stacji.ToUpperInvariant
+            If Geo_Stacje_Opad.Stacje.ContainsKey(key) Then
+                Geo_Stacje_Opad.Stacje.TryGetValue(key, oItem.geopos)
+                If prev <> key Then
+                    Vblib.DumpMessage($"dla stacji {oItem.Nazwa_stacji} dodaje geo {oItem.geopos.DumpAsJson}")
+                    prev = key
+                End If
             End If
         Next
+    End Sub
+
+    Private Sub DumpBezGeo()
+
+        Dim braki As String = ""
+
+        For Each oItem As Meteo_Opad_Cache In _dataMonth
+            If oItem.geopos IsNot Nothing Then Continue For
+
+            Dim nazwa As String = "|" & oItem.Nazwa_stacji.ToUpperInvariant & "|"
+            If Not braki.Contains(nazwa) Then Vblib.DumpMessage("brak geo dla stacji " & nazwa)
+        Next
+
     End Sub
 
     Private Function ReadData(dlaDaty As Date) As Boolean
@@ -148,6 +163,8 @@ Partial Public Class Auto_Meteo_Opad
         If Not ReadFile(dlaDaty) Then Return False
         UzupelnijWspolrzedne()
 
+        DumpBezGeo
+
         Return True
     End Function
 
@@ -156,10 +173,10 @@ Partial Public Class Auto_Meteo_Opad
 
         ' pusty element
         Dim oOpad As New Vblib.Meteo_Opad With {
-            .SumaDobowaOpadow = -1,
+            .SumaDobowaOpadowMM = -1,
         .RodzajOpadu = "",
-        .WysokPokrywySnieznej = -1,
-        .WysokSwiezoSpadlegoSniegu = -1,
+        .WysokPokrywySnieznejCM = -1,
+        .WysokSwiezoSpadlegoSnieguCM = -1,
         .GatunekSniegu = "",
         .RodzajPokrywySnieznej = ""
         }
@@ -171,16 +188,29 @@ Partial Public Class Auto_Meteo_Opad
         Dim gs As Integer = Integer.MaxValue
         Dim rps As Integer = Integer.MaxValue
 
+        Dim minodl As Integer = Integer.MaxValue
+        Dim minNazwa As String = ""
+
         Dim bBylo As Boolean = False
 
         For Each oCache As Meteo_Opad_Cache In _dataMonth
+            If oCache.Rok <> oData.Year Then Continue For
+            If oCache.Miesiac <> oData.Month Then Continue For
+            If oCache.Dzien <> oData.Day Then Continue For
+
             Vblib.DumpMessage("Trying " & oCache.Nazwa_stacji)
-                If oCache.geopos Is Nothing Then
+            If oCache.geopos Is Nothing Then
                 Vblib.DumpMessage(" - ale nie ma geotag")
                 Continue For
             End If
+
             Dim dist As Double = oGeo.DistanceKmTo(oCache.geopos)
-            If dist > 20 Then
+            If dist < minodl Then
+                minodl = dist
+                minNazwa = oCache.Nazwa_stacji
+            End If
+
+            If dist > 25 Then
                 Vblib.DumpMessage($" - ale za daleko ({dist})")
                 Continue For
             End If
@@ -191,7 +221,7 @@ Partial Public Class Auto_Meteo_Opad
             If dist < sdb Then
                 If oCache.Status_pomiaru_SMDB <> "8" Then
                     sdb = dist
-                    oOpad.SumaDobowaOpadow = oCache.Suma_dobowa_opadow
+                    oOpad.SumaDobowaOpadowMM = oCache.Suma_dobowa_opadow
                     oOpad.RodzajOpadu = oCache.Rodzaj_opadu
                 End If
             End If
@@ -199,14 +229,14 @@ Partial Public Class Auto_Meteo_Opad
             If dist < wsp Then
                 If oCache.Status_pomiaru_PKSN <> "8" Then
                     wsp = dist
-                    oOpad.WysokPokrywySnieznej = oCache.Rodzaj_pokrywy_snieznej
+                    oOpad.WysokPokrywySnieznejCM = oCache.Wysokosc_pokrywy_snieznej
                 End If
             End If
 
             If dist < wsss Then
                 If oCache.Status_pomiaru_HSS <> "8" Then
                     wsss = dist
-                    oOpad.WysokSwiezoSpadlegoSniegu = oCache.Wysokosc_swiezo_spadlego_sniegu
+                    oOpad.WysokSwiezoSpadlegoSnieguCM = oCache.Wysokosc_swiezo_spadlego_sniegu
                 End If
             End If
 
@@ -226,12 +256,14 @@ Partial Public Class Auto_Meteo_Opad
 
         Next
 
-        If Not bBylo Then Return Nothing
+        If Not bBylo Then
+            Vblib.DumpMessage($"Nie ma, najblizsza stacja {minNazwa} w odległości {minodl} km")
+            Return Nothing
+        End If
 
         Return oOpad
 
     End Function
-
 
 
     Private _data As Date

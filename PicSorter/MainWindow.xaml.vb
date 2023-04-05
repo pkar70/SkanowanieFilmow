@@ -12,18 +12,17 @@ Class MainWindow
         InitLib(Nothing)
         Me.Content = New MainPage
 
+        'Dim latD = 49.59
+        'Dim lonD = 18.42
 
-        Dim latAsTime As TimeSpan = TimeSpan.FromMinutes(50.08)
-        Dim lonAsTime As TimeSpan = TimeSpan.FromMinutes(18.2)
-
-        Dim p1 = latAsTime.Minutes + latAsTime.Hours * 24
-        Dim p2 = latAsTime.Seconds
-        Dim p3 = lonAsTime.Minutes + lonAsTime.Hours * 24
-        Dim p4 = lonAsTime.Seconds
+        'Dim latDegree As Double = Math.Floor(latD)
+        'Dim latMin As Double = 100 * (latD - latDegree) * 100 / 60
+        'Dim lonDegree As Double = Math.Floor(lonD)
+        'Dim lonMin As Double = 100 * (lonD - lonDegree) * 100 / 60
 
 
-        Dim r1 = p1 + 1 / 60 * p2 + 1 / 3600 * 0
-        Dim r2 = p3 + 1 / 60 * p4 + 1 / 3600 * 0
+        'Dim r1 = p1 + 1 / 60 * p2 + 1 / 3600 * 0
+        'Dim r2 = p3 + 1 / 60 * p4 + 1 / 3600 * 0
 
         ' *TODO* to tylko czasowo
         'Dim sChcemy As String = "Degoo"

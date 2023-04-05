@@ -205,9 +205,10 @@ Public Class TargetDir
             Next
         End If
 
-        For Each oThPic As ProcessBrowse.ThumbPicek In _selected
-            oThPic.ZrobDymek()
-        Next
+        ' jest w DopiszKatalog
+        'For Each oThPic As ProcessBrowse.ThumbPicek In _selected
+        '    oThPic.ZrobDymek()
+        'Next
 
 
     End Sub

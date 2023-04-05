@@ -12,7 +12,9 @@ namespace Chomikuj.Rest
         //private readonly WebClient _downloadWebClient = new WebClient();
         //private readonly WebClient _uploadWebClient = new WebClient();
 
-        private readonly HttpClient _downloadWebClient = new HttpClient();
+        private static readonly HttpClientHandler httpClientHandler = new HttpClientHandler() { AllowAutoRedirect = true };
+
+        private readonly HttpClient _downloadWebClient = new HttpClient(httpClientHandler);
         private readonly HttpClient _uploadWebClient = new HttpClient();
 
         public Stream DownloadFile(Uri url)

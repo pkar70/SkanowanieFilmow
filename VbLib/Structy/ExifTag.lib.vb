@@ -56,6 +56,8 @@ Public Class ExifTag
     Public Property AzureAnalysis As MojeAzure
     Public Property PogodaAstro As CacheAutoWeather_Item
     Public Property MeteoOpad As Meteo_Opad
+    Public Property MeteoKlimat As Meteo_Klimat
+    Public Property MeteoSynop As Meteo_Synop
 
     Public Sub New(sSource As String)
         ExifSource = sSource

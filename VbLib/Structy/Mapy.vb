@@ -36,10 +36,15 @@ Public Class JednaMapa
         If oGeo Is Nothing Then Return ""
 
         Dim sLink As String = link
+#If HERE_FORMATLINK Then
         sLink = sLink.Replace("%lat", oGeo.Latitude)
         sLink = sLink.Replace("%lon", oGeo.Longitude.ToString(CultureInfo.InvariantCulture))
         sLink = sLink.Replace("%zoom", "16")
         Return sLink
+#Else
+        ' w Nuget 1.2.1
+        Return oGeo.FormatLink(link, 16)
+#End If
     End Function
 
     Public Function UriForGeo(oGeo As pkar.BasicGeopos) As Uri

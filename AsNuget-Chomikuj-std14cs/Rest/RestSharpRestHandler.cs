@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using Chomikuj.Extensions;
 //using RestSharp;
 
@@ -14,23 +13,24 @@ namespace Chomikuj.Rest
 
         private readonly HttpClient _client;
         private readonly Uri _baseUri;
-        private Uri _changedUri;
         private static CookieContainer _cookies = new CookieContainer();
         private static HttpClientHandler _httphandler = null;
 
         public RestSharpRestHandler(Uri uri)
         {
             _baseUri = uri;
-            _changedUri = uri;
+#if false
+            _client = new RestClient(uri) {CookieContainer = new CookieContainer()};
+#else
 
-            if(_client == null)
+            if (_client == null)
             {
-                _httphandler = new HttpClientHandler() { CookieContainer = _cookies };
+                _httphandler = new HttpClientHandler() { CookieContainer = _cookies, AllowAutoRedirect=true };
                 _client = new HttpClient(_httphandler);
                 _client.DefaultRequestHeaders.UserAgent.TryParseAdd(_defaultHttpAgent);
                 _client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("*/*"));
             }
-
+#endif
         }
 
         public Response Get(Request request)

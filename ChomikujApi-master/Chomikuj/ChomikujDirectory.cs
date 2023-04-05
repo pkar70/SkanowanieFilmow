@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Web.UI;
+//using System.Web.UI;
 using Chomikuj.Rest;
 //using Fizzler.Systems.HtmlAgilityPack;
 using HtmlAgilityPack;
@@ -30,7 +30,11 @@ namespace Chomikuj
 
         public IEnumerable<ChomikujDirectory> GetDirectories()
         {
-            var response = _base.RestClient.Get(new Request(Link));
+            // PK: rozbite na dwie linie, by móc operowaæ na Headerach
+            var request = new Request(Link);
+            //request.Headers.Add("__RequestVerificationToken", _base.RestClient.GetVerificationToken());
+            var response = _base.RestClient.Get(request);
+
             var html = new HtmlDocument();
             html.LoadHtml(response.Content);
 

@@ -129,6 +129,8 @@ Public Class CloudArchiving
 
         Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
 
+        If Not Await LocalArchive.CheckGuidy() Then Return
+
         Application.ShowWait(True)
         uiProgBarInEngine.Maximum = oSrc.maxCount
         uiProgBarInEngine.Value = 0
@@ -140,27 +142,50 @@ Public Class CloudArchiving
         Dim sErr As String = ""
 
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            Dim sErr1 As String = ""
             uiProgBarInEngine.Value += 1
 
-            If Not IO.File.Exists(oPic.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
-            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+            If Not IO.File.Exists(oPic.InBufferPathName) Then
+                sErr1 = $"Cannot cloud archive {oPic.InBufferPathName} because file doesn't exist"
+                Debug.WriteLine(sErr1)
+                sErr &= sErr1 & vbCrLf
+                Continue For   ' zabezpieczenie przed samoznikaniem
+            End If
+            If String.IsNullOrEmpty(oPic.TargetDir) Then
+                sErr1 = $"Cannot cloud archive {oPic.InBufferPathName} because there is no targetDir"
+                Debug.WriteLine(sErr1)
+                sErr &= sErr1 & vbCrLf
+                Continue For
+            End If
 
             If oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For
 
             oPic.ResetPipeline()
             Try
-                Await oSrc.engine.SendFile(oPic)
+                sErr1 = Await oSrc.engine.SendFile(oPic)
             Catch ex As Exception
-                sErr = ex.Message
+                sErr1 = $"Cannot cloud archive {oPic.InBufferPathName} to {oPic.TargetDir} because of error {sErr}"
+                sErr &= sErr1 & vbCrLf
                 Exit For
             End Try
-            If Not oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
+
+            If sErr1 <> "" Then
+                sErr &= $"Cannot cloud archive {oPic.InBufferPathName} to {oPic.TargetDir} because of {sErr1}" & vbCrLf
+                Continue For ' nieudane!
+            End If
+
+            If Not oPic.IsCloudArchivedIn(oSrc.nazwa) Then
+                sErr1 = $"Cannot cloud archive {oPic.InBufferPathName} to {oPic.TargetDir} - unconfirmed archivization"
+                sErr &= sErr1 & vbCrLf
+                Continue For ' nieudane!
+            End If
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
 
         If sErr <> "" Then
-            Await vb14.DialogBoxAsync($"Encountered error: {sErr}, stopping sending next files")
+            Await vb14.DialogBoxAsync("Encountered error(s):" & vbCrLf & sErr)
+            vb14.ClipPut(sErr)
         End If
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed

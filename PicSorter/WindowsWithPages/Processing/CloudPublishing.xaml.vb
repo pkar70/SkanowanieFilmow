@@ -100,12 +100,13 @@ Public Class CloudPublishing
 
         Dim sIndexJson As String = ""
 
-
-
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             uiProgBarInEngine.Value += 1
 
-            If Not IO.File.Exists(oPic.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
+            If Not IO.File.Exists(oPic.InBufferPathName) Then
+                Debug.WriteLine($"Cannot cloud publish {oPic.InBufferPathName} because file doesn't exist")
+                Continue For   ' zabezpieczenie przed samoznikaniem
+            End If
             If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
 
             If Not oPic.IsCloudPublishScheduledIn(oSrc.nazwa) Then Continue For

@@ -3,6 +3,7 @@
 'Imports Microsoft.Rest
 'Imports Newtonsoft.Json
 
+Imports System.Linq.Expressions
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Schema
 
@@ -141,7 +142,13 @@ Public Class DirsList
         Return Nothing
     End Function
 
-    Public Function GetDirFromTargetDir(sTargetDir As String) As OneDir
+    ''' <summary>
+    ''' znajdź OneDir dla podanej ścieżki, lub stwórz taki obiekt
+    ''' </summary>
+    ''' <param name="sTargetDir">ścieżka docelowa</param>
+    ''' <param name="bCreate">True gdy ma tworzyć obiekty</param>
+    ''' <returns>OneDir, lub Null = error</returns>
+    Public Function GetDirFromTargetDir(sTargetDir As String, Optional bCreate As Boolean = False) As OneDir
 
         ' najpierw wedle istniejącej ścieżki, bo może być taka sama nazwa w dwu miejscach
         Dim bFound As Boolean = False
@@ -150,6 +157,11 @@ Public Class DirsList
         Dim oRet As OneDir = _lista.ElementAt(0)
         For Each sPath As String In sTargetDir.Split(IO.Path.DirectorySeparatorChar)
             If sPath.Trim.Length < 1 Then Continue For
+            If oRet.SubItems Is Nothing Then
+                If Not bCreate Then Continue For
+                TryAddSubdir(oRet, sPath, "")
+            End If
+
             For Each oSubDir As OneDir In oRet.SubItems
                 If oSubDir.sId <> sPath Then Continue For
 
@@ -166,6 +178,7 @@ Public Class DirsList
         ' a potem tylko ten ostatni człon szukamy - jakby ktoś przestawił
         Return GetFolder(IO.Path.GetFileName(sTargetDir))
     End Function
+
 
     'Public Function GetFullPath(sKey As String) As String
 
@@ -216,6 +229,7 @@ Public Class DirsList
     '    Return True
     'End Function
 
+
     Public Function TryAddSubdir(oParent As OneDir, sId As String, sOpis As String) As OneDir
         If oParent.SubItems IsNot Nothing Then
             For Each oSub As OneDir In oParent.SubItems
@@ -230,6 +244,8 @@ Public Class DirsList
         oNew.fullPath = IO.Path.Combine(oParent.fullPath, oNew.sId)
         If oParent.SubItems Is Nothing Then oParent.SubItems = New List(Of OneDir)
         oParent.SubItems.Add(oNew)
+
+        Save(True)
 
         Return oNew
     End Function
@@ -257,6 +273,7 @@ Public Class DirsList
     Public Function IdExists(sId As String) As Boolean
         sId = sId.ToLowerInvariant
         For Each oDir As OneDir In ToFlatList()
+            If oDir.sId Is Nothing Then Continue For
             If oDir.sId.ToLowerInvariant = sId Then Return True
         Next
 

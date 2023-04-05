@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Chomikuj.Extensions;
 using Chomikuj.Rest;
@@ -13,7 +15,13 @@ namespace Chomikuj
     {
         public static string GetVerificationToken(this IRestHandler client)
         {
-            return client.GetCookies(new Uri(ChomikujBase.MainAddress))[3].Value;
+            // PK: rozbite na dwie linie, by sprawdzać co jest cookiesem
+            var ciastka = client.GetCookies(new Uri(ChomikujBase.MainAddress));
+            // var ciastko = ciastka[3]; - wersja [int] dopiero od .Net Std 2.0
+            var ciastko = ciastka["__RequestVerificationToken_Lw__"];
+            Debug.WriteLine("Using cookie: " + ciastko.Name); // __RequestVerificationToken_Lw__
+            string token = ciastko.Value;
+            return token;
         }
 
         public static Dictionary<string, string> ToJsonDictionary(this Response result)
@@ -53,12 +61,12 @@ namespace Chomikuj
             {
                 return DateTime.Now;
             }
-
         }
 
         public static CultureInfo GetCultureInfo()
         {
-            return CultureInfo.GetCultureInfo("PL-pl");
+            // org:             return CultureInfo.GetCultureInfo("PL-pl");
+            return new CultureInfo("PL-pl");
         }
 
         public static double ParseFileSize(string value, string unit)
@@ -174,7 +182,9 @@ namespace Chomikuj
 
             protected override void Dispose(bool disposing)
             {
-                Array.ForEach(_streams.ToArray(), stream => stream.Dispose());
+                // Array.ForEach(_streams.ToArray(), stream => stream.Dispose());
+                foreach (var stream in _streams.ToList())
+                    stream.Dispose();
             }
 
             public override void Close()

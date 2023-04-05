@@ -16,6 +16,15 @@ Public Class LocalArchive
 
     End Sub
 
+    Public Shared Async Function CheckGuidy() As Task(Of Boolean)
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If String.IsNullOrEmpty(oPic.PicGuid) Then
+                Return Await vb14.DialogBoxYNAsync("Są zdjęcia bez GUID, kontynuować?")
+            End If
+        Next
+        Return True
+    End Function
+
     Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
 
@@ -134,6 +143,10 @@ Public Class LocalArchive
     Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
         vb14.DumpCurrMethod()
 
+        If Not Await CheckGuidy() Then Return
+
+        If Not Await vb14.DialogBoxYNAsync("Czy juz poprawiles dopisywanie do archive?") Then Return
+
         If Not oSrc.engine.IsPresent Then
             Await vb14.DialogBoxAsync($"Ale Archiwum '{oSrc.nazwa}' jest aktualnie niewidoczne!")
             Return
@@ -148,16 +161,40 @@ Public Class LocalArchive
 
         Dim bDirTreeToSave As Boolean = False
 
+        Dim sErr As String = ""
+
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             uiProgBarInEngine.Value += 1
-
-            If Not IO.File.Exists(oPic.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
-            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+            Dim sErr1 As String = ""
+            If Not IO.File.Exists(oPic.InBufferPathName) Then
+                sErr1 = $"Cannot archive {oPic.InBufferPathName} because file doesn't exist"
+                Debug.WriteLine(sErr1)
+                sErr &= sErr1 & vbCrLf
+                Continue For   ' zabezpieczenie przed samoznikaniem
+            End If
+            If String.IsNullOrEmpty(oPic.TargetDir) Then
+                sErr1 = $"Cannot archive {oPic.InBufferPathName} because targetDir is not set"
+                Debug.WriteLine(sErr1)
+                sErr &= sErr1 & vbCrLf
+                Continue For
+            End If
 
             If oPic.IsArchivedIn(oSrc.nazwa) Then Continue For
 
-            Await oSrc.engine.SendFile(oPic)
-            If Not oPic.IsArchivedIn(oSrc.nazwa) Then Continue For ' nieudane!
+            sErr1 = Await oSrc.engine.SendFile(oPic)
+
+            If sErr1 <> "" Then
+                sErr &= $"Cannot archive {oPic.InBufferPathName} to {oPic.TargetDir} because of {sErr1}" & vbCrLf
+                Continue For ' nieudane!
+            End If
+
+            If Not oPic.IsArchivedIn(oSrc.nazwa) Then
+                sErr1 = $"Cannot archive {oPic.InBufferPathName} to {oPic.TargetDir} - unconfirmed save"
+                Debug.WriteLine(sErr1)
+                sErr &= sErr1 & vbCrLf
+
+                Continue For ' nieudane!
+            End If
 
             ' aktualizujemy DirList - to tylko ostateczność, bo powinno być wcześniej zrobione.
             ' If Application.GetDirTree.TryAddFolder(oPic.TargetDir, "") Then bDirTreeToSave = True
@@ -166,7 +203,8 @@ Public Class LocalArchive
             Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
 
             ' zapisujemy do globalnego archiwum tylko raz, bez powtarzania przy zapisie do każdego LocalArch
-            If oPic.ArchivedCount < 1 Then
+            ' tu był błąd! bylo <1, ale to już jest po dopisywaniu; więc ma być +1
+            If oPic.ArchivedCount = 1 Then
                 If sIndexLongJson <> "" Then sIndexLongJson &= ","
                 sIndexLongJson &= oPic.DumpAsJSON(True)
 
@@ -176,6 +214,12 @@ Public Class LocalArchive
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
+
+        If sErr <> "" Then
+            Await vb14.DialogBoxAsync("Encountered error(s):" & vbCrLf & sErr)
+            vb14.ClipPut(sErr)
+        End If
+
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed
 

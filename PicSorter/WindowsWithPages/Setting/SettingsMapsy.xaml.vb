@@ -96,6 +96,7 @@ Class SettingsMapsy
         For Each oMapService As Vblib.JednaMapa In _lista.GetList
             If Not oMapService.link.ToLowerInvariant.StartsWithOrdinal(sPrefix) Then Continue For
 
+#If NOT_GEONUGET_121 Then
             Dim iLat As Integer = oMapService.link.IndexOf("%lat")
             Dim iLon As Integer = oMapService.link.IndexOf("%lon")
 
@@ -121,19 +122,16 @@ Class SettingsMapsy
             ' ok, to już mamy
             ' https://www.openstreetmap.org/#map=16/%lat/%lon
             '  no właśnie, jest inaczej :)
+
+#Else
+            ' nuget 1.2.1
+            Dim oGeo As BasicGeopos = BasicGeopos.FromLink(oMapService.link, sLink)
+            If oGeo Is Nothing Then Return BasicGeopos.Empty
+            Return oGeo
+#End If
         Next
 
         Return BasicGeopos.Empty
 
-        'If Not sPrefix.Contains("openstreetmap") Then Return pkar.BasicGeopos.EmptyGeoPos
-        'iInd = sLink.IndexOf("map=")
-        'If iInd < 10 Then Return pkar.BasicGeopos.EmptyGeoPos
-        'Dim result As Match = Regex.Match(sLink.Substring(iInd + 4), "(\d+)/([\.0-9]*)/([\.0-9]*)", RegexOptions.IgnoreCase)
-
-        'If Not result.Success Then Return pkar.BasicGeopos.EmptyGeoPos
-
-        'Dim oPos As New pkar.BasicGeopos(result.Groups(2).Value, result.Groups(3).Value)
-
-        'Return oPos
     End Function
 End Class

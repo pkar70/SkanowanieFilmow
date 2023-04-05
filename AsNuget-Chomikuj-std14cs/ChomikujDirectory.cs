@@ -30,6 +30,7 @@ namespace Chomikuj
 
         public IEnumerable<ChomikujDirectory> GetDirectories()
         {
+            // PK: rozbite na dwie linie, by móc operowaæ na Headerach
             var request = new Request(Link);
             //request.Headers.Add("__RequestVerificationToken", _base.RestClient.GetVerificationToken());
             var response = _base.RestClient.Get(request);

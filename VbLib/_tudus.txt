@@ -57,10 +57,14 @@ WPF i WinUI2? (progressring)
 == SORTED:
 pliki znikniete z indeksu - usuwanie, wstawianie do clipboard czy tylko gdy nie usuwa?
 
+uzupelnic picidy, chyba ich nie tak duzo brakuje
+
 
 ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
 na App.GetArchives - GetPicture(oPic), uzupełnia oContent wedle wszystkich istniejących, próbując znaleźć takie które plik ma.
 ARCHIVE/PUBLISH: Amazon Photo
+ARCHIVE/PUBLISH: czemu archiwizuje png/thumbsy (czasem)?
+ARCHIVE/PUBLISH: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 
 * AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 * AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
@@ -69,7 +73,13 @@ AUTO_GUID: zawsze reset istniejących?
 
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
+AUTOTAG: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 
+BIGPIC: zle rozmiar okna na fotke oblicza (zawsze poziomo?)
+
+BROWSER gdy combo targetdir jest pusty, to nadawanie katalogu picom robi crash?
+BROWSER poprzednie targetdiry w combo - niejasna logika co on zrobi jak sie to wybierze :) - najlepiej jakby to wpisywal do ponizej znajdujacych sie pól, moze poza ostatnim poziomem
+BROWSER: right button, delete thumb (teraz jest tylko dla grupowych)
 BROWSER wczytajObrazek: nie dowolny z NAR/ZIP, tylko konkretne próbować wybrać?
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
 BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
@@ -95,6 +105,8 @@ DBASE: Amazon.Dynamo (noSQL)
 DBASE: lokalny SQL: wrzucanie StoredProcedure?
 DBASE: aktualizowany także post-archive
 
+IMPORT: nowa funkcjonalność, import, podaje się zakres dat, browse folder, i ściaga z foldertree podpadające zdjęcia
+
 KEYWORDS/GEO: może przy dodawaniu manual geo automatycznie dopisywać keywordy?
 
 MAINPAGE: "open folder in-place", bez import jako takiego? tylko lokalny buffer.json?
@@ -102,6 +114,7 @@ MAINPAGE: ewentualnie osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać
 
 MAIN:BROWSE: ewentualnie "recursive"?
 MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
+MAIN:BROWSE w pelni zarchiwizowane - ale ma dac do trzech, a jest tylko w dwu - na wejsciu do Browse, bo na wejsciu do Process jest OK
 
 MAIN:new: CHECKLIST, które prowadzi wedle "mojej" sekwencji (a może to w Browse? Retrieve resetuje progress)
 
@@ -118,6 +131,8 @@ PUBLISH: SendFiles(.., delegate ProgbarInc)
 PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwleka zanim zamknie pliki i sa widoczne
 PUBLISH: Amazon Photos
 PUBLISH: gdy z Settings jest na to zgoda, dopisywanie danych do archfull
+PUBLISH ADHOC: do %temp%\picsort, i runExplorer na tym
+
 
 PUBLISH: jakiś letsupload.io, i tym podobne; pojedyncze lub do ZIPa - do dzielenia się
 https://nugetmusthaves.com/Package/CloudRail.SDK
@@ -127,8 +142,10 @@ https://location.foursquare.com/products/places/
 RETRIEVE NAR - rozpakowywanie do pojedynczych moze robic?
 RETRIEVE typ: chomikuj? z podanego katalogu? do dzielenia się z innymi?
 RETRIEVE: dla Purge, progressbar od nowa
+RETRIEVE: reakcja na disk full (sprawdzenie przed próbą ściągania)
 
 SEARCH: błędna logika, nie zadziała na FLAT (gdzie nie ma tagu Azure itp.)
+SEARCH: sekcja OPAD
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
 STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
@@ -139,6 +156,7 @@ SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
 SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku skopiowanym do bufora, nie wcześniej
 SETTINGS: to o tyle istotne, że AutoRotate wymaga AutoExif!
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
+SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
@@ -1084,63 +1102,6 @@ RIFF 'idx1' chunk (7936 bytes of data):
 
 
 
-
-
-
-https://danepubliczne.imgw.pl/data/dane_pomiarowo_obserwacyjne/dane_meteorologiczne/dobowe/klimat
-k_d_format.txt
-Kod stacji                              9
-Nazwa stacji                           30
-Rok                                     4
-Miesiąc                                 2
-Dzień                                   2
-Maksymalna temperatura dobowa [°C]      6/1
-Status pomiaru TMAX                     1
-Minimalna temperatura dobowa [°C]       6/1
-Status pomiaru TMIN                     1
-Średnia temperatura dobowa [°C]         8/1
-Status pomiaru STD                      1
-Temperatura minimalna przy gruncie [°C] 6/1
-Status pomiaru TMNG                     1
-Suma dobowa opadów [mm]                 8/1
-Status pomiaru SMDB                     1
-Rodzaj opadu  [S/W/ ]                   1
-Wysokość pokrywy śnieżnej [cm]          5
-Status pomiaru PKSN                     1
-
-k_d_t_format.txt
-Kod stacji                                   9
-Nazwa stacji                                30
-Rok                                          4
-Miesiąc                                      2
-Dzień                                        2
-Średnia dobowa temperatura  [°C]             5/1
-Status pomiaru TEMP                          1
-Średnia dobowa wilgotność względna [%]       8/1
-Status pomiaru WLGS                          1
-Średnia dobowa prędkość wiatru [m/s]         6/1
-Status pomiaru FWS                           1
-Średnie dobowe zachmurzenie ogólne [oktanty] 6/1
-Status pomiaru NOS                           1
-
-
-https://danepubliczne.imgw.pl/data/dane_pomiarowo_obserwacyjne/dane_meteorologiczne/dobowe/opad/
-Kod stacji                           9
-Nazwa stacji                        30
-Rok                                  4
-Miesiąc                              2
-Dzień                                2
-Suma dobowa opadów [mm]              8/1
-Status pomiaru SMDB                  1
-Rodzaj opadu       [S/W/ ]           1
-Wysokość pokrywy śnieżnej [cm]       5
-Status pomiaru PKSN                  1
-Wysokość świeżo spadłego śniegu [cm] 5
-Status pomiaru HSS                   1
-Gatunek śniegu  [kod]                1
-Status pomiaru GATS                  1
-Rodzaj pokrywy śnieżnej [kod]        5
-Status pomiaru RPSN                  1
 
 https://danepubliczne.imgw.pl/data/dane_pomiarowo_obserwacyjne/dane_meteorologiczne/dobowe/synop/
 s_d_format.txt

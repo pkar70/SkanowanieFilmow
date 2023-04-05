@@ -23,6 +23,34 @@ Class MainPage
 
         uiBrowseArch.IsEnabled = IsAnyArchPresent()
 
+        'Dim pliczek1 As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json")
+        'pliczek1.Load()
+        'pliczek1.Save(True)
+
+        'Dim pliczek As New BaseList(Of Vblib.OnePic)("E:\Temp\picsortrecovery", "komplet.json")
+        'pliczek.Load()
+
+        'Dim pliczek1 As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json")
+        'pliczek1.Load()
+
+        'For Each oItem1 In pliczek1.GetList
+        '    Dim bFound As Boolean = False
+        '    For Each oItem In pliczek.GetList
+        '        If oItem.sSuggestedFilename <> oItem1.sSuggestedFilename Then Continue For
+        '        If oItem.PicGuid <> oItem1.PicGuid Then Continue For
+
+        '        bFound = True
+        '        Exit For
+        '    Next
+
+        '    If Not bFound Then
+        '        pliczek.Add(oItem1)
+        '    End If
+
+        'Next
+
+        'pliczek.Save(True)
+
         ' 2023.02.06, poprawienie pliku w ktorym były NULLe. Z 31 MB do 16 MB zeszlo.
         'Dim _fullArchive As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json") ' "archIndex.flat.json"
         '_fullArchive.Load()

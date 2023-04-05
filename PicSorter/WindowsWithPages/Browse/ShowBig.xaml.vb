@@ -47,33 +47,45 @@ Public Class ShowBig
 
     Private _bitmap As BitmapImage
 
+    Private _inScaling As Boolean
+
+#If False Then
     ' skopiowane z InstaMonitor
     Private Sub ZmianaRozmiaruImg()
 
         If _bitmap Is Nothing Then Return
 
+        If _inScaling Then Return
+        _inScaling = True
+
+        Dim szer As Double = Math.Max(200, _bitmap.PixelWidth)
+        Dim wysok As Double = Math.Max(200, _bitmap.PixelHeight)
+
         If uiFullPicture.Stretch = Stretch.None Then
-            uiFullPicture.Width = _bitmap.PixelWidth
-            uiFullPicture.Height = _bitmap.PixelHeight
+            uiFullPicture.Width = szer
+            uiFullPicture.Height = wysok
         Else
 
-            If _bitmap.PixelWidth < uiMainPicScroll.ViewportWidth And
-               _bitmap.PixelHeight < uiMainPicScroll.ViewportHeight Then
-                uiFullPicture.Width = _bitmap.PixelWidth
-                uiFullPicture.Height = _bitmap.PixelHeight
+            If szer < uiMainPicScroll.ViewportWidth And
+               wysok < uiMainPicScroll.ViewportHeight Then
+                uiFullPicture.Width = szer
+                uiFullPicture.Height = wysok
             Else
-                Dim dScaleX As Double = _bitmap.PixelWidth / uiMainPicScroll.ViewportWidth
-                Dim dScaleY As Double = _bitmap.PixelHeight / uiMainPicScroll.ViewportHeight
+                Dim dScaleX As Double = szer / uiMainPicScroll.ViewportWidth
+                Dim dScaleY As Double = wysok / uiMainPicScroll.ViewportHeight
 
                 Dim dDesiredScale As Double = Math.Max(dScaleX, dScaleY)
-                uiFullPicture.Width = _bitmap.PixelWidth / dDesiredScale
-                uiFullPicture.Height = _bitmap.PixelHeight / dDesiredScale
+                uiFullPicture.Width = szer / dDesiredScale
+                uiFullPicture.Height = wysok / dDesiredScale
 
             End If
 
         End If
-    End Sub
 
+        _inScaling = False
+
+    End Sub
+#End If
     Private Shared Function DetermineOrientation(oPic As Vblib.OnePic) As Rotation
         Dim oExif As Vblib.ExifTag
 
@@ -107,32 +119,13 @@ Public Class ShowBig
         uiRevert.IsEnabled = False
         If IO.File.Exists(_picek.oPic.InBufferPathName & ".bak") Then uiRevert.IsEnabled = True
 
+        ' skalowanie okna
+        ZmienRozmiarOkna(iObrot)
         uiFullPicture.Source = _bitmap
+
         ' UpdateClipRegion()
         uiFullPicture.ToolTip = _picek.sDymek & vbCrLf & $"Size: {_bitmap.PixelWidth}×{_bitmap.PixelHeight}"
 
-        ' skalowanie okna
-        Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * 0.9
-        Dim scrHeight As Double = SystemParameters.FullPrimaryScreenHeight * 0.9
-
-        Dim dScaleX As Double = _bitmap.PixelWidth / scrWidth
-        Dim dScaleY As Double = _bitmap.PixelHeight / scrHeight
-        Dim dDesiredScale As Double = Math.Max(dScaleX, dScaleY)
-
-        If scrHeight > _bitmap.PixelHeight AndAlso scrWidth > _bitmap.PixelWidth Then
-            Me.Height = _bitmap.PixelHeight + 60
-            Me.Width = _bitmap.PixelWidth + 10
-        Else
-            If iObrot = Rotation.Rotate90 OrElse iObrot = Rotation.Rotate270 Then
-                Me.Height = _bitmap.PixelHeight / dDesiredScale ' scrHeight
-                Me.Width = _bitmap.PixelWidth / dDesiredScale ' scrWidth
-            Else
-                Me.Height = scrHeight + 30
-                Me.Width = scrWidth + 10
-            End If
-            uiFullPicture.Width = _bitmap.PixelWidth / dDesiredScale
-            uiFullPicture.Height = _bitmap.PixelHeight / dDesiredScale
-        End If
 
         If _inArchive Then
             uiBatchProcessors.Visibility = Visibility.Collapsed
@@ -164,6 +157,56 @@ Public Class ShowBig
         TimerOnOff()
 
         ' MenuAutoTaggerow()
+
+    End Sub
+
+    Private Sub ZmienRozmiarOkna(iObrot As Rotation)
+        DumpCurrMethod($"(iObrot={iObrot})")
+
+        Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * 0.9
+        Dim scrHeight As Double = SystemParameters.FullPrimaryScreenHeight * 0.9
+
+        Dim MARGIN_X As Integer = 40
+        Dim MARGIN_Y As Integer = 80
+
+        Dim imgSize As Size
+        If iObrot = Rotation.Rotate90 OrElse iObrot = Rotation.Rotate270 Then
+            imgSize = New Size(_bitmap.PixelHeight, _bitmap.PixelWidth)
+        Else
+            imgSize = New Size(_bitmap.PixelWidth, _bitmap.PixelHeight)
+        End If
+
+        If scrHeight > imgSize.Height AndAlso scrWidth > imgSize.Width Then
+            ' Screen size: 1152, 873.9; bitmap size: 600, 450, so scale: 0.5208333333333334
+            DumpMessage($"Screen bigger than picture ({imgSize.Width}, {imgSize.Height}), no scaling - full picture")
+
+            ' gdy nie zmieniam uiFullPicture ani Me: OK
+            ' gdy nie zmieniam Me: OK (tylko duza ramka wokol)
+            Me.Height = Math.Max(200, imgSize.Height + MARGIN_Y)
+            Me.Width = Math.Max(200, imgSize.Width + MARGIN_X)
+            uiFullPicture.Width = imgSize.Width
+            uiFullPicture.Height = imgSize.Height
+
+            ' niby powinno być: none
+            uiFullPicture.Stretch = Stretch.Uniform
+
+        Else
+            Dim dScaleX As Double = imgSize.Width / scrWidth
+            Dim dScaleY As Double = imgSize.Height / scrHeight
+            Dim dDesiredScale As Double = Math.Max(dScaleX, dScaleY)
+
+            Dim scaledImg As New Size(imgSize.Width / dDesiredScale, imgSize.Height / dDesiredScale)
+
+            DumpMessage($"Scaling {dDesiredScale} to image: {scaledImg.Width}, {scaledImg.Height})")
+
+            Me.Height = scaledImg.Height + MARGIN_Y
+            Me.Width = scaledImg.Width + MARGIN_X
+            uiFullPicture.Width = scaledImg.Width
+            uiFullPicture.Height = scaledImg.Height
+
+            uiFullPicture.Stretch = Stretch.Uniform
+        End If
+
 
     End Sub
 
@@ -328,11 +371,12 @@ Public Class ShowBig
     'End Sub
 
     Private Sub Window_SizeChanged(sender As Object, e As SizeChangedEventArgs)
-        ZmianaRozmiaruImg()
+        ' ZmianaRozmiaruImg()
     End Sub
 
     Private Sub uiResizePic_Click(sender As Object, e As MouseButtonEventArgs)
         Dim oResize As Stretch = uiFullPicture.Stretch
+        DumpCurrMethod($"(switching from {oResize.ToString})")
         Select Case oResize
             Case Stretch.Uniform
                 uiFullPicture.Stretch = Stretch.None
@@ -340,7 +384,7 @@ Public Class ShowBig
                 uiFullPicture.Stretch = Stretch.Uniform
         End Select
 
-        ZmianaRozmiaruImg()
+        'ZmianaRozmiaruImg()
     End Sub
 
     Private Sub uiCopyPath_Click(sender As Object, e As RoutedEventArgs)
@@ -773,7 +817,11 @@ Public Class ShowBig
 
 #End If
 
+    Private _inRotateInit As Boolean = False
+
     Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
+
+        _inRotateInit = True
         Await SprawdzCzyJestEdycja(EditModeEnum.rotate)
 
         ShowHideEditControls(EditModeEnum.rotate)
@@ -783,12 +831,13 @@ Public Class ShowBig
         uiRotateLeft.IsChecked = False
         uiRotateRight.IsChecked = False
 
+        _inRotateInit = False
     End Sub
 
     Private Sub uiRotate_Checked(sender As Object, e As RoutedEventArgs)
 
         If _editMode <> EditModeEnum.rotate Then Return
-
+        If _inRotateInit Then Return
         ' równoważne Save - wybór góry zdjęcia automatycznie kończy operację, nie trzeba SAVE
         ' *TODO* (może) do Settings:Misc, [] autosave after manual rotate
 

@@ -269,6 +269,11 @@ Public Class ProcessBrowse
         If iMax < 10 Then iMax = 100
 
         Dim lista As List(Of ThumbPicek) = Await WczytajIndeks()   ' tu ewentualne kasowanie jest znikniętych, to wymaga YNAsync
+
+        If lista.Count > iMax Then
+            Await vb14.DialogBoxAsync($"Wczytuję miniaturki tylko {iMax} (z {lista.Count})")
+        End If
+
         For Each oItem As ThumbPicek In From c In lista Order By c.dateMin Take iMax
             _thumbsy.Add(oItem)
         Next

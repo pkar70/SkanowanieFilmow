@@ -4,15 +4,40 @@
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
+'Imports Org.BouncyCastle.Crypto
+'Imports Org.BouncyCastle.Crypto
 
 Public Class ProcessDownload
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
         uiLista.ItemsSource = Application.GetSourcesList.GetList
+
+        CheckDiskFree()
     End Sub
+
+    Private Function CheckDiskFree() As Boolean
+        Dim buffer As String = vb14.GetSettingsString("uiFolderBuffer")
+        If buffer <> "" Then
+
+            Dim oDrives = IO.DriveInfo.GetDrives()
+            For Each oDrive As IO.DriveInfo In oDrives
+                If buffer.ToLowerInvariant.StartsWith(oDrive.Name.ToLowerInvariant) Then
+                    ' limit: 100 MB
+                    If oDrive.AvailableFreeSpace > 100 * 1000 * 1000 Then Return True
+                    Exit For
+                End If
+            Next
+        End If
+
+        vb14.DialogBox("Za mało miejsca na dysku z buforem!")
+        Return False
+    End Function
 
     Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
+
+        If Not CheckDiskFree() Then Return
+
         ' to konkretne, więc bardziej szczegółowo
         Dim oFE As FrameworkElement = sender
         Dim oSrc As Vblib.PicSourceBase = oFE?.DataContext
@@ -66,6 +91,8 @@ Public Class ProcessDownload
 
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
+
+        If Not CheckDiskFree() Then Return
 
         ' uproszczona wersja
 

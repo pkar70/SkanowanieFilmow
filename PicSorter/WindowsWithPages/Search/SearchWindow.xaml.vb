@@ -38,6 +38,9 @@ Public Class SearchWindow
         EditExifTag.WypelnComboDeviceType(uiComboDevType, Vblib.FileSourceDeviceTypeEnum.unknown)
         uiComboDevType.SelectedIndex = 0
         WypelnComboSourceNames()
+
+        uiResultsCount.Text = $"(no query, total {_fullArchive.Count} items)"
+
     End Sub
 
     Private Sub WypelnComboSourceNames()
@@ -146,6 +149,7 @@ Public Class SearchWindow
 
         Application.ShowWait(True)
         For Each oPicek As Vblib.OnePic In lista
+            If oPicek Is Nothing Then Continue For  ' a cóż to za dziwny case, że jest NULL?
 
 #Region "ogólne"
 
@@ -350,6 +354,9 @@ Public Class SearchWindow
 
 
 #Region "pogoda"
+
+
+#Region "Visual Cross"
             oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
             If oExif?.PogodaAstro Is Nothing Then
                 If Not uiPogodaDefault.IsChecked Then Continue For
@@ -367,6 +374,49 @@ Public Class SearchWindow
 
 
             End If
+
+#End Region
+
+#Region "Opad"
+            oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoMeteoOpad)
+            If oExif?.MeteoOpad Is Nothing Then
+                If Not uiMeteoOpadDefault.IsChecked Then Continue For
+            Else
+                Dim sTextDump As String = oExif.MeteoOpad.DumpAsJSON
+                If Not CheckFieldValue(sTextDump, uiMeteoOpadField0.Text, uiMeteoOpadValue0.Text) Then Continue For
+                If Not CheckFieldValue(sTextDump, uiMeteoOpadField1.Text, uiMeteoOpadValue1.Text) Then Continue For
+                If Not CheckFieldValue(sTextDump, uiMeteoOpadField2.Text, uiMeteoOpadValue2.Text) Then Continue For
+
+                If Not CheckFieldValueMinMax(sTextDump, uiMeteoOpadFieldNum0.Text, uiMeteoOpadValueMin0.Text, uiMeteoOpadValueMax0.Text) Then Continue For
+                If Not CheckFieldValueMinMax(sTextDump, uiMeteoOpadFieldNum1.Text, uiMeteoOpadValueMin1.Text, uiMeteoOpadValueMax1.Text) Then Continue For
+                If Not CheckFieldValueMinMax(sTextDump, uiMeteoOpadFieldNum2.Text, uiMeteoOpadValueMin2.Text, uiMeteoOpadValueMax2.Text) Then Continue For
+                If Not CheckFieldValueMinMax(sTextDump, uiMeteoOpadFieldNum3.Text, uiMeteoOpadValueMin3.Text, uiMeteoOpadValueMax3.Text) Then Continue For
+
+
+            End If
+
+#End Region
+
+#Region "Klimat"
+            oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoMeteoKlimat)
+            If oExif?.MeteoKlimat Is Nothing Then
+                If Not uiMeteoKlimatDefault.IsChecked Then Continue For
+            Else
+                Dim sTextDump As String = oExif.MeteoKlimat.DumpAsJSON
+                If Not CheckFieldValue(sTextDump, uiMeteoKlimatField0.Text, uiMeteoKlimatValue0.Text) Then Continue For
+                If Not CheckFieldValue(sTextDump, uiMeteoKlimatField1.Text, uiMeteoKlimatValue1.Text) Then Continue For
+                If Not CheckFieldValue(sTextDump, uiMeteoKlimatField2.Text, uiMeteoKlimatValue2.Text) Then Continue For
+
+                If Not CheckFieldValueMinMax(sTextDump, uiMeteoKlimatFieldNum0.Text, uiMeteoKlimatValueMin0.Text, uiMeteoKlimatValueMax0.Text) Then Continue For
+                If Not CheckFieldValueMinMax(sTextDump, uiMeteoKlimatFieldNum1.Text, uiMeteoKlimatValueMin1.Text, uiMeteoKlimatValueMax1.Text) Then Continue For
+                If Not CheckFieldValueMinMax(sTextDump, uiMeteoKlimatFieldNum2.Text, uiMeteoKlimatValueMin2.Text, uiMeteoKlimatValueMax2.Text) Then Continue For
+                If Not CheckFieldValueMinMax(sTextDump, uiMeteoKlimatFieldNum3.Text, uiMeteoKlimatValueMin3.Text, uiMeteoKlimatValueMax3.Text) Then Continue For
+
+
+            End If
+
+#End Region
+
 
 #End Region
 
@@ -512,6 +562,13 @@ Public Class SearchWindow
 
 
     Private Async Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
+
+        If uiTags.Text.Length > 0 AndAlso uiTags.Text.ToLowerInvariant = uiTags.Text Then
+            If Await vb14.DialogBoxYNAsync("Keywords ma tylko małe litery, czy zmienić na duże?") Then
+                uiTags.Text = uiTags.Text.ToUpper
+            End If
+        End If
+
 
         Dim iCount As Integer
         If _inputList Is Nothing Then
