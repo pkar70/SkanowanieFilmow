@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BasicGeopos" Version="1.2.2" />
     <PackageReference Include="CsvHelper" Version="30.0.1" />
+    <PackageReference Include="pkar.BasicGeopos" Version="1.2.7" />
   </ItemGroup>
 
   <ItemGroup>

@@ -17,7 +17,11 @@ Class ProcessPic
         If Application.GetBuffer.Count < 1 Then Return
 
         ' i jeszcze prosty test: bo może nic do archiwizacji, jako że nic nie ma targetDir ustalonego
+        ' krótki test, jakby następny nie był optymalizowany
         If String.IsNullOrWhiteSpace(Application.GetBuffer.GetList.ElementAt(0).TargetDir) Then Return
+
+        ' lepszy test robimy: przeglądamy wszystkie TargetDiry
+        If Application.GetBuffer.GetList.Any(Function(x) String.IsNullOrEmpty(x.TargetDir)) Then Return
 
         If Not Await vb14.DialogBoxYNAsync("Wszystkie pliki są w pełni zarchiwizowane, wyczyścić bufor?") Then Return
 

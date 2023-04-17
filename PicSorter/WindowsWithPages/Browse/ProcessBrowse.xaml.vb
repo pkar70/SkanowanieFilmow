@@ -1957,6 +1957,9 @@ Public Class ProcessBrowse
                 sDymek = sDymek & vbCrLf & sCaption
             End If
 
+            sDymek = sDymek & vbCrLf & "Descriptions: " & oPic.GetSumOfDescriptionsText & vbCrLf
+            sDymek = sDymek & "Keywords: " & oPic.GetAllKeywords & vbCrLf
+
             If Not String.IsNullOrWhiteSpace(oPic.TargetDir) Then
                 sDymek = sDymek & vbCrLf & "► " & oPic.TargetDir
             End If

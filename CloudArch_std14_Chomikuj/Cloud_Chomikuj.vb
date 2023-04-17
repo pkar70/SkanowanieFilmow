@@ -42,6 +42,9 @@ Public Class Cloud_Chomikuj
         If oRemoteFile Is Nothing Then Return "ERROR: unsuccessfull upload"
 
         Dim sCaption As String = oPic.GetDescriptionForCloud
+        sCaption = sCaption & vbCrLf & "Keywords: " & oPic.GetAllKeywords
+        sCaption = sCaption & vbCrLf & "Full data: " & vbCrLf & oPic.DumpAsJSON
+
         If Not String.IsNullOrWhiteSpace(sCaption) Then oRemoteFile.AddComment(sCaption)
 
         oPic.AddCloudArchive(konfiguracja.nazwa)

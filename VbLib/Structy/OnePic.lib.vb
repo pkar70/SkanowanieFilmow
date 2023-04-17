@@ -72,7 +72,7 @@ Public Class OnePic
     Public Function ArchivedCount() As Integer
         If Archived Is Nothing Then Return 0
         Dim aArr As String() = Archived.Split(";")
-        Return aArr.Count
+        Return aArr.Count - 1
     End Function
 
 #End Region
@@ -440,7 +440,8 @@ Public Class OnePic
             ' pomijamy systemowe opisy
             If oDesc.comment.StartsWith("Cropped to ") Then Continue For
             If oDesc.comment.StartsWith("Rotated ") Then Continue For
-            sRet &= oDesc.comment & " "
+            If oDesc.comment.Trim.Length < 2 Then Continue For
+            sRet &= oDesc.comment.Trim & " "
         Next
 
         Return sRet

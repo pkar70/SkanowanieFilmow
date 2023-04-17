@@ -57,7 +57,11 @@ WPF i WinUI2? (progressring)
 == SORTED:
 pliki znikniete z indeksu - usuwanie, wstawianie do clipboard czy tylko gdy nie usuwa?
 
-uzupelnic picidy, chyba ich nie tak duzo brakuje
+
+przyciecie
+obroty
+scrollbar bez ruszania okna nie chce dzialac?
+ze obraca ok, tylko nie pokazuje tego? dopiero po ponownym wejsciu?
 
 
 ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
@@ -65,6 +69,7 @@ na App.GetArchives - GetPicture(oPic), uzupełnia oContent wedle wszystkich istn
 ARCHIVE/PUBLISH: Amazon Photo
 ARCHIVE/PUBLISH: czemu archiwizuje png/thumbsy (czasem)?
 ARCHIVE/PUBLISH: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
+ARCHIVE/PUBLISH: counter max nieudanych, żeby nie było tak że setki plików niewysłane, i trudno dojść do tego jakie? zwłaszcza że chomikuj czasem tylko udaje że nie wysłane
 
 * AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 * AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
@@ -92,6 +97,7 @@ BROWSER action:keywords, brakuje jednego poziomu słów kliczowych?
 BROWSER crop - kasowanie thumba potrzebne
 BROWSER.Action: LOCK/UNLOCK - tych zdjec nie wysyla nigdzie
 BROWSER: delete guids, albo na to override tego co w Base
+BROWSER#DESCRIBE: button "apply&next"?
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi

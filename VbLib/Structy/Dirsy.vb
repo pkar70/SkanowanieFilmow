@@ -54,7 +54,7 @@ Public Class OneDir
     Public Shared Function IsFromDate(sId As String) As Boolean
         ' daty 1850-2050, format yyyy.MM
 
-        If sId.Length < 22 Then Return False
+        If sId.Length < 10 Then Return False
         If sId.Substring(4, 1) <> "." Then Return False
 
         Dim temp As Integer

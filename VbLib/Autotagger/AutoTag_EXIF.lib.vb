@@ -99,13 +99,16 @@ Public Class AutoTag_EXIF
                 If oTag.Name = "GPS Location" Then
                     ' "+50.0798+20.0537/"
                     Dim sVal As String = oTag.Description
-                    Dim iInd As Integer = sVal.IndexOfAny({"+", "-"}, 2)
-                    If iInd > 2 Then
-                        Dim sLat As String = sVal.Substring(0, iInd)
-                        Dim sLon As String = sVal.Substring(iInd)
-                        sLon = sLon.Replace("/", "") ' nie wiem po co on tam jest, ale jest
-                        oNewExif.GeoTag = New pkar.BasicGeopos(sLat, sLon)
-                    End If
+                    'Dim iInd As Integer = sVal.IndexOfAny({"+", "-"}, 2)
+                    'If iInd > 2 Then
+                    '    Dim sLat As String = sVal.Substring(0, iInd)
+                    '    Dim sLon As String = sVal.Substring(iInd)
+                    '    iInd = sLon.IndexOfAny({"+", "-"}, 2)
+                    '    If iInd > 0 Then sLon = sLon.Substring(0, iInd)
+                    '    sLon = sLon.Replace("/", "") ' nie wiem po co on tam jest, ale jest
+                    'oNewExif.GeoTag = New pkar.BasicGeopos(sLat, sLon)
+                    'End If
+                    oNewExif.GeoTag = pkar.BasicGeopos.fromExifString(sVal)
                 End If
                 '| | GPSCoordinates = ...+50.0940+20.0244/
                 '| | - Tag '\xa9xyz' (21 bytes):

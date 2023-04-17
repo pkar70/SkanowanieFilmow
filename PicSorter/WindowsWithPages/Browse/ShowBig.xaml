@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="ShowBig" Loaded="Window_Loaded" KeyUp="Window_KeyUp">
+        Title="ShowBig" Loaded="Window_Loaded" KeyUp="Window_KeyUp" SizeChanged="Window_SizeChanged">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

@@ -103,7 +103,11 @@ Public Class SettingsDirTree
             End If
             _editingItem.notes = uiNotes.Text
             _editingItem.sId = uiId.Text.DropAccents
-            _editingItem.fullPath = IO.Path.Combine(_editingItem.fullPath, _editingItem.sId)
+            If String.IsNullOrEmpty(_editingItem.fullPath) Then
+                _editingItem.fullPath = _editingItem.sId
+            Else
+                _editingItem.fullPath = IO.Path.Combine(_editingItem.fullPath, _editingItem.sId)
+            End If
         End If
 
         '_editingItem.defaultPublish = uiDefPublish.Text

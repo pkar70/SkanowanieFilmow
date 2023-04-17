@@ -77,6 +77,8 @@ Public Class TargetDir
 
     Private Sub PokazIstniejaceKatalogi(aboutDateOd As Date, aboutDateDo As Date)
 
+        uiComboExisting.Items.Clear()
+
         ' z sortowaniem według daty
         Dim lLista As List(Of OneDir) = KatalogiWgDaty(aboutDateOd, aboutDateDo)
         For Each oDir As OneDir In From c In lLista Order By c.fullPath

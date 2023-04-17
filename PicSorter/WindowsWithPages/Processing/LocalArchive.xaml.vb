@@ -17,12 +17,21 @@ Public Class LocalArchive
     End Sub
 
     Public Shared Async Function CheckGuidy() As Task(Of Boolean)
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
-            If String.IsNullOrEmpty(oPic.PicGuid) Then
-                Return Await vb14.DialogBoxYNAsync("Są zdjęcia bez GUID, kontynuować?")
-            End If
-        Next
-        Return True
+
+        If Not Application.GetBuffer.GetList.
+            Any(Function(x) Not String.IsNullOrEmpty(x.TargetDir) And String.IsNullOrEmpty(x.PicGuid)) Then
+            Return True
+        End If
+
+        Return Await vb14.DialogBoxYNAsync("Są zdjęcia bez GUID, kontynuować?")
+
+        'For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+        '    If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+        '    If String.IsNullOrEmpty(oPic.PicGuid) Then
+        '        Return Await vb14.DialogBoxYNAsync("Są zdjęcia bez GUID, kontynuować?")
+        '    End If
+        'Next
+        'Return True
     End Function
 
     Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
@@ -164,6 +173,8 @@ Public Class LocalArchive
         Dim sErr As String = ""
 
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+
             uiProgBarInEngine.Value += 1
             Dim sErr1 As String = ""
             If Not IO.File.Exists(oPic.InBufferPathName) Then

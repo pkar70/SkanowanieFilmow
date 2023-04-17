@@ -49,7 +49,6 @@ Public Class ShowBig
 
     Private _inScaling As Boolean
 
-#If False Then
     ' skopiowane z InstaMonitor
     Private Sub ZmianaRozmiaruImg()
 
@@ -83,9 +82,8 @@ Public Class ShowBig
         End If
 
         _inScaling = False
-
     End Sub
-#End If
+
     Private Shared Function DetermineOrientation(oPic As Vblib.OnePic) As Rotation
         Dim oExif As Vblib.ExifTag
 
@@ -371,7 +369,7 @@ Public Class ShowBig
     'End Sub
 
     Private Sub Window_SizeChanged(sender As Object, e As SizeChangedEventArgs)
-        ' ZmianaRozmiaruImg()
+        ZmianaRozmiaruImg()
     End Sub
 
     Private Sub uiResizePic_Click(sender As Object, e As MouseButtonEventArgs)
@@ -380,8 +378,13 @@ Public Class ShowBig
         Select Case oResize
             Case Stretch.Uniform
                 uiFullPicture.Stretch = Stretch.None
+                ' to juz pokazuje scrollbary, ale jeszcze im sie wydaje ze nie ma po co przewijac, trzeba zrobic resize okna
+                uiMainPicScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Visible
+                uiMainPicScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible
             Case Stretch.None
                 uiFullPicture.Stretch = Stretch.Uniform
+                uiMainPicScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+                uiMainPicScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
         End Select
 
         'ZmianaRozmiaruImg()
@@ -737,7 +740,7 @@ Public Class ShowBig
 
 
     Private Async Function ZapiszZmianyObrazka(bmpTrans As wingraph.BitmapTransform) As Task(Of Boolean)
-
+        DumpCurrMethod($"(Transform: rotation={bmpTrans.Rotation.ToString}, crop={bmpTrans.Bounds.X}+{bmpTrans.Bounds.Width}, {bmpTrans.Bounds.Y}+ {bmpTrans.Bounds.Height})")
         ' *TODO* (może) do Settings:Misc, [] ask for confirm after EditSave (przy Crop, i ew. Rotate)
         ' If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
 
@@ -747,9 +750,9 @@ Public Class ShowBig
 
             Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
 
-            ' kopiujemy informacje o tym co jest do zrobienia
+            ' kopiujemy informacje o tym co jest do zrobienia - bo nie można po prostu podmienić
             oEncoder.BitmapTransform.Bounds = bmpTrans.Bounds
-            oEncoder.BitmapTransform.Rotation = bmpTrans.Rotation   ' na razie to jest nieużywane
+            oEncoder.BitmapTransform.Rotation = bmpTrans.Rotation
             oEncoder.BitmapTransform.ScaledHeight = bmpTrans.ScaledHeight ' na razie to jest nieużywane
             oEncoder.BitmapTransform.ScaledWidth = bmpTrans.ScaledWidth ' na razie to jest nieużywane
 
