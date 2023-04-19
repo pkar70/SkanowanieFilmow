@@ -9,8 +9,8 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
 
     <Grid>
-        <Image Name="uiFullPicure" />
-        <Button Name="uiPrev" HorizontalAlignment="Left" VerticalAlignment="Center" Opacity="50" Content="«" Click="uiPrev_Click"/>
-        <Button Name="uiNext" HorizontalAlignment="Right" VerticalAlignment="Center" Opacity="50" Content="»" Click="uiNext_Click"/>
+        <Image Name="uiFullPicure" Canvas.ZIndex="0" Tapped="uiImage_Tapped" />
+        <Button Name="uiPrev" HorizontalAlignment="Left" VerticalAlignment="Center" Content=" « " Click="uiPrev_Click" FontSize="24" Canvas.ZIndex="10"/>
+        <Button Name="uiNext" HorizontalAlignment="Right" VerticalAlignment="Center" Content=" » " Click="uiNext_Click" FontSize="24" Canvas.ZIndex="10"/>
     </Grid>
 </Page>

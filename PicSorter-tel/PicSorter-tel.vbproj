@@ -224,6 +224,10 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AsNuget-Chomikuj-std14cs\AsNuget-Chomikuj-std14cs.csproj">
+      <Project>{460db0be-afe1-49b4-8fdc-26cb4920751a}</Project>
+      <Name>AsNuget-Chomikuj-std14cs</Name>
+    </ProjectReference>
     <ProjectReference Include="..\VbLib\VbLib.vbproj">
       <Project>{0980e34f-bf5b-473c-893b-4ad83c0a9d23}</Project>
       <Name>VbLib</Name>

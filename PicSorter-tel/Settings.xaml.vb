@@ -1,5 +1,6 @@
 ﻿Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar
+
 Public NotInheritable Class Settings
     Inherits Page
 
@@ -21,14 +22,27 @@ Public NotInheritable Class Settings
         If mODroot Is Nothing Then mODroot = Await ODclient.GetRootAsync()
         'Dim cosik = Await mODroot.GetItemsAsStringsAsync(True, True)
 
-        Await CopyOneFileFromOneDriveIfNewer(App.GetDataFolder, MainPage.CLOUDARCH_FILENAME)
-        Await CopyOneFileFromOneDriveIfNewer(App.GetDataFolder, "dirstree.json")
+        Dim sMsg As String = ""
+        If Await CopyOneFileFromOneDriveIfNewer(App.GetDataFolder, MainPage.CLOUDARCH_FILENAME) Then
+            sMsg = sMsg & "Plik z archiwami DOWNLOADED" & vbCrLf
+        Else
+            sMsg = sMsg & "Plik z archiwami AKTUALNTY" & vbCrLf
+        End If
+
+        If Await CopyOneFileFromOneDriveIfNewer(App.GetDataFolder, "dirstree.json") Then
+            sMsg = sMsg & "Plik z katalogami DOWNLOADED" & vbCrLf
+        Else
+            sMsg = sMsg & "Plik z katalogami AKTUALNTY" & vbCrLf
+        End If
 
         MainPage.GetCloudArchives() ' tu będzie LOAD
 
         FillComboArchives(uiArchives, Vblib.GetSettingsString("currentArchive"))
 
         Vblib.SetSettingsString("lastOneDriveCheck", Date.Now.ToExifString)
+
+        vb14.DialogBox(sMsg)
+
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
@@ -61,6 +75,12 @@ Public NotInheritable Class Settings
 
     Private Shared mODroot As ODfolder ' nie może być tu inicjalizowane, bo potrzebuje UI do logowania do OneDrive
 
+    ''' <summary>
+    ''' Próba wczytania pliku z OneDrive
+    ''' </summary>
+    ''' <param name="sDstFolder">dokąd skopiować (katalog danych programu)</param>
+    ''' <param name="sFilename">jaki plik</param>
+    ''' <returns>False: nic nowego, True: skopiowano nowszy</returns>
     Private Async Function CopyOneFileFromOneDriveIfNewer(sDstFolder As String, sFilename As String) As Task(Of Boolean)
         vb14.DumpCurrMethod(sFilename & " do folderu " & sDstFolder)
 

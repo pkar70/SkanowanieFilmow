@@ -20,6 +20,7 @@ Public NotInheritable Class MainPage
 
 
     Public Shared _DirItem As OneDir
+
     Private Sub uiOpenThisFolder_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
 
@@ -38,7 +39,6 @@ Public NotInheritable Class MainPage
 
         _DirItem = oItem
         Me.Navigate(GetType(Slideshow))
-
     End Sub
 
     Private Sub uiQuery_TextChanged(sender As Object, e As RoutedEventArgs)

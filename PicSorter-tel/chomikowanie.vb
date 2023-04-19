@@ -1,4 +1,5 @@
-﻿Imports vb14 = Vblib.pkarlibmodule14
+﻿Imports Vblib
+Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class chomikowanie
 
@@ -23,7 +24,7 @@ Public Class chomikowanie
     Private _chomikFilesList As List(Of Chomikuj.ChomikujFile)
     Private _chomikCurrFile As Integer
 
-    Public Function SetDir(sPathname As String) As Boolean
+    Public Async Function SetDir(sPathname As String) As Task(Of Boolean)
 
         sPathname = IO.Path.Combine(_konfig.additInfo, sPathname)
         _chomikDir = TryGetDirectoryTree(sPathname)
@@ -35,17 +36,26 @@ Public Class chomikowanie
 
     End Function
 
-    Public Function GetNextFile(bPrev As Boolean) As String
+    ''' <summary>
+    ''' zwraca Stream do pliku next/prev, ale tylko dla Image, i ewentualnie Video (Archive itp - pomija)
+    ''' </summary>
+    ''' <param name="bPrev"></param>
+    ''' <param name="bAllowVideo"></param>
+    ''' <returns>NULL jeśli się nie udało</returns>
+    Public Function GetNextFile(bPrev As Boolean, bAllowVideo As Boolean) As Stream
 
         If _chomikFilesList.Count < 1 Then Return Nothing
 
         _chomikCurrFile += If(bPrev, -1, 1)
-        If _chomikCurrFile < 0 Then _chomikCurrFile = 0
+        If _chomikCurrFile < 0 Then Return Nothing
+        If _chomikCurrFile > _chomikFilesList.Count - 1 Then Return Nothing
 
-        Dim oCurrFile = _chomikFilesList.ElementAt(_chomikCurrFile)
+        Dim oCurrFile As Chomikuj.ChomikujFile = _chomikFilesList.ElementAt(_chomikCurrFile)
 
-        Return oCurrFile.GetUrlToFile
+        If oCurrFile.FileType = Chomikuj.ChomikujFileType.Image Then Return oCurrFile.GetStream
+        If bAllowVideo AndAlso oCurrFile.FileType = Chomikuj.ChomikujFileType.Video Then Return oCurrFile.GetStream
 
+        Return GetNextFile(bPrev, bAllowVideo)
     End Function
 
     Private Function ChomikujLogin() As String
