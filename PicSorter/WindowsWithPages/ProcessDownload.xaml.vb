@@ -92,6 +92,12 @@ Public Class ProcessDownload
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
 
+        ' sprawdzam czy cokolwiek jest zaznaczone
+        If Not Application.GetSourcesList.GetList.Any(Function(x) x.enabled) Then
+            Await vb14.DialogBoxAsync("Ale nic nie zaznaczyłeś...")
+            Return
+        End If
+
         If Not CheckDiskFree() Then Return
 
         ' uproszczona wersja
@@ -143,6 +149,8 @@ Public Class ProcessDownload
             uiProgBar.Value += 1
             iCount += 1
         Loop
+
+        Sequence.ResetPoRetrieve()
 
         Application.GetBuffer.SaveData()
         oSrc.lastDownload = Date.Now

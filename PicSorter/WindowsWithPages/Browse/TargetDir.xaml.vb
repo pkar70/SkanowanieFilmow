@@ -199,6 +199,11 @@ Public Class TargetDir
 
     Private Sub DopiszKatalogi()
 
+        If uiComboExisting.SelectedIndex < 0 Then
+            vb14.DialogBox("Niewybrany katalog w combo")
+            Return
+        End If
+
         If _selected.Count = 1 Then
             DopiszKatalog(_selected(0), True)
         Else
@@ -329,17 +334,56 @@ Public Class TargetDir
         Return _lastCzasDir
     End Function
 
+    Private Sub uiComboExisting_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
+        If uiComboExisting.SelectedIndex < 0 Then Return
 
-    'Private Sub uiComboExisting_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles uiComboExisting.SelectionChanged
-    '    Dim sRet As String = uiComboExisting.SelectedItem
-    '    uiAutoDateSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-    '    uiManualDateSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-    '    uiManualDateName.IsEnabled = (String.IsNullOrEmpty(sRet))
-    '    uiNoGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-    '    uiAutoGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-    '    uiManualGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
-    '    uiManualGeoName.IsEnabled = (String.IsNullOrEmpty(sRet))
-    'End Sub
+        Dim oCBI As ComboBoxItem = uiComboExisting.SelectedItem
+
+        Dim sRet As String = oCBI.Content
+
+        If sRet.StartsWith(".\") Then
+            ' jakiś z poprzednich, to może być pełny katalog
+
+            ' .\basedir\datesplit\geosplit
+            ' 0\1111111\222222222\33333333\444
+            Dim aParts As String() = sRet.Split("\")
+            If aParts.Length > 4 Then Return    ' nie umiem tak głębokiego katalogu
+            If aParts.Length < 3 Then
+                ' blokujemy dalsze podziały - zawsze można ręcznie włączyć
+                uiNoGeoSplit.IsChecked = False
+                uiNoDateSplit.IsChecked = False
+                Return
+            End If
+
+            If aParts.Length = 4 Then
+                uiManualGeoSplit.IsChecked = True
+                uiManualGeoName.Text = aParts(3)
+            Else
+                uiNoGeoSplit.IsChecked = True
+            End If
+
+            uiManualDateSplit.IsChecked = True
+            uiManualDateName.Text = aParts(2)
+
+            ' oraz skracamy początek - nie będzie rekurencji, bo teraz jest bez "\"
+            For Each oCBitem As ComboBoxItem In uiComboExisting.Items
+                Dim oOneDir As OneDir = oCBitem.DataContext
+                If oOneDir.fullPath = aParts(1) Then
+                    uiComboExisting.SelectedValue = oCBitem
+                    Exit For
+                End If
+            Next
+
+        End If
+
+        'uiAutoDateSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+        'uiManualDateSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+        'uiManualDateName.IsEnabled = (String.IsNullOrEmpty(sRet))
+        'uiNoGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+        'uiAutoGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+        'uiManualGeoSplit.IsEnabled = (String.IsNullOrEmpty(sRet))
+        'uiManualGeoName.IsEnabled = (String.IsNullOrEmpty(sRet))
+    End Sub
 
     Private Sub uiManualGeoSplit_Checked(sender As Object, e As RoutedEventArgs)
         uiAutoDateSplit.IsEnabled = Not uiManualGeoSplit.IsChecked
@@ -391,6 +435,8 @@ Public Class TargetDir
         Next
 
     End Sub
+
+
 End Class
 
 Partial Public Module Extensions

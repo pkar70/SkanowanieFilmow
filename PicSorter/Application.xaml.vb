@@ -195,6 +195,7 @@ Partial Class Application
         New Process_Resize1600,
         New Process_Resize2048,
         New Process_ResizeHalf,
+        New Process_FlipHorizontal,
         New Process_EmbedBasicExif,
         New Process_EmbedExif,
         New Process_RemoveExif,

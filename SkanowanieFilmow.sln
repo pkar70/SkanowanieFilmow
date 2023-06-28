@@ -59,7 +59,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsNuget-Chomikuj-std14cs", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AsNuget-RestSharp", "AsNuget-restSharp\RestSharp\AsNuget-RestSharp.csproj", "{43768843-2A19-44A2-9D8C-076DBFAD0625}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Auto_std2_Meteo", "Auto_std2_Meteo\Auto_std2_Meteo.vbproj", "{8A92C551-CB2E-46AB-81DA-8EFD8DB0D90A}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Auto_std2_Meteo", "Auto_std2_Meteo\Auto_std2_Meteo.vbproj", "{8A92C551-CB2E-46AB-81DA-8EFD8DB0D90A}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "PhotoDateDelta", "PhotoDateDelta\PhotoDateDelta.vbproj", "{FC82B962-C0BA-4ABD-A069-364392E237F1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -675,6 +677,26 @@ Global
 		{8A92C551-CB2E-46AB-81DA-8EFD8DB0D90A}.Release|x64.Build.0 = Release|Any CPU
 		{8A92C551-CB2E-46AB-81DA-8EFD8DB0D90A}.Release|x86.ActiveCfg = Release|Any CPU
 		{8A92C551-CB2E-46AB-81DA-8EFD8DB0D90A}.Release|x86.Build.0 = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|ARM.Build.0 = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|x64.Build.0 = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Debug|x86.Build.0 = Debug|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|ARM.ActiveCfg = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|ARM.Build.0 = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|ARM64.Build.0 = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|x64.ActiveCfg = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|x64.Build.0 = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|x86.ActiveCfg = Release|Any CPU
+		{FC82B962-C0BA-4ABD-A069-364392E237F1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -83,8 +83,14 @@ Public Class SearchWindow
         End If
 
         _initialCount = _fullArchive.Count
+
         Application.ShowWait(False)
         ' potem: new ProcessBrowse.New(bufor As Vblib.IBufor, onlyBrowse As Boolean)
+
+        If _initialCount < 1 Then
+            vb14.DialogBox("Coś dziwnego, bo jakoby pusty indeks był?")
+        End If
+
     End Sub
 
 
@@ -642,7 +648,7 @@ Public Class SearchWindow
             Next
         Next
 
-        Dim oWnd As New ProcessBrowse(lista, True)
+        Dim oWnd As New ProcessBrowse(lista, True, "Found")
         oWnd.Show()
         Return
 

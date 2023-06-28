@@ -1,0 +1,30 @@
+﻿<Window x:Class="Sequence"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="Sequence helper" Height="520" Width="220" Loaded="Page_Loaded">
+        <Grid Margin="5,5,5,5" Width="200" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+        <StackPanel Grid.Row="1">
+            <CheckBox Name="uiSequenceRetrieve" Content="Retrieve" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
+            <CheckBox Name="uiSequenceRunAutoExif" Content="Run AutoExif" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
+            <CheckBox Name="uiSequenceCropRotate" Content="Crop &amp; Rotate" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
+            <CheckBox Name="uiSequenceAddGeoTag" Content="Add geotags" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
+            <CheckBox Name="uiSequenceRunTaggers" Content="Run autotaggers" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
+            <CheckBox Name="uiSequenceAddKeywords" Content="Add keywords" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
+            <CheckBox Name="uiSequenceAddDescriptions" Content="Add descriptions" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
+            <CheckBox Name="uiSequenceAddFolder" Content="Set TargetDir" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
+            <CheckBox Name="uiSequenceGUID" Content="Set GUID" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
+            <CheckBox Name="uiSequencePublish" Content="Publish" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
+            <CheckBox Name="uiSequenceCloudArch" Content="Cloud archive" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
+            <CheckBox Name="uiSequenceArchive" Content="Local archive" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
+        </StackPanel>
+    </Grid>
+</Window>

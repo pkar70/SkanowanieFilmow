@@ -11,6 +11,7 @@ Imports Windows.Storage.Streams
 Imports CompactExifLib
 Imports Vblib
 Imports pkar
+Imports Windows.UI.Xaml.Controls
 
 Public Class ShowBig
 
@@ -108,6 +109,8 @@ Public Class ShowBig
         _bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
         If _bitmap Is Nothing Then Return
 
+        Me.Title = _picek.oPic.InBufferPathName & $" ({_bitmap.Width.ToString("F0")}×{_bitmap.Height.ToString("F0")})"
+
         UpdateClipRegion() ' tym razem, gdyż editmode=none, likwidacja crop
 
         ' tylko JPG może być edytowany
@@ -166,6 +169,8 @@ Public Class ShowBig
 
         Dim MARGIN_X As Integer = 40
         Dim MARGIN_Y As Integer = 80
+
+        iObrot = Rotation.Rotate0 ' jednak to pomijamy - bo obracamy wczytując
 
         Dim imgSize As Size
         If iObrot = Rotation.Rotate90 OrElse iObrot = Rotation.Rotate270 Then
@@ -276,7 +281,7 @@ Public Class ShowBig
         If oSrc Is Nothing Then Return
 
         Application.ShowWait(True)
-        Await oSrc.Apply(_picek.oPic)
+        Await oSrc.Apply(_picek.oPic, False, "")
         Application.ShowWait(False)
 
     End Sub
@@ -368,8 +373,13 @@ Public Class ShowBig
     '    uiFlyout.IsOpen = True
     'End Sub
 
+    Private _inWinResize As Boolean
+
     Private Sub Window_SizeChanged(sender As Object, e As SizeChangedEventArgs)
+        If _inWinResize Then Return
+        _inWinResize = True
         ZmianaRozmiaruImg()
+        _inWinResize = False
     End Sub
 
     Private Sub uiResizePic_Click(sender As Object, e As MouseButtonEventArgs)
@@ -493,7 +503,7 @@ Public Class ShowBig
 
     Private Async Sub uiDelPic_Click(sender As Object, e As RoutedEventArgs)
         If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
-            If Not Await vb14.DialogBoxYNAsync("Skasować zdjęcie?") Then Return
+            If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcie ({_picek.oPic.sSuggestedFilename})?") Then Return
         End If
 
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
@@ -514,6 +524,7 @@ Public Class ShowBig
         crop
         resize
         rotate
+        flip
     End Enum
 
     Private _editMode As EditModeEnum = EditModeEnum.none
@@ -628,6 +639,9 @@ Public Class ShowBig
                     sHistory &= " degrees"
                 End If
 
+            Case EditModeEnum.flip
+                sHistory = "Flipped horizontally"
+                transf.Flip = Windows.Graphics.Imaging.BitmapFlip.Horizontal
         End Select
 
         If transf IsNot Nothing Then
@@ -673,16 +687,6 @@ Public Class ShowBig
         If uiCropRight.Value = 0 Then uiCropRight.Value = 0.9
 
         UpdateClipRegion()
-    End Sub
-
-    Private Sub ShowHideRotateBoxes(bShow As Boolean)
-        Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
-
-        uiRotateUp.Visibility = visib
-        uiRotateDown.Visibility = visib
-        uiRotateLeft.Visibility = visib
-        uiRotateRight.Visibility = visib
-
     End Sub
 
 
@@ -755,16 +759,24 @@ Public Class ShowBig
             oEncoder.BitmapTransform.Rotation = bmpTrans.Rotation
             oEncoder.BitmapTransform.ScaledHeight = bmpTrans.ScaledHeight ' na razie to jest nieużywane
             oEncoder.BitmapTransform.ScaledWidth = bmpTrans.ScaledWidth ' na razie to jest nieużywane
+            oEncoder.BitmapTransform.Flip = bmpTrans.Flip
 
-            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(_picek.oPic))
+            Try
 
-            ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
-            Await oEncoder.FlushAsync()
+                oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(_picek.oPic))
 
-            Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic)
-            'Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.sFilenameEditDst, _picek.oPic.sFilenameEditSrc)
+                ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
+                Await oEncoder.FlushAsync()
 
-            _picek.oPic.EndEdit(True, True)
+                Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic)
+                'Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.sFilenameEditDst, _picek.oPic.sFilenameEditSrc)
+
+                _picek.oPic.EndEdit(True, True)
+
+            Catch ex As Exception
+                vb14.DialogBox("Błąd zapisu zmian")
+            End Try
+
 
         End Using
 
@@ -820,6 +832,17 @@ Public Class ShowBig
 
 #End If
 
+#Region "rotate"
+    Private Sub ShowHideRotateBoxes(bShow As Boolean)
+        Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
+
+        uiRotateUp.Visibility = visib
+        uiRotateDown.Visibility = visib
+        uiRotateLeft.Visibility = visib
+        uiRotateRight.Visibility = visib
+
+    End Sub
+
     Private _inRotateInit As Boolean = False
 
     Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
@@ -837,6 +860,29 @@ Public Class ShowBig
         _inRotateInit = False
     End Sub
 
+    Private Async Function uiRotateMenu2UI(bLeft As Boolean, bDown As Boolean, bRight As Boolean) As Task
+        _inRotateInit = True
+        Await SprawdzCzyJestEdycja(EditModeEnum.rotate)
+
+        uiRotateRight.IsChecked = bRight
+        uiRotateDown.IsChecked = bDown
+        uiRotateLeft.IsChecked = bLeft
+
+        _inRotateInit = False
+
+        uiRotate_Checked(Nothing, Nothing)
+    End Function
+
+    Private Async Sub uiRotateRight_Click(sender As Object, e As RoutedEventArgs)
+        Await uiRotateMenu2UI(False, False, True)
+    End Sub
+    Private Async Sub uiRotateDown_Click(sender As Object, e As RoutedEventArgs)
+        Await uiRotateMenu2UI(False, True, False)
+    End Sub
+    Private Async Sub uiRotateLeft_Click(sender As Object, e As RoutedEventArgs)
+        Await uiRotateMenu2UI(True, False, False)
+    End Sub
+
     Private Sub uiRotate_Checked(sender As Object, e As RoutedEventArgs)
 
         If _editMode <> EditModeEnum.rotate Then Return
@@ -846,6 +892,8 @@ Public Class ShowBig
 
         uiSave_Click(sender, e)
     End Sub
+
+#End Region
 
 
     Private Async Sub uiSave_Click(sender As Object, e As RoutedEventArgs)
@@ -921,8 +969,17 @@ Public Class ShowBig
     End Sub
 
     Private Sub uiSlideshow_Click(sender As Object, e As RoutedEventArgs)
+        vb14.DialogBox("jeszcze nie umiem stąd zrobić")
+    End Sub
+
+    Private Async Sub uiFlipHoriz_Click(sender As Object, e As RoutedEventArgs)
+        Await SprawdzCzyJestEdycja(EditModeEnum.flip)
+        If _editMode <> EditModeEnum.flip Then Return
+
+        uiSave_Click(sender, e)
 
     End Sub
+
 
 #End Region
 

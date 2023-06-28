@@ -67,10 +67,19 @@
                             <MenuItem Header="Pic edit" Name="uiEditModes" >
                             <MenuItem Header="Crop" Click="uiCrop_Click" />
                             <!--<MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>-->
-                            <MenuItem Header="Rotate" Click="uiRotate_Click" />
+                                <MenuItem Header="Rotate">
+                                    <!--<MenuItem Header="→ ► ⊏ ◨ ↠ ↶ ⇉ ⇒" FontSize="18"/>
+                                    <MenuItem Header="↓ ▼ ⊓ ⬓ ⨅ ↡ ↺ ⇊ ⇓" FontSize="18"/>
+                                    <MenuItem Header="← ◄ ⊐ ◧ ↞ ↷ ⇇ ⇐" FontSize="18"/>-->
+                                    <MenuItem Header="↶ anticlockwise ⇉" FontSize="16" Click="uiRotateRight_Click"/>
+                                    <MenuItem Header="↺ 180° ⇊" FontSize="15" Click="uiRotateDown_Click"/>
+                                    <MenuItem Header="↷ clockwise ⇇" FontSize="14" Click="uiRotateLeft_Click"/>
+                                    <MenuItem Header="Rotate UI" Click="uiRotate_Click" />
+                                </MenuItem>
+                                <MenuItem Header="Flip ⇔ " Click="uiFlipHoriz_Click" />
                                 <Separator/>
-                                <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
-                                <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
+                            <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
+                            <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
                             </MenuItem>
                             <MenuItem Header="Batch process" Name="uiBatchProcessors" />
                             <MenuItem Header="Cloud arch" Name="uiMenuCloudArch"  />

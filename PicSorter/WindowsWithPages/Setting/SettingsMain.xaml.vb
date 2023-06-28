@@ -87,7 +87,7 @@ Class SettingsMain
 
         oArchive.Dispose()
 
-        vb14.DialogBox("Archiwum utworzone.")
+        vb14.DialogBox("Archiwum konfiguracji i metadanych utworzone.")
         ' System.IO.Compression.ZipFile.CreateFromDirectory()
 
     End Sub

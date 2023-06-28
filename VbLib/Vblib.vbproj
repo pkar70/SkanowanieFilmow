@@ -22,6 +22,7 @@
     <PackageReference Include="NetConfigs" Version="1.0.2" />
     <PackageReference Include="pkar.BasicGeopos" Version="1.2.7" />
     <PackageReference Include="StructList" Version="1.0.1" />
+    <PackageReference Include="System.ComponentModel" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

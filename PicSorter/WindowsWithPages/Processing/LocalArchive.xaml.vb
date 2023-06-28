@@ -18,20 +18,20 @@ Public Class LocalArchive
 
     Public Shared Async Function CheckGuidy() As Task(Of Boolean)
 
-        If Not Application.GetBuffer.GetList.
-            Any(Function(x) Not String.IsNullOrEmpty(x.TargetDir) And String.IsNullOrEmpty(x.PicGuid)) Then
-            Return True
-        End If
+        'If Not Application.GetBuffer.GetList.
+        '    Any(Function(x) (Not String.IsNullOrEmpty(x.TargetDir)) And String.IsNullOrEmpty(x.PicGuid)) Then
+        '    Return True
+        'End If
 
-        Return Await vb14.DialogBoxYNAsync("Są zdjęcia bez GUID, kontynuować?")
+        'Return Await vb14.DialogBoxYNAsync("Są zdjęcia bez GUID, kontynuować?")
 
-        'For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
-        '    If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
-        '    If String.IsNullOrEmpty(oPic.PicGuid) Then
-        '        Return Await vb14.DialogBoxYNAsync("Są zdjęcia bez GUID, kontynuować?")
-        '    End If
-        'Next
-        'Return True
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+            If String.IsNullOrEmpty(oPic.PicGuid) Then
+                Return Await vb14.DialogBoxYNAsync($"Są zdjęcia bez GUID, kontynuować? ({oPic.sSuggestedFilename}")
+            End If
+        Next
+        Return True
     End Function
 
     Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)

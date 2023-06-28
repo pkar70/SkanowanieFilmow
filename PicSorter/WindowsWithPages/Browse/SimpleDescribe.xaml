@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow">
+        Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow" >
         <StackPanel Margin="5,2,5,2">
             <TextBlock Name="uiFileName" FontWeight="Bold"/>
         <Grid>
@@ -25,7 +25,11 @@
                 </Menu>
             </Popup>
         </Grid>
+        <Grid>
+            <CheckBox Name="uiDescribeSetAndNext" Content="set&amp;next"  />
             <Button Content="Apply" HorizontalAlignment="Right" Click="uiApply_Click" Name="uiApply" />
+        </Grid>
+
         </StackPanel>
 
 </Window>

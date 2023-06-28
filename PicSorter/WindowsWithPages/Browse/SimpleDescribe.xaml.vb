@@ -1,4 +1,7 @@
-﻿Imports Vblib
+﻿Imports System.IO.Compression
+Imports Vblib
+
+Imports vb14 = Vblib.pkarlibmodule14
 
 Public Class SimpleDescribe
     Private _orgDescribe As String
@@ -22,6 +25,8 @@ Public Class SimpleDescribe
         Dim descr As String = uiAllDescribe.Text
         AddToMenu(descr)
         oPicek.oPic.ReplaceAllDescriptions(descr)
+
+        If uiDescribeSetAndNext.IsChecked Then GoNextPic()
 
     End Sub
 
@@ -51,6 +56,7 @@ Public Class SimpleDescribe
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
         Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
+        vb14.DumpCurrMethod($"(pic={oPicek.oPic.sSuggestedFilename}")
 
         uiFileName.Text = oPicek.oPic.sSuggestedFilename
 
@@ -65,4 +71,19 @@ Public Class SimpleDescribe
     Private Sub uiPastePrev_Click(sender As Object, e As RoutedEventArgs)
         uiPrevMenuPopup.IsOpen = Not uiPrevMenuPopup.IsOpen
     End Sub
+
+    Private Sub GoNextPic()
+        Dim oBrowserWnd As ProcessBrowse = Me.Owner
+        If oBrowserWnd Is Nothing Then Return
+
+        Dim picek As ProcessBrowse.ThumbPicek = oBrowserWnd.FromBig_Next(DataContext, False, False)
+        If picek Is Nothing Then
+            Me.Close()  ' koniec obrazków
+        Else
+            Me.DataContext = picek
+            ' Window_DataContextChanged chyba się samo odpali?
+        End If
+
+    End Sub
+
 End Class

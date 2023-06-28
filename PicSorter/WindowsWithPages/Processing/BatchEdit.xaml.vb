@@ -75,7 +75,7 @@ Public Class BatchEdit
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
 
             ' *TODO* później będzie dokładniej może, typu pytanie o Exif, i tak dalej
-            Await oSrc.engine.Apply(oItem)
+            Await oSrc.engine.Apply(oItem, False, "")
 
             Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
             uiProgBarInEngine.Value += 1

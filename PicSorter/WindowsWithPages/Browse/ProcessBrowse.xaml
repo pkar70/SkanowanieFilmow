@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="ProcessBrowse" Height="400" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" SizeChanged="Window_SizeChanged" GotFocus="Window_GotFocus">
+        Title="Loading thumbs..." Height="400" Width="800" Loaded="Window_Loaded" Closing="Window_Closing" SizeChanged="Window_SizeChanged" GotFocus="Window_GotFocus">
 
     <Window.Resources>
         <local:KonwersjaPasekKolor x:Key="KonwersjaPasekKolor"/>
@@ -108,14 +108,17 @@
                         <MenuItem Header="Create GeoTag" Click="uiMenuCreateGeoTag_Click" Name="uiMenuCreateGeoTag" />
                         <MenuItem Header="Date refit" Click="uiMenuDateRefit_Click" Name="uiMenuDateRefit" />
                         <MenuItem Header="Batch process »" Name="uiBatchProcessors"  />
-                        <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>
-                        <MenuItem Header="Clear target dir" Click="uiActionClearTargetDir_Click" Name="uiActionClearTargetDir"/>
                         <MenuItem Header="Lock" Click="uiActionLock_Click"  />
                         <MenuItem Header="Publish  »" Name="uiMenuPublish"  />
                         <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
                         <Separator/>
+                        <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>
+                        <MenuItem Header="Clear target dir" Click="uiActionClearTargetDir_Click" Name="uiActionClearTargetDir"/>
+                        <MenuItem Header="Copy target dir" Click="uiActionCopyTargetDir_Click" Name="uiActionCopyTargetDir"/>
+                        <Separator/>
                         <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                         <MenuItem Header="Copy out" Click="uiCopyOut_Click" />
+                        <MenuItem Header="Get files size" Click="uiGetFileSize_Click" />
                         <Separator/>
                         <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
                         <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
@@ -157,6 +160,7 @@
                                     <MenuItem Header="Describe" Click="uiDescribe_Click" />
                                     <MenuItem Header="Set target dir" Click="uiSetTargetDir_Click"/>
                                     <MenuItem Header="Create GeoTag" Click="uiMenuCreateGeoTag_Click" />
+                                    <MenuItem Header="GeoTag to Clip" Click="uiMenuGeoTag2Clip_Click" />
                                     <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                                     <MenuItem Header="Wiki for month" Click="uiGoWiki_Click" />
                                     <Separator/>

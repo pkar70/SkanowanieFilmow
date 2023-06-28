@@ -233,7 +233,7 @@ Public Class SettingsDirTree
 
                 Dim oBuffer As New Vblib.BufferFromQuery(sRealPath)
 
-                Dim oWnd As New ProcessBrowse(oBuffer, True)
+                Dim oWnd As New ProcessBrowse(oBuffer, True, sTargetDir)
                 oWnd.Show()
                 Return
             End If

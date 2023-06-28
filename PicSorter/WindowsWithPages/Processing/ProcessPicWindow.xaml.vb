@@ -46,7 +46,7 @@ Class ProcessPic
 
     End Function
 
-    Private Shared Function CountDoCloudArchiwizacji() As Integer
+    Public Shared Function CountDoCloudArchiwizacji() As Integer
 
         Dim currentArchs As New List(Of String)
         For Each oArch As Vblib.CloudArchive In Application.GetCloudArchives.GetList
@@ -120,8 +120,8 @@ Class ProcessPic
 
 
     Private Sub uiBrowse_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New ProcessBrowse(Application.GetBuffer, False)
-        oWnd.ShowDialog()
+        Dim oWnd As New ProcessBrowse(Application.GetBuffer, False, "Buffer")
+        oWnd.Show()
         AktualizujGuziki()
     End Sub
 
@@ -147,6 +147,11 @@ Class ProcessPic
 
     Private Sub uiCloudArch_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New CloudArchiving
+        oWnd.Show()
+    End Sub
+
+    Private Sub uiSequence_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New Sequence
         oWnd.Show()
     End Sub
 End Class

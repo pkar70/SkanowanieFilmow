@@ -143,6 +143,13 @@ Public Class BufferSortowania
             ' na MTP nie ma Seek, wiec musimy to zrobić przez plik pośredni
 
             Dim sTempName As String = sDstPathName & ".tmp"
+
+            If File.Exists(sTempName) Then
+                DumpMessage("Temp file already exists! " & sTempName)
+                Await Vblib.DialogBoxAsync("Temp file already exists! " & sTempName)
+                Return False
+            End If
+
             Dim oTempStream = IO.File.Create(sTempName, 1024 * 1024)
             Await oPic.oContent.CopyToAsync(oTempStream, 1024 * 1024)
 
@@ -151,9 +158,15 @@ Public Class BufferSortowania
 
             Dim bSame As Boolean = Await oTempStream.IsSameStreamContent(oExistingStream)
             oExistingStream.Dispose()
+            oTempStream.Dispose()
 
             If bSame Then
                 DumpMessage("File already exists, same content")
+                Try
+                    IO.File.Delete(sTempName)
+                Catch ex As Exception
+
+                End Try
                 Return False
             End If
             DumpMessage("File already exists, but another content - renaming")

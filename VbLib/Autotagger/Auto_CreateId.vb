@@ -16,6 +16,8 @@
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
         _uniqId.GetIdForPic(oFile)
+        If String.IsNullOrWhiteSpace(oFile.PicGuid) Then Return Nothing
+
         Dim oExif As New ExifTag(ExifSource.AutoGuid)
         oExif.PicGuid = oFile.PicGuid
         Return oExif

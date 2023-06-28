@@ -5,7 +5,7 @@
 
 Imports System.Dynamic
 Imports System.Globalization
-
+Imports System.IO
 Imports pkar.DotNetExtensions
 
 Public Class AutoTag_EXIF
@@ -15,7 +15,7 @@ Public Class AutoTag_EXIF
     Public Overrides ReadOnly Property Nazwa As String = "AUTO_EXIF"
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Wczytuje znaczniki EXIF z pliku zdjęcia"
-    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.mov;*.mp4;*.avi"
+    Public Shared ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.mov;*.mp4;*.avi;*.nar"
 
     ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
 
@@ -39,6 +39,10 @@ Public Class AutoTag_EXIF
         ' AVI title, subtitle, contributing artist, year, media created, copyright, parenting rating
 
         Return Nothing  ' nie umiemy jeszcze, ale chcemy umieć (bo w includeMask jest że umiemy)
+    End Function
+
+    Public Shared Function CanInterpret(oFile As Vblib.OnePic) As Boolean
+        Return oFile.MatchesMasks(includeMask)
     End Function
 
 #Region "MetadataExtractor"
@@ -108,7 +112,7 @@ Public Class AutoTag_EXIF
                     '    sLon = sLon.Replace("/", "") ' nie wiem po co on tam jest, ale jest
                     'oNewExif.GeoTag = New pkar.BasicGeopos(sLat, sLon)
                     'End If
-                    oNewExif.GeoTag = pkar.BasicGeopos.fromExifString(sVal)
+                    oNewExif.GeoTag = pkar.BasicGeopos.FromExifString(sVal)
                 End If
                 '| | GPSCoordinates = ...+50.0940+20.0244/
                 '| | - Tag '\xa9xyz' (21 bytes):
@@ -156,26 +160,39 @@ Public Class AutoTag_EXIF
         Dim oExif As Vblib.ExifTag = Nothing
 
         ' traktuj oFile jako ZIP - znajdź pierwszy JPG
-        Dim oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
-        For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-            If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+        Using oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
 
-            ' mamy JPGa, to z niego czytamy EXIFa
-            Dim oStream = oInArch.Open
-            Dim oRdr As New CompactExifLib.ExifData(oStream)
-            oExif = GetForReaderCompact(oRdr)
-            oStream.Dispose()
-            Exit For
-        Next
-        oArchive.Dispose()
+            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+
+                ' mamy JPGa, to z niego czytamy EXIFa
+                Using oStream As Stream = oInArch.Open
+                    ' ale z takim nie zadziała, bo Stream takowy nie ma Seek
+                    Using oSeekable As New MemoryStream
+                        oStream.CopyTo(oSeekable)
+                        oSeekable.Position = 0
+
+                        Dim oRdr As New CompactExifLib.ExifData(oSeekable)
+                        oExif = GetForReaderCompact(oRdr)
+                    End Using
+                End Using
+                Exit For
+            Next
+
+        End Using
+        'oArchive.Dispose()
 
         Return oExif
     End Function
 
 
     Public Function GetForFileCompact(oFile As Vblib.OnePic) As Vblib.ExifTag
-        Dim oRdr As New CompactExifLib.ExifData(oFile.InBufferPathName)
-        Return GetForReaderCompact(oRdr)
+        Try
+            Dim oRdr As New CompactExifLib.ExifData(oFile.InBufferPathName)
+            Return GetForReaderCompact(oRdr)
+        Catch ex As Exception
+            Return Nothing
+        End Try
     End Function
 
     Public Function GetForReaderCompact(oRdr As CompactExifLib.ExifData) As Vblib.ExifTag

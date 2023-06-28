@@ -4,7 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
-      Title="Process" Height="400" Width="250" Loaded="Page_Loaded">
+      Title="Process" Height="440" Width="250" Loaded="Page_Loaded">
     <Grid Margin="5,5,5,5" Width="160" >
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
@@ -19,6 +19,7 @@
             <Button Name="uiCloudArch" Content="Cloud arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudArch_Click" />
             <Button Name="uiPublish" Content="Publish (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudPublish_Click" />
 
+            <Button Content="Sequence helper" Margin="5,35,5,5" FontSize="18" Click="uiSequence_Click" />
         </StackPanel>
     </Grid>
 </Window>

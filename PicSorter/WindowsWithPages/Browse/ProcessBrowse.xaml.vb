@@ -21,6 +21,7 @@ Imports System.Security.Policy
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar
+Imports pkar.DotNetExtensions
 Imports System.Runtime.InteropServices.WindowsRuntime
 Imports Org.BouncyCastle.Math.EC
 
@@ -33,6 +34,8 @@ Public Class ProcessBrowse
     Private _redrawPending As Boolean = False
     Private _oBufor As Vblib.IBufor
     Private _inArchive As Boolean  ' to będzie wyłączać różne funkcjonalności
+    Private _title As String
+
     ' Private _MetadataWindow As ShowExifs
 
     Public Const THUMB_SUFIX As String = ".PicSortThumb.jpg"
@@ -44,7 +47,7 @@ Public Class ProcessBrowse
     ''' </summary>
     ''' <param name="bufor"></param>
     ''' <param name="onlyBrowse"></param>
-    Public Sub New(bufor As Vblib.IBufor, onlyBrowse As Boolean)
+    Public Sub New(bufor As Vblib.IBufor, onlyBrowse As Boolean, title As String)
         vb14.DumpCurrMethod()
 
         ' This call is required by the designer.
@@ -53,6 +56,8 @@ Public Class ProcessBrowse
         ' Add any initialization after the InitializeComponent() call.
         _oBufor = bufor
         _inArchive = onlyBrowse
+
+        _title = title
     End Sub
 
     Private Sub MenuActionReadOnly()
@@ -306,7 +311,7 @@ Public Class ProcessBrowse
     Private Sub PokazThumbsy()
         uiPicList.ItemsSource = Nothing
         uiPicList.ItemsSource = From c In _thumbsy Where c.bVisible Order By c.dateMin
-        Me.Title = $"Browse ({_thumbsy.Count} images)"
+        Me.Title = $"{_title} ({_thumbsy.Count} images)"
     End Sub
 
     Private Sub uiOpenHistoragam_Click(sender As Object, e As RoutedEventArgs)
@@ -398,6 +403,24 @@ Public Class ProcessBrowse
 
         If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
     End Sub
+
+    Private Sub uiMenuGeoTag2Clip_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        Dim oItem As FrameworkElement = sender
+        Dim oPicek As ThumbPicek = oItem.DataContext
+
+        Dim oGeo As BasicGeopos = oPicek.oPic.GetGeoTag
+        If oGeo Is Nothing Then
+            vb14.DialogBoxResAsync("Zaznaczone zdjęcie nie ma GeoTag")
+            Return
+        End If
+
+        vb14.ClipPut(oGeo.ToOSMLink(16))
+        vb14.DialogBox("Link do OSM jest w Clipboard")
+
+    End Sub
+
 
     Private Function GetDateBetween(oDate1 As Date, oDate2 As Date) As Date
         Dim minutes As Integer = Math.Abs((oDate1 - oDate2).TotalMinutes)
@@ -492,7 +515,14 @@ Public Class ProcessBrowse
         Dim oWnd As New TargetDir(_thumbsy.ToList, lSelected)
         If Not oWnd.ShowDialog Then Return
 
+        If _isTargetFilterApplied Then
+            For Each oItem As ThumbPicek In uiPicList.SelectedItems
+                oItem.opacity = _OpacityWygas
+            Next
+        End If
+
         ' pokaz na nowo obrazki
+        ReDymkuj()
         RefreshMiniaturki(False)
 
         SaveMetaData()
@@ -509,6 +539,49 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Private Sub uiActionCopyTargetDir_Click(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        If uiPicList.SelectedItems.Count < 2 Then Return
+
+        Dim sTarget As String = ""
+
+        ' ustalenie katalogu, i sprawdzenie czy nie ma różnych
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            If sTarget = "" Then
+                ' jeszcze nie było
+                If Not String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then sTarget = oItem.oPic.TargetDir
+            Else
+                If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then Continue For
+
+                If sTarget <> oItem.oPic.TargetDir Then
+                    vb14.DialogBox("Są ustalone różne TargetDir dla zaznaczonych plików, więc nic nie robię" & vbCrLf & sTarget & vbCrLf & oItem.oPic.TargetDir)
+                    Return
+                End If
+            End If
+        Next
+
+        If String.IsNullOrWhiteSpace(sTarget) Then
+            vb14.DialogBox("Nie znalazłem żadnego TargetDir")
+            Return
+        End If
+
+
+        ' uzupełniamy tam gdzie nie ma ustalonego
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            If String.IsNullOrEmpty(oItem.oPic.TargetDir) Then
+                oItem.oPic.TargetDir = sTarget
+                If _isTargetFilterApplied Then oItem.opacity = _OpacityWygas
+            End If
+        Next
+
+        ' pokaz na nowo obrazki
+        ReDymkuj()
+        RefreshMiniaturki(False)
+
+        SaveMetaData()
+    End Sub
+
 
     Private Sub uiActionClearTargetDir_Click(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
@@ -517,9 +590,11 @@ Public Class ProcessBrowse
 
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             oItem.oPic.TargetDir = Nothing
+            If _isTargetFilterApplied Then oItem.opacity = 1
         Next
 
         ' pokaz na nowo obrazki
+        ReDymkuj()
         RefreshMiniaturki(False)
 
         SaveMetaData()
@@ -559,6 +634,7 @@ Public Class ProcessBrowse
         Dim oPicek As ThumbPicek = oItem.DataContext
 
         Dim oWnd As New AddDescription(oPicek.oPic)
+        oWnd.Owner = Me
         If Not oWnd.ShowDialog Then Return
 
         Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
@@ -587,6 +663,24 @@ Public Class ProcessBrowse
         If iErrCount < 1 Then Return
 
         vb14.DialogBox($"{iErrCount} errors while copying")
+
+    End Sub
+
+    Private Sub uiGetFileSize_Click(sender As Object, e As System.Windows.RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        Dim iFileSize As Long = 0
+        Dim iCnt As Integer = 0
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            iCnt += 1
+            Try
+                Dim oFI As New IO.FileInfo(oItem.oPic.InBufferPathName)
+                iFileSize += oFI.Length
+            Catch ex As Exception
+            End Try
+        Next
+
+        vb14.DialogBox($"{iFileSize.ToSIstringWithPrefix("B", False, True)} in {iCnt} file(s)")
 
     End Sub
 
@@ -877,7 +971,7 @@ Public Class ProcessBrowse
         Dim oPicek As ThumbPicek = oItem?.DataContext
 
         If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
-            If Not Await vb14.DialogBoxYNAsync("Skasować zdjęcie?") Then Return
+            If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcie ({oPicek.oPic.sSuggestedFilename})?") Then Return
         End If
 
         _ReapplyAutoSplit = False
@@ -1129,6 +1223,7 @@ Public Class ProcessBrowse
     'End Sub
 
     Private _isGeoFilterApplied As Boolean = False
+    Private _isTargetFilterApplied As Boolean = False
     Private _OpacityWygas As Double = 0.3
 
     Private Sub uiFilterAll_Click(sender As Object, e As RoutedEventArgs)
@@ -1140,6 +1235,7 @@ Public Class ProcessBrowse
         Next
 
         _isGeoFilterApplied = False
+        _isTargetFilterApplied = False
 
         RefreshMiniaturki(False)
     End Sub
@@ -1216,6 +1312,7 @@ Public Class ProcessBrowse
         uiFilters.Content = "no azure"
 
         _isGeoFilterApplied = False
+        _isTargetFilterApplied = False
 
         Dim bMamy As Boolean = False
 
@@ -1285,6 +1382,7 @@ Public Class ProcessBrowse
         Next
 
         _isGeoFilterApplied = False
+        _isTargetFilterApplied = False
 
         KoniecFiltrowania(bMamy)
     End Sub
@@ -1307,6 +1405,7 @@ Public Class ProcessBrowse
         Next
 
         _isGeoFilterApplied = False
+        _isTargetFilterApplied = False
 
         KoniecFiltrowania(bMamy)
     End Sub
@@ -1328,6 +1427,7 @@ Public Class ProcessBrowse
         Next
 
         _isGeoFilterApplied = False
+        _isTargetFilterApplied = True
         KoniecFiltrowania(bMamy)
     End Sub
 
@@ -1354,6 +1454,7 @@ Public Class ProcessBrowse
         Next
 
         _isGeoFilterApplied = False
+        _isTargetFilterApplied = False
         KoniecFiltrowania(bMamy)
     End Sub
 
@@ -1373,7 +1474,9 @@ Public Class ProcessBrowse
 #End Region
 
     Private Sub RefreshOwnedWindows(oThumb As ThumbPicek)
+        vb14.DumpCurrMethod($"(picek={oThumb.oPic.sSuggestedFilename}")
         For Each oWnd As Window In Me.OwnedWindows
+            vb14.DumpMessage($"changing DataContext in {oWnd.Title}")
             oWnd.DataContext = oThumb
         Next
     End Sub
@@ -1575,7 +1678,7 @@ Public Class ProcessBrowse
 
         Application.ShowWait(True)
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Await oEngine.Apply(oItem.oPic)
+            Await oEngine.Apply(oItem.oPic, False, "")
             Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
             uiProgBar.Value += 1
         Next

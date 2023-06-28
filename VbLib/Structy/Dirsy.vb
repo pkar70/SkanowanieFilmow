@@ -4,8 +4,8 @@
 'Imports Newtonsoft.Json
 
 Imports System.Linq.Expressions
-Imports Newtonsoft.Json
-Imports Newtonsoft.Json.Schema
+'Imports Newtonsoft.Json
+'Imports Newtonsoft.Json.Schema
 
 Public Class OneDir
     Inherits pkar.BaseStruct
@@ -18,7 +18,7 @@ Public Class OneDir
     Public Property SubItems As List(Of OneDir)
     Public Property sParentId As String
 
-    <JsonIgnore>
+    <Newtonsoft.Json.JsonIgnore>
     Public Property fullPath As String
 
     Public Function ToComboDisplayName(Optional bPath As Boolean = False) As String

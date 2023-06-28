@@ -56,7 +56,7 @@ Public Class Auto_AzureTest
         If oFileInfo.Length < MaxSize * 1024 Then Return IO.File.OpenRead(oFile.InBufferPathName)
 
         ' przeskalujemy
-        If Not Await _resizeEngine.Apply(oFile, True) Then Return Nothing
+        If Not Await _resizeEngine.Apply(oFile, True, "") Then Return Nothing
 
         If oFile._PipelineOutput.Length > MaxSize * 1024 Then Return Nothing
 
