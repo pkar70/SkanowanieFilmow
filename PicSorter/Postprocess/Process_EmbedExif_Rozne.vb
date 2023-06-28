@@ -19,7 +19,7 @@ Public Class Process_EmbedExif
     End Function
 #End If
 
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
 
         Dim bRet As Boolean = False
 
@@ -137,7 +137,7 @@ Public Class Process_EmbedBasicExif
 
     Public Overrides Property dymekAbout As String = "Wklejenie podstawowych znaczników EXIF do zdjęcia"
 
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
 
         Dim bRet As Boolean = False
 
@@ -198,7 +198,7 @@ Public Class Process_RemoveExif
 
     Public Overrides Property dymekAbout As String = "Usunięcie danych EXIF ze zdjęcia"
 
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
 
         Dim bRet As Boolean = False
 

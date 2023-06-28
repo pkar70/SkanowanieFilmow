@@ -222,17 +222,19 @@ Public MustInherit Class PicSourceBase
 			If iInd = 0 Then
 				iInd = sLine.IndexOf(" ")
 			Else
+				' omijamy problem z plikami sWP... (mniejsze wersje)
+				If Not sLine.StartsWith("""") Then Continue For
 				iInd = sLine.IndexOf(""" ") + 1
 			End If
 
 			Dim sComment As String = sLine.Substring(iInd + 1)
 			iInd = sComment.IndexOf(ChrW(4))
-			sComment = sComment.Substring(0, iInd)
+			sComment = sComment.Substring(0, iInd).Trim
 
 			If Not String.IsNullOrWhiteSpace(sComment) Then
 				' jesli tak, to stworz nowego Exifa
 				Dim oNew As New ExifTag(ExifSource.SourceDescriptIon)
-				oNew.Keywords = sComment
+				oNew.UserComment = sComment
 				oFile.Exifs.Add(oNew)
 			End If
 		Next

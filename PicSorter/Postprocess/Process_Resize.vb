@@ -1,7 +1,7 @@
 ﻿
 
 Imports wingraph = Windows.Graphics.Imaging
-
+Imports pkar.DotNetExtensions
 
 Public Class Process_Resize800
     Inherits Process_ResizeBase
@@ -57,6 +57,66 @@ Public Class Process_ResizeHalf
     Public Overrides Property dymekAbout As String = $"Zmniejszanie dwukrotne"
 End Class
 
+Public Class Process_ScalePic
+    Inherits Process_ResizeBase
+
+    Protected Overrides Property _iMaxSize As Integer = -2
+    Public Overrides Property Nazwa As String = $"ScalePic()"
+    Public Overrides Property dymekAbout As String = $"Skalowanie wg podanej skali (<1 zmniejszanie; zakres 0.2 do 5)"
+
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
+
+        oPic.InitEdit(bPipeline)
+
+        If String.IsNullOrWhiteSpace(params) Then
+            oPic.SkipEdit()
+            Return False ' nie skalujemy, bo nie ma parametru
+        End If
+
+        Dim dScale As Double
+        If Not Double.TryParse(params, dScale) Then
+            oPic.SkipEdit()
+            Return False ' nie skalujemy, bo nie ma parametru
+        End If
+
+        dScale = Math.Abs(dScale)
+
+        If dScale < 0.2 OrElse dScale > 5 Then
+            oPic.SkipEdit()
+            Return False ' poza zakresem
+        End If
+
+        Using oSoftBitmap As wingraph.SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(oPic)
+
+            ' przelicz jaką skalę należy przyjąć
+            Dim iHeight As Integer = oSoftBitmap.PixelHeight
+            Dim iWidth As Integer = oSoftBitmap.PixelWidth
+
+            Using oStream As New Windows.Storage.Streams.InMemoryRandomAccessStream
+
+                Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
+
+                ' kopiujemy informacje o tym co jest do zrobienia
+                oEncoder.BitmapTransform.ScaledHeight = iHeight * dScale
+                oEncoder.BitmapTransform.ScaledWidth = iWidth * dScale
+
+                oEncoder.SetSoftwareBitmap(oSoftBitmap)
+
+                ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
+                Await oEncoder.FlushAsync()
+
+                Process_AutoRotate.SaveSoftBitmap(oStream, oPic)
+
+            End Using
+        End Using
+
+        oPic.EndEdit(True, True)
+
+        Return True
+
+    End Function
+End Class
+
 
 Public MustInherit Class Process_ResizeBase
     Inherits Vblib.PostProcBase
@@ -70,7 +130,7 @@ Public MustInherit Class Process_ResizeBase
     End Function
 #End If
 
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
 
         oPic.InitEdit(bPipeline)
 

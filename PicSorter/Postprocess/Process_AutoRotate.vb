@@ -18,10 +18,10 @@ Public Class Process_AutoRotate
     End Function
 #End If
 
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
 
         Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
-        If oExif Is Nothing Then Return False
+        If oExif Is Nothing Then Return True
         If oExif.Orientation = Vblib.OrientationEnum.topLeft Then Return True
 
         ' Dim bRet As Boolean = True

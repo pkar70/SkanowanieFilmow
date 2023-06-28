@@ -661,11 +661,19 @@ Public Class OnePic
         For Each sStep As String In aSteps
             ' wykonaj krok
             DumpMessage("step: " & sStep)
+            Dim sParams As String = ""
+            Dim sKrok As String = sStep.ToLowerInvariant
+            Dim iInd As Integer = sStep.IndexOf("(")
+            If iInd > 0 Then
+                sKrok = sKrok.Substring(0, iInd)
+                sParams = sKrok.Substring(iInd + 1)
+                If sParams.EndsWith(")") Then sParams = sParams.Substring(0, sParams.Length - 1)
+            End If
 
             For Each oEngine As Vblib.PostProcBase In aPostProcesory
-                If oEngine.Nazwa.ToLowerInvariant = sStep.ToLowerInvariant Then
-                    If Not Await oEngine.Apply(Me, True) Then Return "ERROR in step " & sStep
-                    Exit For
+                If oEngine.Nazwa.ToLowerInvariant = sKrok Then
+                    If Not Await oEngine.Apply(Me, True, sParams) Then Return "ERROR in step " & sStep
+                    ' Exit For
                 End If
             Next
 
@@ -674,6 +682,12 @@ Public Class OnePic
         Return ""
     End Function
 
+    ''' <summary>
+    ''' sprawdza czy wszystkie kroki pipeline dadzą się uruchomić (sprawdza dozwolone maski dla każdego kroku)
+    ''' </summary>
+    ''' <param name="sProcessingSteps"></param>
+    ''' <param name="aPostProcesory"></param>
+    ''' <returns></returns>
     Public Function CanRunPipeline(sProcessingSteps As String, aPostProcesory As Vblib.PostProcBase()) As String
         DumpCurrMethod()
 
@@ -706,7 +720,7 @@ Public Class OnePic
         If Not String.IsNullOrWhiteSpace(oAddExif.Author) Then oToExif.Author = oAddExif.Author
 
         If Not String.IsNullOrWhiteSpace(oAddExif.Copyright) Then
-            If oAddExif.Copyright.Contains("%") Then
+            If oAddExif.Copyright.Contains("%") And oToExif.Copyright IsNot Nothing Then
                 ' special case - na koniec, przy publikacji; %1, %3 itp. jako długość odpowiedniego słowa
                 Dim aFull As String() = oToExif.Copyright.Split(" ")
                 Dim aShort As String() = oAddExif.Copyright.Split(" ")

@@ -35,7 +35,7 @@ Public Class Process_Watermark
 
     End Function
 
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
 
 
         If Not EnsureWatermarkData() Then Return False

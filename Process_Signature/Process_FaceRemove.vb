@@ -12,11 +12,13 @@ Public Class Process_FaceRemove
     Private _brush As New SolidBrush(Color.Gray)
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean) As Task(Of Boolean)
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
         If oExif Is Nothing Then oExif = oPic.GetExifOfType(Vblib.ExifSource.AutoWinFace)
+
+        oPic.InitEdit(bPipeline)
 
         If oExif?.AzureAnalysis?.Faces?.lista Is Nothing Then
             oPic.SkipEdit()
@@ -26,8 +28,6 @@ Public Class Process_FaceRemove
             oPic.SkipEdit()
             Return True
         End If
-
-        oPic.InitEdit(bPipeline)
 
         oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
         Using img = Image.FromStream(oPic._PipelineInput)
@@ -61,7 +61,7 @@ Public Class Process_FaceRemove
                     graphic.FillEllipse(_brush, iX, iY, iW, iH)
                 Next
 
-                img.Save(oPic._PipelineOutput, Process_Signature.GetEncoder(ImageFormat.Jpeg), Process_Signature.GetJpgQuality)
+                img.Save(oPic._PipelineOutput, Process_EmbedTexts.GetEncoder(ImageFormat.Jpeg), Process_EmbedTexts.GetJpgQuality)
             End Using
         End Using
 
