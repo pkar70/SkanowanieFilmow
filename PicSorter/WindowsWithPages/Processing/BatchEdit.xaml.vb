@@ -53,6 +53,8 @@ Public Class BatchEdit
         _iMax = Application.GetBuffer.Count
 
         For Each oEngine As Vblib.PostProcBase In Application.gPostProcesory
+            If oEngine.Nazwa.Contains("(") Then Continue For
+
             Dim oNew As New JedenEngine
             oNew.nazwa = oEngine.Nazwa
             oNew.engine = oEngine
