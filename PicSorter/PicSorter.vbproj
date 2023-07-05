@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AsNuget_UseMapi\AsNuget_UseMapi.vbproj" />
     <ProjectReference Include="..\Auto_std2_Astro\Auto_std2_Astro.vbproj" />
     <ProjectReference Include="..\Auto_std2_Meteo\Auto_std2_Meteo.vbproj" />
     <ProjectReference Include="..\Auto_WinFace\Auto_cr31_WinFace.vbproj" />

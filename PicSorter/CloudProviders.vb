@@ -9,6 +9,7 @@ Public Class CloudPublishersList
 
     Private gCloudProviders As Vblib.CloudPublish() = {
         New Vblib.Publish_AdHoc,
+        New Publish_Email,
         New CloudPubl_std14_SSC.Cloud_Skyscraper,
         New Publish_Instagram.Publish_Instagram,
         New Publish_std2_Facebook.Publish_Facebook_Post,
