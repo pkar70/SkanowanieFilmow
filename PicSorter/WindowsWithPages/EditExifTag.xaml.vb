@@ -175,6 +175,7 @@ Public Class EditExifTag
         _exifTag.UserComment = uiUserComment.Text
 
         Dim sDevType As String = uiFileSourceDeviceType.SelectedValue
+        If String.IsNullOrWhiteSpace(sDevType) Then sDevType = "0"
         _exifTag.FileSourceDeviceType = sDevType.Substring(0, 1)
 
         Me.Close()
