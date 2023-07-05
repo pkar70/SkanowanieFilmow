@@ -25,13 +25,23 @@ Public Class LocalStorageMiddle
 	Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 		Dim sPath As String = PicSourceImplement.GetConvertedPathForVol_Folder(VolLabel, Path, "")
-		If sPath = "" Then Return -1
 
-		Dim oDrive As IO.DriveInfo = New IO.DriveInfo(sPath) ' .Net 2.0
+		'zmiana 2023.07.02
+		Return GetMBfreeSpaceForPath(sPath)
+		'If sPath = "" Then Return -1
+
+		'Dim oDrive As IO.DriveInfo = New IO.DriveInfo(sPath) ' .Net 2.0
+		'If Not oDrive.IsReady Then Return -1
+		'Return (oDrive.AvailableFreeSpace / 1024) / 1024
+	End Function
+
+	Public Shared Function GetMBfreeSpaceForPath(forPath As String) As Integer
+		If String.IsNullOrWhiteSpace(forPath) Then Return -1
+
+		Dim oDrive As IO.DriveInfo = New IO.DriveInfo(forPath) ' .Net 2.0
 		If Not oDrive.IsReady Then Return -1
 		Return (oDrive.AvailableFreeSpace / 1024) / 1024
 	End Function
-
 
 End Class
 
