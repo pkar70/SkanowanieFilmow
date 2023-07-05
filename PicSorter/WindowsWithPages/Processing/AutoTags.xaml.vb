@@ -85,6 +85,17 @@ Public Class AutoTags
         uiProgBarInEngine.Value = 0
         uiProgBarInEngine.Visibility = Visibility.Visible
 
+        If oSrc.engine.Nazwa = "AUTO_GUID" Then
+            If Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrWhiteSpace(x.PicGuid)).Any Then
+                If Await vb14.DialogBoxYNAsync("Istnieją przydzielone GUIDy, skasować je?") Then
+                    For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+                        oPic.PicGuid = ""
+                        oPic.RemoveExifOfType(Vblib.ExifSource.AutoGuid)
+                    Next
+                End If
+            End If
+        End If
+
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
 
