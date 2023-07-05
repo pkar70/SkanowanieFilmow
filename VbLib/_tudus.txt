@@ -66,19 +66,14 @@ ARCHIVE/PUBLISH: counter max nieudanych, żeby nie było tak że setki plików n
 AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
 
-AUTO_GUID: zawsze reset istniejących, o ile nie ma jeszcze publish/archive?
 AUTO_GUID: jesli katalog juz jest archived, to wtedy dokladniejsze sprawdzanie?
-AUTO_GUID: fdata - data fotografii, sdata - data skanowania; to powinno zalatwic GUID wszedzie
-
 
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
 AUTOTAG: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 
 BIGPIC: zle rozmiar okna na fotke oblicza (zawsze poziomo?)
-BIGPIC: scrollbar bez ruszania okna nie chce dzialac?
 
-BROWSER poprzednie targetdiry w combo - niejasna logika co on zrobi jak sie to wybierze :) - najlepiej jakby to wpisywal do ponizej znajdujacych sie pól, moze poza ostatnim poziomem
 BROWSER: right button, delete thumb (teraz jest tylko dla grupowych)
 BROWSER wczytajObrazek: nie dowolny z NAR/ZIP, tylko konkretne próbować wybrać?
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
@@ -92,16 +87,21 @@ BROWSER action:keywords, brakuje jednego poziomu słów kliczowych?
 BROWSER crop - kasowanie thumba potrzebne <- tojuz chyba jest
 BROWSER.Action: LOCK/UNLOCK - tych zdjec nie wysyla nigdzie
 BROWSER: delete guids, albo na to override tego co w Base
-BROWSER#DESCRIBE: button "apply&next"?
 BROWSER: stykówka z zaznaczonych, np z podaniem targetDir jako tytułu - na stykówce nazwa katalogu, data stworzenia, i zdjęcia
 BROWSER: korekta daty: pole teraz, i teraz w telefonie; wylicza sobie offset.
 9 june 19:13 -> 11 june 18:01, wtedy chyba GPS ma też błąd
 - to może być tool z menu settings lub czegoś takiego (np. z retrieve?)
 BROWSER: pliki zniknięte - najpierw zapytać o clip nazw, potem czy skasować
+BROWSER: DRAG&drop, może z odpalaniem dedykowanego publish? (o nazwie "drag") - ale czy to potrzebne po dodaniu email?
+BROWSER: open folder (explorer, albo i lista w Settingsach)
+BROWSER: open in shell default, może lista toolsów (w Settings) - nazwa/path
+BROWSER: kasując pliki ("już wysłane") nie kasuje BAKów?
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi
 CHOMIK: https://restsharp.dev/v107/ , tu jest o exhausting, że powinno byc nowsza wersja, ale breaking changes
+
+CONFIG: combo z publisherami do email? 
 
 DBASE: wstawianie tam Flattened, co pozwala na w miarę normalne query
 DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
@@ -128,9 +128,7 @@ MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
 MAIN:BROWSE w pelni zarchiwizowane - ale ma dac do trzech, a jest tylko w dwu - na wejsciu do Browse, bo na wejsciu do Process jest OK
 MAIN:BROWSE: zdjęcia na dzisiaj w historii (znajdywanie wszystkich)
 
-POSTPROCESS: co robić gdy etap pipeline nie działa na danym typie? Error czy Ignore?
 POSTPROCESS: jeśli któryś etap nie da rady, to pytanie (DialogBoxYN) co zrobić
-POSTPROCESS: CanRunPipeline(oFile) na całej liście, co zwraca nazwę kroku który jest niedostępny dla pliku
 POSTPROCESS: autorotate, jeśli nie ma FileExif jest crash; ale co wteyd powinno się zrobić? zignorować krok? tak! bo przecież mamy skany, gdzie nie ma Rotate
 POSTPROCESS: mirror do zdjęć (to także z menu BigPic)
 
@@ -143,7 +141,6 @@ PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwlek
 PUBLISH: Amazon Photos
 PUBLISH: gdy z Settings jest na to zgoda, dopisywanie danych do archfull
 PUBLISH ADHOC: do %temp%\picsort, i runExplorer na tym
-PUBLISH - email?
 
 PUBLISH: jakiś letsupload.io, i tym podobne; pojedyncze lub do ZIPa - do dzielenia się
 https://nugetmusthaves.com/Package/CloudRail.SDK
@@ -154,10 +151,14 @@ RETRIEVE NAR - rozpakowywanie do pojedynczych moze robic?
 RETRIEVE typ: chomikuj? z podanego katalogu? do dzielenia się z innymi?
 RETRIEVE: dla Purge, progressbar od nowa
 RETRIEVE: reakcja na disk full (sprawdzenie przed próbą ściągania)
+RETRIEVE: pokazywanie ile wczytał PRZED purgownaiem, żeby nie straszyć
+RETRIEVE Jako reakcja na drag&DROP
 
 SEARCH: błędna logika, nie zadziała na FLAT (gdzie nie ma tagu Azure itp.)
 SEARCH: sekcja OPAD
 SEARCH: query w folder/description/OCR
+
+SHOWBIG: open in shell default
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
 STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
@@ -180,16 +181,13 @@ SHUTTERFLY: *) jako publish, do Sites, ktorych mozna stworzyc duzo, z niezalezny
 TELEFON: eksporter do chomikuj różnych
 TELEFON: click po lewej stronie ekranu - prev, po prawej - next
 
-
-zrobic na L950 nowe zdjecia "offset" na filename - zeby sie to zgadzalo
+TOOLS(per file.ext): dla NAR, pokazuje wszystkie i pozwala wybrać
 
 gdy bedzie baza, to zrobic "import" wszystkich zdjec z analogowe, z ustawianiem targetDir wedle aktualnego dir (choc teraz data jest przed tytułem)
 
 zapisywac sobie "last zdjecia od", skoro nie moze byc przez "retrieve source.lasttimestamp", to gdzies w notepad.
 Anka: 2023.06.11
 Marcin: 2023.06. - sprawdzic co od niego juz jest, find \"2023 chyba zadziala na to
-
-
 
 
 * ALL: powoli robić refactor obiektowy (OneKey i OneDir, OnePic jak najwiecej, je jako podstawa i bez uzywania innych. Dostęp do Property tylko XAML i Settings, reszta przez Methods?

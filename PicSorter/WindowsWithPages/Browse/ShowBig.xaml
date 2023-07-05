@@ -61,7 +61,6 @@
                         <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
                         <MenuItem Header="Metadata" Click="uiShowMetadata_Click"/>
                             <MenuItem Header="File EXIF" Click="uiShowExif_Click" Name="uiShowExif"/>
-                            <MenuItem Header="Delete" Click="uiDelPic_Click" Name="uiDelete" />
                         <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
                             <MenuItem Header="Describe" Click="uiDescribe_Click" />
                             <MenuItem Header="Pic edit" Name="uiEditModes" >
@@ -88,6 +87,8 @@
                         <MenuItem Header="On map" Name="uiOnMap" />
                             <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                             <MenuItem Header="Wiki for month" Click="uiGoWiki_Click" />
+                            <Separator/>
+                            <MenuItem Header="Delete" Click="uiDelPic_Click" Name="uiDelete" />
                         </ContextMenu>
                 </Image.ContextMenu>
             </Image>
