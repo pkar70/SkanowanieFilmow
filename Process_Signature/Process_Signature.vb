@@ -10,7 +10,7 @@ Imports vb14 = Vblib.pkarlibmodule14
 Public Class Process_EmbedTexts
     Inherits Vblib.PostProcBase
 
-    Public Overrides Property Nazwa As String = "EmbedTexts"
+    Public Overrides Property Nazwa As String = "EmbedTexts()"
 
     Public Overrides Property dymekAbout As String = "Dodawanie napisów"
 
@@ -54,7 +54,7 @@ Public Class Process_EmbedTexts
                     If Not Double.TryParse(dane(2), percent) Then Continue For
                     If Not Double.TryParse(dane(3), maxSize) Then Continue For
 
-                    Dim tekst As String = dane(4)
+                    Dim tekst As String = ZastosujPodmiany(oPic, dane(4))
                     If String.IsNullOrWhiteSpace(tekst) Then Continue For
 
                     Dim attribs As String = dane(0)
@@ -113,6 +113,36 @@ Public Class Process_EmbedTexts
         oPic.EndEdit(True, False)
 
         Return True
+    End Function
+
+    Private Shared Function ZastosujPodmiany(oPic As Vblib.OnePic, tekst As String) As String
+        tekst = tekst.Replace("%f", IO.Path.GetFileNameWithoutExtension(oPic.sSuggestedFilename))
+        tekst = tekst.Replace("%p", oPic.TargetDir)
+
+        tekst = tekst.Replace("%u", oPic.PicGuid)
+
+        tekst = tekst.Replace("%d", oPic.GetMostProbablyDate.ToString("yyyy.MM.dd"))
+        tekst = tekst.Replace("%t", oPic.GetMostProbablyDate.ToString("yyyy.MM.dd HH:mm"))
+
+        Dim minDate, maxDate As String
+        minDate = oPic.GetMinDate.ToString("yyyy.MM.dd")
+        maxDate = oPic.GetMaxDate.ToString("yyyy.MM.dd")
+        tekst = tekst.Replace("%m", minDate)
+        tekst = tekst.Replace("%x", maxDate)
+        If maxDate = minDate Then
+            tekst = tekst.Replace("%r", minDate)
+        Else
+            tekst = tekst.Replace("%r", minDate & "..." & maxDate)
+        End If
+
+        ' to robi bez flatten, bo descriptions nie s¹ w Exifach
+        tekst = tekst.Replace("%d", oPic.GetSumOfDescriptionsText)
+
+        Dim oFlat = oPic.FlattenExifs(False)
+        tekst = tekst.Replace("%k", oFlat.Keywords)
+        tekst = tekst.Replace("%a", oFlat.Author)
+        tekst = tekst.Replace("%c", oFlat.Copyright)
+        Return tekst
     End Function
 
     Public Shared Function GetJpgQuality(Optional iQuality As Integer = 0) As EncoderParameters
