@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow" >
         <StackPanel Margin="5,2,5,2">
-            <TextBlock Name="uiFileName" FontWeight="Bold"/>
+            <TextBox Name="uiFileName" FontWeight="Bold" IsReadOnly="True" BorderThickness="0" />
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
