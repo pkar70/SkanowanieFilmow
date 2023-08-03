@@ -10,6 +10,9 @@ Class SettingsMisc
         uiJpgQuality.GetSettingsInt()
         uiMaxThumbs.GetSettingsInt()
         uiCacheThumbs.GetSettingsBool()
+        uiHideKeywords.GetSettingsBool
+        uiHideThumbs.GetSettingsBool
+        uiBigPicSize.GetSettingsInt(iDefault:=90)
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -25,6 +28,9 @@ Class SettingsMisc
         uiJpgQuality.SetSettingsInt()
         uiMaxThumbs.SetSettingsInt()
         uiCacheThumbs.SetSettingsBool()
+        uiHideKeywords.SetSettingsBool
+        uiHideThumbs.SetSettingsBool
+        uiBigPicSize.SetSettingsInt
 
         Me.NavigationService.GoBack()
     End Sub

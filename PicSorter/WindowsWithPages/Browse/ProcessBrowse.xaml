@@ -117,7 +117,8 @@
                         <MenuItem Header="Copy target dir" Click="uiActionCopyTargetDir_Click" Name="uiActionCopyTargetDir"/>
                         <Separator/>
                         <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
-                        <MenuItem Header="Copy out" Click="uiCopyOut_Click" />
+                        <MenuItem Header="Copy to..." Click="uiCopyOut_Click" />
+                        <MenuItem Header="Copy to clipboard" Click="uiCopyClip_Click" />
                         <MenuItem Header="Get files size" Click="uiGetFileSize_Click" />
                         <Separator/>
                         <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
@@ -163,6 +164,7 @@
                                     <MenuItem Header="GeoTag to Clip" Click="uiMenuGeoTag2Clip_Click" />
                                     <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                                     <MenuItem Header="Wiki for month" Click="uiGoWiki_Click" />
+                                    <MenuItem Header="ShellExec" Click="uiShellExec_Click" />
                                     <Separator/>
                                     <MenuItem Header="Delete" Click="uiDelOne_Click"/>
                                 </ContextMenu>

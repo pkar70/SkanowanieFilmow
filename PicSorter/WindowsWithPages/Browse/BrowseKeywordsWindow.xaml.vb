@@ -157,8 +157,12 @@ Public Class BrowseKeywordsWindow
         If iInd > 0 Then sId = sId.Substring(0, iInd)
 
         ' step 2: znajdź - ale hierarchicznie!
-        uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList
 
+        If vb14.GetSettingsBool("uiHideKeywords") Then
+            uiLista.ItemsSource = From c In Application.GetKeywords.GetKeyword(sId).ToFlatList Where c.bEnabled = True
+        Else
+            uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList
+        End If
     End Sub
 
 #End Region

@@ -239,21 +239,24 @@ Public Class ProcessBrowse
 
     Private Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oItem As ThumbPicek, Optional bRecreate As Boolean = False) As Task
 
+        Dim miniaturkaPathname As String = oItem.oPic.InBufferPathName & THUMB_SUFIX
+
         ' wymuszone odtworzenie miniaturki
-        If bRecreate Then IO.File.Exists(oItem.oPic.InBufferPathName & THUMB_SUFIX)
+        If bRecreate Then IO.File.Delete(miniaturkaPathname)
 
         Dim bitmapa As BitmapImage = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
         oItem.oImageSrc = bitmapa
 
-
-        If bCacheThumbs AndAlso Not IO.File.Exists(oItem.oPic.InBufferPathName & THUMB_SUFIX) Then
+        If bCacheThumbs AndAlso Not IO.File.Exists(miniaturkaPathname) Then
             Dim encoder As New JpegBitmapEncoder()
             encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
             encoder.Frames.Add(BitmapFrame.Create(bitmapa))
 
-            Using fileStream = IO.File.Create(oItem.oPic.InBufferPathName & THUMB_SUFIX)
+            Using fileStream = IO.File.Create(miniaturkaPathname)
                 encoder.Save(fileStream)
             End Using
+
+            FileAttrHidden(miniaturkaPathname, True)
         End If
 
     End Function
@@ -666,6 +669,42 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Private Sub uiCopyClip_Click(sender As Object, e As System.Windows.RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        Clipboard.Clear()
+        Dim lista As New Specialized.StringCollection
+        For Each oTB As ThumbPicek In uiPicList.SelectedItems
+            lista.Add(oTB.oPic.InBufferPathName)
+        Next
+
+        Clipboard.SetFileDropList(lista)
+
+        vb14.DialogBox("Files in Clipboard")
+
+    End Sub
+
+    Private Sub uiPicList_MouseMove(sender As Object, e As MouseEventArgs) Handles uiPicList.MouseMove
+        MyBase.OnMouseMove(e)
+        If e.LeftButton = MouseButtonState.Pressed Then
+
+            Dim lista As New List(Of String)
+
+            For Each oTB As ThumbPicek In uiPicList.SelectedItems
+                lista.Add(oTB.oPic.InBufferPathName)
+            Next
+
+            If lista.Count < 1 Then Return
+
+            Dim data As New DataObject
+            data.SetData(DataFormats.FileDrop, lista.ToArray)
+
+            ' Inititate the drag-and-drop operation.
+            DragDrop.DoDragDrop(Me, data, DragDropEffects.Copy)
+
+        End If
+    End Sub
+
     Private Sub uiGetFileSize_Click(sender As Object, e As System.Windows.RoutedEventArgs)
         uiActionsPopup.IsOpen = False
 
@@ -699,10 +738,19 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Private Sub uiShellExec_Click(sender As Object, e As RoutedEventArgs)
+        Dim oItem As FrameworkElement = sender
+        Dim oPicek As ThumbPicek = oItem?.DataContext
+
+        Dim proc As New Process()
+        proc.StartInfo.UseShellExecute = True
+        proc.StartInfo.FileName = oPicek?.oPic?.InBufferPathName
+        proc.Start()
+    End Sub
 
     Private Sub uiGoWiki_Click(sender As Object, e As RoutedEventArgs)
         Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem.DataContext
+        Dim oPicek As ThumbPicek = oItem?.DataContext
 
         ShowBig.OpenWikiForMonth(oPicek.oPic)
     End Sub
@@ -756,6 +804,7 @@ Public Class ProcessBrowse
         Dim sPlaceholder As String = Application.GetDataFile("", $"placeholder{sExt}.jpg")
         If Not IO.File.Exists(sPlaceholder) Then
             Process_Signature.WatermarkCreate.StworzWatermarkFile(sPlaceholder, sExt, sExt)
+            FileAttrHidden(sPlaceholder, True)
         End If
 
         bitmap = New BitmapImage()
@@ -793,6 +842,7 @@ Public Class ProcessBrowse
             Case ".avi", ".mov", ".mp4"
                 Dim sOutFile As String = sOutfilename & ".png"
                 If Not Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(sPathName, sOutFile) Then Return ""
+                FileAttrHidden(sOutFile, True)
                 Return sOutfilename & ".png"
             Case Else
                 Return ""    ' nie umiem zrobić - nie wiem co to za plik
@@ -2070,6 +2120,7 @@ Public Class ProcessBrowse
         End Sub
 
     End Class
+
 
 End Class
 

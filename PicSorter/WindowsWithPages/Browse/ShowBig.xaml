@@ -87,6 +87,7 @@
                         <MenuItem Header="On map" Name="uiOnMap" />
                             <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                             <MenuItem Header="Wiki for month" Click="uiGoWiki_Click" />
+                            <MenuItem Header="ShellExec" Click="uiShellExec_Click" />
                             <Separator/>
                             <MenuItem Header="Delete" Click="uiDelPic_Click" Name="uiDelete" />
                         </ContextMenu>

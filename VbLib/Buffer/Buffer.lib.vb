@@ -150,15 +150,17 @@ Public Class BufferSortowania
                 Return False
             End If
 
-            Dim oTempStream = IO.File.Create(sTempName, 1024 * 1024)
-            Await oPic.oContent.CopyToAsync(oTempStream, 1024 * 1024)
+            Dim bSame As Boolean = False
 
-            Dim oExistingStream As Stream = IO.File.OpenRead(sDstPathName)
-            oTempStream.Seek(0, SeekOrigin.Begin)
+            Using oTempStream = IO.File.Create(sTempName, 1024 * 1024)
+                Await oPic.oContent.CopyToAsync(oTempStream, 1024 * 1024)
 
-            Dim bSame As Boolean = Await oTempStream.IsSameStreamContent(oExistingStream)
-            oExistingStream.Dispose()
-            oTempStream.Dispose()
+                Using oExistingStream As Stream = IO.File.OpenRead(sDstPathName)
+                    oTempStream.Seek(0, SeekOrigin.Begin)
+
+                    bSame = Await oTempStream.IsSameStreamContent(oExistingStream)
+                End Using
+            End Using
 
             If bSame Then
                 DumpMessage("File already exists, same content")
@@ -167,32 +169,41 @@ Public Class BufferSortowania
                 Catch ex As Exception
 
                 End Try
-                Return False
-            End If
-            DumpMessage("File already exists, but another content - renaming")
 
-            Dim sDstTmp As String
-            Dim iInd As Integer
-            iInd = sDstPathName.LastIndexOf(".")
-            sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMdd") & sDstPathName.Substring(iInd)
-            If IO.File.Exists(sDstTmp) Then
-                sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMddHHmmss") & sDstPathName.Substring(iInd)
-                If IO.File.Exists(sDstTmp) Then
-                    Return False ' file already exist, i nawet z doklejaniem daty - nic sie nie da zrobic
+                If _pliki.Find(Function(x) x.sSuggestedFilename = sDstPathName) IsNot Nothing Then
+                    DumpMessage("i wiem o tym pliku, więc pomijam go")
+                    Return False
                 End If
-            End If
-            sDstPathName = sDstTmp
 
-            Dim bErr As Boolean = False
-            Try
-                IO.File.Move(sTempName, sDstPathName)
-            Catch ex As Exception
-                bErr = True
-            End Try
+                DumpMessage("ale chyba z nieudanego IMPORT, bo jakobym nic o nim nie wiedział")
 
-            If bErr Then
-                Await Task.Delay(250) '  próba opóźnienia, może antywir trzyma... mi się zdarzyło na dużym mp4
-                IO.File.Move(sTempName, sDstPathName)
+            Else
+
+                DumpMessage("File already exists, but another content - renaming")
+
+                Dim sDstTmp As String
+                Dim iInd As Integer
+                iInd = sDstPathName.LastIndexOf(".")
+                sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMdd") & sDstPathName.Substring(iInd)
+                If IO.File.Exists(sDstTmp) Then
+                    sDstTmp = sDstPathName.Substring(0, iInd) & Date.Now.ToString("yyMMddHHmmss") & sDstPathName.Substring(iInd)
+                    If IO.File.Exists(sDstTmp) Then
+                        Return False ' file already exist, i nawet z doklejaniem daty - nic sie nie da zrobic
+                    End If
+                End If
+                sDstPathName = sDstTmp
+
+                Dim bErr As Boolean = False
+                Try
+                    IO.File.Move(sTempName, sDstPathName)
+                Catch ex As Exception
+                    bErr = True
+                End Try
+
+                If bErr Then
+                    Await Task.Delay(250) '  próba opóźnienia, może antywir trzyma... mi się zdarzyło na dużym mp4
+                    IO.File.Move(sTempName, sDstPathName)
+                End If
             End If
         Else
             Dim oWriteStream = IO.File.Create(sDstPathName, 1024 * 1024)

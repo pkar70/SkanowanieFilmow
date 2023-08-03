@@ -630,16 +630,25 @@ Public Class OnePic
             If Not IO.File.Exists(bakFileName) Then
                 IO.File.Move(InBufferPathName, bakFileName)
                 IO.File.SetCreationTime(bakFileName, Date.Now)
+
+                ' ewentualne HIDE bak
+                If GetSettingsBool("uiHideThumbs") Then
+                    Dim attrs As IO.FileAttributes
+                    attrs = IO.File.GetAttributes(bakFileName)
+                    attrs = attrs Or IO.FileAttributes.Hidden
+                    IO.File.SetAttributes(bakFileName, attrs)
+                End If
+
             End If
 
             ' bo Write zostawiłby śmieci na końcu (resztę dłuższego pliku)
             If IO.File.Exists(InBufferPathName) Then IO.File.Delete(InBufferPathName)
 
-            Dim oNewFileStream As FileStream = IO.File.OpenWrite(InBufferPathName)
-            _PipelineOutput.Seek(0, SeekOrigin.Begin)
-            _PipelineOutput.CopyTo(oNewFileStream)
-            oNewFileStream.Flush()
-            oNewFileStream.Dispose()
+            Using oNewFileStream As FileStream = IO.File.OpenWrite(InBufferPathName)
+                _PipelineOutput.Seek(0, SeekOrigin.Begin)
+                _PipelineOutput.CopyTo(oNewFileStream)
+                oNewFileStream.Flush()
+            End Using
 
         End If
 

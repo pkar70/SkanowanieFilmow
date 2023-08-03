@@ -13,6 +13,7 @@ Imports Vblib
 Imports pkar
 Imports Windows.UI.Xaml.Controls
 Imports MediaDevices
+Imports Org.BouncyCastle.Asn1.X509
 
 Public Class ShowBig
 
@@ -164,6 +165,8 @@ Public Class ShowBig
 
     End Sub
 
+#Region "flicker"
+
     Private Sub DodajMenuFlicker(uiMenu As MenuItem)
 
         Dim oMenuFlicker As New MenuItem
@@ -236,12 +239,15 @@ Public Class ShowBig
         Dim oUri As New Uri(sUri)
         oUri.OpenBrowser
     End Sub
+#End Region
 
     Private Sub ZmienRozmiarOkna(iObrot As Rotation)
         DumpCurrMethod($"(iObrot={iObrot})")
 
-        Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * 0.9
-        Dim scrHeight As Double = SystemParameters.FullPrimaryScreenHeight * 0.9
+        Dim maxPic As Double = vb14.GetSettingsInt("uiBigPicSize", 90) / 100.0
+
+        Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * maxPic
+        Dim scrHeight As Double = SystemParameters.FullPrimaryScreenHeight * maxPic
 
         Dim MARGIN_X As Integer = 40
         Dim MARGIN_Y As Integer = 80
@@ -992,6 +998,7 @@ Public Class ShowBig
 
         IO.File.Delete(sJpgFilename)
         IO.File.Move(sBakFileName, sJpgFilename)
+        FileAttrHidden(sJpgFilename, False)
         IO.File.SetCreationTime(sJpgFilename, IO.File.GetLastWriteTime(sJpgFilename))
 
         ' no i przerysowujemy wszystko
@@ -1031,6 +1038,13 @@ Public Class ShowBig
 
     Private Sub uiGoWiki_Click(sender As Object, e As RoutedEventArgs)
         OpenWikiForMonth(_picek.oPic)
+    End Sub
+
+    Private Sub uiShellExec_Click(sender As Object, e As RoutedEventArgs)
+        Dim proc As New Process()
+        proc.StartInfo.UseShellExecute = True
+        proc.StartInfo.FileName = _picek.oPic.InBufferPathName
+        proc.Start()
     End Sub
 
     Public Shared Sub OpenWikiForMonth(oPic As Vblib.OnePic)

@@ -66,7 +66,7 @@ Public Class ProcessDownload
         If iToPurge > 0 Then
             If Await vb14.DialogBoxYNAsync($"Wczytałem {iCount} nowości; czy mam zrobić purge? ({iToPurge} plików)") Then
                 oSrc.Purge(True)
-                vb14.DialogBox($"Done - no new files.")
+                vb14.DialogBox($"Done ({iCount} new files).")
             End If
         Else
                 If iCount > 0 Then

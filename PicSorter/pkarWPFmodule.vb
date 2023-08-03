@@ -756,6 +756,26 @@ Module Extensions
         oTB.ShowAppVers()
     End Sub
 
+    ''' <summary>
+    ''' set (or clear) HIDDEN attribute on given file
+    ''' </summary>
+    ''' <param name="filename"></param>
+    ''' <param name="hidden"></param>
+    Public Sub FileAttrHidden(filename As String, hide As Boolean)
+        Dim attrs As IO.FileAttributes
+        attrs = IO.File.GetAttributes(filename)
+
+        If hide Then
+            If attrs And IO.FileAttributes.Hidden Then Return
+            attrs = attrs Or IO.FileAttributes.Hidden
+        Else
+            If Not (attrs And IO.FileAttributes.Hidden) Then Return
+            attrs = attrs And &HFFFE
+        End If
+
+        IO.File.SetAttributes(filename, attrs)
+    End Sub
+
 
     ' --- progring ------------------------
 

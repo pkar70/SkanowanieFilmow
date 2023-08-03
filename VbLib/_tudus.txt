@@ -151,7 +151,7 @@ RETRIEVE NAR - rozpakowywanie do pojedynczych moze robic?
 RETRIEVE typ: chomikuj? z podanego katalogu? do dzielenia się z innymi?
 RETRIEVE: dla Purge, progressbar od nowa
 RETRIEVE: reakcja na disk full (sprawdzenie przed próbą ściągania)
-RETRIEVE: pokazywanie ile wczytał PRZED purgownaiem, żeby nie straszyć
+RETRIEVE: pokazywanie ile wczytał PRZED purgownaiem, żeby nie straszyć <-- ale że teraz źle pokazuje? ze pokazuje total plikow 9 nowych, 3 do skasowania, a tylko 3 byly nowe, a pozniej - no new files, a byly?
 RETRIEVE Jako reakcja na drag&DROP
 
 SEARCH: błędna logika, nie zadziała na FLAT (gdzie nie ma tagu Azure itp.)

@@ -81,6 +81,8 @@ Public Class AutoTags
 
     Private Async Function ApplyOne(oSrc As JedenEngine) As Task
 
+        Application.ShowWait(True)
+
         uiProgBarInEngine.Maximum = oSrc.maxCount
         uiProgBarInEngine.Value = 0
         uiProgBarInEngine.Visibility = Visibility.Visible
@@ -112,6 +114,8 @@ Public Class AutoTags
         Next
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed
+
+        Application.ShowWait(False)
 
     End Function
 
