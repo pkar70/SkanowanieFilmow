@@ -60,7 +60,12 @@ Public Class Auto_WinFace
             oStream = IO.File.OpenRead(oFile.InBufferPathName)
         End If
 
-        Dim oDecoder As BitmapDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
+        Dim oDecoder As BitmapDecoder
+        Try
+            oDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
+        Catch
+            Return Nothing
+        End Try
 
         Dim oTransform As New BitmapTransform()
 
