@@ -47,9 +47,24 @@ Public Class Helper
     End Function
 
     Public Function GetStream(sPathname As String) As IO.Stream
-        Dim oFI As MediaDevices.MediaFileInfo = _oMD?.GetFileInfo(sPathname)
+        Dim oFI As MediaDevices.MediaFileInfo
+        Try
+            ' 2023.07.28, doda³em TRY bo wyskakiwa³
+            ' Exception thrown: 'System.Runtime.InteropServices.COMException' in MediaDevices.dll 0x80042003
+            ' Lumia 950XL WP_20230724_12_02_35_Rich.jpg
+            oFI = _oMD?.GetFileInfo(sPathname)
+        Catch ex As Exception
+            oFI = Nothing
+        End Try
+
         If oFI Is Nothing Then Return Nothing
-        Return oFI.OpenRead()
+
+        Try
+            Return oFI.OpenRead()
+        Catch ex As Exception
+            Return Nothing
+        End Try
+
     End Function
 
     Public Shared Function GetDeviceFromLabel_MTP(sVolLabel As String) As MediaDevices.MediaDevice

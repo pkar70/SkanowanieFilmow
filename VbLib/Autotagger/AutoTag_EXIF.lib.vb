@@ -159,28 +159,33 @@ Public Class AutoTag_EXIF
 
         Dim oExif As Vblib.ExifTag = Nothing
 
-        ' traktuj oFile jako ZIP - znajdź pierwszy JPG
-        Using oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
+        Try
 
-            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+            ' traktuj oFile jako ZIP - znajdź pierwszy JPG
+            Using oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
 
-                ' mamy JPGa, to z niego czytamy EXIFa
-                Using oStream As Stream = oInArch.Open
-                    ' ale z takim nie zadziała, bo Stream takowy nie ma Seek
-                    Using oSeekable As New MemoryStream
-                        oStream.CopyTo(oSeekable)
-                        oSeekable.Position = 0
+                For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                    If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
 
-                        Dim oRdr As New CompactExifLib.ExifData(oSeekable)
-                        oExif = GetForReaderCompact(oRdr)
+                    ' mamy JPGa, to z niego czytamy EXIFa
+                    Using oStream As Stream = oInArch.Open
+                        ' ale z takim nie zadziała, bo Stream takowy nie ma Seek
+                        Using oSeekable As New MemoryStream
+                            oStream.CopyTo(oSeekable)
+                            oSeekable.Position = 0
+
+                            Dim oRdr As New CompactExifLib.ExifData(oSeekable)
+                            oExif = GetForReaderCompact(oRdr)
+                        End Using
                     End Using
-                End Using
-                Exit For
-            Next
+                    Exit For
+                Next
 
-        End Using
-        'oArchive.Dispose()
+            End Using
+            'oArchive.Dispose()
+        Catch ex As Exception
+            Return Nothing
+        End Try
 
         Return oExif
     End Function
