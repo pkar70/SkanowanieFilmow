@@ -1,5 +1,6 @@
 ﻿
 Imports Newtonsoft.Json
+Imports pkar.DotNetExtensions
 
 Public Class OneKeyword
     Inherits pkar.BaseStruct
@@ -80,9 +81,9 @@ Public Class KeywordsList
     End Function
 
     Protected Overrides Sub InsertDefaultContent()
-        _lista.Add(New OneKeyword With {.sId = "-", .sDisplayName = "osoby"})
-        _lista.Add(New OneKeyword With {.sId = "#", .sDisplayName = "miejsca"})
-        _lista.Add(New OneKeyword With {.sId = "=", .sDisplayName = "inne"})
+        _list.Add(New OneKeyword With {.sId = "-", .sDisplayName = "osoby"})
+        _list.Add(New OneKeyword With {.sId = "#", .sDisplayName = "miejsca"})
+        _list.Add(New OneKeyword With {.sId = "=", .sDisplayName = "inne"})
     End Sub
 
     Public Function GetKeyword(sKey As String) As OneKeyword
@@ -120,7 +121,7 @@ Public Class KeywordsList
     Public Function ToFlatList() As List(Of OneKeyword)
         Dim lista As New List(Of OneKeyword)
 
-        For Each oItem As OneKeyword In _lista
+        For Each oItem As OneKeyword In _list
             lista = lista.Concat(oItem.ToFlatList).ToList
         Next
 
@@ -141,7 +142,7 @@ Public Class KeywordsList
     ''' </summary>
     Public Sub CalculateMinMaxDateTree()
 
-        For Each oItem As OneKeyword In _lista
+        For Each oItem As OneKeyword In _list
             CalculateMinMaxDateTree(oItem)
         Next
     End Sub
@@ -170,7 +171,7 @@ Public Class KeywordsList
 
         For Each oSubItem As OneKeyword In oItem.SubItems
             If Not oSubItem.minDate.IsDateValid Then Return Date.MaxValue
-            oRet = oRet.DateMin(oSubItem.minDate)
+            oRet = oRet.Min(oSubItem.minDate)
         Next
 
         Return oRet
@@ -182,7 +183,7 @@ Public Class KeywordsList
 
         For Each oSubItem As OneKeyword In oItem.SubItems
             If Not oSubItem.maxDate.IsDateValid Then Return Date.MinValue
-            oRet = oRet.DateMax(oSubItem.maxDate)
+            oRet = oRet.Max(oSubItem.maxDate)
             'If oSubItem.maxDate.Year < 1800 Then Return Date.MaxValue
 
             'If oRet < oSubItem.maxDate Then oRet = oSubItem.maxDate

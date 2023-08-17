@@ -11,11 +11,11 @@ Public Class Mapy
 
     Protected Overrides Sub InsertDefaultContent()
 
-        _lista.Add(New JednaMapa("OpenStretMap", "https://www.openstreetmap.org/#map=16/%lat/%lon"))
-        _lista.Add(New JednaMapa("Bing", "https://bing.com/maps/default.aspx?lvl=16&cp=%lat~%lon"))
-        _lista.Add(New JednaMapa("Google", "https://www.google.pl/maps/@%lat,%lon,16z"))
-        _lista.Add(New JednaMapa("WirtSzlaki", "https://mapa.wirtualneszlaki.pl/#16/%lat/%lon"))
-        _lista.Add(New JednaMapa("ArcGIS", "https://www.arcgis.com/home/webmap/viewer.html?center=%lon,%lat&level=10"))
+        _list.Add(New JednaMapa("OpenStretMap", "https://www.openstreetmap.org/#map=16/%lat/%lon"))
+        _list.Add(New JednaMapa("Bing", "https://bing.com/maps/default.aspx?lvl=16&cp=%lat~%lon"))
+        _list.Add(New JednaMapa("Google", "https://www.google.pl/maps/@%lat,%lon,16z"))
+        _list.Add(New JednaMapa("WirtSzlaki", "https://mapa.wirtualneszlaki.pl/#16/%lat/%lon"))
+        _list.Add(New JednaMapa("ArcGIS", "https://www.arcgis.com/home/webmap/viewer.html?center=%lon,%lat&level=10"))
     End Sub
 
 

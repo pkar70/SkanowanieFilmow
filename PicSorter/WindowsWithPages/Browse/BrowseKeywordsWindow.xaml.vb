@@ -72,8 +72,8 @@ Public Class BrowseKeywordsWindow
 
         For Each oItem As Vblib.OneKeyword In fromKeywords
 
-            oMinDate = oMinDate.DateMin(oItem.minDate)
-            oMaxDate = oMaxDate.DateMax(oItem.maxDate)
+            oMinDate = oMinDate.Min(oItem.minDate)
+            oMaxDate = oMaxDate.Max(oItem.maxDate)
 
         Next
 
@@ -301,7 +301,7 @@ Public Class BrowseKeywordsWindow
         If oItem.SubItems IsNot Nothing Then
             For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
                 Dim currMinDate As Date = SzukajMinDatyRecursive(oSubItem, minDate)
-                minDate = minDate.DateMin(currMinDate)
+                minDate = minDate.Min(currMinDate)
                 'If currMinDate.Year > 1800 Then
                 '    If currMinDate < minDate Then minDate = currMinDate
                 'End If
@@ -320,7 +320,7 @@ Public Class BrowseKeywordsWindow
         If oItem.SubItems IsNot Nothing Then
             For Each oSubItem As Vblib.OneKeyword In oItem.SubItems
                 Dim currMaxDate As Date = SzukajMaxDatyRecursive(oSubItem, maxDate)
-                maxDate = maxDate.DateMax(currMaxDate)
+                maxDate = maxDate.Max(currMaxDate)
             Next
         End If
 
