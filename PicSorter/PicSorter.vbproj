@@ -29,7 +29,6 @@
     <ProjectReference Include="..\Auto_WinFace\Auto_cr31_WinFace.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Chomikuj\CloudArch_std20_Chomikuj.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Degoo\CloudArch_std14_Degoo.vbproj" />
-    <ProjectReference Include="..\CloudArch_std14_Shutterfly\CloudArch_std14_Shutterfly.vbproj" />
     <ProjectReference Include="..\CloudPubl_std14_SSC\CloudPubl_std2_SSC.vbproj" />
     <ProjectReference Include="..\HiddenWatermark\AsNuget-HiddenWatermark.csproj" />
     <ProjectReference Include="..\Process_Signature\Process_SigAndFace.vbproj" />
@@ -49,13 +48,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetExts" Version="2.1.3" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="pkar.BasicGeopos" Version="1.2.7" />
-    <PackageReference Include="StructList" Version="1.0.1" />
+    <PackageReference Include="pkar.DotNetExts" Version="2.2.2" />
+    <PackageReference Include="pkar.StructList" Version="1.4.1" />
   </ItemGroup>
 
 </Project>
