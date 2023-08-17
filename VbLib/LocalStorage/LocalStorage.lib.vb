@@ -9,7 +9,7 @@ Public MustInherit Class LocalStorage
 	Public Property enabled As Boolean = True
 	Public Property Path As String
 	Public Property VolLabel As String
-	Public Property includeMask As String = "*.jpg;*.tif;*.png;*.avi;*.mp4;*.mov;*.nar;*jpg.thumb" ' maski regexp
+	Public Property includeMask As String = OnePic.ExtsPic & OnePic.ExtsMovie & ";*.nar;*jpg.thumb" ' maski regexp
 	Public Property excludeMask As String  ' maski regexp
 
 	Public Property lastSave As DateTime

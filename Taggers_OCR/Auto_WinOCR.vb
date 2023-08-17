@@ -12,7 +12,7 @@ Public Class AutoTag_WinOCR
     Public Overrides ReadOnly Property Nazwa As String = ExifSource.AutoWinOCR ' "AUTO_WINOCR"
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje zrobiæ OCR u¿ywaj¹c Windows." & vbCrLf & "U¿ywa pola UserComment"
-    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"
+    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar;*.png"
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
         If Not oFile.MatchesMasks(includeMask) Then Return Nothing
