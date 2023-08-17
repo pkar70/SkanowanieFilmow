@@ -780,7 +780,7 @@ Public Class ProcessBrowse
             ' jeśli mamy PNG, to zapewne chodzi o kadr z filmu - bierzemy niezależnie od skalowania
             sPathName = sPathName & THUMB_SUFIX & ".png"
         Else
-            If sExt = ".nar" Or sExt = ".avi" Or sExt = ".mov" Or sExt = ".mp4" Then
+            If sExt = ".nar" Or OnePic.ExtsMovie.Contains(sExt) Then
                 Dim sRet As String = Await MakeThumbFromFile(sPathName)
                 If sRet <> "" Then sPathName = sRet
             End If
@@ -839,7 +839,7 @@ Public Class ProcessBrowse
                 'Dim sTempFile As String = IO.Path.GetTempFileName
                 Await Vblib.Auto_AzureTest.Nar2Jpg(sPathName, sOutfilename)
                 Return sOutfilename
-            Case ".avi", ".mov", ".mp4"
+            Case OnePic.ExtsMovie
                 Dim sOutFile As String = sOutfilename & ".png"
                 If Not Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(sPathName, sOutFile) Then Return ""
                 FileAttrHidden(sOutFile, True)
@@ -916,9 +916,10 @@ Public Class ProcessBrowse
             thumb = FromBig_NextMain(oPic, bGoBack, uiPicList.SelectedItems, True)
         Else
             thumb = FromBig_NextMain(oPic, bGoBack, _thumbsy.ToList, False)
+            If thumb IsNot Nothing Then uiPicList.SelectedItem = thumb
         End If
 
-        If thumb Is Nothing Then Return thumb
+            If thumb Is Nothing Then Return thumb
         ' jeśli zapętlenie
         If thumb.oPic.sSuggestedFilename = oPic.oPic.sSuggestedFilename Then Return thumb
 
@@ -1016,6 +1017,15 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Public Sub DeleteByFilename(filepathname As String)
+        For Each oPicek As ThumbPicek In _thumbsy
+            If oPicek.oPic.InBufferPathName = filepathname Then
+                DeletePicekMain(oPicek)
+                Exit For
+            End If
+        Next
+    End Sub
+
     Private Async Sub uiDelOne_Click(sender As Object, e As RoutedEventArgs)
         Dim oItem As FrameworkElement = sender
         Dim oPicek As ThumbPicek = oItem?.DataContext
@@ -1024,6 +1034,10 @@ Public Class ProcessBrowse
             If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcie ({oPicek.oPic.sSuggestedFilename})?") Then Return
         End If
 
+        DeletePicekMain(oPicek)
+    End Sub
+
+    Private Sub DeletePicekMain(oPicek As ThumbPicek)
         _ReapplyAutoSplit = False
         DeletePicture(oPicek)   ' zmieni _Reapply, jeśli picek miał splita
 
@@ -1481,7 +1495,28 @@ Public Class ProcessBrowse
         KoniecFiltrowania(bMamy)
     End Sub
 
-    Private Async Sub uiFilterKeywords_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiFilterNAR_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "NARs"
+
+        Dim bMamy As Boolean = False
+
+        For Each oItem As ThumbPicek In _thumbsy
+            If oItem.oPic.fileTypeDiscriminator = "*" Then
+                oItem.opacity = 1
+                bMamy = True
+            Else
+                oItem.opacity = _OpacityWygas
+            End If
+        Next
+
+        _isGeoFilterApplied = False
+        _isTargetFilterApplied = False
+        KoniecFiltrowania(bMamy)
+    End Sub
+
+
+    Private Sub uiFilterKeywords_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
 
         Dim oWnd As New FilterKeywords
@@ -1930,8 +1965,8 @@ Public Class ProcessBrowse
                 If oCurrExif IsNot Nothing Then
                     oCurrExif.Keywords = oCurrExif.Keywords & " " & oExif.Keywords
                     oCurrExif.UserComment = oCurrExif.UserComment & " | " & oExif.UserComment
-                    oCurrExif.DateMax = oCurrExif.DateMax.DateMax(oExif.DateMax)
-                    oCurrExif.DateMin = oCurrExif.DateMin.DateMin(oExif.DateMin)
+                    oCurrExif.DateMax = oCurrExif.DateMax.Max(oExif.DateMax)
+                    oCurrExif.DateMin = oCurrExif.DateMin.Min(oExif.DateMin)
 
                     ' wygrywa nowo dodany tag z geo (radiusa już tu nie widać)
                     If oExif.GeoTag IsNot Nothing Then

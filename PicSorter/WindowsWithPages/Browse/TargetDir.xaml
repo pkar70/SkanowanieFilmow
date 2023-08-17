@@ -16,8 +16,8 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock Text="Select existing folder:" VerticalAlignment="Bottom"/>
-            <Button Content=" f " Grid.Column="1" Click="uiSearchTree_Click" FontSize="10" VerticalAlignment="Bottom" Margin="4,0,4,0"/>
-            <Button Content=" + " Grid.Column="2" Click="uiOpenDirTree_Click" FontSize="10" VerticalAlignment="Bottom"/>
+            <Button Content=" 🔎 " Grid.Column="1" Click="uiSearchTree_Click" FontSize="9" VerticalAlignment="Bottom" Margin="4,0,4,0" ToolTip="Search using mask"/>
+            <Button Content=" + " Grid.Column="2" Click="uiOpenDirTree_Click" FontSize="10" VerticalAlignment="Bottom" ToolTip="Edit folder tree"/>
         </Grid>
         <ComboBox Name="uiComboExisting" SelectionChanged="uiComboExisting_SelectionChanged"/>
         <!--<TextBlock Text="or one of options below:" Margin="0,10,0,0"/>-->
@@ -37,6 +37,13 @@
 
         <Rectangle HorizontalAlignment="Stretch" Height="2" Fill="Blue" Margin="20,0,20,0"/>
 
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel>
         <RadioButton Content="no geo split" Margin="0,5,0,2" Name="uiNoGeoSplit" GroupName="wedlugGeo"/>
         <RadioButton Content="auto geo split" Margin="0,0,0,2" Name="uiAutoGeoSplit" IsChecked="true" GroupName="wedlugGeo"/>
         <!--<RadioButton Name="uiPreviousGeoSplit" GroupName="wedlugGeo"/>-->
@@ -47,7 +54,13 @@
             </Grid.ColumnDefinitions>
             <RadioButton Name="uiManualGeoSplit" GroupName="wedlugGeo" Checked="uiManualGeoSplit_Checked" Unchecked="uiManualGeoSplit_Checked"/>
             <TextBox Grid.Column="1" Name="uiManualGeoName" TextChanged="uiGeoFolder_Changed"/>
+        </Grid>
+            </StackPanel>
 
+            <Button Content="🗓" VerticalAlignment="Center" Margin="10,0,10,0" Grid.Column="1" Click="uiGeoCalend_Click" Name="uiGeoCalen"/>
+            <Popup Name="uiCalendarPopup" PlacementTarget="{Binding ElementName=uiGeoCalen}" IsOpen="False" StaysOpen="False">
+                <Calendar Name="uiCalendar" DisplayDateChanged="uiCalendar_DateChanged"/>
+            </Popup>
         </Grid>
 
         <Button Content=" OK " HorizontalAlignment="Center" Margin="5,10,5,10" Click="uiOK_Click"/>

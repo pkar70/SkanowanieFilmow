@@ -7,7 +7,8 @@ Imports System.Threading
 Imports CompactExifLib
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
-Imports XmpCore.Impl
+'Imports XmpCore.Impl
+Imports pkar.DotNetExtensions
 
 <Serializable>
 Public Class OnePic
@@ -48,6 +49,16 @@ Public Class OnePic
 
     <Newtonsoft.Json.JsonIgnore>
     Public Property locked As Boolean = False
+
+    ' w summary kopia - jako ułatwienie przy pisaniu kodu
+    ''' <summary>
+    ''' "*.jpg;*.tif;*.gif;*.png"
+    ''' </summary>
+    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png"
+    ''' <summary>
+    ''' "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
+    ''' </summary>
+    Public Shared ReadOnly ExtsMovie As String = "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
 
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()
@@ -199,28 +210,28 @@ Public Class OnePic
     ''' ważniejsze jest z keywords, potem manual_geo, potem - dowolny; NULL jeśli nie znajdzie
     ''' </summary>
     ''' <returns></returns>
-    Public Function GetGeoTag() As BasicGeoposWithRadius
+    Public Function GetGeoTag() As pkar.BasicGeoposWithRadius
         DumpCurrMethod($"({InBufferPathName})")
         ' ważniejsze jest z keywords, potem manual_geo, potem - dowolny
 
         Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualTag)
         If oExif?.GeoTag IsNot Nothing Then
             DumpMessage("not null ExifSource.ManualTag.GeoTag")
-            If Not oExif.GeoTag.IsEmpty Then Return New BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
+            If Not oExif.GeoTag.IsEmpty Then Return New pkar.BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
             DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
         End If
 
         oExif = GetExifOfType(ExifSource.ManualGeo)
         If oExif?.GeoTag IsNot Nothing Then
             DumpMessage("not null ExifSource.ManualGeo.GeoTag")
-            If Not oExif.GeoTag.IsEmpty Then Return New BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
+            If Not oExif.GeoTag.IsEmpty Then Return New pkar.BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
             DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
         End If
 
         For Each oExif In Exifs
             If oExif?.GeoTag IsNot Nothing Then
                 DumpMessage($"not null GeoTag in {oExif.ExifSource}")
-                If Not oExif.GeoTag.IsEmpty Then Return New BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
+                If Not oExif.GeoTag.IsEmpty Then Return New pkar.BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
                 DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
             End If
         Next
@@ -251,7 +262,7 @@ Public Class OnePic
 
         For Each oItem As ExifTag In Exifs
             'If oItem.ExifSource = ExifSource.ManualTag Then
-            dDateMin = dDateMin.DateMax(oItem.DateMin)
+            If oItem.DateMin.IsDateValid Then dDateMin = dDateMin.Max(oItem.DateMin)
             'End If
         Next
 
@@ -264,7 +275,7 @@ Public Class OnePic
 
         For Each oItem As ExifTag In Exifs
             ' If oItem.ExifSource = ExifSource.ManualTag Then
-            dDateMax = dDateMax.DateMin(oItem.DateMax)
+            If oItem.DateMax.IsDateValid Then dDateMax = dDateMax.Min(oItem.DateMax)
             'End If
         Next
 
@@ -734,7 +745,7 @@ Public Class OnePic
                 Dim aFull As String() = oToExif.Copyright.Split(" ")
                 Dim aShort As String() = oAddExif.Copyright.Split(" ")
                 oToExif.Copyright = ""
-                For iLp As Integer = 0 To aShort.Length - 1
+                For iLp As Integer = 0 To Math.Min(aShort.Length - 1, aFull.Length - 1)
                     Dim sToken As String = aShort.ElementAt(iLp)
                     If sToken.StartsWith("%") Then
                         Dim sOrgWord As String = aFull.ElementAt(iLp)
@@ -778,8 +789,8 @@ Public Class OnePic
         oToExif.GeoName = oToExif.GeoName.ConcatenateWithPipe(oAddExif.GeoName)
 
         ' to przeliczamy
-        oToExif.DateMax = oToExif.DateMax.DateMin(oAddExif.DateMax)
-        oToExif.DateMin = oToExif.DateMin.DateMax(oAddExif.DateMin)
+        oToExif.DateMax = oToExif.DateMax.Min(oAddExif.DateMax)
+        oToExif.DateMin = oToExif.DateMin.Max(oAddExif.DateMin)
 
     End Sub
 
@@ -995,16 +1006,16 @@ Public Class OnePic
 
 End Class
 
-Public Class BasicGeoposWithRadius
-    Inherits pkar.BasicGeopos
+'Public Class BasicGeoposWithRadius
+'    Inherits pkar.BasicGeopos
 
-    Public Property iRadius As Double
+'    Public Property iRadius As Double
 
-    Public Sub New(geopos As pkar.BasicGeopos, bZgrubne As Boolean)
-        MyBase.New(geopos.Latitude, geopos.Longitude)
-        iRadius = If(bZgrubne, 20000, 100)
-    End Sub
-End Class
+'    Public Sub New(geopos As pkar.BasicGeopos, bZgrubne As Boolean)
+'        MyBase.New(geopos.Latitude, geopos.Longitude)
+'        iRadius = If(bZgrubne, 20000, 100)
+'    End Sub
+'End Class
 Public Class OneDescription
     Public Property data As String
     Public Property comment As String

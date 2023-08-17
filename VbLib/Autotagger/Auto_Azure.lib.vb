@@ -73,6 +73,26 @@ Public Class Auto_AzureTest
     '    Return sTempFileName
     'End Function
 
+    ''' <summary>
+    ''' set (or clear) HIDDEN attribute on given file
+    ''' </summary>
+    ''' <param name="filename"></param>
+    ''' <param name="hidden"></param>
+    Private Shared Sub FileAttrHidden(filename As String, hide As Boolean)
+        Dim attrs As IO.FileAttributes
+        attrs = IO.File.GetAttributes(filename)
+
+        If hide Then
+            If attrs And IO.FileAttributes.Hidden Then Return
+            attrs = attrs Or IO.FileAttributes.Hidden
+        Else
+            If attrs And IO.FileAttributes.Hidden <> IO.FileAttributes.Hidden Then Return
+            attrs = attrs Xor IO.FileAttributes.Hidden
+        End If
+
+        IO.File.SetAttributes(filename, attrs)
+    End Sub
+
     Public Shared Async Function Nar2Jpg(sNarFileName As String, Optional sJpgFileName As String = "") As Task(Of String)
         Vblib.DumpCurrMethod(sNarFileName)
 
@@ -84,12 +104,25 @@ Public Class Auto_AzureTest
 
                 If String.IsNullOrWhiteSpace(sJpgFileName) Then
                     sJpgFileName = IO.Path.Combine(IO.Path.GetTempPath, oInArch.Name)
+                    If IO.File.Exists(sJpgFileName) Then
+                        Vblib.DumpMessage($"Dest (temp) file {sJpgFileName} already exist, deleting")
+                        IO.File.Delete(sJpgFileName)
+                    End If
+                Else
+                    If IO.File.Exists(sJpgFileName) Then
+                        Vblib.DumpMessage($"Dest file {sJpgFileName} already exist, using it")
+                        Return sJpgFileName
+                    End If
                 End If
+
+                'If IO.File.GetAttributes(sJpgFileName) And FileAttributes.Hidden Then
+                '    IO.File.Delete()
+                'End If
 
                 Using oWrite As Stream = IO.File.Create(sJpgFileName)
                     Await oInArch.Open.CopyToAsync(oWrite)
                     Await oWrite.FlushAsync()
-                    oWrite.Dispose()
+                    'oWrite.Dispose()
                 End Using
                 Return sJpgFileName
 

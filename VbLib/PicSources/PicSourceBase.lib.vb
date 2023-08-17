@@ -14,7 +14,7 @@ Public MustInherit Class PicSourceBase
 	Public Property Recursive As Boolean
 	Public Property sourcePurgeDelay As TimeSpan = TimeSpan.FromDays(7)
 	Public Property defaultPublish As List(Of String)   ' lista IDs
-	Public Property includeMask As String = "*.jpg;*.tif;*.png;*.nar;*.avi;*.mp4;*.jpg.thumb;*.mov;*.raf" ' maski regexp
+	Public Property includeMask As String = OnePic.ExtsPic & OnePic.ExtsMovie & ";*.nar;*.jpg.thumb;*.raf" ' maski regexp
 	Public Property excludeMask As String  ' maski regexp
 	Public Property lastDownload As DateTime
 	Public Property defaultExif As ExifTag

@@ -96,33 +96,33 @@ Partial Public Module Extensions
     ' End Function
 
 
-    ''' <summary>
-    ''' porównuje dwie daty, uznając za "poprawniejszą" pierwszą, a drugą za valid tylko gdy rok 1800..2100
-    ''' </summary>
-    ''' <param name="oDate1"></param>
-    ''' <param name="oDate2"></param>
-    ''' <returns></returns>
-    <Runtime.CompilerServices.Extension()>
-    Public Function DateMin(ByVal oDate1 As Date, oDate2 As Date) As Date
-        If Not oDate2.IsDateValid Then Return oDate1
+    '''' <summary>
+    '''' porównuje dwie daty, uznając za "poprawniejszą" pierwszą, a drugą za valid tylko gdy rok 1800..2100
+    '''' </summary>
+    '''' <param name="oDate1"></param>
+    '''' <param name="oDate2"></param>
+    '''' <returns></returns>
+    '<Runtime.CompilerServices.Extension()>
+    'Public Function DateMin(ByVal oDate1 As Date, oDate2 As Date) As Date
+    '    If Not oDate2.IsDateValid Then Return oDate1
 
-        If oDate2 < oDate1 Then Return oDate2
-        Return oDate1
-    End Function
+    '    If oDate2 < oDate1 Then Return oDate2
+    '    Return oDate1
+    'End Function
 
-    ''' <summary>
-    ''' porównuje dwie daty, uznając za "poprawniejszą" pierwszą, a drugą za valid tylko gdy rok 1800..2100
-    ''' </summary>
-    ''' <param name="oDate1"></param>
-    ''' <param name="oDate2"></param>
-    ''' <returns></returns>
-    <Runtime.CompilerServices.Extension()>
-    Public Function DateMax(ByVal oDate1 As Date, oDate2 As Date) As Date
-        If Not oDate2.IsDateValid Then Return oDate1
+    '''' <summary>
+    '''' porównuje dwie daty, uznając za "poprawniejszą" pierwszą, a drugą za valid tylko gdy rok 1800..2100
+    '''' </summary>
+    '''' <param name="oDate1"></param>
+    '''' <param name="oDate2"></param>
+    '''' <returns></returns>
+    '<Runtime.CompilerServices.Extension()>
+    'Public Function DateMax(ByVal oDate1 As Date, oDate2 As Date) As Date
+    '    If Not oDate2.IsDateValid Then Return oDate1
 
-        If oDate2 > oDate1 Then Return oDate2
-        Return oDate1
-    End Function
+    '    If oDate2 > oDate1 Then Return oDate2
+    '    Return oDate1
+    'End Function
 
     ' to nie może być w Nuget, bo mamy tu specjalne traktowanie dla "=" oraz "-"
 

@@ -98,6 +98,8 @@ Public Class AutoTags
             End If
         End If
 
+        Dim maxGuard As Integer = If(oSrc.engine.Nazwa = "AUTO_AZURE", vb14.GetSettingsInt("uiAzureMaxBatch", 500), Integer.MaxValue)
+
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
 
@@ -111,6 +113,8 @@ Public Class AutoTags
                 Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
             End If
             uiProgBarInEngine.Value += 1
+            maxGuard -= 1
+            If maxGuard < 1 Then Exit For
         Next
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed

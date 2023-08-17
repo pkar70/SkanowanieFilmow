@@ -264,6 +264,61 @@ Public Class SettingsDirTree
 
         uiLista.ItemsSource = From c In lista Order By c.sId
     End Sub
+
+    Private Sub uiAutoClear_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim doUsuniecia As New List(Of OneDir)
+
+        Dim minPicDate As Date = Application.GetBuffer.GetMinDate
+        Dim maxPicDate As Date = Application.GetBuffer.GetMaxDate
+
+        vb14.DumpMessage($"Zakres dat zdjec: {minPicDate.ToExifString} do {maxPicDate.ToExifString}")
+
+        For Each oFold In Application.GetDirTree.ToFlatList
+            If String.IsNullOrEmpty(oFold.fullPath) Then Continue For
+            vb14.DumpMessage($"analyzing folder {oFold.fullPath}")
+
+            Dim dataFolderu As Date = oFold.GetDate
+            If Not dataFolderu.IsDateValid Then Continue For
+            If minPicDate > dataFolderu Then Continue For
+            If maxPicDate < dataFolderu Then Continue For
+            vb14.DumpMessage("data folderu w zakresie dat bufora")
+
+            For Each oPic As OnePic In Application.GetBuffer.GetList
+                If oPic.TargetDir.StartsWithOrdinal(oFold.fullPath) Then
+                    vb14.DumpMessage("  jest taki w aktualnym buforze, więc go pomijam")
+                    Exit For
+                End If
+                'If oFold.fullPath.StartsWithOrdinal(oPic.TargetDir) Then Exit For
+
+                ' sprawdzamy jego parenta
+                Dim bFound As Boolean = False
+                Dim parentPath As String = IO.Path.GetDirectoryName(oFold.fullPath)
+                vb14.DumpMessage($"  nie ma w aktualnym buforze, więc sprawdzam parenta {parentPath}")
+                For Each oPicParent As OnePic In Application.GetBuffer.GetList
+                    If oPicParent.TargetDir.StartsWithOrdinal(parentPath) Then
+                        vb14.DumpMessage($"  i parent jest w buforze")
+                        bFound = True
+                        Exit For
+                    End If
+                Next
+
+                If Not bFound Then Exit For
+
+                doUsuniecia.Add(oFold)
+                Debug.WriteLine($"Do usuniecia: {oFold.fullPath}")
+            Next
+
+        Next
+
+        For Each oDir As OneDir In doUsuniecia
+            'Application.GetDirTree.Remove(oDir)
+        Next
+
+        ' przeglądaj wszystkie katalogi rekurencyjnie
+        ' jeśli oDir.Path jest jako StartsWith w buffor
+        ' to jeśli oDir.Path
+    End Sub
 End Class
 
 Public Class KonwersjaVisibilyFromGlobal

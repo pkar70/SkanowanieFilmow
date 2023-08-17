@@ -157,6 +157,10 @@ Public Class ShowBig
         Else
             uiIkonkaTypu.Visibility = Visibility.Visible
             uiIkonkaTypu.Content = _picek.oPic.fileTypeDiscriminator
+
+            If _picek.oPic.fileTypeDiscriminator = "✋" Then
+                uiFullPicture.ContextMenu = Nothing
+            End If
         End If
 
         TimerOnOff()
@@ -309,6 +313,7 @@ Public Class ShowBig
     Private Sub Timer_Ticked(sender As Object, e As EventArgs)
         ChangePicture(False, False)
     End Sub
+
 
 
     Private Shared Function OrientationToRotation(v As Vblib.OrientationEnum?) As Rotation
@@ -1006,12 +1011,42 @@ Public Class ShowBig
 
     End Sub
 
-    Private Sub uiIkonkaTypu_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiIkonkaTypu_Click(sender As Object, e As RoutedEventArgs)
         ' kliknięcie na typie, znaczy "*" lub ">"
 
         Select Case uiIkonkaTypu.Content
             Case "*" ' plik NAR
                 ' otwórz trzy okienka? (po jednym na każdy JPG w NAR, z zablokowaniem DELETE itp.)? Ale mógłby być "wybierator", że wybieramy jeden JPG i zamieniamy buffer.OnePic(NAR) na (JPG)
+                ' jest _picek.oPic.InBufferPathName
+                ' z niego for each plik w ZIP
+                ' open 
+
+                Using oArchive = IO.Compression.ZipFile.OpenRead(_picek.oPic.InBufferPathName)
+
+                    For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                        If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                        ' mamy JPGa (a nie XML na przykład)
+
+                        Dim sJpgFileName As String = IO.Path.Combine(IO.Path.GetTempPath, oInArch.Name)
+                        File.Delete(sJpgFileName)
+                        Using oWrite As Stream = IO.File.Create(sJpgFileName)
+                            Await oInArch.Open.CopyToAsync(oWrite)
+                            Await oWrite.FlushAsync()
+                        End Using
+
+                        Dim newPic As New OnePic("NAR extract", _picek.oPic.InBufferPathName, oInArch.Name)
+                        newPic.InBufferPathName = sJpgFileName
+                        newPic.sSuggestedFilename = oInArch.Name
+                        newPic.Exifs = _picek.oPic.Exifs
+                        newPic.fileTypeDiscriminator = "✋"
+
+                        Dim newWind As New ShowBig(newPic, True, False)
+                        newWind.Owner = Me.Owner
+                        newWind.Show()
+                    Next
+                End Using
+                Me.Close()
+
             Case "►" ' filmik
                 uiMovie.Source = New Uri(_picek.oPic.InBufferPathName)
                 uiMovie.Visibility = Visibility.Visible
@@ -1024,6 +1059,39 @@ Public Class ShowBig
                 uiIkonkaTypu.Visibility = Visibility.Visible
                 uiIkonkaTypu.Content = "►"
                 uiMovie.Stop()
+            Case "✋"
+                If Not Await vb14.DialogBoxYNAsync($"Czy podmienić JPG na {_picek.oPic.sSuggestedFilename}?") Then Return
+
+                Dim targetJPG As String = _picek.oPic.sInSourceID ' ustawiony powyżej, otwierając NAR, na path/filename.nar
+                targetJPG = Path.ChangeExtension(targetJPG, "jpg")
+                Dim sourceJPG As String = _picek.oPic.InBufferPathName
+
+                If File.Exists(targetJPG & ".bak") Then
+                    If Not Await Vblib.DialogBoxYNAsync("Były edycje pliku JPG, kontynuować?") Then Return
+                    Vblib.DumpMessage($"usuwam stary BAK")
+                    File.Delete(targetJPG & ".bak")
+                End If
+
+                If File.Exists(targetJPG) Then
+                    Vblib.DumpMessage($"targetJPG {targetJPG} juz istnieje, usuwam")
+                    File.Delete(targetJPG)
+                End If
+
+                If File.Exists(targetJPG & ProcessBrowse.THUMB_SUFIX) Then
+                    Vblib.DumpMessage($"usuwam stary thumb")
+                    File.Delete(targetJPG & ProcessBrowse.THUMB_SUFIX)
+                End If
+
+                File.Move(sourceJPG, targetJPG)
+
+                If Await vb14.DialogBoxYNAsync("Czy skasować źródłowy NAR?") Then
+                    Dim oBrowserWnd As ProcessBrowse = Me.Owner
+                    If oBrowserWnd Is Nothing Then Return
+                    oBrowserWnd.DeleteByFilename(_picek.oPic.sInSourceID)
+                End If
+
+                Me.Close()
+
         End Select
 
         Return
@@ -1074,3 +1142,11 @@ Public Class ShowBig
 #End Region
 
 End Class
+
+Public Module rotext
+    <Runtime.CompilerServices.Extension>
+    Public Function cosik(ByVal par1 As Rotation) As Boolean
+        'Public Enum OrientationEnum
+
+    End Function
+End Module

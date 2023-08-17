@@ -30,6 +30,9 @@ Public Interface IBufor
 
     Sub ResetPipelines()
 
+    Function GetMinDate() As Date
+    Function GetMaxDate() As Date
+
 End Interface
 
 
@@ -250,6 +253,24 @@ Public Class BufferSortowania
         Next
     End Sub
 
+    Public Function GetMinDate() As Date Implements IBufor.GetMinDate
+        Dim minPicDate As Date = New Date(2200, 1, 1)
+        For Each oPic As OnePic In _pliki.GetList
+            If oPic.GetMinDate < minPicDate Then minPicDate = oPic.GetMinDate
+        Next
+
+        Return minPicDate
+    End Function
+
+    Public Function GetMaxDate() As Date Implements IBufor.GetMaxDate
+        Dim maxPicDate As Date = New Date(1750, 1, 1)
+        For Each oPic As OnePic In _pliki.GetList
+            If oPic.GetMaxDate > maxPicDate Then maxPicDate = oPic.GetMaxDate
+        Next
+
+        Return maxPicDate
+    End Function
+
     Public Class FilesInBuffer
         Inherits pkar.BaseList(Of OnePic)
 
@@ -323,6 +344,24 @@ Public Class BufferFromQuery
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         _pliki.Add(oPic)
         Return True
+    End Function
+
+    Public Function GetMinDate() As Date Implements IBufor.GetMinDate
+        Dim minPicDate As Date = New Date(2200, 1, 1)
+        For Each oPic As OnePic In _pliki
+            If oPic.GetMinDate < minPicDate Then minPicDate = oPic.GetMinDate
+        Next
+
+        Return minPicDate
+    End Function
+
+    Public Function GetMaxDate() As Date Implements IBufor.GetMaxDate
+        Dim maxPicDate As Date = New Date(1750, 1, 1)
+        For Each oPic As OnePic In _pliki
+            If oPic.GetMaxDate > maxPicDate Then maxPicDate = oPic.GetMaxDate
+        Next
+
+        Return maxPicDate
     End Function
 
 End Class

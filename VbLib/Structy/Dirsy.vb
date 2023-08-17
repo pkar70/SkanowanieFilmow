@@ -53,32 +53,77 @@ Public Class OneDir
 
     Public Shared Function IsFromDate(sId As String) As Boolean
         ' daty 1850-2050, format yyyy.MM
+        Return GetDate(sId).IsDateValid
 
-        If sId.Length < 10 Then Return False
-        If sId.Substring(4, 1) <> "." Then Return False
+        'If sId.Length < 10 Then Return False
+        'If sId.Substring(4, 1) <> "." Then Return False
 
-        Dim temp As Integer
-        Try
-            temp = Integer.Parse(sId.Substring(0, 4))
-        Catch ex As Exception
-            Return False
-        End Try
-        If temp < 1850 Then Return False
-        If temp > Date.Now.Year Then Return False   ' zdjęć z przyszlosci nie uznajemy
+        'Dim temp As Integer
+        'Try
+        '    temp = Integer.Parse(sId.Substring(0, 4))
+        'Catch ex As Exception
+        '    Return False
+        'End Try
+        'If temp < 1850 Then Return False
+        'If temp > Date.Now.Year Then Return False   ' zdjęć z przyszlosci nie uznajemy
 
-        Try
-            temp = Integer.Parse(sId.Substring(5, 2))
-        Catch ex As Exception
-            Return False
-        End Try
+        'Try
+        '    temp = Integer.Parse(sId.Substring(5, 2))
+        'Catch ex As Exception
+        '    Return False
+        'End Try
 
-        If temp < 1 Then Return False
-        If temp > 12 Then Return False
+        'If temp < 1 Then Return False
+        'If temp > 12 Then Return False
 
-        Return True
+        'Return True
 
     End Function
 
+    Public Function GetDate() As Date
+        Return GetDate(sId)
+    End Function
+
+
+    Public Shared Function GetDate(sId As String) As Date
+
+        Dim invalidDate As Date = New Date(2200, 1, 1)
+
+        If sId.Length < 10 Then Return invalidDate
+        If sId.Substring(4, 1) <> "." Then Return invalidDate
+
+        Dim rok As Integer
+        Try
+            rok = Integer.Parse(sId.Substring(0, 4))
+        Catch ex As Exception
+            Return invalidDate
+        End Try
+        If rok < 1850 Then Return invalidDate
+        If rok > Date.Now.Year Then Return invalidDate ' zdjęć z przyszlosci nie uznajemy
+
+        Dim month As Integer
+        Try
+            month = Integer.Parse(sId.Substring(5, 2))
+        Catch ex As Exception
+            Return invalidDate
+        End Try
+
+        If month < 1 Then Return invalidDate
+        If month > 12 Then Return invalidDate
+
+        Dim day As Integer
+        Try
+            day = Integer.Parse(sId.Substring(8, 2))
+        Catch ex As Exception
+            Return New Date(rok, month, 1)
+        End Try
+
+        If day < 1 Then Return invalidDate
+        If day > 31 Then Return invalidDate
+
+        Return New Date(rok, month, day)
+
+    End Function
 
 
     Public Const RootId As String = "(root)"
@@ -110,7 +155,7 @@ Public Class DirsList
     Private Sub CalculateFullPaths()
 
         ' teoretycznie będzie tylko jeden item na tym poziomie: root
-        For Each oItem As OneDir In _lista
+        For Each oItem As OneDir In _list
 
             If oItem.SubItems Is Nothing Then Return
 
@@ -154,7 +199,7 @@ Public Class DirsList
         Dim bFound As Boolean = False
 
         ' ten pierwszy to root
-        Dim oRet As OneDir = _lista.ElementAt(0)
+        Dim oRet As OneDir = _list.ElementAt(0)
         For Each sPath As String In sTargetDir.Split(IO.Path.DirectorySeparatorChar)
             If sPath.Trim.Length < 1 Then Continue For
             If oRet.SubItems Is Nothing Then
@@ -202,7 +247,7 @@ Public Class DirsList
     Public Function ToFlatList() As List(Of OneDir)
         Dim lista As New List(Of OneDir)
 
-        For Each oItem As OneDir In _lista
+        For Each oItem As OneDir In _list
             lista = lista.Concat(oItem.ToFlatList).ToList
         Next
 
@@ -210,7 +255,7 @@ Public Class DirsList
     End Function
 
     Public Function GetFolder(sKey As String) As OneDir
-        For Each oItem As OneDir In _lista
+        For Each oItem As OneDir In _list
             If oItem.sId = sKey Then Return oItem
         Next
 
@@ -289,7 +334,7 @@ Public Class DirsList
         oRoot.SubItems.Add(New OneDir With {.sId = "Rodzina", .notes = "inne"})
         oRoot.SubItems.Add(New OneDir With {.sId = "Muzeum", .notes = "na wieczną rzeczy pamiątkę"})
 
-        _lista.Add(oRoot)
+        _list.Add(oRoot)
 
     End Sub
 

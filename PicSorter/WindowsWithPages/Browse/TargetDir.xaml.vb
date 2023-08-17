@@ -45,6 +45,9 @@ Public Class TargetDir
         PokazOpcjeGeo(iFirstPtr)
         PokazIstniejaceKatalogi(_selected(0).dateMin, _selected(_selected.Count - 1).dateMin)
 
+        uiCalendar.DisplayDateStart = _selected(0).dateMin.AddDays(-7)
+        uiCalendar.DisplayDateEnd = _selected(0).dateMin.AddDays(7)
+
     End Sub
 
 #Region "combo katalogów"
@@ -134,7 +137,6 @@ Public Class TargetDir
         Dim sTaData As String = uiManualDateName.Text.Trim
         Dim sPrefixGeoData As String = CountSubdirInDate(sTaData)
         uiManualGeoName.Text = sTaData & "." & sPrefixGeoData & "_"
-
 
         For iLp As Integer = iFirstSelected To 0 Step -1
             ' dowolny podział uwzględniamy, nie można samego GEO - bo czasowy i geo w tym samym miejscu daje czasowy tylko
@@ -436,7 +438,15 @@ Public Class TargetDir
 
     End Sub
 
+    Private Sub uiGeoCalend_Click(sender As Object, e As RoutedEventArgs)
+        uiCalendarPopup.IsOpen = Not uiCalendarPopup.IsOpen
+    End Sub
 
+    Private Sub uiCalendar_DateChanged(sender As Object, e As CalendarDateChangedEventArgs)
+        If e?.AddedDate Is Nothing Then Return
+        Dim selDate As Date = e?.AddedDate
+        uiManualGeoName.Text = selDate.ExifDateWithWeekDay.DropAccents
+    End Sub
 End Class
 
 Partial Public Module Extensions

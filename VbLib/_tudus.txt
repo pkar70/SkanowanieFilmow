@@ -1,3 +1,84 @@
+DBASE: TABLE.Exifs, TABLE.pics - każda lista w OnePic jako oddzielna TABLE z foreign key
+* konfiguracja bazy danych: SQL, port, username, password
+* autonumber ID, dla OnePic oraz dla wszystkich TABLE, do synchronizacji
+ - tylko jak zrobić żeby nie zrobić tego samego AUTONUM w dwu miejscach?
+
+Bazy danych:
+1) lokalny SQL, dla którego jest się MASTER; dopisywanie wtedy gdy do archive.json
+2) udostępnianie na porcie 50.53, ważne hasło/username/id
+3) filtrowanie - wedle tegoż ID uprawnienia, jak pełne search
+
+4) zdalny SQL, z którego można czytać (i tam wstawiać dane - dodawać descriptions, keywords)
+
+5) pytania via search do bazy
+
+GetFolderList -> list(of oneFolder)
+Search(params) -> List(of onepic)
+GetPic(GUID)
+AddDescription(GUID, text)
+
+po lokalnej stronie: "pokaz nowe (zdalnie dodane) descriptionsy"
+
+
+Działanie mastera:
+* for local user: "pokaz nowe (zdalnie dodane) descriptionsy"
+* for remote users: server danych i zdjęć, filtrowane według reguł (definiowanie per client)
+
+Działanie klienta:
+* for local user: pokaz nowe zdjęcia ze źródła X (definiowanie źródeł - IP, username)
+* for local user: możliwość dodawania descriptions do nich
+* for remote user: przesyłanie descriptions do podanego server
+* może być cache zdjęć, w podkatalogu na zdalne, i nazwa źródła (picsort/remote/aska, picsort/remote/tata ...)
+* zaznaczanie zdjęć które się chce ściągnąć/zapisać lokalnie
+
+Baza danych:
+* dodawanie na wstawianiu do archiwum
+* uzwywane w wyszukiwaniu
+* procedura szukania jako lambda
+
+Log z EF/SQL:
+https://stackoverflow.com/questions/7901814/debugging-entity-framework-sql-statements
+
+
+Settings-Local database
+* username, password, database name [PicSortLocal]
+* search using: Dbase / JSON 
+[ale zawsze zapisuje i tu i tu przy archiwizacji, PO archiwizacji pozwala zapisac (dopisac) tylko gdy jest dbase]
+* szukanie - zmiana logiki, tzn. funkcja sprawdzania nie continue for tylko return false, i to jako osobna funkcja
+* struktura/klasa z parametrami szukania, i x:bind do niej (w xaml.vb korzystanie tylko ze struct, bez odwoływania do pól na ekranie)
+* sprawdzic szukanie w bazie (log EF/SQL) - czy szuka serwer czy app
+* szukanie w bazie moze byc inaczej skonstruowane (np.najpierw szuka w TABLE.exifs, a dopiero potem w OnePIc)
+* defaultowa baza - JSON? a druga to SQL? I defaultowa zawsze obecna? wtedy moze byc search using - i combo podpiętych baz?
+* dodawanie bazy danych - pytanie o FILL tejze z istniejącej bazy (JSON/poprzedni SQL)
+* gdzies w configs pamiętać "dbase zmieniona, JSON nieaktualny"?
+* aktualizacja JSONa z bazy?
+* backupowanie z SQLa? (bo teraz sie backupuje w ZIP, a potem by tego nie bylo)
+* dyskusja (chat) o zdjęciu?
+
+Jesli tak, to kolejnosc:
+1) struktura szukania - DONE
+2) podpiecie jej jako x:bind do formatki - DONE
+3) wydzielenie funkcji lambda ret true/false, i ona na LINQ
+4) settings lokalna baza danych, i podłączanie do bazy
+5) init bazy - tworzenie TABLES, ewentualnie tworzenie SP
+6) init danych w bazie - z arch.full.json
+7) backup bazy
+8) szukanie w bazie a nie JSON
+8a) wybór default bazy do szukania
+9) check nowych wpisów [description, moze manual.keywords, moze manual.geo]? - czyli pamietanie ID ostatniego "mojego" wpisu
+10) picsort miniaturyzacja do ikonki przy zegarze (jako serwer)
+11) serwer na porcie 5053, na razie nic nie dający - protokół do wymyslenia dopiero jest
+12) check nowych na timer, i powiadomienia (toast) o nowych wpisach
+13) baza Cosmo/Azure? i sync z nią, by ktos mogl tam dopisywac a nie lokalnie / albo jako backup lokalnego? ale to raczej nie, bo i tak bedzie uzywany lokalny SQL
+
+
+
+WZIAC GOTOWKE Z BANKOMATU WZIAC GOTOWKE Z BANKOMATU WZIAC GOTOWKE Z BANKOMATU WZIAC GOTOWKE Z BANKOMATU 
+
+
+
+
+
 
 
 AmazonPrime: unlimited photos? PL tego nie ma, to jest w US, $140 rocznie
@@ -62,20 +143,16 @@ ARCHIVE/PUBLISH: Amazon Photo
 ARCHIVE/PUBLISH: czemu archiwizuje png/thumbsy (czasem)?
 ARCHIVE/PUBLISH: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 ARCHIVE/PUBLISH: counter max nieudanych, żeby nie było tak że setki plików niewysłane, i trudno dojść do tego jakie? zwłaszcza że chomikuj czasem tylko udaje że nie wysłane
+ARCHIVE: katalog Target, oraz katalog TargetScan ?
 
 AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
-
-AUTO_GUID: jesli katalog juz jest archived, to wtedy dokladniejsze sprawdzanie?
 
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
 AUTOTAG: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 
-BIGPIC: zle rozmiar okna na fotke oblicza (zawsze poziomo?)
-
 BROWSER: right button, delete thumb (teraz jest tylko dla grupowych)
-BROWSER wczytajObrazek: nie dowolny z NAR/ZIP, tylko konkretne próbować wybrać?
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
 BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
 BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
@@ -84,9 +161,7 @@ BROWSER SET-TARGET-DIR:po [+] nie ma refresh comboboxa?
 BROWSER SET-TARGET-DIR:jakos weryfikacja czy już nie ma takiego (żeby się nie pokryło)
 BROWSER: #Wnd KWD SMALL: dodanie Kwd, razem z opisem może jednak, bo do SEARCH byłoby dobrze mieć "Kurcz" w opisie
 BROWSER action:keywords, brakuje jednego poziomu słów kliczowych?
-BROWSER crop - kasowanie thumba potrzebne <- tojuz chyba jest
 BROWSER.Action: LOCK/UNLOCK - tych zdjec nie wysyla nigdzie
-BROWSER: delete guids, albo na to override tego co w Base
 BROWSER: stykówka z zaznaczonych, np z podaniem targetDir jako tytułu - na stykówce nazwa katalogu, data stworzenia, i zdjęcia
 BROWSER: korekta daty: pole teraz, i teraz w telefonie; wylicza sobie offset.
 9 june 19:13 -> 11 june 18:01, wtedy chyba GPS ma też błąd
@@ -94,8 +169,9 @@ BROWSER: korekta daty: pole teraz, i teraz w telefonie; wylicza sobie offset.
 BROWSER: pliki zniknięte - najpierw zapytać o clip nazw, potem czy skasować
 BROWSER: DRAG&drop, może z odpalaniem dedykowanego publish? (o nazwie "drag") - ale czy to potrzebne po dodaniu email?
 BROWSER: open folder (explorer, albo i lista w Settingsach)
-BROWSER: open in shell default, może lista toolsów (w Settings) - nazwa/path
 BROWSER: kasując pliki ("już wysłane") nie kasuje BAKów?
+BROWSER: force date (na podaną datę i czas)
+BROWSER: drop katalogu jako adhoc
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi
@@ -103,14 +179,19 @@ CHOMIK: https://restsharp.dev/v107/ , tu jest o exhausting, że powinno byc nows
 
 CONFIG: combo z publisherami do email? 
 
-DBASE: wstawianie tam Flattened, co pozwala na w miarę normalne query
+DBASE: wstawianie tam Flattened, co pozwala na w miarę normalne query? Przerobić SEARCH by LINQ wykorzystać
+DBASE: baza lokalna SQL, oraz SQL remote? Np. tata z mojego SQL, i synchronizacja SQLi? A może wykorzystać to co robiłem do synchro StoreFiles między SQLami?
 DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
 DBASE: tworzenie tabeli wedle pól z EXIF (flattened?)
 DBASE: https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-ver16
 DBASE: lokalny SQL; ale czy także Azure.Cosmo? Telefonicnzie i tak nie ma jak zrobić wyszukiwania (screen estate za mały)
 DBASE: Amazon.Dynamo (noSQL)
 DBASE: lokalny SQL: wrzucanie StoredProcedure?
-DBASE: aktualizowany także post-archive
+DBASE: aktualizowany także post-archive - "master" database, gdy ona jest dostępna to jest możliwość update danych w Archive a nie tylko w Buffer
+https://learn.microsoft.com/en-us/visualstudio/data-tools/create-a-simple-data-application-with-wpf-and-entity-framework-6?view=vs-2022
+
+
+
 
 DIRTREE: copy to onedrive teraz jest tylko z okna katalogów, a tam sie teraz rzadziej wchodzi (tworzenie dirsów w trakcie)
 DIRTREE: użyć structlist.MaintainCopy
@@ -125,7 +206,6 @@ MAINPAGE: "uruchamiasz drugi raz; poszukaj okna pierwszego uruchomienia" i OK za
 
 MAIN:BROWSE: ewentualnie "recursive"?
 MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
-MAIN:BROWSE w pelni zarchiwizowane - ale ma dac do trzech, a jest tylko w dwu - na wejsciu do Browse, bo na wejsciu do Process jest OK
 MAIN:BROWSE: zdjęcia na dzisiaj w historii (znajdywanie wszystkich)
 
 POSTPROCESS: jeśli któryś etap nie da rady, to pytanie (DialogBoxYN) co zrobić
@@ -139,31 +219,26 @@ PUBLISH progressbar niezbyt dobrze sie zachowuje
 PUBLISH: SendFiles(.., delegate ProgbarInc)
 PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwleka zanim zamknie pliki i sa widoczne
 PUBLISH: Amazon Photos
-PUBLISH: gdy z Settings jest na to zgoda, dopisywanie danych do archfull
-PUBLISH ADHOC: do %temp%\picsort, i runExplorer na tym
+PUBLISH/ARCH: do katalogu VPN, z filtrowaniem (nie =X, nie Nudne, nie -?U - do taty)
 
 PUBLISH: jakiś letsupload.io, i tym podobne; pojedyncze lub do ZIPa - do dzielenia się
 https://nugetmusthaves.com/Package/CloudRail.SDK
 https://location.foursquare.com/products/places/
 
 
-RETRIEVE NAR - rozpakowywanie do pojedynczych moze robic?
 RETRIEVE typ: chomikuj? z podanego katalogu? do dzielenia się z innymi?
 RETRIEVE: dla Purge, progressbar od nowa
 RETRIEVE: reakcja na disk full (sprawdzenie przed próbą ściągania)
-RETRIEVE: pokazywanie ile wczytał PRZED purgownaiem, żeby nie straszyć <-- ale że teraz źle pokazuje? ze pokazuje total plikow 9 nowych, 3 do skasowania, a tylko 3 byly nowe, a pozniej - no new files, a byly?
 RETRIEVE Jako reakcja na drag&DROP
+RETROEVE run AUTOEXIF gdy settings tak mówi
 
 SEARCH: błędna logika, nie zadziała na FLAT (gdzie nie ma tagu Azure itp.)
 SEARCH: sekcja OPAD
-SEARCH: query w folder/description/OCR
-
-SHOWBIG: open in shell default
+SEARCH: typ film, foto, każde - coś z Exif Type (scaner, digital...)
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
 STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
 
-SHOWBIG: jakoś NAR (możliwość zamiany NAR na wybrany JPG, bądź na rozpakowane JPGi?)
 SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
 
 SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku skopiowanym do bufora, nie wcześniej
@@ -173,15 +248,21 @@ SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
+SHARE (z głównego okna): PicSOrt jako serwer, na :PS porcie. Adres IP i ten port, serwer JSONowy, który
+	realizuje połączenia do bazy danych (Get OnePic WHERE ID=xx), ewentualnie jakos GetAllWhereId>x (ale nie wedle GUID, bo tu przybywają też starsze, raczej ID kolejny, czyli AutoNum w bazie)
+	czyli baza musi być nie JSONowa do tego
+	generowanie usera, filtrowanie dla niego wedle keywords, albo generalnie jak w "szukaj" (czyli procedura szukania nie korzystająca z UI tylko z jakiejś struct parametrów)
+	odwołanie potem do CHomikuj? albo też via :PS
+	a przyjmowanie - z buforowaniem plików branych "skądś"?
+	różne remote source mogłyby być, każdy z własnym katalogiem-buforem
+
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
 
-SHUTTERFLY: *) jako archiwum - pelne zdjęcia, takze do druku, sharelink - pelne zdjecie
-SHUTTERFLY: *) jako publish, do Sites, ktorych mozna stworzyc duzo, z niezaleznymi adresami, zmneijszone itp.
+//SHUTTERFLY: *) jako archiwum - pelne zdjęcia, takze do druku, sharelink - pelne zdjecie
+//SHUTTERFLY: *) jako publish, do Sites, ktorych mozna stworzyc duzo, z niezaleznymi adresami, zmneijszone itp.
 
 TELEFON: eksporter do chomikuj różnych
 TELEFON: click po lewej stronie ekranu - prev, po prawej - next
-
-TOOLS(per file.ext): dla NAR, pokazuje wszystkie i pozwala wybrać
 
 gdy bedzie baza, to zrobic "import" wszystkich zdjec z analogowe, z ustawianiem targetDir wedle aktualnego dir (choc teraz data jest przed tytułem)
 

@@ -7,6 +7,7 @@
 
         uiVisualCrossSubscriptionKey.GetSettingsString
         uiVisualCrossPaid.GetSettingsBool
+        uiAzureMaxBatch.GetSettingsInt(iDefault:=500)
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -17,6 +18,7 @@
 
         uiVisualCrossSubscriptionKey.SetSettingsString
         uiVisualCrossPaid.SetSettingsBool
+        uiAzureMaxBatch.SetSettingsInt()
 
         Me.NavigationService.GoBack()
     End Sub

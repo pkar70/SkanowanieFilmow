@@ -123,5 +123,6 @@
             <Button Content=" Done " HorizontalAlignment="Center" Grid.Row="5" Grid.ColumnSpan="2" Margin="5,10,5,15" Click="uiAddEditDone_Click"/>
         </Grid>
         <Button Content=" OK " Click="uiOk_Click" Grid.Row="4" HorizontalAlignment="Center" />
+        <Button Content=" Auto Clear " Click="uiAutoClear_Click" Grid.Row="4" HorizontalAlignment="Right" Margin="0,0,5,0"/>
     </Grid>
 </Window>
