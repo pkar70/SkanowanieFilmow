@@ -12,6 +12,7 @@
             <ColumnDefinition Width="Auto" Name="naQueryBuilder"/>
             <ColumnDefinition Width="*" Name="naListeTrafien"/>
         </Grid.ColumnDefinitions>
+        <!-- <local:UserControlSearch x:Name="uiKwerenda"/> -->
         <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="0,0,10,0" Name="uiKwerenda">
                 <TextBlock Text="Podaj warunki szukania:" Margin="0,0,0,5" FontSize="14" FontWeight="Bold"/>
@@ -45,33 +46,7 @@
                         <TextBox ToolTip="Space separated fragments, prefixed with '!' to negate, to be searched in Descriptions, Comments, Folder, Filename, OCR, Azure description" Text="{Binding ogolne_Gdziekolwiek, Mode=TwoWay}"/>
 
                         <Expander Header="Geography" ToolTip="Dane geograficzne" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <StackPanel >
-                                <CheckBox Content="Dołącz zdjęcia z nieznaną lokalizacją" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia których lokalizacja jest nieznana" IsChecked="{Binding ogolne_geo_AlsoEmpty, Mode=TwoWay}" />
-
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-
-                                    <TextBox Name="uiLatLon" IsReadOnly="true"/>
-                                    <Button Content=" ... " Grid.Column="1" Click="uiGetGeo_Click" />
-                                </Grid>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto" />
-                                        <RowDefinition Height="Auto" />
-                                    </Grid.RowDefinitions>
-                                    <TextBlock Text="Radius (km): " Grid.Row="0"/>
-                                    <TextBox Name="uiGeoRadius" Grid.Row="0" Grid.Column="1" InputScope="Digits" ToolTip="Max. odległość" Text="20"/>
-                                    <TextBlock Text="Nazwa: " Grid.Row="1"/>
-                                    <TextBox Grid.Row="1" Grid.Column="1" ToolTip="Space separated fragments, prefixed with '!' to negate" Text="{Binding ogolne_geo_Name, Mode=TwoWay}"/>
-                                </Grid>
-                            </StackPanel>
+                            <local:UserControlGeo DataContext="{Binding ogolne_geo, Mode=TwoWay}" />
                         </Expander>
 
                         <Expander Header="Ogólne/Advanced" ToolTip="Parametry ogólne" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
@@ -137,154 +112,38 @@
                 </Expander>
 
                 <Expander Header="Astronomia" ToolTip="Dane astronomiczne (ASTRO, MOON, POGODA)" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <StackPanel >
-                        <CheckBox IsChecked="{Binding astro_AlsoEmpty, Mode=TwoWay}" Content="Dołącz zdjęcia bez danych astronomicznych" ToolTip="Odznacz jeśli w wynikach wyszukiwania nie powinny się znaleźć zdjęcia które nie mają danych astronomicznych" />
-
-                        <CheckBox IsChecked="{Binding astro_MoonCheck,Mode=TwoWay}" Name="uiMoonPhase" Content="Dopuszczalna faza Księżyca" ToolTip="Czy sprawdzać fazy Księżyca?"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-                            <TextBlock FontSize="24" Grid.Column="0" Text="🌑" ToolTip="Nów (&lt; 10 %)"/>
-                            <TextBlock FontSize="24" Grid.Column="1" Text="🌒" ToolTip="10 do 35 %"/>
-                            <TextBlock FontSize="24" Grid.Column="2" Text="🌓" ToolTip="Pierwsza kwadra (35 do 65 %)"/>
-                            <TextBlock FontSize="24" Grid.Column="3" Text="🌔" ToolTip="65 do 90 %"/>
-                            <TextBlock FontSize="24" Grid.Column="4" Text="🌕" ToolTip="Pełnia (≥ 90 %)"/>
-                            <TextBlock FontSize="24" Grid.Column="5" Text="🌖" ToolTip="90 do 65 %"/>
-                            <TextBlock FontSize="24" Grid.Column="6" Text="🌗" ToolTip="Trzecia kwadra (65 do 35 %)"/>
-                            <TextBlock FontSize="24" Grid.Column="7" Text="🌘" ToolTip="35 do 10 %"/>
-
-                            <CheckBox Grid.Column="0" Grid.Row="1" IsChecked="{Binding astro_Moon00, Mode=TwoWay}" HorizontalAlignment="Center" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
-                            <CheckBox Grid.Column="1" Grid.Row="1" IsChecked="{Binding astro_MoonD25, Mode=TwoWay}" HorizontalAlignment="Center" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
-                            <CheckBox Grid.Column="2" Grid.Row="1" IsChecked="{Binding astro_MoonD50, Mode=TwoWay}" HorizontalAlignment="Center" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
-                            <CheckBox Grid.Column="3" Grid.Row="1" IsChecked="{Binding astro_MoonD75, Mode=TwoWay}" HorizontalAlignment="Center" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
-                            <CheckBox Grid.Column="4" Grid.Row="1" IsChecked="{Binding astro_Moon100, Mode=TwoWay}" HorizontalAlignment="Center" ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
-                            <CheckBox Grid.Column="5" Grid.Row="1" IsChecked="{Binding astro_MoonC75, Mode=TwoWay}" HorizontalAlignment="Center"  ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
-                            <CheckBox Grid.Column="6" Grid.Row="1" IsChecked="{Binding astro_MoonC50, Mode=TwoWay}" HorizontalAlignment="Center"  ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
-                            <CheckBox Grid.Column="7" Grid.Row="1" IsChecked="{Binding astro_MoonC25, Mode=TwoWay}" HorizontalAlignment="Center"  ToolTip="Odznaczenie oznacza odrzucenie zdjęć w tej kwadrze"/>
-
-                        </Grid>
-
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <CheckBox Name="uiSunHourMinCheck" IsChecked="{Binding astro_SunHourMinCheck, Mode=TwoWay}" Grid.Row="0" Content="Minimalna godzina słoneczna" ToolTip="Tylko przy ASTRO/POGODA"/>
-                            <TextBox Grid.Row="0" Text="{Binding astro_SunHourMinValue, Mode=OneWay}" HorizontalAlignment="Right"/>
-                            <Slider Grid.ColumnSpan="2" Grid.Row="1" Value="{Binding astro_SunHourMinValue, Mode=TwoWay}" Minimum="-12" Maximum="12"  ToolTip="0..12 to godziny dnia od wschodu do zachodu, MINUS oznacza noc" IsEnabled="{Binding IsChecked, ElementName=uiSunHourMinCheck}"/>
-
-                            <CheckBox Name="uiSunHourMaxCheck" IsChecked="{Binding astro_SunHourMaxCheck, Mode=TwoWay}" Grid.Row="2" Content="Maksymalna godzina słoneczna"  ToolTip="Tylko przy ASTRO/POGODA"/>
-                            <TextBox Grid.Row="2" Text="{Binding astro_SunHourMaxValue, Mode=OneWay}" HorizontalAlignment="Right"/>
-                            <Slider Grid.ColumnSpan="2" Grid.Row="3" Value="{Binding astro_SunHourMaxValue, Mode=TwoWay}" Minimum="-12" Maximum="12" ToolTip="0..12 to godziny dnia od wschodu do zachodu, MINUS oznacza noc" IsEnabled="{Binding IsChecked, ElementName=uiSunHourMaxCheck}"/>
-
-                        </Grid>
-
-
-                    </StackPanel>
+                    <local:UserControlAstro DataContext="{Binding Astro, Mode=TwoWay}" />
                 </Expander>
 
                 <Expander Header="Faces" ToolTip="Rozpoznawanie twarzy (WINFACE/AZURE)" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <StackPanel >
-                        <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
-
-                            <CheckBox Name="uiFacesMinCheck" IsChecked="{Binding faces_MinCheck, Mode=TwoWay}" Grid.Row="0" Content="Minimalna liczba twarzy"/>
-                            <TextBox Grid.Row="0" Text="{Binding faces_MinValue, Mode=OneWay}" HorizontalAlignment="Right"/>
-                            <Slider Grid.ColumnSpan="2" Grid.Row="1" Value="{Binding faces_MinValue, Mode=TwoWay}" Minimum="0" Maximum="7" ToolTip="Liczba twarzy" IsEnabled="{Binding IsChecked, ElementName=uiFacesMinCheck}"/>
-
-                            <CheckBox Name="uiFacesMaxCheck" IsChecked="{Binding faces_MaxCheck, Mode=TwoWay}" Grid.Row="2" Content="Maksymalna liczba twarzy"/>
-                            <TextBox Grid.Row="2" Text="{Binding faces_MaxValue, Mode=OneWay}" HorizontalAlignment="Right"/>
-                            <Slider Grid.ColumnSpan="2" Grid.Row="3" Value="{Binding faces_MinValue, Mode=TwoWay}" Minimum="0" Maximum="7" ToolTip="Liczba twarzy" IsEnabled="{Binding IsChecked, ElementName=uiFacesMAXCheck}"/>
-
-                        </Grid>
-
-                    </StackPanel>
+                    <local:UserControlFaces DataContext="{Binding faces, Mode=TwoWay}" />
                 </Expander>
 
                 <Expander Header="Azure" ToolTip="Dane Azure, ignorowane dla zdjęć bez AzureAnalysis" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <StackPanel>
-                        <CheckBox IsChecked="{Binding azure_AlsoEmpty, Mode=TwoWay}" Content="Dołącz zdjęcia bez Azure" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają analizy Azure" />
-                        <!--<Grid HorizontalAlignment="Stretch">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="35" />
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="35" />
-                        </Grid.ColumnDefinitions>
-
-                        <TextBlock Grid.Row="0" Grid.Column="0" Margin="0,0,5,0" Text="faces:" />
-                        <TextBlock Grid.Row="1" Grid.Column="0" Margin="0,0,5,0" Text="persons:" />
-                        <TextBlock Grid.Row="0" Grid.Column="2" Margin="5,0,5,0" Text="–" />
-                        <TextBlock Grid.Row="1" Grid.Column="2" Margin="5,0,5,0" Text="–" />
-
-                        <TextBox Grid.Row="0" Grid.Column="1" Name="uiAzureFacesMin" ToolTip="Minimalna wartość" InputScope="Number"/>
-                        <TextBox Grid.Row="0" Grid.Column="3" Name="uiAzureFacesMax" ToolTip="Maksymalna wartość" InputScope="Number"/>
-                        <TextBox Grid.Row="1" Grid.Column="1" Name="uiAzurePersonsMin" ToolTip="Minimalna wartość" InputScope="Number"/>
-                        <TextBox Grid.Row="1" Grid.Column="3" Name="uiAzurePersonsMax" ToolTip="Maksymalna wartość" InputScope="Number"/>
-                    </Grid>-->
-                        <local:PolaTxt0123 DataContext="{Binding azure_Txt, Mode=TwoWay}" />
-                    </StackPanel>
+                    <local:UserControlTxtNum DataContext="{Binding Azure}" HasNumFld="False" DataDisplayName="danych Azure"/>
                 </Expander>
 
                 <Expander Header="Pogoda" ToolTip="Różne dane pogodowe" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
                     <StackPanel>
                         <Expander Header="VisualCross" ToolTip="Dane pogodowe" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <StackPanel>
-                                <CheckBox IsChecked="{Binding pog_Vcross_AlsoEmpty, Mode=TwoWay}" Content="Dołącz zdjęcia bez pogody" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają przypisanej pogody" />
-                                <local:PolaTxt0123 DataContext="{Binding pog_Vcross_Txt, Mode=TwoWay}" />
-                                <local:PolaNum0123 DataContext="{Binding pog_Vcross_Num, Mode=TwoWay}" />
-                            </StackPanel>
+                            <local:UserControlTxtNum DataContext="{Binding VCross}" DataDisplayName="przypisanej pogody"/>
                         </Expander>
 
                         <Expander Header="IMGW Opad" ToolTip="Dane o opadach" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <StackPanel>
-                                <CheckBox IsChecked="{Binding pog_ImgwOpad_AlsoEmpty, Mode=TwoWay}" Content="Dołącz zdjęcia bez informacji o opadzie" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają przypisanych danych o opadzie" />
-                                <local:PolaTxt0123 DataContext="{Binding pog_ImgwOpad_Txt, Mode=TwoWay}" />
-                                <local:PolaNum0123 DataContext="{Binding pog_ImgwOpad_Num, Mode=TwoWay}" />
-                            </StackPanel>
+                            <local:UserControlTxtNum DataContext="{Binding ImgwOpad}" DataDisplayName="danych o opadzie"/>
                         </Expander>
 
                         <Expander Header="IMGW Klimat" ToolTip="Dane Klimat" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <StackPanel>
-                                <CheckBox IsChecked="{Binding pog_ImgwKlimat_AlsoEmpty, Mode=TwoWay}" Content="Dołącz zdjęcia bez informacji o opadzie" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają przypisanych danych o opadzie" />
-                                <local:PolaTxt0123 DataContext="{Binding pog_ImgwKlimat_Txt, Mode=TwoWay}" />
-                                <local:PolaNum0123 DataContext="{Binding pog_ImgwKlimat_Num, Mode=TwoWay}" />
-                            </StackPanel>
+                            <local:UserControlTxtNum DataContext="{Binding ImgwKlimat}" DataDisplayName="danych o klimacie"/>
                         </Expander>
                     </StackPanel>
                 </Expander>
-
-                <!--<CheckBox Name="uiFullDirs" Content="Dołączaj całe katalogi" Margin="0,15,0,0" ToolTip="Zaznacz, jeśli do wyników należy dołączyć także wszystkie inne pliki w folderach znalezionych zdjęć" IsEnabled="False"/>-->
 
                 <Button Content="Search" HorizontalAlignment="Center" Margin="0,10,0,0" Click="uiSearch_Click" />
 
             </StackPanel>
         </ScrollViewer>
+
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />

@@ -1,6 +1,7 @@
 ﻿
 
 Imports System.IO
+Imports System.Runtime.InteropServices.WindowsRuntime
 Imports System.Runtime.Serialization
 Imports System.Runtime.Serialization.Formatters.Binary
 Imports System.Security.Policy
@@ -125,20 +126,24 @@ Public Class SearchWindow
         Dim iCount As Integer = 0
 
         Application.ShowWait(True)
-        For Each oPicek As Vblib.OnePic In lista
-            If oPicek Is Nothing Then Continue For  ' a cóż to za dziwny case, że jest NULL?
-            If Not CheckIfOnePicMatches(oPicek, query) Then Continue For
+        'For Each oPicek As Vblib.OnePic In lista
+        '    If Not CheckIfOnePicMatches(oPicek, query) Then Continue For
 
-            _queryResults.Add(oPicek)
-            iCount += 1
-        Next
+        '    _queryResults.Add(oPicek)
+        '    iCount += 1
+        'Next
+
+        _queryResults = lista.Where(Function(x) CheckIfOnePicMatches(x, query)).ToList
         Application.ShowWait(False)
 
-        Return iCount
+        Return _queryResults.Count
+        'Return iCount
     End Function
 
 
     Private Shared Function CheckIfOnePicMatches(oPicek As Vblib.OnePic, query As SearchQuery) As Boolean
+
+        If oPicek Is Nothing Then Return False ' a cóż to za dziwny case, że jest NULL? ale był!
 
         Dim oExif As Vblib.ExifTag
         Dim bGdziekolwiekMatch As Boolean = False
@@ -231,21 +236,21 @@ Public Class SearchWindow
 
 #End Region
 
-        If Not String.IsNullOrWhiteSpace(query.ogolne_geo_Name) Then
+        If Not String.IsNullOrWhiteSpace(query.ogolne_geo.Name) Then
             Dim sGeoName As String = ""
             For Each oExif In oPicek.Exifs
                 If Not String.IsNullOrWhiteSpace(oExif.GeoName) Then sGeoName = sGeoName & " " & oExif.GeoName
             Next
 
-            If Not CheckStringMasks(sGeoName, query.ogolne_geo_Name) Then Return False
+            If Not CheckStringMasks(sGeoName, query.ogolne_geo.Name) Then Return False
         End If
 
-        If query.ogolne_geo_Location IsNot Nothing Then
+        If query.ogolne_geo.Location IsNot Nothing Then
             Dim geotag As BasicGeoposWithRadius = oPicek.GetGeoTag
             If geotag Is Nothing Then
-                If Not query.ogolne_geo_AlsoEmpty Then Return False
+                If Not query.ogolne_geo.AlsoEmpty Then Return False
             Else
-                If Not geotag.IsInsideCircle(query.ogolne_geo_Location) Then Return False
+                If Not geotag.IsInsideCircle(query.ogolne_geo.Location) Then Return False
             End If
         End If
 
@@ -291,40 +296,40 @@ Public Class SearchWindow
 #Region "astro"
 
 
-        If query.astro_MoonCheck Then
+        If query.astro.MoonCheck Then
 
             oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoAstro)
             If oExif Is Nothing Then oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoMoon)
             If oExif Is Nothing Then oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
 
             If oExif Is Nothing Then
-                If Not query.astro_AlsoEmpty Then Return False
+                If Not query.astro.AlsoEmpty Then Return False
             Else
                 Dim dFaza As Double = oExif.PogodaAstro.day.moonphase
-                If Not query.astro_Moon00 Then If Math.Abs(dFaza) < 10 Then Return False
-                If Not query.astro_MoonD25 Then If dFaza.Between(10, 35) Then Return False
-                If Not query.astro_MoonD50 Then If dFaza.Between(35, 65) Then Return False
-                If Not query.astro_MoonD75 Then If dFaza.Between(65, 90) Then Return False
-                If Not query.astro_Moon100 Then If Math.Abs(dFaza) > 90 Then Return False
-                If Not query.astro_MoonC75 Then If dFaza.Between(-90, -65) Then Return False
-                If Not query.astro_MoonC50 Then If dFaza.Between(-65, -35) Then Return False
-                If Not query.astro_MoonC25 Then If dFaza.Between(-35, -10) Then Return False
+                If Not query.astro.Moon00 Then If Math.Abs(dFaza) < 10 Then Return False
+                If Not query.astro.MoonD25 Then If dFaza.Between(10, 35) Then Return False
+                If Not query.astro.MoonD50 Then If dFaza.Between(35, 65) Then Return False
+                If Not query.astro.MoonD75 Then If dFaza.Between(65, 90) Then Return False
+                If Not query.astro.Moon100 Then If Math.Abs(dFaza) > 90 Then Return False
+                If Not query.astro.MoonC75 Then If dFaza.Between(-90, -65) Then Return False
+                If Not query.astro.MoonC50 Then If dFaza.Between(-65, -35) Then Return False
+                If Not query.astro.MoonC25 Then If dFaza.Between(-35, -10) Then Return False
             End If
         End If
 
-        If query.astro_SunHourMinCheck OrElse query.astro_SunHourMaxCheck Then
+        If query.astro.SunHourMinCheck OrElse query.astro.SunHourMaxCheck Then
             oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoAstro)
             If oExif Is Nothing Then oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
             If oExif Is Nothing Then
-                If Not query.astro_AlsoEmpty Then Return False
+                If Not query.astro.AlsoEmpty Then Return False
             Else
 
-                If query.astro_SunHourMinCheck Then
-                    If query.astro_SunHourMinValue > oExif.PogodaAstro.day.sunhour Then Return False
+                If query.astro.SunHourMinCheck Then
+                    If query.astro.SunHourMinValue > oExif.PogodaAstro.day.sunhour Then Return False
                 End If
 
-                If query.astro_SunHourMaxCheck Then
-                    If query.astro_SunHourMaxValue < oExif.PogodaAstro.day.sunhour Then Return False
+                If query.astro.SunHourMaxCheck Then
+                    If query.astro.SunHourMaxValue < oExif.PogodaAstro.day.sunhour Then Return False
                 End If
 
             End If
@@ -335,7 +340,7 @@ Public Class SearchWindow
 
 #Region "rozpoznawanie twarzy"
 
-        If query.faces_MinCheck OrElse query.faces_MaxCheck Then
+        If query.faces.MinCheck OrElse query.faces.MaxCheck Then
             Dim iFaces As Integer = -1
 
             oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoAzure)
@@ -358,8 +363,8 @@ Public Class SearchWindow
             End If
 
             If iFaces > -1 Then
-                If query.faces_MinCheck Then If iFaces < query.faces_MinValue Then Return False
-                If query.faces_MaxCheck Then If iFaces > query.faces_MaxValue Then Return False
+                If query.faces.MinCheck Then If iFaces < query.faces.MinValue Then Return False
+                If query.faces.MaxCheck Then If iFaces > query.faces.MaxValue Then Return False
             End If
 
         End If
@@ -370,10 +375,10 @@ Public Class SearchWindow
 #Region "azure"
         oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoAzure)
         If oExif?.AzureAnalysis Is Nothing Then
-            If Not query.azure_AlsoEmpty Then Return False
+            If Not query.Azure.AlsoEmpty Then Return False
         Else
             Dim sTextDump As String = oExif.AzureAnalysis.ToUserComment
-            If Not CheckFieldsTxtValue(sTextDump, query.azure_Txt) Then Return False
+            If Not CheckFieldsTxtValue(sTextDump, query.Azure.FldTxt) Then Return False
 
             ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
             If Not String.IsNullOrEmpty(query.ogolne_Gdziekolwiek) Then
@@ -391,11 +396,11 @@ Public Class SearchWindow
 #Region "Visual Cross"
         oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
         If oExif?.PogodaAstro Is Nothing Then
-            If Not query.pog_Vcross_AlsoEmpty Then Return False
+            If Not query.VCross.AlsoEmpty Then Return False
         Else
             Dim sTextDump As String = oExif.PogodaAstro.DumpAsJSON
-            If Not CheckFieldsTxtValue(sTextDump, query.pog_Vcross_Txt) Then Return False
-            If Not CheckFieldsNumValue(sTextDump, query.pog_Vcross_Num) Then Return False
+            If Not CheckFieldsTxtValue(sTextDump, query.VCross.FldTxt) Then Return False
+            If Not CheckFieldsNumValue(sTextDump, query.VCross.FldNum) Then Return False
         End If
 
 #End Region
@@ -403,11 +408,11 @@ Public Class SearchWindow
 #Region "Opad"
         oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoMeteoOpad)
         If oExif?.MeteoOpad Is Nothing Then
-            If Not query.pog_ImgwOpad_AlsoEmpty Then Return False
+            If Not query.ImgwOpad.AlsoEmpty Then Return False
         Else
             Dim sTextDump As String = oExif.MeteoOpad.DumpAsJSON
-            If Not CheckFieldsTxtValue(sTextDump, query.pog_ImgwOpad_Txt) Then Return False
-            If Not CheckFieldsNumValue(sTextDump, query.pog_ImgwOpad_Num) Then Return False
+            If Not CheckFieldsTxtValue(sTextDump, query.ImgwOpad.FldTxt) Then Return False
+            If Not CheckFieldsNumValue(sTextDump, query.ImgwOpad.FldNum) Then Return False
         End If
 
 #End Region
@@ -415,11 +420,11 @@ Public Class SearchWindow
 #Region "Klimat"
         oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoMeteoKlimat)
         If oExif?.MeteoKlimat Is Nothing Then
-            If Not query.pog_ImgwKlimat_AlsoEmpty Then Return False
+            If Not query.ImgwKlimat.AlsoEmpty Then Return False
         Else
             Dim sTextDump As String = oExif.MeteoKlimat.DumpAsJSON
-            If Not CheckFieldsTxtValue(sTextDump, query.pog_ImgwKlimat_Txt) Then Return False
-            If Not CheckFieldsNumValue(sTextDump, query.pog_ImgwKlimat_Num) Then Return False
+            If Not CheckFieldsTxtValue(sTextDump, query.ImgwKlimat.FldTxt) Then Return False
+            If Not CheckFieldsNumValue(sTextDump, query.ImgwKlimat.FldNum) Then Return False
         End If
 
 #End Region
@@ -431,10 +436,10 @@ Public Class SearchWindow
             If Not bGdziekolwiekMatch Then Return False
         End If
 
-
+        Return True
     End Function
 
-    Private Shared Function CheckFieldsTxtValue(textDump As String, fields As PolaTxt4) As Boolean
+    Private Shared Function CheckFieldsTxtValue(textDump As String, fields As QueryPolaTxt4) As Boolean
         If Not CheckFieldValue(textDump, fields.p0) Then Return False
         If Not CheckFieldValue(textDump, fields.p1) Then Return False
         If Not CheckFieldValue(textDump, fields.p2) Then Return False
@@ -443,7 +448,7 @@ Public Class SearchWindow
         Return True
     End Function
 
-    Private Shared Function CheckFieldValue(textDump As String, field As PoleTxt) As Boolean
+    Private Shared Function CheckFieldValue(textDump As String, field As QueryPoleTxt) As Boolean
         If String.IsNullOrWhiteSpace(field.Value) Then Return True
         If String.IsNullOrWhiteSpace(field.Name) Then Return CheckStringMasks(textDump, field.Value)
 
@@ -485,7 +490,7 @@ Public Class SearchWindow
 
     End Function
 
-    Private Shared Function CheckFieldsNumValue(textDump As String, fields As PolaNum4) As Boolean
+    Private Shared Function CheckFieldsNumValue(textDump As String, fields As QueryPolaNum4) As Boolean
         If Not CheckFieldValueMinMax(textDump, fields.p0) Then Return False
         If Not CheckFieldValueMinMax(textDump, fields.p1) Then Return False
         If Not CheckFieldValueMinMax(textDump, fields.p2) Then Return False
@@ -495,7 +500,7 @@ Public Class SearchWindow
     End Function
 
 
-    Private Shared Function CheckFieldValueMinMax(textDump As String, field As PoleNum) As Boolean
+    Private Shared Function CheckFieldValueMinMax(textDump As String, field As QueryPoleNum) As Boolean
 
         If String.IsNullOrWhiteSpace(field.Name) Then Return True
 
@@ -675,10 +680,10 @@ Public Class SearchWindow
             query.ogolne_MaxDate = uiMinDate.SelectedDate
         End If
 
-        If query.ogolne_geo_Location IsNot Nothing Then
-            ' przeliczając z km na metry
-            query.ogolne_geo_Location.Radius = uiGeoRadius.Text * 1000
-        End If
+        'If query.ogolne_geo.Location IsNot Nothing Then
+        '    ' przeliczając z km na metry
+        '    query.ogolne_geo.Location.Radius = uiGeoRadius.Text * 1000
+        'End If
 
         query.ogolne_adv_Source = TryCast(uiComboSource.SelectedValue, String)?.ToLowerInvariant
         query.ogolne_adv_Filename = uiFilename.Text.ToLowerInvariant
@@ -693,14 +698,6 @@ Public Class SearchWindow
         Return query
 
     End Function
-
-    Private Sub uiGetGeo_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New EnterGeoTag
-        If Not oWnd.ShowDialog Then Return
-        _query.ogolne_geo_Location = oWnd.GetGeoPos
-        uiLatLon.Text = $"szer. {_query.ogolne_geo_Location.StringLat(3)}, dług. {_query.ogolne_geo_Location.StringLon(3)}"
-        uiGeoRadius.Text = If(oWnd.IsZgrubne, 20, 5)
-    End Sub
 
     Private Sub uiSubSearch_Click(sender As Object, e As RoutedEventArgs)
         vb14.DialogBox("jeszcze nie umiem")
@@ -810,112 +807,3 @@ Public Class SearchWindow
     End Sub
 End Class
 
-
-Public Class SearchQuery
-    Inherits BaseStruct
-
-    Public Property ogolne_MinDate As Date
-    Public Property ogolne_MaxDate As Date
-    Public Property ogolne_IgnoreYear As Boolean
-    Public Property ogolne_GUID As String
-    Public Property ogolne_Tags As String
-    Public Property ogolne_Descriptions As String
-    Public Property ogolne_Gdziekolwiek As String
-
-    Public Property ogolne_geo_AlsoEmpty As Boolean = True
-    Public Property ogolne_geo_Location As BasicGeoposWithRadius
-    Public Property ogolne_geo_Name As String
-
-    Public Property ogolne_adv_Source As String
-    Public Property ogolne_adv_TargetDir As String
-    Public Property ogolne_adv_Filename As String
-    Public Property ogolne_adv_Published As String
-    Public Property ogolne_adv_CloudArchived As String
-    Public Property ogolne_adv_TypePic As Boolean = True
-    Public Property ogolne_adv_TypeMovie As Boolean = True
-
-    Public Property source_type As Integer
-    Public Property source_author As String
-
-    Public Property exif_camera As String
-
-    Public Property ocr As String
-
-    Public Property astro_AlsoEmpty As Boolean = True
-    Public Property astro_MoonCheck As Boolean
-    Public Property astro_Moon00 As Boolean = True
-    Public Property astro_MoonD25 As Boolean = True
-    Public Property astro_MoonD50 As Boolean = True
-    Public Property astro_MoonD75 As Boolean = True
-    Public Property astro_Moon100 As Boolean = True
-    Public Property astro_MoonC75 As Boolean = True
-    Public Property astro_MoonC50 As Boolean = True
-    Public Property astro_MoonC25 As Boolean = True
-
-    Public Property astro_SunHourMinCheck As Boolean
-    Public Property astro_SunHourMinValue As Integer
-    Public Property astro_SunHourMaxCheck As Boolean
-    Public Property astro_SunHourMaxValue As Integer
-
-
-    Public Property faces_MinCheck As Boolean
-    Public Property faces_MinValue As Integer
-    Public Property faces_MaxCheck As Boolean
-    Public Property faces_MaxValue As Integer
-
-
-    Public Property azure_AlsoEmpty As Boolean = True
-    Public Property azure_Txt As New PolaTxt4
-
-    Public Property pog_Vcross_AlsoEmpty As Boolean = True
-    Public Property pog_Vcross_Txt As New PolaTxt4
-    Public Property pog_Vcross_Num As New PolaNum4
-
-
-    Public Property pog_ImgwOpad_AlsoEmpty As Boolean = True
-    Public Property pog_ImgwOpad_Txt As New PolaTxt4
-    Public Property pog_ImgwOpad_Num As New PolaNum4
-
-
-    Public Property pog_ImgwKlimat_AlsoEmpty As Boolean = True
-    Public Property pog_ImgwKlimat_Txt As New PolaTxt4
-    Public Property pog_ImgwKlimat_Num As New PolaNum4
-
-
-    Public Property fullDirs As Boolean
-
-End Class
-
-Public Class PolaTxt4
-    Inherits BaseStruct
-
-    Public Property p0 As New PoleTxt
-    Public Property p1 As New PoleTxt
-    Public Property p2 As New PoleTxt
-    Public Property p3 As New PoleTxt
-End Class
-
-Public Class PoleTxt
-    Inherits BaseStruct
-
-    Public Property Name As String
-    Public Property Value As String
-End Class
-
-Public Class PolaNum4
-    Inherits BaseStruct
-
-    Public Property p0 As New PoleNum
-    Public Property p1 As New PoleNum
-    Public Property p2 As New PoleNum
-    Public Property p3 As New PoleNum
-
-End Class
-
-Public Class PoleNum
-    Inherits BaseStruct
-
-    Public Property Name As String
-    Public Property Min As String
-    Public Property Max As String
-End Class
