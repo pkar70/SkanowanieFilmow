@@ -3,6 +3,7 @@ Imports pkar.NetConfigs
 Imports Vblib
 Imports Microsoft.Extensions.Configuration
 Imports System.Reflection
+Imports pkar.WPF.Configs
 
 Partial Public Class App
     Inherits Application
@@ -141,6 +142,8 @@ Public Module pkar
     ''' </summary>
     Private Sub InitSettings(aCmdLineArgs As List(Of String))
 
+#If NUGET_WPF_CONFIG Then
+
         Dim sPathLocal As String = GetAppDataFolder(False)
         Dim sPathRoam As String = GetAppDataFolder(True)
 
@@ -152,6 +155,18 @@ Public Module pkar
                 Nothing,
                 sPathLocal, sPathRoam,
                 Environment.GetCommandLineArgs.ToList)
+
+#Else
+
+#If DEBUG Then
+        WpfConfig.InitSettings(Vblib.IniLikeDefaults.sIniContent, True)
+#Else
+        WpfConfig.InitSettings(Vblib.IniLikeDefaults.sIniContent, false)
+#End If
+
+#End If
+
+
     End Sub
 
 
@@ -571,6 +586,7 @@ Module Extensions
     '    End Try
     'End Function
 
+#If NUGET_WPF_CONFIG Then
 
 #Region "Settingsy jako Extension"
     <Runtime.CompilerServices.Extension>
@@ -714,6 +730,7 @@ Module Extensions
 
 
 #End Region
+#End If
 
     <Runtime.CompilerServices.Extension>
     Public Sub ShowAppVers(ByVal oItem As TextBlock)

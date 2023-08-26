@@ -1,6 +1,7 @@
 ﻿
 
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.WPF.Configs.Extensions
 
 Public Class AutoSplitWindow
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)

@@ -1,5 +1,6 @@
 ﻿
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.WPF.Configs.Extensions
 
 
 Class SettingsMisc
@@ -12,7 +13,7 @@ Class SettingsMisc
         uiCacheThumbs.GetSettingsBool()
         uiHideKeywords.GetSettingsBool
         uiHideThumbs.GetSettingsBool
-        uiBigPicSize.GetSettingsInt(iDefault:=90)
+        uiBigPicSize.GetSettingsInt()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)

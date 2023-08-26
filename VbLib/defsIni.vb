@@ -20,6 +20,9 @@ uiTree2Miesiac=True
 uiCacheThumbs=True
 uiSlideShowSeconds=5
 
+uiAzureMaxBatch=500
+uiBigPicSize=90
+
 # remark
 ' remark
 ; remark

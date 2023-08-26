@@ -1,4 +1,6 @@
-﻿Class SettingsSlideshow
+﻿Imports pkar.WPF.Configs.Extensions
+
+Class SettingsSlideshow
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiSlideShowSeconds.GetSettingsInt
         uiSlideShowAlsoX.GetSettingsBool

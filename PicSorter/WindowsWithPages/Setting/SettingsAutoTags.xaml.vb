@@ -1,4 +1,6 @@
-﻿Class SettingsAutoTags
+﻿Imports pkar.WPF.Configs.Extensions
+
+Class SettingsAutoTags
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiAzureEndpoint.GetSettingsString
@@ -7,7 +9,7 @@
 
         uiVisualCrossSubscriptionKey.GetSettingsString
         uiVisualCrossPaid.GetSettingsBool
-        uiAzureMaxBatch.GetSettingsInt(iDefault:=500)
+        uiAzureMaxBatch.GetSettingsInt()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
