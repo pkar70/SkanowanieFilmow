@@ -39,6 +39,30 @@ Baza danych:
 Log z EF/SQL:
 https://stackoverflow.com/questions/7901814/debugging-entity-framework-sql-statements
 
+plusy bazy danych lokalnej zamiast JSON:
+* szybszy start okienka Search
+* raczej nie szybsze samo szukanie - teraz jest bardzo szybkie, z SQL pewnie bedzie ciągnął całą bazę tak czy inaczej
+* mozna spróbować konwertować SQL do List<OnePic> zamiast konwertownaia JSON
+* czy Newtonsoft ma "binary JSON"?
+Settings, Database: zawsze JSON, włączanie/konfigurowanie SQL - tu może być link do instalacji SQL
+archive.json, i równolegle do wszystkich podłączonych baz. JSON jest zawsze zapisywany, nie można wyłączyć, a SQL wyłączalny.
+* SQL musi mieć funkcje: create database, initial load (z JSON), backup i restore.
+* aktualizacje w Archive.SQL raczej nie przez table.onepic, ale poza nią ??
+
+PicSort jako serwer port 5053, daje możliwość:
+* get keywords ?
+* get folders?
+* search pic
+* add new description / new exiftag
+* get new pics ?
+* put new pics ?
+
+
+PicSort podpięty do remote pictures, funkcjonalność:
+*
+*
+
+
 
 Settings-Local database
 * username, password, database name [PicSortLocal]
@@ -58,7 +82,7 @@ Settings-Local database
 Jesli tak, to kolejnosc:
 1) struktura szukania - DONE
 2) podpiecie jej jako x:bind do formatki - DONE
-3) wydzielenie funkcji lambda ret true/false, i ona na LINQ
+3) wydzielenie funkcji lambda ret true/false, i ona na LINQ - DONE
 4) settings lokalna baza danych, i podłączanie do bazy
 5) init bazy - tworzenie TABLES, ewentualnie tworzenie SP
 6) init danych w bazie - z arch.full.json
@@ -70,10 +94,6 @@ Jesli tak, to kolejnosc:
 11) serwer na porcie 5053, na razie nic nie dający - protokół do wymyslenia dopiero jest
 12) check nowych na timer, i powiadomienia (toast) o nowych wpisach
 13) baza Cosmo/Azure? i sync z nią, by ktos mogl tam dopisywac a nie lokalnie / albo jako backup lokalnego? ale to raczej nie, bo i tak bedzie uzywany lokalny SQL
-
-
-
-WZIAC GOTOWKE Z BANKOMATU WZIAC GOTOWKE Z BANKOMATU WZIAC GOTOWKE Z BANKOMATU WZIAC GOTOWKE Z BANKOMATU 
 
 
 
@@ -144,6 +164,7 @@ ARCHIVE/PUBLISH: czemu archiwizuje png/thumbsy (czasem)?
 ARCHIVE/PUBLISH: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 ARCHIVE/PUBLISH: counter max nieudanych, żeby nie było tak że setki plików niewysłane, i trudno dojść do tego jakie? zwłaszcza że chomikuj czasem tylko udaje że nie wysłane
 ARCHIVE: katalog Target, oraz katalog TargetScan ?
+ARCHIVE/PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
 
 AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
@@ -172,6 +193,9 @@ BROWSER: open folder (explorer, albo i lista w Settingsach)
 BROWSER: kasując pliki ("już wysłane") nie kasuje BAKów?
 BROWSER: force date (na podaną datę i czas)
 BROWSER: drop katalogu jako adhoc
+BROWSER: Keywords, dla selectedcount > 1: tylko dodaje, żadnych nie usuwać
+BROWSER: by search; jako "dodaj/usuń select", reset select - używając UserControl
+BROWSER: add keywords, dodać gren('  ',' ') i spacja na koniec zawsze
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi
@@ -189,9 +213,9 @@ DBASE: Amazon.Dynamo (noSQL)
 DBASE: lokalny SQL: wrzucanie StoredProcedure?
 DBASE: aktualizowany także post-archive - "master" database, gdy ona jest dostępna to jest możliwość update danych w Archive a nie tylko w Buffer
 https://learn.microsoft.com/en-us/visualstudio/data-tools/create-a-simple-data-application-with-wpf-and-entity-framework-6?view=vs-2022
-
-
-
+DBASE: Cosmo jako dla zdalnego komentowania?
+DBASE:OnePic.SerNo, jako numer seryjny - dodawany podczas pierwszej archiwizacji
+DBASE: dodanie SerNo do aktualnego archive.full przy eksporcie do DBASE
 
 DIRTREE: copy to onedrive teraz jest tylko z okna katalogów, a tam sie teraz rzadziej wchodzi (tworzenie dirsów w trakcie)
 DIRTREE: użyć structlist.MaintainCopy
@@ -220,6 +244,7 @@ PUBLISH: SendFiles(.., delegate ProgbarInc)
 PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwleka zanim zamknie pliki i sa widoczne
 PUBLISH: Amazon Photos
 PUBLISH/ARCH: do katalogu VPN, z filtrowaniem (nie =X, nie Nudne, nie -?U - do taty)
+PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
 
 PUBLISH: jakiś letsupload.io, i tym podobne; pojedyncze lub do ZIPa - do dzielenia się
 https://nugetmusthaves.com/Package/CloudRail.SDK
@@ -234,7 +259,9 @@ RETROEVE run AUTOEXIF gdy settings tak mówi
 
 SEARCH: błędna logika, nie zadziała na FLAT (gdzie nie ma tagu Azure itp.)
 SEARCH: sekcja OPAD
-SEARCH: typ film, foto, każde - coś z Exif Type (scaner, digital...)
+SEARCH: całość na UserControl, by można było wykorzystać w innych miejscach
+SEARCH: SaveQuery, i wirtualne katalogi z tego można robić
+SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
 STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
@@ -245,6 +272,7 @@ SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku
 SETTINGS: to o tyle istotne, że AutoRotate wymaga AutoExif!
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
+SETTINGS: keywords: statystyka
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
@@ -255,6 +283,10 @@ SHARE (z głównego okna): PicSOrt jako serwer, na :PS porcie. Adres IP i ten po
 	odwołanie potem do CHomikuj? albo też via :PS
 	a przyjmowanie - z buforowaniem plików branych "skądś"?
 	różne remote source mogłyby być, każdy z własnym katalogiem-buforem
+* lista keywords do pomijania dla danego OUT
+* JedenOut: displayName, guid (jako loginName), permissions (filter/filters)
+* JedenIn: guid, IP, port - cacheowane dane?
+* przy definiowaniu - guzik Email, który załącza dane w postaci JSON dla importu u kogoś
 
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
 
@@ -263,6 +295,10 @@ SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę z
 
 TELEFON: eksporter do chomikuj różnych
 TELEFON: click po lewej stronie ekranu - prev, po prawej - next
+
+TOOLS: dodanie SerNo do aktualnego archive.full, albo - przy eksporcie do DBASE
+
+* WPF i Store, może ten cmdline instalator?
 
 gdy bedzie baza, to zrobic "import" wszystkich zdjec z analogowe, z ustawianiem targetDir wedle aktualnego dir (choc teraz data jest przed tytułem)
 

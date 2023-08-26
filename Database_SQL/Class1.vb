@@ -1,3 +1,10 @@
+
+' Warning: Microsoft.EntityFrameworkCore.SqlServer nuget musi byæ 3.*
+' NIE MOZE BYC 5.*, bo wtedy problem z Method 'get_Properties' does not have an implementation. in type 'Microsoft.Extensions.Configuration.ConfigurationBuilder' from assembly 'Microsoft.Extensions.Configuration, ...
+' NIE MOZE BYC 6.* ani 7.*, bo wymagaj¹ .Net 6
+' no i 3 nie jest deprecated, a 5 - i owszem.
+' 3.1.12: .Net Std 2.0, Microsoft.Data.SQLClient >= 1.1.3, Microsoft.EntityFrameworkCore.Relational >= 3.1.32
+
 Public Class Class1
     ' "DefaultConnection": "Server=myServerAddress; Database=myDataBase; Trusted_Connection=True; MultipleActiveResultSets=true"        
     ' https://learn.microsoft.com/en-us/ef/core/dbcontext-configuration/
