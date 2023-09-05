@@ -58,6 +58,8 @@
                             <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
                         </MenuItem>
                         <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget"/>
+                        <MenuItem Header="Full search" Click="uiFilterSearch_Click" />
+                        <MenuItem Header="none" Click="uiFilterNone_Click" />
                     </Menu>
                     </Popup>
 

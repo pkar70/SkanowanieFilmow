@@ -1,0 +1,19 @@
+﻿<Window x:Class="BrowseFullSearch"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="BrowseFullSearch" Height="600" Width="400" Loaded="Window_Loaded">
+    <Grid Margin="5,5,5,5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <!--<local:UserControlSearch x:Name="uiKwerenda" Szukajmy="uiSearch_Click"/>-->
+        <local:UserControlSearch x:Name="uiKwerenda" />
+        <Button Content="Zaznacz" Grid.Row="1" HorizontalAlignment="Left" Margin="5,10,5,0" Click="uiSearchAdd_Click" />
+        <Button Content="Odznacz" Grid.Row="1" HorizontalAlignment="Right" Margin="5,10,5,0" Click="uiSearchRemove_Click" />
+    </Grid>
+</Window>

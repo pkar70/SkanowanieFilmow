@@ -1,33 +1,21 @@
 ﻿
 Imports pkar
 
+#Region "query definition"
+
+
 Public Class SearchQuery
     Inherits BaseStruct
 
-    Public Property ogolne_MinDate As Date
-    Public Property ogolne_MaxDate As Date
-    Public Property ogolne_IgnoreYear As Boolean
-    Public Property ogolne_GUID As String
-    Public Property ogolne_Tags As String
-    Public Property ogolne_Descriptions As String
-    Public Property ogolne_Gdziekolwiek As String
-
-    Public Property ogolne_geo As QueryGeo
-
-    Public Property ogolne_adv_Source As String
-    Public Property ogolne_adv_TargetDir As String
-    Public Property ogolne_adv_Filename As String
-    Public Property ogolne_adv_Published As String
-    Public Property ogolne_adv_CloudArchived As String
-    Public Property ogolne_adv_TypePic As Boolean = True
-    Public Property ogolne_adv_TypeMovie As Boolean = True
+    Public Property nazwa As String
+    Public Property ogolne As New QueryOgolne
 
     Public Property source_type As Integer
-    Public Property source_author As String
+    Public Property source_author As String = ""
 
-    Public Property exif_camera As String
+    Public Property exif_camera As String = ""
 
-    Public Property ocr As String
+    Public Property ocr As String = ""
 
     Public Property astro As New QueryAstro
 
@@ -44,10 +32,39 @@ Public Class SearchQuery
 
 End Class
 
+#Region "pomocnicze sub-query"
+
+Public Class QueryOgolne
+    Public Property MinDateCheck As Boolean
+    Public Property MinDate As Date
+    Public Property MaxDateCheck As Boolean
+    Public Property MaxDate As Date
+    Public Property IgnoreYear As Boolean
+    Public Property GUID As String = ""
+    Public Property Tags As String = ""
+    Public Property Descriptions As String = ""
+    Public Property Gdziekolwiek As String = ""
+
+    Public Property geo As New QueryGeo
+
+    Public Property adv As New QueryOgolneAdvanced
+
+End Class
+
+Public Class QueryOgolneAdvanced
+    Public Property Source As String = ""
+    Public Property TargetDir As String = ""
+    Public Property Filename As String = ""
+    Public Property Published As String = ""
+    Public Property CloudArchived As String = ""
+    Public Property TypePic As Boolean = True
+    Public Property TypeMovie As Boolean = True
+End Class
+
 Public Class QueryGeo
     Public Property AlsoEmpty As Boolean = True
     Public Property Location As BasicGeoposWithRadius
-    Public Property Name As String
+    Public Property Name As String = ""
 End Class
 
 
@@ -103,8 +120,8 @@ End Class
 Public Class QueryPoleTxt
     Inherits BaseStruct
 
-    Public Property Name As String
-    Public Property Value As String
+    Public Property Name As String = ""
+    Public Property Value As String = ""
 End Class
 
 Public Class QueryPolaNum4
@@ -120,7 +137,20 @@ End Class
 Public Class QueryPoleNum
     Inherits BaseStruct
 
-    Public Property Name As String
-    Public Property Min As String
-    Public Property Max As String
+    Public Property Name As String = ""
+    Public Property Min As String = ""
+    Public Property Max As String = ""
 End Class
+
+#End Region
+#End Region
+
+
+'Public Class QueryList
+'    Inherits pkar.BaseList(Of OneKeyword)
+
+'    Public Sub New(sFolder As String)
+'        MyBase.New(sFolder, "queries.json")
+'    End Sub
+
+'End Class

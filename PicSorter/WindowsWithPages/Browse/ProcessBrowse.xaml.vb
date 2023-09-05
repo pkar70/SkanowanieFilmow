@@ -919,7 +919,7 @@ Public Class ProcessBrowse
             If thumb IsNot Nothing Then uiPicList.SelectedItem = thumb
         End If
 
-            If thumb Is Nothing Then Return thumb
+        If thumb Is Nothing Then Return thumb
         ' jeśli zapętlenie
         If thumb.oPic.sSuggestedFilename = oPic.oPic.sSuggestedFilename Then Return thumb
 
@@ -1303,6 +1303,21 @@ Public Class ProcessBrowse
 
         RefreshMiniaturki(False)
     End Sub
+
+    Private Sub uiFilterNone_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "none"
+
+        For Each oItem In _thumbsy
+            oItem.opacity = _OpacityWygas
+        Next
+
+        _isGeoFilterApplied = False
+        _isTargetFilterApplied = False
+
+        RefreshMiniaturki(False)
+    End Sub
+
     Private Sub uiFilterNoGeo_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
 
@@ -1555,6 +1570,42 @@ Public Class ProcessBrowse
             RefreshMiniaturki(False)
         End If
     End Sub
+
+    Private Shared _searchWnd As Window
+    Private Sub uiFilterSearch_Click(sender As Object, e As RoutedEventArgs)
+
+        If _searchWnd IsNot Nothing Then
+            Try
+                _searchWnd.Activate()
+                Return
+            Catch ex As Exception
+                _searchWnd = Nothing
+            End Try
+        End If
+
+        _searchWnd = New BrowseFullSearch
+        _searchWnd.Owner = Me
+        _searchWnd.Show()
+    End Sub
+
+    Public Function FilterSearchCallback(query As SearchQuery, usun As Boolean)
+
+        For Each thumb As ThumbPicek In _thumbsy
+
+            If SearchWindow.CheckIfOnePicMatches(thumb.oPic, query) Then
+
+                If usun Then
+                    thumb.opacity = _OpacityWygas
+                Else
+                    thumb.opacity = 1
+                End If
+            End If
+        Next
+
+        RefreshMiniaturki(False)
+
+        Return True
+    End Function
 
 #End Region
 
@@ -2155,7 +2206,6 @@ Public Class ProcessBrowse
         End Sub
 
     End Class
-
 
 End Class
 

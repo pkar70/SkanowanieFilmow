@@ -41,26 +41,16 @@ Public Class SearchWindow
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
-        EditExifTag.WypelnComboDeviceType(uiComboDevType, Vblib.FileSourceDeviceTypeEnum.unknown)
-        uiComboDevType.SelectedIndex = 0
-        WypelnComboSourceNames()
+        'WypelnComboSourceNames()
 
         uiResultsCount.Text = $"(no query, total {_fullArchive.Count} items)"
 
         uiKwerenda.DataContext = _query
+        'AddHandler uiKwerenda.Szukajmy, AddressOf uiSearch_Click
 
     End Sub
 
-    Private Sub WypelnComboSourceNames()
-        uiComboSource.Items.Clear()
 
-        uiComboSource.Items.Add("")
-
-        For Each oSource In Application.GetSourcesList.GetList
-            uiComboSource.Items.Add(oSource.SourceName)
-        Next
-
-    End Sub
 
     Private Sub ReadWholeArchive()
         If _fullArchive IsNot Nothing Then Return
@@ -141,7 +131,7 @@ Public Class SearchWindow
     End Function
 
 
-    Private Shared Function CheckIfOnePicMatches(oPicek As Vblib.OnePic, query As SearchQuery) As Boolean
+    Public Shared Function CheckIfOnePicMatches(oPicek As Vblib.OnePic, query As SearchQuery) As Boolean
 
         If oPicek Is Nothing Then Return False ' a cóż to za dziwny case, że jest NULL? ale był!
 
@@ -149,7 +139,7 @@ Public Class SearchWindow
         Dim bGdziekolwiekMatch As Boolean = False
 
 #Region "ogólne"
-        If query.ogolne_MaxDate.IsDateValid Or query.ogolne_MinDate.IsDateValid Then
+        If query.ogolne.MaxDate.IsDateValid Or query.ogolne.MinDate.IsDateValid Then
 
             Dim picMinDate, picMaxDate As Date
 
@@ -166,68 +156,68 @@ Public Class SearchWindow
                 picMaxDate = oPicek.GetMaxDate
             End If
 
-            If query.ogolne_IgnoreYear Then
+            If query.ogolne.IgnoreYear Then
                 ' bierzemy daty oDir, i zmieniamy Year na taki jak w UI query
-                picMinDate = picMinDate.AddYears(query.ogolne_MinDate.Year - picMinDate.Year)
-                picMaxDate = picMaxDate.AddYears(query.ogolne_MaxDate.Year - picMaxDate.Year)
+                picMinDate = picMinDate.AddYears(query.ogolne.MinDate.Year - picMinDate.Year)
+                picMaxDate = picMaxDate.AddYears(query.ogolne.MaxDate.Year - picMaxDate.Year)
             End If
 
-            If query.ogolne_MaxDate.IsDateValid Then
-                If picMinDate > query.ogolne_MaxDate Then Return False
+            If query.ogolne.MaxDate.IsDateValid Then
+                If picMinDate > query.ogolne.MaxDate Then Return False
             End If
 
-            If query.ogolne_MinDate.IsDateValid Then
-                If picMaxDate < query.ogolne_MinDate Then Return False
+            If query.ogolne.MinDate.IsDateValid Then
+                If picMaxDate < query.ogolne.MinDate Then Return False
             End If
         End If
 
-        If Not CheckStringContains(oPicek.PicGuid, query.ogolne_GUID) Then Return False
+        If Not CheckStringContains(oPicek.PicGuid, query.ogolne.GUID) Then Return False
 
-        If Not String.IsNullOrWhiteSpace(query.ogolne_Tags) Then
-            Dim kwrds As String = query.ogolne_Tags
+        If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
+            Dim kwrds As String = query.ogolne.Tags
             ' automatyczne wyłączenie =X, jeśli nie jest podane wprost
             If Not kwrds.Contains("=X") Then kwrds &= " !=X"
             If Not oPicek.MatchesKeywords(kwrds.Split(" ")) Then Return False
         End If
 
         Dim descripsy As String = oPicek.GetSumOfDescriptionsText & " " & oPicek.GetSumOfCommentText
-        If Not CheckStringMasks(descripsy, query.ogolne_Descriptions) Then Return False
+        If Not CheckStringMasks(descripsy, query.ogolne.Descriptions) Then Return False
 
         ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
-        If Not String.IsNullOrEmpty(query.ogolne_Gdziekolwiek) Then
-            If Not CheckStringMasksNegative(descripsy, query.ogolne_Gdziekolwiek) Then Return False
-            If Not CheckStringMasksNegative(oPicek.TargetDir, query.ogolne_Gdziekolwiek) Then Return False
-            If Not CheckStringMasksNegative(oPicek.sSuggestedFilename, query.ogolne_Gdziekolwiek) Then Return False
+        If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) Then
+            If Not CheckStringMasksNegative(descripsy, query.ogolne.Gdziekolwiek) Then Return False
+            If Not CheckStringMasksNegative(oPicek.TargetDir, query.ogolne.Gdziekolwiek) Then Return False
+            If Not CheckStringMasksNegative(oPicek.sSuggestedFilename, query.ogolne.Gdziekolwiek) Then Return False
 
-            If CheckStringMasks(descripsy, query.ogolne_Gdziekolwiek) Then bGdziekolwiekMatch = True
-            If CheckStringMasks(oPicek.TargetDir, query.ogolne_Gdziekolwiek) Then bGdziekolwiekMatch = True
-            If CheckStringMasks(oPicek.sSuggestedFilename, query.ogolne_Gdziekolwiek) Then bGdziekolwiekMatch = True
+            If CheckStringMasks(descripsy, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
+            If CheckStringMasks(oPicek.TargetDir, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
+            If CheckStringMasks(oPicek.sSuggestedFilename, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
         End If
 
 #Region "ogólne - advanced"
 
-        If Not CheckStringMasks(oPicek.TargetDir, query.ogolne_adv_TargetDir) Then Return False
-        If Not CheckStringContains(oPicek.sSourceName, query.ogolne_adv_Source) Then Return False
+        If Not CheckStringMasks(oPicek.TargetDir, query.ogolne.adv.TargetDir) Then Return False
+        If Not CheckStringContains(oPicek.sSourceName, query.ogolne.adv.Source) Then Return False
 
-        If Not oPicek.MatchesMasks(query.ogolne_adv_Filename, "") Then Return False
+        If Not oPicek.MatchesMasks(query.ogolne.adv.Filename, "") Then Return False
 
-        If Not query.ogolne_adv_TypePic Then
+        If Not query.ogolne.adv.TypePic Then
             If oPicek.MatchesMasks(OnePic.ExtsPic) Then Return False
         End If
-        If Not query.ogolne_adv_TypeMovie Then
+        If Not query.ogolne.adv.TypeMovie Then
             If oPicek.MatchesMasks(OnePic.ExtsMovie) Then Return False
         End If
         ' If Not uiTypeOth.IsChecked Then
 
-        If Not CheckStringMasks(oPicek.CloudArchived, query.ogolne_adv_CloudArchived) Then Return False
+        If Not CheckStringMasks(oPicek.CloudArchived, query.ogolne.adv.CloudArchived) Then Return False
 
-        If Not String.IsNullOrWhiteSpace(query.ogolne_adv_Published) Then
+        If Not String.IsNullOrWhiteSpace(query.ogolne.adv.Published) Then
             Dim publishy As String = ""
             For Each item In oPicek.Published
                 publishy = publishy & " " & item.Key
             Next
 
-            If Not CheckStringMasks(publishy, query.ogolne_adv_Published) Then Return False
+            If Not CheckStringMasks(publishy, query.ogolne.adv.Published) Then Return False
 
         End If
 
@@ -236,21 +226,21 @@ Public Class SearchWindow
 
 #End Region
 
-        If Not String.IsNullOrWhiteSpace(query.ogolne_geo.Name) Then
+        If Not String.IsNullOrWhiteSpace(query.ogolne.geo.Name) Then
             Dim sGeoName As String = ""
             For Each oExif In oPicek.Exifs
                 If Not String.IsNullOrWhiteSpace(oExif.GeoName) Then sGeoName = sGeoName & " " & oExif.GeoName
             Next
 
-            If Not CheckStringMasks(sGeoName, query.ogolne_geo.Name) Then Return False
+            If Not CheckStringMasks(sGeoName, query.ogolne.geo.Name) Then Return False
         End If
 
-        If query.ogolne_geo.Location IsNot Nothing Then
+        If query.ogolne.geo.Location IsNot Nothing Then
             Dim geotag As BasicGeoposWithRadius = oPicek.GetGeoTag
             If geotag Is Nothing Then
-                If Not query.ogolne_geo.AlsoEmpty Then Return False
+                If Not query.ogolne.geo.AlsoEmpty Then Return False
             Else
-                If Not geotag.IsInsideCircle(query.ogolne_geo.Location) Then Return False
+                If Not geotag.IsInsideCircle(query.ogolne.geo.Location) Then Return False
             End If
         End If
 
@@ -284,14 +274,14 @@ Public Class SearchWindow
         'Public Const AutoWinOCR As String = "AUTO_WINOCR"
         oExif = oPicek.GetExifOfType(Vblib.ExifSource.AutoWinOCR)
         If Not String.IsNullOrEmpty(query.ocr) Then
-            If oExif Is Nothing Then Return False
+            If oExif?.UserComment Is Nothing Then Return False
             If Not CheckStringMasks(oExif.UserComment, query.ocr) Then Return False
         End If
 
-        If Not String.IsNullOrEmpty(query.ogolne_Gdziekolwiek) Then
+        If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) AndAlso oExif?.UserComment IsNot Nothing Then
             ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
-            If Not CheckStringMasksNegative(oExif.UserComment, query.ogolne_Gdziekolwiek) Then Return False
-            If CheckStringMasks(oExif.UserComment, query.ogolne_Gdziekolwiek) Then bGdziekolwiekMatch = True
+            If Not CheckStringMasksNegative(oExif.UserComment, query.ogolne.Gdziekolwiek) Then Return False
+            If CheckStringMasks(oExif.UserComment, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
         End If
 #Region "astro"
 
@@ -381,9 +371,9 @@ Public Class SearchWindow
             If Not CheckFieldsTxtValue(sTextDump, query.Azure.FldTxt) Then Return False
 
             ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
-            If Not String.IsNullOrEmpty(query.ogolne_Gdziekolwiek) Then
-                If Not CheckStringMasksNegative(sTextDump, query.ogolne_Gdziekolwiek) Then Return False
-                If CheckStringMasks(sTextDump, query.ogolne_Gdziekolwiek) Then bGdziekolwiekMatch = True
+            If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) Then
+                If Not CheckStringMasksNegative(sTextDump, query.ogolne.Gdziekolwiek) Then Return False
+                If CheckStringMasks(sTextDump, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
             End If
 
         End If
@@ -432,7 +422,7 @@ Public Class SearchWindow
 
 #End Region
 
-        If Not String.IsNullOrEmpty(query.ogolne_Gdziekolwiek) Then
+        If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) Then
             If Not bGdziekolwiekMatch Then Return False
         End If
 
@@ -609,22 +599,15 @@ Public Class SearchWindow
 
     Private Async Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
 
+        ' clickcli
+        _query = Await uiKwerenda.QueryValidityCheck
+
         ' przeniesienie z UI do _query - większość się zrobi samo, ale daty - nie
-        Dim query As SearchQuery = FromUiToQuery()
-
-        ' robimy tak, bo chcemy update w UI oraz w _query; a Binding nie przeniesie przy zmianie od strony kodu
-        If Not String.IsNullOrEmpty(query.ogolne_Tags) AndAlso query.ogolne_Tags.ToLowerInvariant = query.ogolne_Tags Then
-            If Await vb14.DialogBoxYNAsync("Keywords ma tylko małe litery, czy zmienić na duże?") Then
-                'uiTags.Text = uiTags.Text.ToUpper
-                query.ogolne_Tags = query.ogolne_Tags.ToUpper
-            End If
-        End If
-
         Dim iCount As Integer
         If _inputList Is Nothing Then
-            iCount = Szukaj(_fullArchive.GetList, query)
+            iCount = Szukaj(_fullArchive.GetList, _query)
         Else
-            iCount = Szukaj(_inputList, query)
+            iCount = Szukaj(_inputList, _query)
         End If
 
         If iCount < 1 Then
@@ -638,8 +621,6 @@ Public Class SearchWindow
         If iCount > 1000 Then
             If Not Await vb14.DialogBoxYNAsync($"{iCount} to dużo elementów, pokazać listę mimo to?") Then Return
         End If
-
-
 
         ' pokazanie rezultatów
         uiLista.ItemsSource = From c In _queryResults
@@ -662,42 +643,7 @@ Public Class SearchWindow
     ''' <summary>
     ''' przeniesienie danych z UI do struktury Query - to, co samo się nie przenosi
     ''' </summary>
-    Private Function FromUiToQuery() As SearchQuery
-        Dim query As SearchQuery = _query
 
-        ' daty - UI ma NULL dla nie-selected, a my chcemy mieć wartości
-        If Not uiMinDateCheck.IsChecked OrElse uiMaxDate.SelectedDate Is Nothing Then
-            query.ogolne_MaxDate = Date.MaxValue
-        Else
-            query.ogolne_MaxDate = uiMaxDate.SelectedDate
-            ' na północ PO, czyli razem z tym dniem
-            query.ogolne_MaxDate = query.ogolne_MaxDate.AddDays(1)
-        End If
-
-        If Not uiMinDateCheck.IsChecked OrElse uiMinDate.SelectedDate Is Nothing Then
-            query.ogolne_MinDate = Date.MinValue
-        Else
-            query.ogolne_MaxDate = uiMinDate.SelectedDate
-        End If
-
-        'If query.ogolne_geo.Location IsNot Nothing Then
-        '    ' przeliczając z km na metry
-        '    query.ogolne_geo.Location.Radius = uiGeoRadius.Text * 1000
-        'End If
-
-        query.ogolne_adv_Source = TryCast(uiComboSource.SelectedValue, String)?.ToLowerInvariant
-        query.ogolne_adv_Filename = uiFilename.Text.ToLowerInvariant
-        If String.IsNullOrWhiteSpace(query.ogolne_adv_Filename) Then query.ogolne_adv_Filename = "*"
-
-        query.source_type = -1
-        Dim sDevType As String = TryCast(uiComboDevType.SelectedValue, String)
-        If Not String.IsNullOrWhiteSpace(sDevType) Then
-            query.source_type = sDevType.Substring(0, 1)
-        End If
-
-        Return query
-
-    End Function
 
     Private Sub uiSubSearch_Click(sender As Object, e As RoutedEventArgs)
         vb14.DialogBox("jeszcze nie umiem")
@@ -783,10 +729,6 @@ Public Class SearchWindow
 
     End Sub
 
-    Private Sub uiCopyDateMinToMax(sender As Object, e As RoutedEventArgs)
-        uiMaxDate.SelectedDate = uiMinDate.SelectedDate
-        uiMaxDateCheck.IsChecked = uiMinDateCheck.IsChecked
-    End Sub
 
     Private Sub uiOpenFolder_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender

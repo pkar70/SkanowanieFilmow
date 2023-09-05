@@ -194,8 +194,8 @@ BROWSER: kasując pliki ("już wysłane") nie kasuje BAKów?
 BROWSER: force date (na podaną datę i czas)
 BROWSER: drop katalogu jako adhoc
 BROWSER: Keywords, dla selectedcount > 1: tylko dodaje, żadnych nie usuwać
-BROWSER: by search; jako "dodaj/usuń select", reset select - używając UserControl
 BROWSER: add keywords, dodać gren('  ',' ') i spacja na koniec zawsze
+BROWSER: usunac wpelni zarchiwizowane, YES - to pytanie o backup config, ten sam co w Settings - tu dodac tez backupowanie bazy danych
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi
@@ -259,7 +259,6 @@ RETROEVE run AUTOEXIF gdy settings tak mówi
 
 SEARCH: błędna logika, nie zadziała na FLAT (gdzie nie ma tagu Azure itp.)
 SEARCH: sekcja OPAD
-SEARCH: całość na UserControl, by można było wykorzystać w innych miejscach
 SEARCH: SaveQuery, i wirtualne katalogi z tego można robić
 SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
 

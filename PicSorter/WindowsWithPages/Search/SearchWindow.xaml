@@ -12,139 +12,16 @@
             <ColumnDefinition Width="Auto" Name="naQueryBuilder"/>
             <ColumnDefinition Width="*" Name="naListeTrafien"/>
         </Grid.ColumnDefinitions>
-        <!-- <local:UserControlSearch x:Name="uiKwerenda"/> -->
-        <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto">
-            <StackPanel Margin="0,0,10,0" Name="uiKwerenda">
-                <TextBlock Text="Podaj warunki szukania:" Margin="0,0,0,5" FontSize="14" FontWeight="Bold"/>
-                <!--<Expander Header="Ogólne" IsExpanded="true" FlowDirection="RightToLeft">
-                <StackPanel FlowDirection="LeftToRight">-->
-                <Expander Header="Ogólne" IsExpanded="true" ToolTip="Parametry ogólne" BorderThickness="1" BorderBrush="Blue">
-                    <StackPanel >
-                        <CheckBox Content="Data minimalna" Name="uiMinDateCheck" ToolTip="Czy ta data ma być używana?"/>
-                        <DatePicker Name="uiMinDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01" IsEnabled="{Binding IsChecked, ElementName=uiMinDateCheck}" ToolTip="Zdjęcie zrobione od tej daty"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <CheckBox Content="Data maksymalna" Name="uiMaxDateCheck" ToolTip="Czy ta data ma być używana?"/>
-                            <Button Grid.Column="1" Content=" copy " Click="uiCopyDateMinToMax" ToolTip="Kopiuj datę min do daty max"/>
-                        </Grid>
-                        <DatePicker Name="uiMaxDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01" IsEnabled="{Binding IsChecked, ElementName=uiMinDateCheck}" ToolTip="Zdjęcie zrobione do tej daty"/>
-                        <CheckBox Margin="0,5,0,0" ToolTip="Ignore year (use only month and day)" Content="Ignore year" IsChecked="{Binding ogolne_IgnoreYear, Mode=TwoWay}"/>
 
-                        <TextBlock Text="GUID" Margin="0,5,0,0"/>
-                        <TextBox ToolTip="Enter fragment of GUID" Text="{Binding ogolne_GUID}"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <!--<local:UserControlSearch x:Name="uiKwerenda" Szukajmy="uiSearch_Click"/>-->
+        <local:UserControlSearch x:Name="uiKwerenda" />
+        <Button Content="Search" Grid.Row="1" HorizontalAlignment="Center" Margin="0,10,0,0" Click="uiSearch_Click" />
 
-                        <TextBlock Text="Tags" Margin="0,5,0,0"/>
-                        <TextBox ToolTip="Space separated tags, prefixed with '!' to negate" Text="{Binding ogolne_Tags, Mode=TwoWay}"/>
-
-                        <TextBlock Text="Descriptions" Margin="0,5,0,0"/>
-                        <TextBox ToolTip="Space separated fragments, prefixed with '!' to negate, from Descriptions or Comments" Text="{Binding ogolne_Descriptions, Mode=TwoWay}"/>
-
-                        <TextBlock Text="Gdziegolwiek" Margin="0,5,0,0"/>
-                        <TextBox ToolTip="Space separated fragments, prefixed with '!' to negate, to be searched in Descriptions, Comments, Folder, Filename, OCR, Azure description" Text="{Binding ogolne_Gdziekolwiek, Mode=TwoWay}"/>
-
-                        <Expander Header="Geography" ToolTip="Dane geograficzne" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <local:UserControlGeo DataContext="{Binding ogolne_geo, Mode=TwoWay}" />
-                        </Expander>
-
-                        <Expander Header="Ogólne/Advanced" ToolTip="Parametry ogólne" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <StackPanel>
-                                <TextBlock Text="Źródło:" Margin="0,5,0,0"/>
-                                <ComboBox Name="uiComboSource" ToolTip="Select source"/>
-
-                                <TextBlock Text="Target dir" Margin="0,5,0,0"/>
-                                <TextBox Text="{Binding ogolne_adv_TargetDir, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
-
-                                <TextBlock Text="Filename" Margin="0,5,0,0"/>
-                                <TextBox Name="uiFilename" ToolTip="Enter DOS filename mask"/>
-
-                                <TextBlock Text="Published" Margin="0,5,0,0"/>
-                                <TextBox Text="{Binding ogolne_adv_Published, Mode=TwoWay}" ToolTip="Space separated name's fragments, prefixed with '!' to negate" />
-
-                                <TextBlock Text="Cloud archived" Margin="0,5,0,0"/>
-                                <TextBox Text="{Binding ogolne_adv_CloudArchived, Mode=TwoWay}" ToolTip="Space separated name's fragments, prefixed with '!' to negate" />
-
-                                <TextBlock Text="Type of file" Margin="0,5,0,0"/>
-                                <CheckBox Content="Photo" IsChecked="{Binding ogolne_adv_TypePic, Mode=TwoWay}"/>
-                                <CheckBox Content="Movie" IsChecked="{Binding ogolne_adv_TypeMovie, Mode=TwoWay}"/>
-                                <!--<CheckBox Name="uiTypeOth" Content="Other" IsChecked="True"/>-->
-
-                            </StackPanel>
-                        </Expander>
-                        <!--<Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                        </Grid.RowDefinitions>
-                        <TextBlock Text=" + " />
-                        <TextBox Name="uiPublishYES" ToolTip="Pulished to" Grid.Column="1"/>
-                        <TextBlock Text=" - " Grid.Row="1"/>
-                        <TextBox Name="uiPublishNO" ToolTip="Not pulished to" Grid.Column="1"/>
-                    </Grid>-->
-                    </StackPanel>
-                </Expander>
-
-                <Expander Header="Source" ToolTip="Parametry znacznika SourceDefault" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <StackPanel >
-                        <ComboBox Name="uiComboDevType" ToolTip="Select device type (not selected means all)"/>
-                        <TextBlock Text="Autor:" />
-                        <TextBox Text="{Binding source_author, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
-                    </StackPanel>
-                </Expander>
-
-                <Expander Header="File EXIF" ToolTip="Parametry odczytane z pliku zdjęcia" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <StackPanel >
-                        <TextBlock Text="Camera:" />
-                        <TextBox Text="{Binding exif_camera, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
-                    </StackPanel>
-                </Expander>
-
-                <Expander Header="OCR" ToolTip="Rozpoznany tekst" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <StackPanel >
-                        <TextBox Text="{Binding ocr, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
-                    </StackPanel>
-                </Expander>
-
-                <Expander Header="Astronomia" ToolTip="Dane astronomiczne (ASTRO, MOON, POGODA)" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <local:UserControlAstro DataContext="{Binding Astro, Mode=TwoWay}" />
-                </Expander>
-
-                <Expander Header="Faces" ToolTip="Rozpoznawanie twarzy (WINFACE/AZURE)" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <local:UserControlFaces DataContext="{Binding faces, Mode=TwoWay}" />
-                </Expander>
-
-                <Expander Header="Azure" ToolTip="Dane Azure, ignorowane dla zdjęć bez AzureAnalysis" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <local:UserControlTxtNum DataContext="{Binding Azure}" HasNumFld="False" DataDisplayName="danych Azure"/>
-                </Expander>
-
-                <Expander Header="Pogoda" ToolTip="Różne dane pogodowe" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <StackPanel>
-                        <Expander Header="VisualCross" ToolTip="Dane pogodowe" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <local:UserControlTxtNum DataContext="{Binding VCross}" DataDisplayName="przypisanej pogody"/>
-                        </Expander>
-
-                        <Expander Header="IMGW Opad" ToolTip="Dane o opadach" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <local:UserControlTxtNum DataContext="{Binding ImgwOpad}" DataDisplayName="danych o opadzie"/>
-                        </Expander>
-
-                        <Expander Header="IMGW Klimat" ToolTip="Dane Klimat" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                            <local:UserControlTxtNum DataContext="{Binding ImgwKlimat}" DataDisplayName="danych o klimacie"/>
-                        </Expander>
-                    </StackPanel>
-                </Expander>
-
-                <Button Content="Search" HorizontalAlignment="Center" Margin="0,10,0,0" Click="uiSearch_Click" />
-
-            </StackPanel>
-        </ScrollViewer>
-
-        <Grid Grid.Column="1">
+        <Grid Grid.Column="1" Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
