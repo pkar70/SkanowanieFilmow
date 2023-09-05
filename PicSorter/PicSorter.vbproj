@@ -52,7 +52,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="pkar.DotNetExts" Version="2.2.2" />
-    <PackageReference Include="pkar.StructList" Version="1.4.1" />
     <PackageReference Include="pkar.WPF.Configs" Version="1.0.0" />
   </ItemGroup>
 
