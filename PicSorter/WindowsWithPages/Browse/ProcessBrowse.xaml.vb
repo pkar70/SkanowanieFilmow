@@ -1533,6 +1533,7 @@ Public Class ProcessBrowse
 
     Private Sub uiFilterKeywords_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
+        uiFilters.Content = "kws"
 
         Dim oWnd As New FilterKeywords
         oWnd.ShowDialog()
@@ -1573,6 +1574,9 @@ Public Class ProcessBrowse
 
     Private Shared _searchWnd As Window
     Private Sub uiFilterSearch_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "query"
+
 
         If _searchWnd IsNot Nothing Then
             Try
@@ -2014,8 +2018,20 @@ Public Class ProcessBrowse
                 ' 1) jeśli mamy jakieś tagi, to nowe tylko dołączamy do tego (nie ma wtedy wyłączania tagów)
                 Dim oCurrExif As Vblib.ExifTag = oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualTag)
                 If oCurrExif IsNot Nothing Then
-                    oCurrExif.Keywords = oCurrExif.Keywords & " " & oExif.Keywords
-                    oCurrExif.UserComment = oCurrExif.UserComment & " | " & oExif.UserComment
+
+                    Dim aKwds As String() = oCurrExif.Keywords.Split("|")
+                    Dim aOpisy As String() = oCurrExif.UserComment.Split("|")
+                    For iLp = 0 To aKwds.Count - 1
+                        Dim kwd As String = aKwds(iLp).TrimStart
+                        If Not oCurrExif.Keywords.Contains(kwd) Then
+                            oCurrExif.Keywords &= "|" & kwd
+                            If iLp < aOpisy.Count Then oCurrExif.UserComment &= "|" & aOpisy(iLp)
+                        End If
+                    Next
+
+                    'oCurrExif.Keywords = oCurrExif.Keywords & " " & oExif.Keywords
+                    'oCurrExif.UserComment = oCurrExif.UserComment & " | " & oExif.UserComment
+
                     oCurrExif.DateMax = oCurrExif.DateMax.Max(oExif.DateMax)
                     oCurrExif.DateMin = oCurrExif.DateMin.Min(oExif.DateMin)
 

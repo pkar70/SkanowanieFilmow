@@ -216,6 +216,8 @@ https://learn.microsoft.com/en-us/visualstudio/data-tools/create-a-simple-data-a
 DBASE: Cosmo jako dla zdalnego komentowania?
 DBASE:OnePic.SerNo, jako numer seryjny - dodawany podczas pierwszej archiwizacji
 DBASE: dodanie SerNo do aktualnego archive.full przy eksporcie do DBASE
+DBASE: 'primary', do szukania, każda: AddFiles(list<onefile>), Read, PreBackup (dla SQL: zrobienie kopii do JSON przed ZIPowaniem), Search(query szukania, <filter>kanału)...
+DBASE: SQL, oraz defaultowa JSON lokalny
 
 DIRTREE: copy to onedrive teraz jest tylko z okna katalogów, a tam sie teraz rzadziej wchodzi (tworzenie dirsów w trakcie)
 DIRTREE: użyć structlist.MaintainCopy
@@ -223,6 +225,7 @@ DIRTREE: użyć structlist.MaintainCopy
 IMPORT: nowa funkcjonalność, import, podaje się zakres dat, browse folder, i ściaga z foldertree podpadające zdjęcia
 
 KEYWORDS/GEO: może przy dodawaniu manual geo automatycznie dopisywać keywordy?
+KEYWORDS: zadbać by AddKeyword nie dodawał do stringu jak już taki istnieje - teraz są dublety, typu -JA -JA -JA -JA
 
 MAINPAGE: "open folder in-place", bez import jako takiego? tylko lokalny buffer.json?
 MAINPAGE: ewentualnie osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać (do ściągania komentarzy do zdjęć)
@@ -272,6 +275,7 @@ SETTINGS: to o tyle istotne, że AutoRotate wymaga AutoExif!
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 SETTINGS: keywords: statystyka
+SETTINGS:DBASE nowa funkcjonalność
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
