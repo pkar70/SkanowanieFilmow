@@ -90,6 +90,7 @@ Public Class ProcessBrowse
             ' działamy na archiwum
 
             uiFilterNoTarget.Visibility = Visibility.Collapsed
+            uiFilterNoDescr.Visibility = Visibility.Collapsed
 
             uiSplit.IsEnabled = False
 
@@ -1489,6 +1490,26 @@ Public Class ProcessBrowse
         KoniecFiltrowania(bMamy)
     End Sub
 
+    Private Sub uiFilterNoDescr_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "no desc"
+
+        Dim bMamy As Boolean = False
+
+        For Each oItem As ThumbPicek In _thumbsy
+            If String.IsNullOrWhiteSpace(oItem.oPic.GetSumOfDescriptionsText) Then
+                oItem.opacity = 1
+                bMamy = True
+            Else
+                oItem.opacity = _OpacityWygas
+            End If
+        Next
+
+        _isGeoFilterApplied = False
+        _isTargetFilterApplied = True
+        KoniecFiltrowania(bMamy)
+
+    End Sub
 
     Private Sub uiFilterNoTarget_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
@@ -2176,6 +2197,8 @@ Public Class ProcessBrowse
         Public Property widthPaskow As Integer
         Public Property dymekSplit As String = ""
         Public Property opacity As Double = 1   ' czyli normalnie pokazany
+
+        Public Property podpis As String = ""
 
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek

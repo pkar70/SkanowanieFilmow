@@ -57,6 +57,7 @@
                             <Separator/>
                             <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
                         </MenuItem>
+                        <MenuItem Header="no Description" Click="uiFilterNoDescr_Click" Name="uiFilterNoDescr"/>
                         <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget"/>
                         <MenuItem Header="Full search" Click="uiFilterSearch_Click" />
                         <MenuItem Header="none" Click="uiFilterNone_Click" />
@@ -144,6 +145,7 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
+                    <StackPanel>
                     <StackPanel Orientation="Horizontal" >
                         <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}}" Background="{Binding splitBefore, Converter={StaticResource KonwersjaPasekKolor}}" Width="{Binding widthPaskow}" ToolTip="{Binding dymekSplit}" >
                             <Grid.Height>
@@ -174,6 +176,8 @@
                             </Image.ContextMenu>
                         </Image>
                         <TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
+                    </StackPanel>
+                        <TextBlock Margin="0,1,0,2" Text="{Binding oPic.podpis}" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
