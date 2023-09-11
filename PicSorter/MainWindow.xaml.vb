@@ -49,6 +49,24 @@ Class MainWindow
             If iRet = MessageBoxResult.Yes Then Application.Current.Shutdown()
         End If
     End Sub
+
+    Private Async Sub Window_StateChanged(sender As Object, e As EventArgs)
+        ' https://www.codeproject.com/Articles/36468/WPF-NotifyIcon-2
+        If Me.WindowState = WindowState.Minimized Then
+            If Await Vblib.pkarlibmodule14.DialogBoxYNAsync("Zamknąć do SysTray?") Then
+                myNotifyIcon.Visibility = Visibility.Visible
+                myNotifyIcon.Icon = New System.Drawing.Icon("icons/trayIcon1.ico")
+                Me.Hide()
+            End If
+        End If
+    End Sub
+
+    Private Sub uiTrayIcon_DoubleClick(sender As Object, e As RoutedEventArgs)
+        Show()
+        Me.WindowState = WindowState.Normal
+        'SystemCommands.RestoreWindow(Me)
+        myNotifyIcon.Visibility = Visibility.Collapsed
+    End Sub
 End Class
 
 'Public Class probaKlasy
