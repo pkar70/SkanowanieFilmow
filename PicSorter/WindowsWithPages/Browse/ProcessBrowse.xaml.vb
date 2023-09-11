@@ -1255,6 +1255,51 @@ Public Class ProcessBrowse
         uiComboSize_SelectionChanged(Nothing, Nothing)
     End Sub
 
+    Private Sub uiPodpis_Click(sender As Object, e As RoutedEventArgs)
+        uiPodpisWybor.IsOpen = Not uiPodpisWybor.IsOpen
+    End Sub
+
+
+    Private Sub uiPodpisTo_Click(sender As Object, e As RoutedEventArgs)
+        uiPodpisWybor.IsOpen = False
+
+        Dim oMI As MenuItem = sender
+        If oMI Is Nothing Then Return
+
+        Dim mode As String = oMI.Header
+        Select Case mode.ToLowerInvariant
+            Case "filename"
+                For Each oThumb In _thumbsy
+                    oThumb.podpis = oThumb.oPic.sSuggestedFilename
+                Next
+            Case "keywords"
+                For Each oThumb In _thumbsy
+                    oThumb.podpis = oThumb.oPic.GetAllKeywords
+                Next
+            Case "description"
+                For Each oThumb In _thumbsy
+                    oThumb.podpis = oThumb.oPic.GetSumOfDescriptionsText
+                Next
+            Case "targetdir"
+                For Each oThumb In _thumbsy
+                    oThumb.podpis = oThumb.oPic.TargetDir
+                Next
+
+            Case Else ' w tym "none"
+                For Each oThumb In _thumbsy
+                    oThumb.podpis = ""
+                Next
+
+        End Select
+
+        For Each oMI In uiPodpisMenu.Items
+            oMI.IsChecked = (oMI.Header = mode)
+        Next
+
+        RefreshMiniaturki(False)
+    End Sub
+
+
     Private Sub uiSplitMode_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AutoSplitWindow
         oWnd.WindowStartupLocation = WindowStartupLocation.Manual
@@ -2246,6 +2291,9 @@ Public Class ProcessBrowse
 
     End Class
 
+    Private Sub uiPodpis_Click_1(sender As Object, e As RoutedEventArgs)
+
+    End Sub
 End Class
 
 Public Class KonwersjaPasekKolor

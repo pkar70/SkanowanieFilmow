@@ -73,6 +73,21 @@
                     <ComboBoxItem Content="160" />
                     <ComboBoxItem Content="100" />
                 </ComboBox>
+                <Button Content="Podpis" Name="uiPodpis" Click="uiPodpis_Click" Margin="0,0,15,0"/>
+                <Popup IsOpen="False" PlacementTarget="{Binding ElementName=uiPodpis}" StaysOpen="False" Name="uiPodpisWybor">
+                    <Menu x:Name="uiPodpisMenu">
+                        <Menu.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </Menu.ItemsPanel>
+                        <MenuItem IsCheckable="True" IsChecked="True" Header="None" Click="uiPodpisTo_Click"/>
+                        <MenuItem IsCheckable="True" Header="Filename" Click="uiPodpisTo_Click"/>
+                        <MenuItem IsCheckable="True" Header="Keywords" Click="uiPodpisTo_Click"/>
+                        <MenuItem IsCheckable="True" Header="Description" Click="uiPodpisTo_Click"/>
+                        <MenuItem IsCheckable="True" Header="Targetdir" Click="uiPodpisTo_Click"/>
+                    </Menu>
+                </Popup>
                 <Button Content=" Split " Height="Auto" Width="Auto" Click="uiSplitMode_Click" Name="uiSplit"/>
             </StackPanel>
 
@@ -145,7 +160,6 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel>
                     <StackPanel Orientation="Horizontal" >
                         <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}}" Background="{Binding splitBefore, Converter={StaticResource KonwersjaPasekKolor}}" Width="{Binding widthPaskow}" ToolTip="{Binding dymekSplit}" >
                             <Grid.Height>
@@ -157,6 +171,7 @@
                         </Grid>
                         <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}, ConverterParameter=NEG}" Height="{Binding iDuzoscH, Mode=OneWay }" Width="{Binding widthPaskow}" />
                         <Grid Height="{Binding iDuzoscH, Mode=OneWay }" Width="4" />
+                        <StackPanel>
                         <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" Opacity="{Binding opacity}" MouseLeftButtonDown="uiImage_LeftClick">
                             <Image.ContextMenu>
                                 <ContextMenu>
@@ -175,9 +190,10 @@
                                 </ContextMenu>
                             </Image.ContextMenu>
                         </Image>
-                        <TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
+                            <!--<TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
+                            <TextBlock Margin="0,-20,0,0" HorizontalAlignment="Right" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
+                            <TextBlock Margin="0,1,0,2" Text="{Binding podpis}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding podpis, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
                     </StackPanel>
-                        <TextBlock Margin="0,1,0,2" Text="{Binding oPic.podpis}" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
                     </StackPanel>
                 </DataTemplate>
             </ListView.ItemTemplate>
