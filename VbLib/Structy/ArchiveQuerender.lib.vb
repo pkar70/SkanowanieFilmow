@@ -14,10 +14,10 @@ Public Class ArchiveIndex
         _dataFilenameFlat = IO.Path.Combine(datafolder, "archIndexFlat.json")
     End Sub
 
-    Public Sub AddToGlobalJsonIndex(sIndexShortJson As String, sIndexLongJson As String)
-        AddToJsonIndexMain(_dataFilenameFlat, sIndexShortJson)
-        AddToJsonIndexMain(_dataFilenameFull, sIndexLongJson)
-    End Sub
+    'Public Sub AddToGlobalJsonIndex(sIndexShortJson As String, sIndexLongJson As String)
+    '    AddToJsonIndexMain(_dataFilenameFlat, sIndexShortJson)
+    '    AddToJsonIndexMain(_dataFilenameFull, sIndexLongJson)
+    'End Sub
 
     ' wywoływane z zewnątrz, do dodawania do picsort.arch.json
     Public Shared Sub AddToFolderJsonIndex(sFolder As String, sIndexLongJson As String)

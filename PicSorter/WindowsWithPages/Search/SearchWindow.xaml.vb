@@ -20,8 +20,8 @@ Imports vb14 = Vblib.pkarlibmodule14
 Public Class SearchWindow
 
     Private Shared _fullArchive As BaseList(Of Vblib.OnePic) ' pełny plik archiwum, do wyszukiwania
-    Private _inputList As List(Of Vblib.OnePic) ' aktualnie używany na wejściu
-    Private _queryResults As List(Of Vblib.OnePic) ' wynik szukania
+    Private _inputList As IEnumerable(Of Vblib.OnePic) ' aktualnie używany na wejściu
+    Private _queryResults As IEnumerable(Of Vblib.OnePic) ' wynik szukania
     'Private _geoTag As BasicGeopos
     Private _initialCount As Integer
 
@@ -43,7 +43,7 @@ Public Class SearchWindow
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         'WypelnComboSourceNames()
 
-        uiResultsCount.Text = $"(no query, total {_fullArchive.Count} items)"
+        uiResultsCount.Text = $"(no query, total {_initialCount} items)"
 
         uiKwerenda.DataContext = _query
         'AddHandler uiKwerenda.Szukajmy, AddressOf uiSearch_Click
@@ -52,7 +52,7 @@ Public Class SearchWindow
 
 
 
-    Private Sub ReadWholeArchive()
+    Private Sub ReadWholeArchiveOld()
         If _fullArchive IsNot Nothing Then Return
 
         Application.ShowWait(True)
@@ -91,6 +91,23 @@ Public Class SearchWindow
 
     End Sub
 
+    Private Sub ReadWholeArchive()
+
+        If Application.gDbase.IsAnyLoaded Then Return
+
+        Application.ShowWait(True)
+
+        Application.gDbase.Load()
+        _initialCount = Application.gDbase.Count
+
+        Application.ShowWait(False)
+        ' potem: new ProcessBrowse.New(bufor As Vblib.IBufor, onlyBrowse As Boolean)
+
+        If _initialCount < 1 Then
+            vb14.DialogBox("Coś dziwnego, bo jakoby pusty indeks był?")
+        End If
+
+    End Sub
 
     ' Query 1:
     ' „pokaż zdjęcia, na których jestem ja i babcia Z, nie ma babci S;
@@ -110,7 +127,7 @@ Public Class SearchWindow
     ' „znajdź zdjęcia z parady samochodów zabytkowych, na których to paradach byłem z A, ale bez B”
 
 
-    Private Function Szukaj(lista As List(Of Vblib.OnePic), query As SearchQuery) As Integer
+    Private Function Szukaj(lista As IEnumerable(Of Vblib.OnePic), query As SearchQuery) As Integer
 
         _queryResults = New List(Of Vblib.OnePic)
         Dim iCount As Integer = 0
@@ -123,14 +140,20 @@ Public Class SearchWindow
         '    iCount += 1
         'Next
 
-        _queryResults = lista.Where(Function(x) CheckIfOnePicMatches(x, query)).ToList
+        If lista Is Nothing Then
+            ' po pełnym
+            _queryResults = Application.gDbase.Search(query)
+        Else
+            ' po już ograniczonym
+            _queryResults = lista.Where(Function(x) x.CheckIfMatchesQuery(query))
+        End If
         Application.ShowWait(False)
 
         Return _queryResults.Count
         'Return iCount
     End Function
 
-
+#If False Then
     Public Shared Function CheckIfOnePicMatches(oPicek As Vblib.OnePic, query As SearchQuery) As Boolean
 
         If oPicek Is Nothing Then Return False ' a cóż to za dziwny case, że jest NULL? ale był!
@@ -595,7 +618,7 @@ Public Class SearchWindow
 
         Return sFromPicture.Contains(sMaska)
     End Function
-
+#End If
 
     Private Async Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
 
@@ -604,11 +627,11 @@ Public Class SearchWindow
 
         ' przeniesienie z UI do _query - większość się zrobi samo, ale daty - nie
         Dim iCount As Integer
-        If _inputList Is Nothing Then
-            iCount = Szukaj(_fullArchive.GetList, _query)
-        Else
-            iCount = Szukaj(_inputList, _query)
-        End If
+        'If _inputList Is Nothing Then
+        '    iCount = Szukaj(_fullArchive.GetList, _query)
+        'Else
+        iCount = Szukaj(_inputList, _query)
+        'End If
 
         If iCount < 1 Then
             uiLista.ItemsSource = Nothing
@@ -623,7 +646,7 @@ Public Class SearchWindow
         End If
 
         ' pokazanie rezultatów
-        uiLista.ItemsSource = From c In _queryResults
+        uiLista.ItemsSource = _queryResults 'From c In _queryResults
 
         ' oraz folderów
         Dim listaNazwFolderow As New List(Of String)
@@ -639,6 +662,7 @@ Public Class SearchWindow
 
         uiListaKatalogow.ItemsSource = listaFolderow
     End Sub
+
 
     ''' <summary>
     ''' przeniesienie danych z UI do struktury Query - to, co samo się nie przenosi

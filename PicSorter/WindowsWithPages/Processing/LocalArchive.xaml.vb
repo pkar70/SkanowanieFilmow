@@ -215,13 +215,13 @@ Public Class LocalArchive
 
             ' zapisujemy do globalnego archiwum tylko raz, bez powtarzania przy zapisie do każdego LocalArch
             ' tu był błąd! bylo <1, ale to już jest po dopisywaniu; więc ma być +1
-            If oPic.ArchivedCount = 1 Then
-                If sIndexLongJson <> "" Then sIndexLongJson &= ","
-                sIndexLongJson &= oPic.DumpAsJSON(True)
+            'If oPic.ArchivedCount = 1 Then
+            '    If sIndexLongJson <> "" Then sIndexLongJson &= ","
+            '    sIndexLongJson &= oPic.DumpAsJSON(True)
 
-                If sIndexShortJson <> "" Then sIndexShortJson &= ","
-                sIndexShortJson &= oPic.GetFlatOnePic.DumpAsJSON(True)
-            End If
+            '    If sIndexShortJson <> "" Then sIndexShortJson &= ","
+            '    sIndexShortJson &= oPic.GetFlatOnePic.DumpAsJSON(True)
+            'End If
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
@@ -236,7 +236,9 @@ Public Class LocalArchive
 
         Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
         If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
-        Application.GetArchIndex.AddToGlobalJsonIndex(sIndexShortJson, sIndexLongJson)    ' aktualizacja indeksu archiwalnego
+
+        Application.gDbase.AddFiles(Application.GetBuffer.GetList)
+        'Application.GetArchIndex.AddToGlobalJsonIndex(sIndexShortJson, sIndexLongJson)    ' aktualizacja indeksu archiwalnego
 
     End Function
 

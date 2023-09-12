@@ -1662,7 +1662,8 @@ Public Class ProcessBrowse
 
         For Each thumb As ThumbPicek In _thumbsy
 
-            If SearchWindow.CheckIfOnePicMatches(thumb.oPic, query) Then
+            'If SearchWindow.CheckIfOnePicMatches(thumb.oPic, query) Then
+            If thumb.oPic.CheckIfMatchesQuery(query) Then
 
                 If usun Then
                     thumb.opacity = _OpacityWygas

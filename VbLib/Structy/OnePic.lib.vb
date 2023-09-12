@@ -7,6 +7,7 @@ Imports System.Threading
 Imports CompactExifLib
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
+Imports pkar
 'Imports XmpCore.Impl
 Imports pkar.DotNetExtensions
 
@@ -1003,6 +1004,476 @@ Public Class OnePic
         Return oExif.AzureAnalysis.Captions?.ToComment("Azure")
 
     End Function
+
+#Region "searching by query"
+
+    Public Function CheckIfMatchesQuery(query As SearchQuery) As Boolean
+
+        Dim oExif As Vblib.ExifTag
+        Dim bGdziekolwiekMatch As Boolean = False
+
+#Region "ogólne"
+        If query.ogolne.MaxDate.IsDateValid Or query.ogolne.MinDate.IsDateValid Then
+
+            Dim picMinDate, picMaxDate As Date
+
+            oExif = GetExifOfType(ExifSource.FileExif)
+            Dim oExifDate As Vblib.ExifTag = GetExifOfType(ExifSource.ManualDate)
+            If oExifDate Is Nothing Then oExifDate = oExif
+
+            ' jeśli istnieje data zrobienia zdjęcia, to ją bierzemy, jeśli nie - to zakres ze słów kluczowych itp.
+            If oExifDate IsNot Nothing AndAlso oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital Then
+                picMaxDate = oExifDate.DateTimeOriginal
+                picMinDate = oExifDate.DateTimeOriginal
+            Else
+                picMinDate = GetMinDate()
+                picMaxDate = GetMaxDate()
+            End If
+
+            If query.ogolne.IgnoreYear Then
+                ' bierzemy daty oDir, i zmieniamy Year na taki jak w UI query
+                picMinDate = picMinDate.AddYears(query.ogolne.MinDate.Year - picMinDate.Year)
+                picMaxDate = picMaxDate.AddYears(query.ogolne.MaxDate.Year - picMaxDate.Year)
+            End If
+
+            If query.ogolne.MaxDate.IsDateValid Then
+                If picMinDate > query.ogolne.MaxDate Then Return False
+            End If
+
+            If query.ogolne.MinDate.IsDateValid Then
+                If picMaxDate < query.ogolne.MinDate Then Return False
+            End If
+        End If
+
+        If Not CheckStringContains(PicGuid, query.ogolne.GUID) Then Return False
+
+        If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
+            Dim kwrds As String = query.ogolne.Tags
+            ' automatyczne wyłączenie =X, jeśli nie jest podane wprost
+            If Not kwrds.Contains("=X") Then kwrds &= " !=X"
+            If Not MatchesKeywords(kwrds.Split(" ")) Then Return False
+        End If
+
+        Dim descripsy As String = GetSumOfDescriptionsText() & " " & GetSumOfCommentText()
+        If Not CheckStringMasks(descripsy, query.ogolne.Descriptions) Then Return False
+
+        ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
+        If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) Then
+            If Not CheckStringMasksNegative(descripsy, query.ogolne.Gdziekolwiek) Then Return False
+            If Not CheckStringMasksNegative(TargetDir, query.ogolne.Gdziekolwiek) Then Return False
+            If Not CheckStringMasksNegative(sSuggestedFilename, query.ogolne.Gdziekolwiek) Then Return False
+
+            If CheckStringMasks(descripsy, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
+            If CheckStringMasks(TargetDir, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
+            If CheckStringMasks(sSuggestedFilename, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
+        End If
+
+#Region "ogólne - advanced"
+
+        If Not CheckStringMasks(TargetDir, query.ogolne.adv.TargetDir) Then Return False
+        If Not CheckStringContains(sSourceName, query.ogolne.adv.Source) Then Return False
+
+        If Not MatchesMasks(query.ogolne.adv.Filename, "") Then Return False
+
+        If Not query.ogolne.adv.TypePic Then
+            If MatchesMasks(OnePic.ExtsPic) Then Return False
+        End If
+        If Not query.ogolne.adv.TypeMovie Then
+            If MatchesMasks(OnePic.ExtsMovie) Then Return False
+        End If
+        ' If Not uiTypeOth.IsChecked Then
+
+        If Not CheckStringMasks(CloudArchived, query.ogolne.adv.CloudArchived) Then Return False
+
+        If Not String.IsNullOrWhiteSpace(query.ogolne.adv.Published) Then
+            Dim publishy As String = ""
+            For Each item In Published
+                publishy = publishy & " " & item.Key
+            Next
+
+            If Not CheckStringMasks(publishy, query.ogolne.adv.Published) Then Return False
+
+        End If
+
+        ' *TODO* fileTypeDiscriminator ? As String = Nothing
+
+
+#End Region
+
+        If Not String.IsNullOrWhiteSpace(query.ogolne.geo.Name) Then
+            Dim sGeoName As String = ""
+            For Each oExif In Exifs
+                If Not String.IsNullOrWhiteSpace(oExif.GeoName) Then sGeoName = sGeoName & " " & oExif.GeoName
+            Next
+
+            If Not CheckStringMasks(sGeoName, query.ogolne.geo.Name) Then Return False
+        End If
+
+        If query.ogolne.geo.Location IsNot Nothing Then
+            Dim geotag As BasicGeoposWithRadius = GetGeoTag()
+
+            If geotag Is Nothing Then
+                If Not query.ogolne.geo.AlsoEmpty Then Return False
+            Else
+                If Not geotag.IsInsideCircle(query.ogolne.geo.Location) Then Return False
+            End If
+        End If
+
+        ' pomijamy: InBufferPathName, sInSourceID, TagsChanged, Archived, editHistory
+
+#End Region
+
+
+#Region "SourceDefault"
+
+        oExif = GetExifOfType(Vblib.ExifSource.SourceDefault)
+        If oExif IsNot Nothing Then
+            If Not CheckStringMasks(oExif.Author, query.source_author) Then Return False
+
+            If query.source_type > -1 Then
+                If oExif.FileSourceDeviceType <> query.source_type Then Return False
+            End If
+        End If
+
+
+#End Region
+
+#Region "AutoExif"
+        oExif = GetExifOfType(Vblib.ExifSource.FileExif)
+        If oExif IsNot Nothing Then
+            If Not CheckStringMasks(oExif.CameraModel, query.exif_camera) Then Return False
+        End If
+
+#End Region
+
+        'Public Const AutoWinOCR As String = "AUTO_WINOCR"
+        oExif = GetExifOfType(Vblib.ExifSource.AutoWinOCR)
+        If Not String.IsNullOrEmpty(query.ocr) Then
+            If oExif?.UserComment Is Nothing Then Return False
+            If Not CheckStringMasks(oExif.UserComment, query.ocr) Then Return False
+        End If
+
+        If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) AndAlso oExif?.UserComment IsNot Nothing Then
+            ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
+            If Not CheckStringMasksNegative(oExif.UserComment, query.ogolne.Gdziekolwiek) Then Return False
+            If CheckStringMasks(oExif.UserComment, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
+        End If
+#Region "astro"
+
+
+        If query.astro.MoonCheck Then
+
+            oExif = GetExifOfType(Vblib.ExifSource.AutoAstro)
+            If oExif Is Nothing Then oExif = GetExifOfType(Vblib.ExifSource.AutoMoon)
+            If oExif Is Nothing Then oExif = GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
+
+            If oExif Is Nothing Then
+                If Not query.astro.AlsoEmpty Then Return False
+            Else
+                Dim dFaza As Double = oExif.PogodaAstro.day.moonphase
+                If Not query.astro.Moon00 Then If Math.Abs(dFaza) < 10 Then Return False
+                If Not query.astro.MoonD25 Then If dFaza.Between(10, 35) Then Return False
+                If Not query.astro.MoonD50 Then If dFaza.Between(35, 65) Then Return False
+                If Not query.astro.MoonD75 Then If dFaza.Between(65, 90) Then Return False
+                If Not query.astro.Moon100 Then If Math.Abs(dFaza) > 90 Then Return False
+                If Not query.astro.MoonC75 Then If dFaza.Between(-90, -65) Then Return False
+                If Not query.astro.MoonC50 Then If dFaza.Between(-65, -35) Then Return False
+                If Not query.astro.MoonC25 Then If dFaza.Between(-35, -10) Then Return False
+            End If
+        End If
+
+        If query.astro.SunHourMinCheck OrElse query.astro.SunHourMaxCheck Then
+            oExif = GetExifOfType(Vblib.ExifSource.AutoAstro)
+            If oExif Is Nothing Then oExif = GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
+            If oExif Is Nothing Then
+                If Not query.astro.AlsoEmpty Then Return False
+            Else
+
+                If query.astro.SunHourMinCheck Then
+                    If query.astro.SunHourMinValue > oExif.PogodaAstro.day.sunhour Then Return False
+                End If
+
+                If query.astro.SunHourMaxCheck Then
+                    If query.astro.SunHourMaxValue < oExif.PogodaAstro.day.sunhour Then Return False
+                End If
+
+            End If
+        End If
+
+
+#End Region
+
+#Region "rozpoznawanie twarzy"
+
+        If query.faces.MinCheck OrElse query.faces.MaxCheck Then
+            Dim iFaces As Integer = -1
+
+            oExif = GetExifOfType(Vblib.ExifSource.AutoAzure)
+            If oExif?.AzureAnalysis IsNot Nothing Then
+                ' wedle Azure
+                If oExif.AzureAnalysis.Faces IsNot Nothing Then
+                    iFaces = oExif.AzureAnalysis.Faces.GetList.Count
+                Else
+                    iFaces = 0
+                End If
+            End If
+
+            If iFaces < 0 Then
+                oExif = GetExifOfType(Vblib.ExifSource.AutoWinFace)
+                If oExif IsNot Nothing Then
+                    If oExif.Keywords.StartsWith("-f") Then
+                        iFaces = oExif.Keywords.Substring(2)
+                    End If
+                End If
+            End If
+
+            If iFaces > -1 Then
+                If query.faces.MinCheck Then If iFaces < query.faces.MinValue Then Return False
+                If query.faces.MaxCheck Then If iFaces > query.faces.MaxValue Then Return False
+            End If
+
+        End If
+
+
+#End Region
+
+#Region "azure"
+        oExif = GetExifOfType(Vblib.ExifSource.AutoAzure)
+        If oExif?.AzureAnalysis Is Nothing Then
+            If Not query.Azure.AlsoEmpty Then Return False
+        Else
+            Dim sTextDump As String = oExif.AzureAnalysis.ToUserComment
+            If Not CheckFieldsTxtValue(sTextDump, query.Azure.FldTxt) Then Return False
+
+            ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
+            If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) Then
+                If Not CheckStringMasksNegative(sTextDump, query.ogolne.Gdziekolwiek) Then Return False
+                If CheckStringMasks(sTextDump, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
+            End If
+
+        End If
+#End Region
+
+
+#Region "pogoda"
+
+
+#Region "Visual Cross"
+        oExif = GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
+        If oExif?.PogodaAstro Is Nothing Then
+            If Not query.VCross.AlsoEmpty Then Return False
+        Else
+            Dim sTextDump As String = oExif.PogodaAstro.DumpAsJSON
+            If Not CheckFieldsTxtValue(sTextDump, query.VCross.FldTxt) Then Return False
+            If Not CheckFieldsNumValue(sTextDump, query.VCross.FldNum) Then Return False
+        End If
+
+#End Region
+
+#Region "Opad"
+        oExif = GetExifOfType(Vblib.ExifSource.AutoMeteoOpad)
+        If oExif?.MeteoOpad Is Nothing Then
+            If Not query.ImgwOpad.AlsoEmpty Then Return False
+        Else
+            Dim sTextDump As String = oExif.MeteoOpad.DumpAsJSON
+            If Not CheckFieldsTxtValue(sTextDump, query.ImgwOpad.FldTxt) Then Return False
+            If Not CheckFieldsNumValue(sTextDump, query.ImgwOpad.FldNum) Then Return False
+        End If
+
+#End Region
+
+#Region "Klimat"
+        oExif = GetExifOfType(Vblib.ExifSource.AutoMeteoKlimat)
+        If oExif?.MeteoKlimat Is Nothing Then
+            If Not query.ImgwKlimat.AlsoEmpty Then Return False
+        Else
+            Dim sTextDump As String = oExif.MeteoKlimat.DumpAsJSON
+            If Not CheckFieldsTxtValue(sTextDump, query.ImgwKlimat.FldTxt) Then Return False
+            If Not CheckFieldsNumValue(sTextDump, query.ImgwKlimat.FldNum) Then Return False
+        End If
+
+#End Region
+
+
+#End Region
+
+        If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) Then
+            If Not bGdziekolwiekMatch Then Return False
+        End If
+
+        Return True
+    End Function
+
+    Private Shared Function CheckFieldsTxtValue(textDump As String, fields As QueryPolaTxt4) As Boolean
+        If Not CheckFieldValue(textDump, fields.p0) Then Return False
+        If Not CheckFieldValue(textDump, fields.p1) Then Return False
+        If Not CheckFieldValue(textDump, fields.p2) Then Return False
+        If Not CheckFieldValue(textDump, fields.p3) Then Return False
+
+        Return True
+    End Function
+
+    Private Shared Function CheckFieldValue(textDump As String, field As QueryPoleTxt) As Boolean
+        If String.IsNullOrWhiteSpace(field.Value) Then Return True
+        If String.IsNullOrWhiteSpace(field.Name) Then Return CheckStringMasks(textDump, field.Value)
+
+        Dim aDump As String() = textDump.ToLowerInvariant.Split(vbCr)
+
+        Dim bInDay As Boolean = False
+        Dim bInCurrent As Boolean = False
+
+        Dim bWantDay As Boolean = False 'fieldName.Substring(0, 2) = "d."
+        Dim bWantCurr As Boolean = True ' fieldName.Substring(0, 2) = "c."
+        If field.Name.Substring(1, 1) = "." Then
+            bWantDay = (field.Name.Substring(0, 2) = "d.")
+            bWantCurr = (field.Name.Substring(0, 2) = "c.")
+            field.Name = field.Name.Substring(2)
+        End If
+
+        For Each sDumpLine As String In aDump
+
+            If sDumpLine.Contains("""day"": {") Then
+                bInDay = True
+                Continue For
+            End If
+            If sDumpLine.Contains("""currentConditions"": {") Then
+                bInCurrent = True
+                Continue For
+            End If
+            If bInCurrent AndAlso Not bWantCurr Then Continue For
+            If bInDay AndAlso Not bWantDay Then Continue For
+
+            Dim iInd As Integer = sDumpLine.IndexOf(":")
+            If iInd < 1 Then Continue For
+
+            If Not sDumpLine.Substring(0, iInd).Contains(field.Name.ToLowerInvariant) Then Continue For
+
+            Return CheckStringMasks(sDumpLine.Substring(iInd + 1), field.Value)
+        Next
+
+        Return True
+
+    End Function
+
+    Private Shared Function CheckFieldsNumValue(textDump As String, fields As QueryPolaNum4) As Boolean
+        If Not CheckFieldValueMinMax(textDump, fields.p0) Then Return False
+        If Not CheckFieldValueMinMax(textDump, fields.p1) Then Return False
+        If Not CheckFieldValueMinMax(textDump, fields.p2) Then Return False
+        If Not CheckFieldValueMinMax(textDump, fields.p3) Then Return False
+
+        Return True
+    End Function
+
+
+    Private Shared Function CheckFieldValueMinMax(textDump As String, field As QueryPoleNum) As Boolean
+
+        If String.IsNullOrWhiteSpace(field.Name) Then Return True
+
+        Dim bInDay As Boolean = False
+        Dim bInCurrent As Boolean = False
+
+        Dim bWantDay As Boolean = False 'fieldName.Substring(0, 2) = "d."
+        Dim bWantCurr As Boolean = True ' fieldName.Substring(0, 2) = "c."
+        If field.Name.Substring(1, 1) = "." Then
+            bWantDay = (field.Name.Substring(0, 2) = "d.")
+            bWantCurr = (field.Name.Substring(0, 2) = "c.")
+            field.Name = field.Name.Substring(2)
+        End If
+
+        Dim dMinVal As Double = Double.MinValue
+        If Not String.IsNullOrWhiteSpace(field.Min) Then dMinVal = field.Min
+        Dim dMaxValue As Double = Double.MaxValue
+        If Not String.IsNullOrWhiteSpace(field.Max) Then dMaxValue = field.Max
+
+        Dim aDump As String() = textDump.ToLowerInvariant.Split(vbCr)
+        field.Name = field.Name.ToLowerInvariant
+
+        For Each sDumpLine As String In aDump
+            If sDumpLine.Contains("""day"": {") Then
+                bInDay = True
+                Continue For
+            End If
+            If sDumpLine.Contains("""currentConditions"": {") Then
+                bInCurrent = True
+                Continue For
+            End If
+            If bInCurrent AndAlso Not bWantCurr Then Continue For
+            If bInDay AndAlso Not bWantDay Then Continue For
+
+            Dim iInd As Integer = sDumpLine.IndexOf(":")
+            If iInd < 1 Then Continue For
+            If sDumpLine.Substring(0, iInd).Replace("""", "").Trim <> field.Name Then Continue For
+
+            Try
+                Dim dCurrValue As Double = sDumpLine.Substring(iInd + 1).Replace(",", "").Trim
+
+                If dCurrValue < dMinVal Then Return False
+                Return dCurrValue < dMaxValue
+            Catch ex As Exception
+                ' jakby konwersje na double nie wyszły
+            End Try
+
+        Next
+
+        Return True
+
+    End Function
+
+
+    ''' <summary>
+    ''' true/false, jeśli spełnione są "fragments, prefixed with ! for negate"; TRUE gdy maski są empty
+    ''' </summary>
+    Private Shared Function CheckStringMasks(sFromPicture As String, sMaskiWord As String) As Boolean
+        If String.IsNullOrWhiteSpace(sMaskiWord) Then Return True
+
+        sFromPicture = If(sFromPicture?.ToLowerInvariant, "")
+
+        For Each maska As String In sMaskiWord.Split(" ")
+            Dim temp As String = maska.ToLowerInvariant
+            If temp.StartsWith("!") Then
+                If sFromPicture.Contains(temp.Substring(1)) Then Return False
+            Else
+                If Not sFromPicture.Contains(temp) Then Return False
+            End If
+        Next
+
+        Return True
+    End Function
+
+    ''' <summary>
+    ''' false gdy picture zawiera "fragments prefixed with !", wszędzie indziej TRUE
+    ''' </summary>
+    Private Shared Function CheckStringMasksNegative(sFromPicture As String, sMaskiWord As String) As Boolean
+        If String.IsNullOrWhiteSpace(sMaskiWord) Then Return True
+        If String.IsNullOrWhiteSpace(sFromPicture) Then Return True
+
+        sFromPicture = If(sFromPicture?.ToLowerInvariant, "")
+
+        For Each maska As String In sMaskiWord.Split(" ")
+            Dim temp As String = maska.ToLowerInvariant
+            If temp.StartsWith("!") Then
+                If sFromPicture.Contains(temp.Substring(1)) Then Return False
+            End If
+        Next
+
+        Return True
+    End Function
+
+
+    ''' <summary>
+    ''' true/false, jeśli jest contains
+    ''' </summary>
+    Private Shared Function CheckStringContains(sFromPicture As String, sMaska As String) As Boolean
+        If String.IsNullOrWhiteSpace(sMaska) Then Return True
+
+        sFromPicture = If(sFromPicture?.ToLowerInvariant, "")
+
+        Return sFromPicture.Contains(sMaska)
+    End Function
+
+
+#End Region
+
 
 End Class
 

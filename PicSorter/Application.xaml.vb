@@ -222,5 +222,6 @@ Partial Class Application
         Return gArchQuerender
     End Function
 
+    Public Shared gDbase As New Databases(Application.GetDataFolder)
 
 End Class
