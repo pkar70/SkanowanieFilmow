@@ -181,10 +181,10 @@ Partial Class Application
         New Auto_std2_Meteo.Auto_Meteo_Opad(Application.GetDataFolder),
         New Vblib.Auto_GeoNamePl(Application.GetDataFolder),
         New Vblib.Auto_OSM_POI(Application.GetDataFolder),
-        New Auto_CreateId(New UniqID(Application.GetDataFolder)),
         New Taggers_OCR.AutoTag_WinOCR,
         New Auto_WinFace.Auto_WinFace,
-        New Vblib.Auto_AzureTest(New Process_ResizeHalf)
+        New Vblib.Auto_AzureTest(New Process_ResizeHalf),
+        New Auto_CreateId(New UniqID(Application.GetDataFolder))
     }
 
     Public Shared gPostProcesory As Vblib.PostProcBase() = {
