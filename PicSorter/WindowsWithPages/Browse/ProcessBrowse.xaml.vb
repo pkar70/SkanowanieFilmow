@@ -1259,6 +1259,45 @@ Public Class ProcessBrowse
         uiPodpisWybor.IsOpen = Not uiPodpisWybor.IsOpen
     End Sub
 
+    Private Sub uiPodpis_Checked(sender As Object, e As RoutedEventArgs)
+        ' tylko wtedy gdy trzeba przeliczyć, czyli dla description oraz keywords
+        uiPodpisWybor.IsOpen = False
+
+        Dim oMI As MenuItem = sender
+        If oMI Is Nothing Then Return
+
+        Application.ShowWait(True)
+
+        Dim mode As String = oMI.Header
+        Select Case mode.ToLowerInvariant
+            Case "keywords"
+                For Each oThumb In _thumbsy
+                    oThumb.AllKeywords = oThumb.oPic.GetAllKeywords
+                Next
+            Case "description"
+                For Each oThumb In _thumbsy
+                    oThumb.SumOfDescriptionsText = oThumb.oPic.GetSumOfDescriptionsText
+                Next
+        End Select
+
+        RefreshMiniaturki(False)
+        Application.ShowWait(False)
+
+    End Sub
+
+
+    Private Sub uiPodpisDbl_Click(sender As Object, e As MouseButtonEventArgs) ' z click: RoutedEventArgs)
+        uiPodpisWybor.IsOpen = False
+
+        Dim oMI As MenuItem = sender
+        If oMI Is Nothing Then Return
+
+        For Each oMImenu As MenuItem In uiPodpisMenu.Items
+            If oMI.Name <> oMImenu.Name Then oMImenu.IsChecked = False
+        Next
+
+    End Sub
+
 
     Private Sub uiPodpisTo_Click(sender As Object, e As RoutedEventArgs)
         uiPodpisWybor.IsOpen = False
@@ -1298,7 +1337,6 @@ Public Class ProcessBrowse
 
         RefreshMiniaturki(False)
     End Sub
-
 
     Private Sub uiSplitMode_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AutoSplitWindow
@@ -2247,6 +2285,8 @@ Public Class ProcessBrowse
         Public Property opacity As Double = 1   ' czyli normalnie pokazany
 
         Public Property podpis As String = ""
+        Public Property AllKeywords As String
+        Public Property SumOfDescriptionsText As String
 
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek
@@ -2294,9 +2334,6 @@ Public Class ProcessBrowse
 
     End Class
 
-    Private Sub uiPodpis_Click_1(sender As Object, e As RoutedEventArgs)
-
-    End Sub
 End Class
 
 Public Class KonwersjaPasekKolor
