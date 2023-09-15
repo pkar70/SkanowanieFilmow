@@ -118,4 +118,8 @@ Class SettingsGlobal
 
         Me.NavigationService.GoBack()
     End Sub
+
+    Private Sub uiDbase_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsDbase)
+    End Sub
 End Class

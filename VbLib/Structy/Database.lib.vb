@@ -8,6 +8,7 @@ Public Interface DatabaseInterface
     ReadOnly Property IsLoaded As Boolean
     ReadOnly Property IsEditable As Boolean
     ReadOnly Property IsQuick As Boolean
+    ReadOnly Property Nazwa As String
 
     Function Count() As Integer
 
@@ -43,6 +44,11 @@ Public Interface DatabaseInterface
     ''' wyszukanie wedle kwerendy (czasem także filtru kanału push/pull - gdy to remote search)
     ''' </summary>
     Function Search(query As SearchQuery, Optional channel As SearchQuery = Nothing) As IEnumerable(Of OnePic)
+
+    ''' <summary>
+    '''  zwraca komplet danych - tylko do celów kopiowania między bazami, inaczej nie używać!
+    ''' </summary>
+    Function GetAll() As IEnumerable(Of OnePic)
 
     ''' <summary>
     ''' import danych z podanego źródła

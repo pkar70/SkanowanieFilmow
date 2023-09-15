@@ -111,10 +111,10 @@ Public Class AutoTags
                     oItem.TagsChanged = True
                 End If
                 Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
+                maxGuard -= 1
+                If maxGuard < 1 Then Exit For
             End If
             uiProgBarInEngine.Value += 1
-            maxGuard -= 1
-            If maxGuard < 1 Then Exit For
         Next
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed

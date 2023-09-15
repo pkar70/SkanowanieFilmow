@@ -1790,6 +1790,7 @@ Public Class ProcessBrowse
 
         For Each oEngine As Vblib.CloudPublish In Application.GetCloudPublishers.GetList
             Dim oNew As MenuItem = NewMenuCloudOperation(oEngine)
+            oNew.IsCheckable = False    ' aczkolwiek to jest default, więc pewnie nie będzie więcej miejsca od tego
 
             If oPic Is Nothing OrElse Not oPic.IsCloudPublishedIn(oEngine.konfiguracja.nazwa) Then
                 AddHandler oNew.Click, oEventHandler
@@ -2080,18 +2081,19 @@ Public Class ProcessBrowse
             oPic1.ZrobDymek()
 
         Else
+            Dim aKwds As String() = oExif.Keywords.Replace("|", " ").Split(" ")
+            Dim aOpisy As String() = oExif.UserComment.Split("|")
+
             For Each oPic As ThumbPicek In uiPicList.SelectedItems
 
                 ' 1) jeśli mamy jakieś tagi, to nowe tylko dołączamy do tego (nie ma wtedy wyłączania tagów)
                 Dim oCurrExif As Vblib.ExifTag = oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualTag)
                 If oCurrExif IsNot Nothing Then
 
-                    Dim aKwds As String() = oCurrExif.Keywords.Split("|")
-                    Dim aOpisy As String() = oCurrExif.UserComment.Split("|")
                     For iLp = 0 To aKwds.Count - 1
                         Dim kwd As String = aKwds(iLp).TrimStart
                         If Not oCurrExif.Keywords.Contains(kwd) Then
-                            oCurrExif.Keywords &= "|" & kwd
+                            oCurrExif.Keywords &= " " & kwd
                             If iLp < aOpisy.Count Then oCurrExif.UserComment &= "|" & aOpisy(iLp)
                         End If
                     Next

@@ -23,6 +23,8 @@ uiSlideShowSeconds=5
 uiAzureMaxBatch=500
 uiBigPicSize=90
 
+uiJsonEnabled=True
+
 # remark
 ' remark
 ; remark

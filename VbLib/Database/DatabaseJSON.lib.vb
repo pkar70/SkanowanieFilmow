@@ -2,6 +2,8 @@
 ' editable: jeśli tak, to musi być SAVE, po ktorym trzeba ściąć "]" z końca pliku!
 
 
+Imports System.IO
+
 Public Class DatabaseJSON
     Implements DatabaseInterface
 
@@ -20,7 +22,7 @@ Public Class DatabaseJSON
 
     Public ReadOnly Property IsEnabled As Boolean Implements DatabaseInterface.IsEnabled
         Get
-            Return GetSettingsBool("dbase.json.enabled", True)
+            Return GetSettingsBool("uiJsonEnabled", True)
         End Get
     End Property
 
@@ -46,6 +48,12 @@ Public Class DatabaseJSON
         End Get
     End Property
 
+    ReadOnly Property Nazwa As String Implements DatabaseInterface.Nazwa
+        Get
+            Return "JSON"
+        End Get
+    End Property
+
     Public Function Count() As Integer Implements DatabaseInterface.Count
         If Not IsLoaded Then Return -1
         Return _allItems.Count
@@ -68,6 +76,7 @@ Public Class DatabaseJSON
         Else
             ' skoro już mamy coś w pliku, to teraz dodajemy do tego przecinek - pomiędzy itemami
             sIndexLongJson = "," & vbCrLf & sIndexLongJson
+            TrimEndListFromFile()
         End If
 
         IO.File.AppendAllText(_dataFilenameFull, sIndexLongJson)
@@ -102,7 +111,27 @@ Public Class DatabaseJSON
 
     Public Function ImportFrom(prevDbase As DatabaseInterface) As Integer Implements DatabaseInterface.ImportFrom
         ' tworzy nowy plik JSON - może z pytaniem czy na pewno
-        Throw New NotImplementedException()
+
+        ' najpierw kasujemy aktualny
+        If IO.File.Exists(_dataFilenameFull) Then
+            IO.File.Delete(_dataFilenameFull & ".bak")
+            IO.File.Move(_dataFilenameFull, _dataFilenameFull & ".bak")
+        End If
+
+        Dim iCount As Integer = 0
+
+        Using sr As StreamWriter = IO.File.CreateText(_dataFilenameFull)
+            For Each oPic As OnePic In prevDbase.GetAll
+                If oPic Is Nothing Then Continue For
+                If iCount > 0 Then sr.WriteLine(",")
+                sr.Write(oPic.DumpAsJSON)
+                iCount += 1
+            Next
+            sr.Flush()
+        End Using
+
+        Return iCount
+
     End Function
 
     Public Function AddExif(picek As OnePic, oExif As ExifTag) As Boolean Implements DatabaseInterface.AddExif
@@ -129,5 +158,31 @@ Public Class DatabaseJSON
         Return bRet
     End Function
 
+    ''' <summary>
+    ''' usunięcie końcowego "]" z pliku (jeśli taki jest)
+    ''' </summary>
+    Private Sub TrimEndListFromFile()
+        If Not IO.File.Exists(_dataFilenameFull) Then Return
+        Dim fi As New IO.FileInfo(_dataFilenameFull)
+        If fi.Length < 1 Then Return
+
+
+
+        ' wczytaj ostatnie 10 bajtów
+        Using sr As StreamReader = IO.File.OpenText(_dataFilenameFull)
+            sr.BaseStream.Seek(10, SeekOrigin.End)
+            Dim lastchars As String = sr.ReadToEnd
+            If Not lastchars.Trim.EndsWith("]") Then Return
+
+            Dim iInd As Long = lastchars.LastIndexOf("]")
+            sr.BaseStream.SetLength(fi.Length - 10 + iInd)
+        End Using
+
+    End Sub
+
+    Public Function GetAll() As IEnumerable(Of OnePic) Implements DatabaseInterface.GetAll
+        If Not IsLoaded Then Return Nothing
+        Return _allItems
+    End Function
 End Class
 

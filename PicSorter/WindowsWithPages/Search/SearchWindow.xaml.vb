@@ -93,7 +93,7 @@ Public Class SearchWindow
 
     Private Sub ReadWholeArchive()
 
-        If Application.gDbase.IsAnyLoaded Then Return
+        If Application.gDbase.IsLoaded Then Return
 
         Application.ShowWait(True)
 
