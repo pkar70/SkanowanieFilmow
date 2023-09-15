@@ -36,12 +36,13 @@ Public Class BrowseKeywordsWindow
 
         _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
 
-        UstalCheckboxy()    ' 50 ms
+        UstalCheckboxy(_oPic.oPic.GetAllKeywords)    ' 50 ms
         ZablokujNiezgodne() ' 200 ms
         RefreshLista()      ' 60 ms
 
         uiApply.IsEnabled = Not _readonly
         uiEdit.IsEnabled = Not _readonly
+        uiClear.IsEnabled = Not _readonly
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -126,6 +127,15 @@ Public Class BrowseKeywordsWindow
             oExif.UserComment = oExif.UserComment & " | " & oItem.sDisplayName
         Next
     End Sub
+
+    Private Sub uiClear_Click(sender As Object, e As RoutedEventArgs)
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            oItem.bChecked = False
+        Next
+        _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
+        RefreshLista()
+    End Sub
+
 
     Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
 
@@ -223,10 +233,10 @@ Public Class BrowseKeywordsWindow
     ''' <summary>
     '''  zaznacza Keywords które są w exif.ManualTag.keywords, exif.FileExif.keywords, descriptions
     ''' </summary>
-    Private Sub UstalCheckboxy()
+    Private Sub UstalCheckboxy(sUsedTags As String)
         vb14.DumpCurrMethod()
 
-        Dim sUsedTags As String = _oPic.oPic.GetAllKeywords ' ""
+        ' Dim sUsedTags As String = _oPic.oPic.GetAllKeywords ' ""
 
         'For Each oExifTag As Vblib.ExifTag In _oPic.oPic.Exifs
         '    If Not String.IsNullOrWhiteSpace(oExifTag.Keywords) Then

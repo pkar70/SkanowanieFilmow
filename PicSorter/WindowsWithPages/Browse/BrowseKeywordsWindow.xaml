@@ -37,6 +37,7 @@
 
         </ListView>
 
+        <Button Grid.Row="2" Content=" Clear " HorizontalAlignment="Left" Click="uiClear_Click" Name="uiClear"/>
         <Button Grid.Row="2" Content=" Apply " HorizontalAlignment="Center" Click="uiApply_Click" Name="uiApply"/>
         <Button Grid.Row="2" Content=" Edit " HorizontalAlignment="Right" Click="uiEditKeyTree_Click" Name="uiEdit"/>
 
