@@ -661,8 +661,14 @@ Public Class SearchWindow
                 If oFolder IsNot Nothing Then listaFolderow.Add(oFolder)
             Next
 
+            listaFolderow.Sort(
+                Function(x As Vblib.OneDir, y As Vblib.OneDir)
+                    Return x.fullPath.CompareTo(y.fullPath)
+                End Function)
+
             uiListaKatalogow.ItemsSource = listaFolderow
         Else
+            ' kasujemy ewentualny poprzedni
             uiListaKatalogow.ItemsSource = Nothing
         End If
 
