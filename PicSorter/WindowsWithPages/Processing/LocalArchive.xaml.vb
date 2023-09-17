@@ -172,8 +172,8 @@ Public Class LocalArchive
 
         Dim sErr As String = ""
 
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
-            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir))
+            ' If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
 
             uiProgBarInEngine.Value += 1
             Dim sErr1 As String = ""
@@ -237,7 +237,7 @@ Public Class LocalArchive
         Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
         If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
 
-        Application.gDbase.AddFiles(Application.GetBuffer.GetList)
+        Application.gDbase.AddFiles(Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir)))
         'Application.GetArchIndex.AddToGlobalJsonIndex(sIndexShortJson, sIndexLongJson)    ' aktualizacja indeksu archiwalnego
 
     End Function

@@ -654,13 +654,18 @@ Public Class SearchWindow
             listaNazwFolderow.Add(oPicek.TargetDir)
         Next
 
-        Dim listaFolderow As New List(Of Vblib.OneDir)
-        For Each nazwa As String In From c In listaNazwFolderow Order By c Distinct
-            Dim oFolder As Vblib.OneDir = Application.GetDirTree.GetDirFromTargetDir(nazwa)
-            If oFolder IsNot Nothing Then listaFolderow.Add(oFolder)
-        Next
+        If listaNazwFolderow.Count > 0 Then
+            Dim listaFolderow As New List(Of Vblib.OneDir)
+            For Each nazwa As String In From c In listaNazwFolderow Order By c Distinct
+                Dim oFolder As Vblib.OneDir = Application.GetDirTree.GetDirFromTargetDir(nazwa)
+                If oFolder IsNot Nothing Then listaFolderow.Add(oFolder)
+            Next
 
-        uiListaKatalogow.ItemsSource = listaFolderow
+            uiListaKatalogow.ItemsSource = listaFolderow
+        Else
+            uiListaKatalogow.ItemsSource = Nothing
+        End If
+
     End Sub
 
 

@@ -195,6 +195,8 @@ Public Class DirsList
     ''' <returns>OneDir, lub Null = error</returns>
     Public Function GetDirFromTargetDir(sTargetDir As String, Optional bCreate As Boolean = False) As OneDir
 
+        If String.IsNullOrWhiteSpace(sTargetDir) Then Return Nothing
+
         ' najpierw wedle istniejącej ścieżki, bo może być taka sama nazwa w dwu miejscach
         Dim bFound As Boolean = False
 
