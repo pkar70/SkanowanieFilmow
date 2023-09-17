@@ -23,7 +23,14 @@
             <TextBlock Text="GUID" Margin="0,5,0,0"/>
             <TextBox ToolTip="Enter fragment of GUID" Text="{Binding GUID}"/>
 
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
             <TextBlock Text="Tags" Margin="0,5,0,0"/>
+            <Button Content=" ... " Click="uiTagsSelect_Click" Grid.Column="1" />
+        </Grid>
         <TextBox Text="{Binding Tags, Mode=TwoWay}" ToolTip="Space separated tags, prefixed with '!' to negate" />
 
             <TextBlock Text="Descriptions" Margin="0,5,0,0"/>

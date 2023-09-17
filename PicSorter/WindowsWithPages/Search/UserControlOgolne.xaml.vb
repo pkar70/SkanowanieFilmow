@@ -23,4 +23,19 @@ Public Class UserControlOgolne
         uiMaxDate.SelectedDate = If(queryOgolne.MaxDate.IsDateValid, queryOgolne.MaxDate, Date.Now.AddDays(1))
 
     End Sub
+
+    Private Sub uiTagsSelect_Click(sender As Object, e As RoutedEventArgs)
+        Dim wnd As New BrowseKeywordsWindow(False)
+        wnd.DataContext = Nothing
+        wnd.ShowDialog()
+
+        Dim lKeys As List(Of Vblib.OneKeyword) = wnd.GetListOfSelectedKeywords()
+        Dim query As Vblib.QueryOgolne = DataContext
+        For Each oKey As Vblib.OneKeyword In lKeys
+            If Not query.Tags.Contains(oKey.sId) Then
+                query.Tags &= " " & oKey.sId
+            End If
+        Next
+
+    End Sub
 End Class

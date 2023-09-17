@@ -32,21 +32,38 @@ Public Class BrowseKeywordsWindow
         'If oPic Is Nothing Then Return
         '_oPic = oPic
         _oPic = DataContext
-        Me.Title = IO.Path.GetFileName(_oPic.oPic.InBufferPathName)
+        If _oPic IsNot Nothing Then
+            Me.Title = IO.Path.GetFileName(_oPic.oPic.InBufferPathName)
+        Else
+            Me.Title = "Keywords"
+        End If
 
         _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
 
-        UstalCheckboxy(_oPic.oPic.GetAllKeywords)    ' 50 ms
+        UstalCheckboxy(_oPic?.oPic.GetAllKeywords)    ' 50 ms
         ZablokujNiezgodne() ' 200 ms
         RefreshLista()      ' 60 ms
 
-        uiApply.IsEnabled = Not _readonly
         uiEdit.IsEnabled = Not _readonly
         uiClear.IsEnabled = Not _readonly
+
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         WypelnCombo()
+        uiApply.IsEnabled = Not _readonly
+
+        If _oPic IsNot Nothing Then Return
+
+        uiEdit.IsEnabled = False
+        uiClear.IsEnabled = False
+
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            oItem.bEnabled = True
+            oItem.bChecked = False
+        Next
+        RefreshLista()
+
     End Sub
 
     Private Shared Sub SetGeoByKeywords(inExif As Vblib.ExifTag, fromKeywords As List(Of Vblib.OneKeyword))
@@ -102,7 +119,7 @@ Public Class BrowseKeywordsWindow
 
     End Function
 
-    Private Shared Function GetListOfSelectedKeywords() As List(Of Vblib.OneKeyword)
+    Public Shared Function GetListOfSelectedKeywords() As List(Of Vblib.OneKeyword)
         Dim lKeys As New List(Of Vblib.OneKeyword)
 
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
@@ -138,6 +155,9 @@ Public Class BrowseKeywordsWindow
 
 
     Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
+
+        ' jeśli nie było obrazka startowego, to zamykamy - i można sobie wziąć listę keywordsów
+        If _oPic Is Nothing Then Me.Close()
 
         Application.ShowWait(True)
 
@@ -235,6 +255,8 @@ Public Class BrowseKeywordsWindow
     ''' </summary>
     Private Sub UstalCheckboxy(sUsedTags As String)
         vb14.DumpCurrMethod()
+
+        If String.IsNullOrWhiteSpace(sUsedTags) Then Return
 
         ' Dim sUsedTags As String = _oPic.oPic.GetAllKeywords ' ""
 
