@@ -65,9 +65,13 @@ Public Class DatabaseJSON
         Dim sIndexLongJson As String = ""
 
         For Each oPic As OnePic In nowe
+            ' czasem są NULLe w archindex (dwa przecinki), może tak się tego pozbędę
+            If oPic Is Nothing Then Continue For
+
             If sIndexLongJson <> "" Then sIndexLongJson &= ","
             sIndexLongJson &= oPic.DumpAsJSON(True)
 
+            ' jeśli mamy wczytany index do pamięci, to trzeba go zaktualizować
             If IsLoaded Then _allItems.Add(oPic)
         Next
 
@@ -88,22 +92,78 @@ Public Class DatabaseJSON
         Return True
     End Function
 
+    Public Function Disconnect() As Boolean Implements DatabaseInterface.Disconnect
+        Return True
+    End Function
+
     Public Function PreBackup() As Boolean Implements DatabaseInterface.PreBackup
         Return True
     End Function
 
-    Public Function Search(query As SearchQuery, Optional channel As SearchQuery = Nothing) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
+    Public Function Search(query As SearchQuery) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
 
         If Not IsLoaded Then Return Nothing
 
-        If channel Is Nothing Then
-            ' dziwne, ale 5 razy takie wyszło (null) - dwa przecinki pod rząd, pewnie przy dodawaniu do archiwumm
-            Return _allItems.GetList.Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
-        Else
-            Return _allItems.GetList.Where(Function(x) x.CheckIfMatchesQuery(query)).Where(Function(x) x.CheckIfMatchesQuery(channel))
-        End If
+        ' dziwne, ale 5 razy takie wyszło (null) - dwa przecinki pod rząd, pewnie przy dodawaniu do archiwumm
+        Return _allItems.GetList.Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
 
     End Function
+
+    Function Search(channel As ShareChannel, sinceId As String) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
+        Dim lista As New List(Of OnePic)
+        SearchChannel(lista, channel, sinceId)
+
+        Return lista
+    End Function
+
+    ' do listy dodaje pasujące do kanału
+    Private Sub SearchChannel(lista As List(Of OnePic), channel As ShareChannel, sinceId As String)
+        Dim bCopy As Boolean = False
+        If String.IsNullOrWhiteSpace(sinceId) Then bCopy = True
+
+        For Each oItem As OnePic In _allItems.GetList
+            If oItem Is Nothing Then Continue For ' pomijamy ewentualne puste
+
+            ' pomijamy przed identyfikatorem
+            If Not bCopy Then
+                If oItem.PicGuid <> sinceId Then Continue For
+                bCopy = True
+            End If
+
+            ' czy jest na liście wyjątków?
+            If channel.exclusions.Contains(oItem.PicGuid) Then Continue For
+
+            For Each queryDef As ShareQueryProcess In channel.queries
+                If oItem.CheckIfMatchesQuery(queryDef.query) Then
+                    oItem.toProcessed = queryDef.processing & channel.processing
+                    If Not lista.Exists(Function(x) x.sSuggestedFilename = oItem.sSuggestedFilename) Then
+                        lista.Add(oItem)
+                    End If
+                End If
+            Next
+
+        Next
+
+    End Sub
+
+
+    Function Search(shareLogin As ShareLogin, sinceId As String) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
+        Dim lista As New List(Of OnePic)
+
+        For Each channel As ShareChannel In shareLogin.channels
+            SearchChannel(lista, channel, sinceId)
+        Next
+
+        ' *TODO* exclusions loginu
+
+        For Each oItem As OnePic In lista
+            oItem.toProcessed &= shareLogin.processing
+        Next
+
+        Return lista
+
+    End Function
+
 
     Public Function Init() As Boolean Implements DatabaseInterface.Init
         Return True
@@ -182,7 +242,7 @@ Public Class DatabaseJSON
 
     Public Function GetAll() As IEnumerable(Of OnePic) Implements DatabaseInterface.GetAll
         If Not IsLoaded Then Return Nothing
-        Return _allItems
+        Return _allItems.GetList
     End Function
 End Class
 

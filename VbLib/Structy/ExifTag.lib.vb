@@ -59,6 +59,13 @@ Public Class ExifTag
     Public Property MeteoKlimat As Meteo_Klimat
     Public Property MeteoSynop As Meteo_Synop
 
+    ''' <summary>
+    ''' konstruktor dla EntityFramework
+    ''' </summary>
+    Public Sub New()
+
+    End Sub
+
     Public Sub New(sSource As String)
         ExifSource = sSource
     End Sub

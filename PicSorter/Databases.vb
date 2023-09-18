@@ -10,6 +10,7 @@ Public Class Databases
         _configDir = configDir
         _bazyDanych = New List(Of DatabaseInterface)
         _bazyDanych.Add(New Vblib.DatabaseJSON(configDir))
+        _bazyDanych.Add(New Database_SQL.DatabaseSQL(configDir))
     End Sub
 
     Public ReadOnly Property IsEnabled As Boolean Implements DatabaseInterface.IsEnabled
@@ -66,18 +67,19 @@ Public Class Databases
     ''' jeśli jakaś jest wczytana, to TRUE; wczytaj IsQuick; wczytaj dowolną
     ''' </summary>
     Public Function Load() As Boolean Implements DatabaseInterface.Load
+
         For Each dbase As Vblib.DatabaseInterface In _bazyDanych
             If dbase.IsLoaded Then Return True
         Next
 
         For Each dbase As Vblib.DatabaseInterface In _bazyDanych
-            If dbase.IsQuick Then
+            If dbase.IsEnabled AndAlso dbase.IsQuick Then
                 If dbase.Load Then Return True
             End If
         Next
 
         For Each dbase As Vblib.DatabaseInterface In _bazyDanych
-            If dbase.Load Then Return True
+            If dbase.IsEnabled AndAlso dbase.Load Then Return True
         Next
 
         Return False
@@ -111,10 +113,26 @@ Public Class Databases
         Return bRet
     End Function
 
-    Function Search(query As SearchQuery, Optional channel As SearchQuery = Nothing) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
+    Function Search(query As SearchQuery) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
         ' foreach if dbase.isavailable then dbase.search
         For Each dbase As Vblib.DatabaseInterface In _bazyDanych
-            If dbase.IsLoaded Then Return dbase.Search(query, channel)
+            If dbase.IsLoaded Then Return dbase.Search(query)
+        Next
+
+        Return Nothing
+    End Function
+
+    Public Function Search(channel As ShareChannel, sinceId As String) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
+        For Each dbase As Vblib.DatabaseInterface In _bazyDanych
+            If dbase.IsLoaded Then Return dbase.Search(channel, sinceId)
+        Next
+
+        Return Nothing
+    End Function
+
+    Public Function Search(shareLogin As ShareLogin, sinceId As String) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
+        For Each dbase As Vblib.DatabaseInterface In _bazyDanych
+            If dbase.IsLoaded Then Return dbase.Search(shareLogin, sinceId)
         Next
 
         Return Nothing
@@ -181,11 +199,28 @@ Public Class Databases
 
     End Function
 
+    Public Function Disconnect(dbaseName As String) As Boolean
+
+        Dim dbase As DatabaseInterface = FindDatabase(dbaseName)
+        If dbase Is Nothing Then Return False
+
+        Try
+            Return dbase.Disconnect
+        Catch ex As Exception
+            Return False
+        End Try
+
+    End Function
+
     Public Function Init(dbaseName As String) As Boolean
         Dim dbase As DatabaseInterface = FindDatabase(dbaseName)
         If dbase Is Nothing Then Return False
 
         Return dbase.Init
+    End Function
+
+    Public Function Disconnect() As Boolean Implements DatabaseInterface.Disconnect
+        Throw New NotImplementedException()
     End Function
 
 

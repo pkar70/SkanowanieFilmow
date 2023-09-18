@@ -24,6 +24,7 @@ uiAzureMaxBatch=500
 uiBigPicSize=90
 
 uiJsonEnabled=True
+uiSqlInstance=(localdb)\MSSQLLocalDB
 
 # remark
 ' remark

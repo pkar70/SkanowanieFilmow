@@ -41,7 +41,12 @@ Public Class OnePic
 
     Public Property PicGuid As String = Nothing  ' 0xA420 ImageUniqueID ASCII!
 
+    Public Property serno As Integer
+
     'Public Property sortOrder As String
+
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property toProcessed As String
 
     <Newtonsoft.Json.JsonIgnore>
     Public Property oContent As IO.Stream
@@ -66,6 +71,13 @@ Public Class OnePic
         sSourceName = sourceName
         sInSourceID = inSourceId
         sSuggestedFilename = suggestedFilename
+    End Sub
+
+    ''' <summary>
+    ''' konstruktor dla EntityFramework
+    ''' </summary>
+    Public Sub New()
+
     End Sub
 
 #Region "operacje na Archived"
@@ -1491,6 +1503,7 @@ Public Class OneDescription
     Public Property data As String
     Public Property comment As String
     Public Property keywords As String
+    Public Property sourceLogin As String
 
     Public Sub New(sData As String, sComment As String, sKeywords As String)
         data = sData

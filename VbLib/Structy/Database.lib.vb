@@ -18,6 +18,8 @@ Public Interface DatabaseInterface
     ''' <returns>TRUE na OK, FALSE na error</returns>
     Function Connect() As Boolean
 
+    Function Disconnect() As Boolean
+
     ''' <summary>
     ''' inicjalizacja bazy - JSON: empty file, SQL: create TABLE itp.
     ''' </summary>
@@ -43,7 +45,9 @@ Public Interface DatabaseInterface
     ''' <summary>
     ''' wyszukanie wedle kwerendy (czasem także filtru kanału push/pull - gdy to remote search)
     ''' </summary>
-    Function Search(query As SearchQuery, Optional channel As SearchQuery = Nothing) As IEnumerable(Of OnePic)
+    Function Search(query As SearchQuery) As IEnumerable(Of OnePic)
+    Function Search(channel As ShareChannel, sinceId As String) As IEnumerable(Of OnePic)
+    Function Search(shareLogin As ShareLogin, sinceId As String) As IEnumerable(Of OnePic)
 
     ''' <summary>
     '''  zwraca komplet danych - tylko do celów kopiowania między bazami, inaczej nie używać!
