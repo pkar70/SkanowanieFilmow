@@ -1,6 +1,7 @@
 ﻿
 Imports System.Globalization
 Imports pkar
+Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
 Class MainPage
@@ -23,9 +24,7 @@ Class MainPage
 
         uiBrowseArch.IsEnabled = IsAnyArchPresent()
 
-        'Dim pliczek1 As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json")
-        'pliczek1.Load()
-        'pliczek1.Save(True)
+        'PoprawkiArchindex20230918()
 
         'Dim pliczek As New BaseList(Of Vblib.OnePic)("E:\Temp\picsortrecovery", "komplet.json")
         'pliczek.Load()
@@ -60,6 +59,79 @@ Class MainPage
         'Application.GetBuffer.SaveData()
     End Sub
 
+    Private Sub PoprawkiArchindex20230918()
+        Dim pliczek As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json")
+        pliczek.Load()
+        Debug.WriteLine("Old count: " & pliczek.Count)
+
+        Dim pliczek1 As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFullNew.json")
+
+        Dim _uniqId As New UniqID(Application.GetDataFolder)
+        Dim noGuidCnt As Integer = 0
+        Dim noTargetDirCnt As Integer = 0
+
+        For Each oPic As Vblib.OnePic In pliczek.GetList
+            ' usunac te, ktore maja targetdir null
+            If oPic Is Nothing Then Continue For
+            If String.IsNullOrWhiteSpace(oPic.TargetDir) Then
+                Debug.WriteLine("Null targetdir in " & oPic.sSuggestedFilename)
+                noTargetDirCnt += 1
+                Continue For
+            End If
+
+            ' picguidy zrobic tam gdzie nie ma
+            If String.IsNullOrWhiteSpace(oPic.PicGuid) Then
+                ' dorobienie, "ExifSource": "AUTO_GUID", oraz w oPic
+                noGuidCnt += 1
+                _uniqId.GetIdForPic(oPic)
+                If Not String.IsNullOrWhiteSpace(oPic.PicGuid) Then
+
+                    Dim oExif As New ExifTag(ExifSource.AutoGuid)
+                    oExif.PicGuid = oPic.PicGuid
+                    oPic.ReplaceOrAddExif(oExif)
+                Else
+                    Debug.WriteLine("Nie umiem zrobic guid dla " & oPic.sSuggestedFilename)
+                End If
+            End If
+
+            ' przetworzyc keywords na uniq (się powtarzają), zapewnic by teraz było tylko raz
+            ' zabrać ManualTag, w nim jest:
+            '"ExifSource" "MANUAL_TAG",
+            '"DateMin": "1970-05-23T00:00:00",
+            '"Keywords": " -JA",
+            '"UserComment": " | ja"
+            Dim oExifKwdOld As ExifTag = oPic.GetExifOfType("MANUAL_TAG")
+            If oExifKwdOld?.Keywords IsNot Nothing Then
+                Dim oExifKwdNew As ExifTag = New ExifTag("MANUAL_TAG")
+                oExifKwdNew.DateMax = oExifKwdOld.DateMax
+                oExifKwdNew.DateMin = oExifKwdOld.DateMin
+                oExifKwdNew.Keywords = ""
+
+                Dim akwds As String() = oExifKwdOld.Keywords.Split(" ")
+                For Each kwd As String In akwds
+                    kwd = kwd.Trim
+                    If kwd.Length < 2 Then Continue For
+
+                    If Not oExifKwdNew.Keywords.Contains(kwd) Then
+                        oExifKwdNew.Keywords &= " " & kwd
+                        Dim oKwd As OneKeyword = Application.GetKeywords.GetKeyword(kwd)
+                        If oKwd IsNot Nothing Then
+                            oExifKwdNew.UserComment &= oKwd.sDisplayName & " | "
+                        End If
+                    End If
+                Next
+            End If
+
+            pliczek1.Add(oPic)
+        Next
+
+        Debug.WriteLine("Plikow z pustym GUID bylo " & noGuidCnt)
+        Debug.WriteLine("Plikow bez targetdir bylo " & noTargetDirCnt)
+        Debug.WriteLine("Nowy indeks ma plikow " & pliczek1.Count)
+
+        pliczek1.Save(True)
+        vb14.DialogBox("Zrobilem nowy indeks, ktory powinien byc juz poprawny")
+    End Sub
 
     Private Function CalculateMaxThumbCount() As Integer
         ' policz ile zdjęć można mieć
