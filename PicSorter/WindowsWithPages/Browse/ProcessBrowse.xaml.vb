@@ -1637,7 +1637,7 @@ Public Class ProcessBrowse
 
     Private Sub uiFilterKeywords_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
-        uiFilters.Content = "kws"
+        uiFilters.Content = "kwds"
 
         Dim oWnd As New FilterKeywords
         oWnd.ShowDialog()
