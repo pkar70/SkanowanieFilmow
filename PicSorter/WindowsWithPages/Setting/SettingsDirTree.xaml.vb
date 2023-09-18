@@ -284,7 +284,7 @@ Public Class SettingsDirTree
             If maxPicDate < dataFolderu Then Continue For
             vb14.DumpMessage("data folderu w zakresie dat bufora")
 
-            For Each oPic As OnePic In Application.GetBuffer.GetList
+            For Each oPic As OnePic In Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrWhiteSpace(x.TargetDir))
                 If oPic.TargetDir.StartsWithOrdinal(oFold.fullPath) Then
                     vb14.DumpMessage("  jest taki w aktualnym buforze, więc go pomijam")
                     Exit For
