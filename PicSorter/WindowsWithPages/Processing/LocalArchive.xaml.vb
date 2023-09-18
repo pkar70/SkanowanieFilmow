@@ -172,6 +172,8 @@ Public Class LocalArchive
 
         Dim sErr As String = ""
 
+        Dim newlyArchived As New List(Of Vblib.OnePic)
+
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir))
             ' If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
 
@@ -215,7 +217,9 @@ Public Class LocalArchive
 
             ' zapisujemy do globalnego archiwum tylko raz, bez powtarzania przy zapisie do każdego LocalArch
             ' tu był błąd! bylo <1, ale to już jest po dopisywaniu; więc ma być +1
-            'If oPic.ArchivedCount = 1 Then
+            If oPic.ArchivedCount = 1 Then
+                newlyArchived.Add(oPic)
+            End If
             '    If sIndexLongJson <> "" Then sIndexLongJson &= ","
             '    sIndexLongJson &= oPic.DumpAsJSON(True)
 
@@ -237,7 +241,8 @@ Public Class LocalArchive
         Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
         If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
 
-        Application.gDbase.AddFiles(Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir)))
+        Application.gDbase.AddFiles(newlyArchived)
+
         'Application.GetArchIndex.AddToGlobalJsonIndex(sIndexShortJson, sIndexLongJson)    ' aktualizacja indeksu archiwalnego
 
     End Function
