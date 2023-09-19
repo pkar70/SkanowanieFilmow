@@ -5,14 +5,16 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:PicSorterNS"
              mc:Ignorable="d" 
-             d:DesignHeight="50" d:DesignWidth="400" Loaded="UserControl_Loaded">
+             d:DesignHeight="50" d:DesignWidth="400" Loaded="UserControl_Loaded"
+             x:Name="UserControlPostProcessPipelineControl"
+             >
     <Grid >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
-        
-        <TextBox Grid.Column="0" Name="uiPostprocess" />
+
+        <TextBox Grid.Column="0" Name="uiPostprocess" Text="{Binding Path=Pipeline, ElementName=UserControlPostProcessPipelineControl, Mode=TwoWay}"/>
         <Button Grid.Column="1" Content="+" HorizontalAlignment="Right" Name="uiAddPostprocButton" Click="uiAddPostproc_Click" />
         <Popup IsOpen="False" Name="uiAddPostprocPopup" PlacementTarget="{Binding ElementName=uiAddPostprocButton}">
             <Menu Name="uiMenuPostProcessors">

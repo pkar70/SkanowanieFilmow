@@ -1,16 +1,27 @@
 ﻿
 
+Imports Windows.ApplicationModel.Email.DataProvider
+
 Public Class UserControlPostProcessPipeline
 
     Public Property AllowDuplicates As Boolean = False
+
+    ' https://stackoverflow.com/questions/18461660/wpf-user-control-bind-data-to-user-control-property
+
+    Public Shared ReadOnly PipelineProperty As DependencyProperty =
+DependencyProperty.Register("Pipeline", GetType(String),
+GetType(UserControlPostProcessPipeline), New FrameworkPropertyMetadata(String.Empty))
+
     Public Property Pipeline As String
         Get
-            Return uiPostprocess.Text
+            Return GetValue(PipelineProperty).ToString()
         End Get
-        Set(value As String)
-            uiPostprocess.Text = value
+        Set
+            SetValue(PipelineProperty, Value)
         End Set
     End Property
+
+    '    Public Property Pipeline As DependencyProperty
 
     Private Sub UserControl_Loaded(sender As Object, e As RoutedEventArgs)
         WypelnMenuPostprocesory()
