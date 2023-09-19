@@ -12,16 +12,16 @@ Class SettingsCloudPublisher
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         ShowSourcesList()
         WypelnMenuTypyZrodel()
-        WypelnMenuPostprocesory
+        'WypelnMenuPostprocesory
     End Sub
 
     Private Sub uiAddSource_Click(sender As Object, e As RoutedEventArgs)
         uiAddSourcePopup.IsOpen = Not uiAddSourcePopup.IsOpen
     End Sub
 
-    Private Sub uiAddPostproc_Click(sender As Object, e As RoutedEventArgs)
-        uiAddPostprocPopup.IsOpen = Not uiAddPostprocPopup.IsOpen
-    End Sub
+    'Private Sub uiAddPostproc_Click(sender As Object, e As RoutedEventArgs)
+    '    uiAddPostprocPopup.IsOpen = Not uiAddPostprocPopup.IsOpen
+    'End Sub
 
     Private Sub uiEdit_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
@@ -71,6 +71,8 @@ Class SettingsCloudPublisher
 
     End Sub
 
+#If BEZUSERCONTROLPOSTPROC Then
+
     Private Function StworzMenuItemPostProcesora(oEngine As Vblib.PostProcBase) As MenuItem
         Dim oNew As New MenuItem
         oNew.Header = oEngine.Nazwa
@@ -99,6 +101,7 @@ Class SettingsCloudPublisher
 
     End Sub
 
+#End If
 
 
     Private Sub DodajTenTypZrodla(sender As Object, e As RoutedEventArgs)
@@ -132,7 +135,7 @@ Class SettingsCloudPublisher
 
         uiSrcType.Text = _item.sProvider
         uiSrcName.Text = _item.nazwa
-        uiPostprocess.Text = _item.defaultPostprocess
+        uiPostprocessUC.Pipeline = _item.defaultPostprocess
 
         If oItem.sProvider = Publish_AdHoc.PROVIDERNAME Then
             uiSrcPurge.IsEnabled = False
@@ -200,7 +203,7 @@ Class SettingsCloudPublisher
         _item.deleteAfterDays = dPurgeDelay
 
         _item.nazwa = uiSrcName.Text
-        _item.defaultPostprocess = uiPostprocess.Text
+        _item.defaultPostprocess = uiPostprocessUC.Pipeline
 
         _item.sUsername = uiSrcUsername.Text
         _item.sPswd = uiSrcPassword.Text

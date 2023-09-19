@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:PicSorterNS"
       mc:Ignorable="d" 
       Title="Publikowanie" Loaded="Page_Loaded">
     <Grid Margin="5,5,5,5">
@@ -89,7 +90,8 @@
             <TextBox Grid.Row="1" Grid.Column="1" Name="uiSrcName" />
 
             <TextBlock Grid.Row="2" Text="Postprocess:" />
-            <Button Grid.Row="2" Content="+" HorizontalAlignment="Right" Name="uiAddPostprocButton" Click="uiAddPostproc_Click" />
+            <local:UserControlPostProcessPipeline Grid.Row="2" Grid.Column="1" x:Name="uiPostprocessUC" />
+            <!--<Button Grid.Row="2" Content="+" HorizontalAlignment="Right" Name="uiAddPostprocButton" Click="uiAddPostproc_Click" />
             <Popup IsOpen="False" Name="uiAddPostprocPopup" PlacementTarget="{Binding ElementName=uiAddPostprocButton}">
                 <Menu Name="uiMenuPostProcessors">
                     <Menu.ItemsPanel>
@@ -99,7 +101,7 @@
                     </Menu.ItemsPanel>
                 </Menu>
             </Popup>
-            <TextBox Grid.Row="2" Grid.Column="1" Name="uiPostprocess" />
+            <TextBox Grid.Row="2" Grid.Column="1" Name="uiPostprocess" />-->
 
             <TextBlock Grid.Row="3" Text="Purge delay (days):" />
             <TextBox Grid.Row="3" Grid.Column="1" Name="uiSrcPurge" InputScope="Digits" />
