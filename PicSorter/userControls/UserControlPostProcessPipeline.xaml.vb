@@ -53,12 +53,16 @@ GetType(UserControlPostProcessPipeline), New FrameworkPropertyMetadata(String.Em
 
         Dim postproc As String = oMI.Header
 
+        Dim sPipeline As String = uiPostprocess.Text
+
         If Not AllowDuplicates Then
-            If uiPostprocess.Text.Contains(postproc) Then Return
+            If sPipeline.Contains(postproc) Then Return
         End If
 
-        If uiPostprocess.Text <> "" Then uiPostprocess.Text &= ";"
-        uiPostprocess.Text &= postproc
+        If sPipeline <> "" Then sPipeline &= ";"
+        sPipeline &= postproc
+
+        Pipeline = sPipeline
     End Sub
 
     Private Sub uiAddPostproc_Click(sender As Object, e As RoutedEventArgs)

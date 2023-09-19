@@ -15,6 +15,8 @@
         </Grid.ColumnDefinitions>
 
         <TextBox Grid.Column="0" Name="uiPostprocess" Text="{Binding Path=Pipeline, ElementName=UserControlPostProcessPipelineControl, Mode=TwoWay}"/>
+        <!--<TextBox Grid.Column="0" Name="uiPostprocess" Text="{Binding Pipeline, Mode=TwoWay}"/>-->
+
         <Button Grid.Column="1" Content="+" HorizontalAlignment="Right" Name="uiAddPostprocButton" Click="uiAddPostproc_Click" />
         <Popup IsOpen="False" Name="uiAddPostprocPopup" PlacementTarget="{Binding ElementName=uiAddPostprocButton}">
             <Menu Name="uiMenuPostProcessors">
