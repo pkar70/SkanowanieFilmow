@@ -17,17 +17,15 @@ Public Class UserControlSearch
     End Sub
 
     Private Sub FillQueriesCombo()
-        If _queries.Load() Then
-            uiComboQueries.Items.Clear()
-            For Each oItem As SearchQuery In _queries.GetList
-                uiComboQueries.Items.Add(oItem.nazwa)
-            Next
-        End If
+        uiComboQueries.Items.Clear()
+        For Each oItem As SearchQuery In Application.GetQueries.GetList
+            uiComboQueries.Items.Add(oItem.nazwa)
+        Next
     End Sub
 
 #Region "load/save query"
 
-    Dim _queries As New BaseList(Of SearchQuery)(Application.GetDataFolder, "queries.json")
+    'Dim _queries As New BaseList(Of SearchQuery)(Application.GetDataFolder, "queries.json")
 
 
     Private Async Sub uiSaveQuery_Click(sender As Object, e As RoutedEventArgs)
@@ -37,16 +35,21 @@ Public Class UserControlSearch
         Dim nazwa As String = Await vb14.DialogBoxInputAllDirectAsync("Podaj nazwę kwerendy")
         If String.IsNullOrWhiteSpace(nazwa) Then Return
 
-        For Each oItem As SearchQuery In _queries.GetList
+        For Each oItem As SearchQuery In Application.GetQueries.GetList
             If oItem.nazwa = nazwa Then
-                vb14.DialogBox("Taka nazwa już istnieje, wybierz inną")
-                Return
+                If Not Await vb14.DialogBoxYNAsync("Taka nazwa już istnieje, zamienić?") Then
+                    Return
+                End If
+                ' podmiana query - czyli tutaj usuwamy oryginał, zaraz go zapiszemy ponownie
+                Application.GetQueries.Remove(oItem)
+                Exit For
             End If
         Next
 
         query.nazwa = nazwa
-        _queries.Add(query)
-        _queries.Save()
+        Application.GetQueries.Add(query)
+        Application.GetQueries.Save()
+        Application.GetShareChannels.ReResolveQueries()
 
         FillQueriesCombo()
         For Each oItem As ComboBoxItem In uiComboQueries.Items
@@ -62,9 +65,10 @@ Public Class UserControlSearch
         Dim currName As String = TryCast(uiComboQueries.SelectedItem, String)
         If currName Is Nothing Then Return
 
-        For Each oItem As SearchQuery In _queries.GetList
+        For Each oItem As SearchQuery In Application.GetQueries.GetList
             If oItem.nazwa = currName Then
-                DataContext = oItem
+                ' klon - tak żeby grzebanie w danych nie zmieniło oryginału!
+                DataContext = oItem.Clone
                 Return
             End If
         Next
