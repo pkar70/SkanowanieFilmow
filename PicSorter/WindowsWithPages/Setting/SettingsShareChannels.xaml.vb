@@ -98,8 +98,11 @@ Class SettingsShareChannels
 
         ' tu mamy Clone oryginału, którego nie zmieniamy
 
-        Application.GetShareChannels.GetList.Add(oChannel)
-        Application.GetShareChannels.Save()
+        With Application.GetShareChannels
+            .GetList.Add(oChannel)
+            .ReResolveQueries()
+            .Save()
+        End With
 
         uiEditChannel.Visibility = Visibility.Collapsed
 
