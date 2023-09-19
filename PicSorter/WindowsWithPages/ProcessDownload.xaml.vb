@@ -57,9 +57,15 @@ Public Class ProcessDownload
         Dim oWnd As New EditExifTag(oSrc.currentExif, oSrc.SourceName & " (chwilowe)", EditExifTagScope.LimitedToSourceDir, False)
         oWnd.ShowDialog()
 
+        Dim iCount As Integer
         Application.ShowWait(True)
-        Dim iCount As Integer = Await RetrieveFilesFromSource(oSrc)
+        iCount = Await RetrieveFilesFromSource(oSrc)
         Application.ShowWait(False)
+        If iCount < 0 Then
+            vb14.DialogBox("Błąd wczytywania")
+            Return
+        End If
+
 
         Dim iToPurge As Integer = oSrc.Purge(False)
 
@@ -129,7 +135,7 @@ Public Class ProcessDownload
         'Await vb14.DialogBoxAsync($"read {iCount} files")
         vb14.DumpMessage($"Read {iCount} files")
 
-        If iCount < 1 Then Return 0
+        If iCount < 1 Then Return iCount
 
         uiProgBar.Maximum = iCount
         uiProgBar.Value = 0
