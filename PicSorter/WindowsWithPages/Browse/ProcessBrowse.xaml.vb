@@ -86,6 +86,8 @@ Public Class ProcessBrowse
 
         WypelnMenuCloudPublish(Nothing, uiMenuPublish, AddressOf PublishRun)
 
+        WypelnMenuFilterSharing
+
         If _inArchive Then
             ' działamy na archiwum
 
@@ -1716,6 +1718,88 @@ Public Class ProcessBrowse
         Return True
     End Function
 
+
+    Public Sub WypelnMenuFilterSharing()
+
+        uiFilterLogins.Items.Clear()
+
+        Dim iCnt As Integer = WypelnMenuFilterSharingChannels
+        iCnt += WypelnMenuFilterSharingLogins
+
+        If iCnt < 1 Then
+            uiFilterSharing.Visibility = Visibility.Collapsed
+        Else
+            uiFilterSharing.Visibility = Visibility.Visible
+        End If
+    End Sub
+
+
+    Private Sub FilterSharingChannel(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oChannel As Vblib.ShareChannel = oFE?.DataContext
+        If oChannel Is Nothing Then Return
+
+        For Each thumb As ThumbPicek In _thumbsy
+            thumb.opacity = _OpacityWygas
+
+            For Each query As ShareQueryProcess In oChannel.queries
+
+                If thumb.oPic.CheckIfMatchesQuery(query.query) Then
+                    thumb.opacity = 1
+                    Exit For
+                End If
+            Next
+        Next
+
+        RefreshMiniaturki(False)
+
+    End Sub
+
+
+    Public Function WypelnMenuFilterSharingChannels() As Integer
+        uiFilterChannels.Items.Clear()
+
+        Dim iCnt As Integer = 0
+
+        For Each oChannel As Vblib.ShareChannel In Application.GetShareChannels.GetList
+            Dim oNew As New MenuItem
+            oNew.Header = oChannel.nazwa
+            oNew.DataContext = oChannel
+
+            AddHandler oNew.Click, AddressOf FilterSharingChannel
+
+            uiFilterChannels.Items.Add(oNew)
+            iCnt += 1
+        Next
+
+        uiFilterChannels.IsEnabled = (iCnt > 0)
+
+        Return iCnt
+    End Function
+
+    Public Function WypelnMenuFilterSharingLogins() As Integer
+        uiFilterLogins.Items.Clear()
+
+        Dim iCnt As Integer = 0
+
+        For Each oLogin As Vblib.ShareLogin In Application.GetShareLogins.GetList
+            Dim oNew As New MenuItem
+            oNew.Header = oLogin.displayName
+            oNew.DataContext = oLogin
+
+            '*TODO* handlera brakuje do tego :)
+            'AddHandler oNew.Click, AddressOf FilterSharingChannel
+
+            uiFilterLogins.Items.Add(oNew)
+            iCnt += 1
+        Next
+
+        uiFilterLogins.IsEnabled = (iCnt > 0)
+
+        Return iCnt
+    End Function
+
+
 #End Region
 
     Private Sub RefreshOwnedWindows(oThumb As ThumbPicek)
@@ -2046,7 +2130,7 @@ Public Class ProcessBrowse
 
         sErr = Await oSrc.SendFiles(lista, AddressOf ProgBarInc)
         If sErr <> "" Then Await vb14.DialogBoxAsync(sErr)
-        ' Await oSrc.Logout()
+        ' Await oChannel.Logout()
     End Function
 
     Private Sub ProgBarInc()
@@ -2054,11 +2138,11 @@ Public Class ProcessBrowse
         uiProgBar.Value += 1
     End Sub
 
-    'Private Async Function PublishOnePicTo(oSrc As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
+    'Private Async Function PublishOnePicTo(oChannel As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
     '    If bSendNow Then
-    '        Await oSrc.SendFile(oItem.oPic)
+    '        Await oChannel.SendFile(oItem.oPic)
     '    Else
-    '        oItem.oPic.AddCloudPublished(oSrc.konfiguracja.nazwa, "")
+    '        oItem.oPic.AddCloudPublished(oChannel.konfiguracja.nazwa, "")
     '    End If
     '    Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
     '    uiProgBar.Value += 1
