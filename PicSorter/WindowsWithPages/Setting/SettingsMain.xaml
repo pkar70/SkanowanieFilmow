@@ -23,6 +23,8 @@
         <Button Content="Listy" Margin="5,10,5,5" FontSize="18" Click="uiListSett_Click"/>
         <Button Content="Misc" Margin="5,5,5,5" FontSize="18" Click="uiMiscSett_Click"/>
 
+        <Button Content="Sharing" Margin="5,10,5,5" FontSize="18" Click="uiSharingSett_Click"/>
+
         <Button Content="Backup as ZIP" Margin="5,15,5,5" FontSize="18" Click="uiBackup_Click"/>
 
     </StackPanel>

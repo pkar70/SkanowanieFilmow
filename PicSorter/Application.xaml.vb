@@ -173,6 +173,36 @@ Partial Class Application
         Return gCloudArchives
     End Function
 
+    Private Shared gQueries As BaseList(Of SearchQuery)
+
+    Public Shared Function GetQueries() As BaseList(Of SearchQuery)
+        If gQueries IsNot Nothing Then Return gQueries
+        gQueries = New BaseList(Of SearchQuery)(Application.GetDataFolder, "queries.json")
+        gQueries.Load()
+        Return gQueries
+    End Function
+
+    Private Shared gShareChannels As ShareChannelsList
+
+    Public Shared Function GetShareChannels() As ShareChannelsList
+        If gShareChannels IsNot Nothing Then Return gShareChannels
+
+        gShareChannels = New ShareChannelsList(Application.GetDataFolder)
+        gShareChannels.Load()
+        Return gShareChannels
+    End Function
+
+    Private Shared gShareLogins As ShareLoginsList
+
+    Public Shared Function GetShareLogins() As ShareLoginsList
+        If gShareLogins IsNot Nothing Then Return gShareLogins
+
+        gShareLogins = New ShareLoginsList(Application.GetDataFolder)
+        gShareLogins.Load()
+        Return gShareLogins
+    End Function
+
+
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
         New Vblib.AutoTag_EXIF,
         New Auto_std2_Astro.Auto_MoonPhase,

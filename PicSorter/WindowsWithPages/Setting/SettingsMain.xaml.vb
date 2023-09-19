@@ -1,6 +1,8 @@
 ﻿Imports System.IO.Compression
 Imports vb14 = Vblib.pkarlibmodule14
 
+
+' 2023.09.18, 663 px ma ekran settingsów
 Class SettingsMain
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
@@ -96,4 +98,7 @@ Class SettingsMain
         Me.NavigationService.Navigate(New SettingsSlideshow)
     End Sub
 
+    Private Sub uiSharingSett_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsShare)
+    End Sub
 End Class

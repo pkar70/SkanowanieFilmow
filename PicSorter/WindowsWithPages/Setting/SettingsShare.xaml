@@ -1,0 +1,24 @@
+﻿<Page x:Class="SettingsShare"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PicSorterNS"
+      mc:Ignorable="d" 
+      Title="SettingsShare">
+    <StackPanel Width="170">
+        <TextBlock HorizontalAlignment="Center" FontSize="18" Text="Współpraca" Margin="5,1,5,10"/>
+
+        <TextBlock FontSize="14" Text="As a server:" FontWeight="SemiBold" Margin="5,1,5,0"/>
+
+        <!--<Button Content="Queries" Margin="5,10,5,5" FontSize="18" Click="uiShareQueries_Click"/>-->
+        <Button Content="Channels" Margin="5,10,5,5" FontSize="18" Click="uiShareChannels_Click"/>
+        <Button Content="Logins" Margin="5,10,5,5" FontSize="18" Click="uiShareLogins_Click"/>
+
+        <TextBlock FontSize="14" Text="As a client:" FontWeight="SemiBold" Margin="5,20,5,0"/>
+
+        <Button Content="Servers" Margin="5,10,5,5" FontSize="18" Click="uiShareServers_Click"/>
+
+    </StackPanel>
+
+</Page>
