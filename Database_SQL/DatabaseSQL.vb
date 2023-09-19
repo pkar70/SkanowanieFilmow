@@ -371,14 +371,15 @@ Public Class DatabaseSQL
                 )
             builder.Entity(GetType(OnePic)).Property("Exifs").HasConversion(konwerterJSONListExifs)
 
-            'The property 'AutoWeatherHourSingle.preciptype' could not be mapped, because it is of type 'string[]' which is not a supported primitive type or a valid entity type. Either explicitly map this property, or ignore it using the '[NotMapped]' attribute or by using 'EntityTypeBuilder.Ignore' in 'OnModelCreating'.
-            'The property 'AutoWeatherDay.preciptype' could not be mapped, because it is of type 'string[]' which is not a supported primitive type or a valid entity type. Either explicitly map this property, or ignore it using the '[NotMapped]' attribute or by using 'EntityTypeBuilder.Ignore' in 'OnModelCreating'.
-            Dim konwerterJSONArray = New ValueConverter(Of String(), String)(
-                Function(x) JsonConvert.SerializeObject(x, New JsonSerializerSettings With {.NullValueHandling = NullValueHandling.Ignore, .DefaultValueHandling = DefaultValueHandling.Ignore}),
-                Function(x) JsonConvert.DeserializeObject(Of String())(x)
-                )
-            builder.Entity(GetType(AutoWeatherDay)).Property("preciptype").HasConversion(konwerterJSONArray)
-            builder.Entity(GetType(AutoWeatherHourSingle)).Property("preciptype").HasConversion(konwerterJSONArray)
+            ' jednak niepotrzebne
+            ''The property 'AutoWeatherHourSingle.preciptype' could not be mapped, because it is of type 'string[]' which is not a supported primitive type or a valid entity type. Either explicitly map this property, or ignore it using the '[NotMapped]' attribute or by using 'EntityTypeBuilder.Ignore' in 'OnModelCreating'.
+            ''The property 'AutoWeatherDay.preciptype' could not be mapped, because it is of type 'string[]' which is not a supported primitive type or a valid entity type. Either explicitly map this property, or ignore it using the '[NotMapped]' attribute or by using 'EntityTypeBuilder.Ignore' in 'OnModelCreating'.
+            'Dim konwerterJSONArray = New ValueConverter(Of String(), String)(
+            '    Function(x) JsonConvert.SerializeObject(x, New JsonSerializerSettings With {.NullValueHandling = NullValueHandling.Ignore, .DefaultValueHandling = DefaultValueHandling.Ignore}),
+            '    Function(x) JsonConvert.DeserializeObject(Of String())(x)
+            '    )
+            'builder.Entity(GetType(AutoWeatherDay)).Property("preciptype").HasConversion(konwerterJSONArray)
+            'builder.Entity(GetType(AutoWeatherHourSingle)).Property("preciptype").HasConversion(konwerterJSONArray)
 
             'The entity type 'AutoWeatherDay' requires a primary key to be defined. If you intended to use a keyless entity type call 'HasNoKey()'.
             builder.Entity(GetType(AutoWeatherDay)).HasNoKey()
