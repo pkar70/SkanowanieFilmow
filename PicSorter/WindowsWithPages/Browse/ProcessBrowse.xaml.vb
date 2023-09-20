@@ -1735,6 +1735,9 @@ Public Class ProcessBrowse
 
 
     Private Sub FilterSharingChannel(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "channel"
+
         Dim oFE As FrameworkElement = sender
         Dim oChannel As Vblib.ShareChannel = oFE?.DataContext
         If oChannel Is Nothing Then Return
@@ -1749,6 +1752,35 @@ Public Class ProcessBrowse
                     Exit For
                 End If
             Next
+        Next
+
+        RefreshMiniaturki(False)
+
+    End Sub
+
+    Private Sub FilterSharingLogin(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "login"
+
+        Dim oFE As FrameworkElement = sender
+        Dim oLogin As Vblib.ShareLogin = oFE?.DataContext
+        If oLogin?.channels Is Nothing Then Return
+
+        For Each thumb As ThumbPicek In _thumbsy
+            thumb.opacity = _OpacityWygas
+
+            For Each oChannel As ShareChannel In oLogin.channels
+                For Each query As ShareQueryProcess In oChannel.queries
+
+                    If thumb.oPic.CheckIfMatchesQuery(query.query) Then
+                        thumb.opacity = 1
+                        Exit For
+                    End If
+                Next
+
+                If thumb.opacity = 1 Then Exit For
+            Next
+
         Next
 
         RefreshMiniaturki(False)
@@ -1787,8 +1819,7 @@ Public Class ProcessBrowse
             oNew.Header = oLogin.displayName
             oNew.DataContext = oLogin
 
-            '*TODO* handlera brakuje do tego :)
-            'AddHandler oNew.Click, AddressOf FilterSharingChannel
+            AddHandler oNew.Click, AddressOf FilterSharingLogin
 
             uiFilterLogins.Items.Add(oNew)
             iCnt += 1
@@ -2130,7 +2161,7 @@ Public Class ProcessBrowse
 
         sErr = Await oSrc.SendFiles(lista, AddressOf ProgBarInc)
         If sErr <> "" Then Await vb14.DialogBoxAsync(sErr)
-        ' Await oChannel.Logout()
+        ' Await oLogin.Logout()
     End Function
 
     Private Sub ProgBarInc()
@@ -2138,11 +2169,11 @@ Public Class ProcessBrowse
         uiProgBar.Value += 1
     End Sub
 
-    'Private Async Function PublishOnePicTo(oChannel As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
+    'Private Async Function PublishOnePicTo(oLogin As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
     '    If bSendNow Then
-    '        Await oChannel.SendFile(oItem.oPic)
+    '        Await oLogin.SendFile(oItem.oPic)
     '    Else
-    '        oItem.oPic.AddCloudPublished(oChannel.konfiguracja.nazwa, "")
+    '        oItem.oPic.AddCloudPublished(oLogin.konfiguracja.nazwa, "")
     '    End If
     '    Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
     '    uiProgBar.Value += 1
