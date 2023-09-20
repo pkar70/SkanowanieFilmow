@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Publish_Instagram\CloudPubl_std2_Instagram.vbproj" />
     <ProjectReference Include="..\Publish_std2_Facebook\CloudPubl_std2_Facebook.vbproj" />
     <ProjectReference Include="..\Taggers_OCR\Auto_cr31_WinOCR_lib.vbproj" />
+    <ProjectReference Include="..\vb14_GetMyIP\vb14_GetMyIP.vbproj" />
     <ProjectReference Include="..\VbLibCore3-picSource\VbLibCore3-picSource.vbproj" />
     <ProjectReference Include="..\VblibStd2-mov2jpg\VblibStd2-mov2jpg.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
@@ -49,6 +50,7 @@
 
   <ItemGroup>
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="IPUserControls.Wpf" Version="1.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

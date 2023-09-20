@@ -46,7 +46,11 @@ Public Class ShareLogin
 
     Public Property login As Guid ' tym się INNY loguje
     Public Property displayName As String ' widać go jako...
+
+    <JsonIgnore>
     Public Property channels As List(Of ShareChannel) ' może widzieć kanały...
+
+    Public Property channelNames As String' na dysku są tylko nazwy
 
     ''' <summary>
     ''' lista PicGuid wyłączanych (mimo że pasują do powyższych filtrów)
@@ -56,9 +60,11 @@ Public Class ShareLogin
     Public Property processing As String ' składane do query.processing i channel.processing
     Public Property allowUpload As Boolean ' czy może ten ktoś robić upload
     Public Property remoteHostName As String ' jego hostname, zgłaszany przez jego PicSort
-    Public Property ipAddr As IPAddress    ' albo specjalna klasa adres/maska ' https://github.com/jsakamoto/ipaddressrange/
+
+    ' musi być ="", bo inaczej kontrolka IPaddress ma problem
+    Public Property ipAddr As String = ""   ' albo specjalna klasa adres/maska ' https://github.com/jsakamoto/ipaddressrange/
     ' uwaga: z telefonu via komórkowy internet http widzi jako 5.173.42.227, więc jest OK
-    Public Property netmask As IPAddress    ' IPNetwork w asp.net   'usercontrol: https://github.com/mariugul/IPUserControls
+    Public Property netmask As String = ""   ' IPNetwork w asp.net   'usercontrol: https://github.com/mariugul/IPUserControls
     Public Property lastLogin As Date ' kiedy ostatnio się logował
 End Class
 

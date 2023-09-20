@@ -1,0 +1,155 @@
+﻿<Page x:Class="SettingsShareLogins"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:ipAddr="clr-namespace:IPUserControls;assembly=IPUserControls"
+      xmlns:local="clr-namespace:PicSorterNS"
+      mc:Ignorable="d" 
+      d:DesignHeight="500" d:DesignWidth="350"
+      Title="SettingsShareLogins" Loaded="Page_Loaded">
+    <Page.Resources>
+        <local:KonwersjaStringListString x:Key="KonwersjaStringListString"/>
+    </Page.Resources>
+
+    <Grid  Margin="2,2,2,2">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="Loginy" HorizontalAlignment="Center" FontSize="18" Margin="5,2,5,10"/>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="Loginy:" />
+            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddLogin_Click" Margin="2,2,2,2"/>
+            <ListView Name="uiLista" Grid.Row="1">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Text="{Binding displayName, Mode=OneTime}" />
+                            <Button Content=" Edit " Grid.Column="1" Click="uiEdit_Click" Margin="5,0,5,0" />
+                            <Button Content=" Email " Grid.Column="2" Click="uiEmail_Click" Margin="5,0,5,0" />
+                            <Button Content=" Del " Grid.Column="3" Click="uiDel_Click" />
+
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+        </Grid>
+
+        <Grid Name="uiEditLogin" Margin="10,10,10,2" Grid.Row="2" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <!-- lista: query/postprocess; guzik add, guzik delete -->
+            <Grid Grid.Row="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Kanały:" />
+                    <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddChannel_Click" Grid.Row="1"/>
+
+                <ListView Name="uiListaKanalow" Grid.Row="2" ItemsSource="{Binding channels, Mode=TwoWay}" Margin="2,0,2,0" >
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <ComboBox SelectedValue="{Binding nazwa, Mode=TwoWay}" Loaded="uiComboQuery_Loaded" />
+                                <Button Content=" Del " Grid.Column="1" Click="uiDelChannel_Click" Margin="3,0,0,0"/>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+
+            </Grid>
+
+
+            <!-- edit box z lista exclusions -->
+            <Grid Grid.Row="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Exclusions: (GUIDs)" />
+                <TextBox VerticalScrollBarVisibility="Auto" Name="uiKanalExclusions" AcceptsReturn="True" Text="{Binding exclusions, Mode=TwoWay, Converter={StaticResource KonwersjaStringListString}}" Grid.Row="1" ToolTip="Lista GUID plików które nie powinny być pokazane - każdy w oddzielnej linii"/>
+            </Grid>
+
+            <!-- postprocess wspolny dla login -->
+            <Grid Grid.Row="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock Text="Postprocess" />
+                <local:UserControlPostProcessPipeline Pipeline="{Binding processing, Mode=TwoWay}" Grid.Row="1" ToolTip="Tu wpisane mechanizmy będą zaaplikowane po mechanizmach z kanału oraz query (nie: zamiast nich)"/>
+            </Grid>
+
+            <Grid Grid.Row="3">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="80" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Text="Host" Grid.Row="0" Grid.Column="0"/>
+                <TextBox Text="{Binding remoteHostName, Mode=TwoWay}" Grid.Row="0" Grid.Column="1"/>
+
+                <TextBlock Text="IP addr" Grid.Row="1" Grid.Column="0"/>
+                <!--<TextBox Text="{Binding ipAddr, Mode=TwoWay}" Grid.Row="1" Grid.Column="1"/>-->
+                <ipAddr:IpField IpAddress="{Binding ipAddr, Mode=TwoWay}" Grid.Row="1" Grid.Column="1"/>
+
+                <TextBlock Text="IP mask" Grid.Row="2" Grid.Column="0"/>
+                <!--<TextBox Text="{Binding netmask, Mode=TwoWay}" Grid.Row="2" Grid.Column="1"/>-->
+                <ipAddr:IpField IpAddress="{Binding netmask, Mode=TwoWay}" Grid.Row="2" Grid.Column="1"/>
+
+                <TextBlock Text="Last login" Grid.Row="3" Grid.Column="0"/>
+                <TextBlock Text="{Binding lastLogin, Mode=OneTime}" Grid.Row="3" Grid.Column="1"/>
+
+            </Grid>
+            
+            <Button Content=" OK " HorizontalAlignment="Center" Width="Auto" Grid.Row="4" Margin="5,5,5,0" Click="uiOK_Click"/>
+
+        </Grid>
+
+    </Grid>
+</Page>

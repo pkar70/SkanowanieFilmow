@@ -7,7 +7,7 @@ Class SettingsShare
     End Sub
 
     Private Sub uiShareLogins_Click(sender As Object, e As RoutedEventArgs)
-
+        Me.NavigationService.Navigate(New SettingsShareLogins)
     End Sub
 
     Private Sub uiShareServers_Click(sender As Object, e As RoutedEventArgs)
