@@ -141,6 +141,8 @@ Partial Class Application
         Return gKeywords
     End Function
 
+#Region "DirTree"
+
     Private Shared gDirtree As Vblib.DirsList
 
     Public Shared Function GetDirTree() As Vblib.DirsList
@@ -150,7 +152,9 @@ Partial Class Application
         End If
         Return gDirtree
     End Function
+#End Region
 
+#Region "Cloud publish/archives"
 
     Private Shared gCloudPublishers As CloudPublishersList
 
@@ -172,7 +176,9 @@ Partial Class Application
         End If
         Return gCloudArchives
     End Function
+#End Region
 
+#Region "Queries"
     Private Shared gQueries As BaseList(Of SearchQuery)
 
     Public Shared Function GetQueries() As BaseList(Of SearchQuery)
@@ -181,7 +187,9 @@ Partial Class Application
         gQueries.Load()
         Return gQueries
     End Function
+#End Region
 
+#Region "sharing channels/logins"
     Private Shared gShareChannels As ShareChannelsList
 
     Public Shared Function GetShareChannels() As ShareChannelsList
@@ -202,6 +210,7 @@ Partial Class Application
         Return gShareLogins
     End Function
 
+#End Region
 
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
         New Vblib.AutoTag_EXIF,
