@@ -1,4 +1,5 @@
 ﻿
+Imports pkar.WPF.Configs
 
 Class SettingsShare
 
@@ -12,5 +13,14 @@ Class SettingsShare
 
     Private Sub uiShareServers_Click(sender As Object, e As RoutedEventArgs)
 
+    End Sub
+
+    Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        uiServerEnabled.GetSettingsBool
+        uiServerEnabled.IsEnabled = (Application.GetShareLogins.Count > 0)
+    End Sub
+
+    Private Sub uiSrvEnable_Check(sender As Object, e As RoutedEventArgs)
+        uiServerEnabled.SetSettingsBool
     End Sub
 End Class
