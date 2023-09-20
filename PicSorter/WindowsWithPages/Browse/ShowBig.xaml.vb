@@ -472,19 +472,20 @@ Public Class ShowBig
     Private Sub uiResizePic_Click(sender As Object, e As MouseButtonEventArgs)
         Dim oResize As Stretch = uiFullPicture.Stretch
         DumpCurrMethod($"(switching from {oResize.ToString})")
+
         Select Case oResize
             Case Stretch.Uniform
                 uiFullPicture.Stretch = Stretch.None
-                ' to juz pokazuje scrollbary, ale jeszcze im sie wydaje ze nie ma po co przewijac, trzeba zrobic resize okna
-                uiMainPicScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Visible
-                uiMainPicScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Visible
+                Me.Width -= 1
+                uiEditCrop.IsEnabled = False
+                ' *TODO* nie widać całości zdjęcia! ale dotyczy chyba tylko zdjęć z auto-obracaniem
             Case Stretch.None
                 uiFullPicture.Stretch = Stretch.Uniform
-                uiMainPicScroll.VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-                uiMainPicScroll.HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+                Me.Width += 1
+                ZmianaRozmiaruImg() ' bez tego nie wraca - prościej, choć może dałoby się inaczej: https://stackoverflow.com/questions/31146750/alternate-between-stretch-uniform-and-stretching-none-for-viewbox-with-scrol
+                uiEditCrop.IsEnabled = True
         End Select
 
-        'ZmianaRozmiaruImg()
     End Sub
 
     Private Sub uiCopyPath_Click(sender As Object, e As RoutedEventArgs)

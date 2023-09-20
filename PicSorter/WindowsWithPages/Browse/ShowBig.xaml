@@ -54,18 +54,18 @@
 
         <ScrollViewer Grid.Row="1" Grid.Column="1" Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <!--<Grid Name="uiUsunLeft" HorizontalAlignment="Left" Opacity="0.5" VerticalAlignment="Stretch" />-->
-            <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center" Width="100" Height="100">
-                <Image.ContextMenu>
-                    <ContextMenu>
-                        <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
-                        <MenuItem Header="Metadata" Click="uiShowMetadata_Click"/>
+                <!--<Grid Name="uiUsunLeft" HorizontalAlignment="Left" Opacity="0.5" VerticalAlignment="Stretch" />-->
+                <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center" Width="100" Height="100">
+                    <Image.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
+                            <MenuItem Header="Metadata" Click="uiShowMetadata_Click"/>
                             <MenuItem Header="File EXIF" Click="uiShowExif_Click" Name="uiShowExif"/>
-                        <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
+                            <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
                             <MenuItem Header="Describe" Click="uiDescribe_Click" />
                             <MenuItem Header="Pic edit" Name="uiEditModes" >
-                            <MenuItem Header="Crop" Click="uiCrop_Click" />
-                            <!--<MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>-->
+                                <MenuItem Header="Crop" Click="uiCrop_Click" Name="uiEditCrop"/>
+                                <!--<MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>-->
                                 <MenuItem Header="Rotate">
                                     <!--<MenuItem Header="→ ► ⊏ ◨ ↠ ↶ ⇉ ⇒" FontSize="18"/>
                                     <MenuItem Header="↓ ▼ ⊓ ⬓ ⨅ ↡ ↺ ⇊ ⇓" FontSize="18"/>
@@ -77,22 +77,22 @@
                                 </MenuItem>
                                 <MenuItem Header="Flip ⇔ " Click="uiFlipHoriz_Click" />
                                 <Separator/>
-                            <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
-                            <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
+                                <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
+                                <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
                             </MenuItem>
                             <MenuItem Header="Batch process" Name="uiBatchProcessors" />
                             <MenuItem Header="Cloud arch" Name="uiMenuCloudArch"  />
                             <MenuItem Header="Publish" Name="uiMenuPublish"  />
                             <!--<MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />-->
-                        <MenuItem Header="On map" Name="uiOnMap" />
+                            <MenuItem Header="On map" Name="uiOnMap" />
                             <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                             <MenuItem Header="Wiki for month" Click="uiGoWiki_Click" />
                             <MenuItem Header="ShellExec" Click="uiShellExec_Click" />
                             <Separator/>
                             <MenuItem Header="Delete" Click="uiDelPic_Click" Name="uiDelete" />
                         </ContextMenu>
-                </Image.ContextMenu>
-            </Image>
+                    </Image.ContextMenu>
+                </Image>
                 <MediaElement Name="uiMovie" Visibility="Collapsed" MediaEnded="uiMovie_Ended" LoadedBehavior="Manual"/>
                 <Button VerticalAlignment="Bottom" HorizontalAlignment="Right" Name="uiIkonkaTypu" FontSize="20" Foreground="LimeGreen" Background="Yellow" Click="uiIkonkaTypu_Click" />
             </Grid>
