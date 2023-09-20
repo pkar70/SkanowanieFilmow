@@ -37,16 +37,18 @@
                     <DataTemplate>
                         <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <TextBlock Text="{Binding displayName, Mode=OneTime}" />
-                            <Button Content=" Edit " Grid.Column="1" Click="uiEdit_Click" Margin="5,0,5,0" />
-                            <Button Content=" Email " Grid.Column="2" Click="uiEmail_Click" Margin="5,0,5,0" />
-                            <Button Content=" Del " Grid.Column="3" Click="uiDel_Click" />
+                            <CheckBox IsChecked="{Binding enabled, Mode=TwoWay}" MinWidth="20" Checked="uiEnabled_Checked" Unchecked="uiEnabled_Checked"/>
+                            <TextBlock Text="{Binding displayName, Mode=OneTime}"  Grid.Column="1"/>
+                            <Button Content=" Edit " Grid.Column="2" Click="uiEdit_Click" Margin="5,0,5,0" />
+                            <Button Content=" Email " Grid.Column="3" Click="uiEmail_Click" Margin="5,0,5,0" />
+                            <Button Content=" Del " Grid.Column="4" Click="uiDel_Click" />
 
                         </Grid>
                     </DataTemplate>

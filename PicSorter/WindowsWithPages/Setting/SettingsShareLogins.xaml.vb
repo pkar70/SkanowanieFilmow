@@ -135,4 +135,9 @@ Class SettingsShareLogins
 
         Page_Loaded(Nothing, Nothing)
     End Sub
+
+    Private Sub uiEnabled_Checked(sender As Object, e As RoutedEventArgs)
+        ' check oraz uncheck
+        Application.GetShareLogins.Save()
+    End Sub
 End Class

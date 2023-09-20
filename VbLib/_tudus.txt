@@ -203,22 +203,9 @@ CHOMIK: https://restsharp.dev/v107/ , tu jest o exhausting, że powinno byc nows
 
 CONFIG: combo z publisherami do email? 
 
-DBASE: wstawianie tam Flattened, co pozwala na w miarę normalne query? Przerobić SEARCH by LINQ wykorzystać
-DBASE: baza lokalna SQL, oraz SQL remote? Np. tata z mojego SQL, i synchronizacja SQLi? A może wykorzystać to co robiłem do synchro StoreFiles między SQLami?
-DBASE: obsługa jakiejś bazy danych; bo chyba JSON dawałby za duże zjedzenie pamięci i zbyt wolne.
-DBASE: tworzenie tabeli wedle pól z EXIF (flattened?)
-DBASE: https://learn.microsoft.com/en-us/sql/relational-databases/json/json-data-sql-server?view=sql-server-ver16
 DBASE: lokalny SQL; ale czy także Azure.Cosmo? Telefonicnzie i tak nie ma jak zrobić wyszukiwania (screen estate za mały)
 DBASE: Amazon.Dynamo (noSQL)
-DBASE: lokalny SQL: wrzucanie StoredProcedure?
-DBASE: aktualizowany także post-archive - "master" database, gdy ona jest dostępna to jest możliwość update danych w Archive a nie tylko w Buffer
-https://learn.microsoft.com/en-us/visualstudio/data-tools/create-a-simple-data-application-with-wpf-and-entity-framework-6?view=vs-2022
 DBASE: Cosmo jako dla zdalnego komentowania?
-DBASE:OnePic.SerNo, jako numer seryjny - dodawany podczas pierwszej archiwizacji
-DBASE: dodanie SerNo do aktualnego archive.full przy eksporcie do DBASE
-DBASE: 'primary', do szukania, każda: AddFiles(list<onefile>), Read, PreBackup (dla SQL: zrobienie kopii do JSON przed ZIPowaniem), Search(query szukania, <filter>kanału)...
-DBASE: SQL, oraz defaultowa JSON lokalny
-DBASE: wszystkie operacje na dbase foreach(dbase.active)
 
 DIRTREE: copy to onedrive teraz jest tylko z okna katalogów, a tam sie teraz rzadziej wchodzi (tworzenie dirsów w trakcie)
 DIRTREE: użyć structlist.MaintainCopy
@@ -261,9 +248,8 @@ RETRIEVE: reakcja na disk full (sprawdzenie przed próbą ściągania)
 RETRIEVE Jako reakcja na drag&DROP
 RETROEVE run AUTOEXIF gdy settings tak mówi
 
-SEARCH: błędna logika, nie zadziała na FLAT (gdzie nie ma tagu Azure itp.)
 SEARCH: sekcja OPAD
-SEARCH: SaveQuery, i wirtualne katalogi z tego można robić
+SEARCH: wirtualne katalogi z query można robić
 SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
 SEARCH: "!" w polu szuka empty
 
@@ -277,7 +263,6 @@ SETTINGS: to o tyle istotne, że AutoRotate wymaga AutoExif!
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 SETTINGS: keywords: statystyka
-SETTINGS:DBASE nowa funkcjonalność
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
@@ -288,7 +273,6 @@ SHARE (z głównego okna): PicSOrt jako serwer, na :PS porcie. Adres IP i ten po
 	odwołanie potem do CHomikuj? albo też via :PS
 	a przyjmowanie - z buforowaniem plików branych "skądś"?
 	różne remote source mogłyby być, każdy z własnym katalogiem-buforem
-* lista keywords do pomijania dla danego OUT
 * JedenOut: displayName, guid (jako loginName), permissions (filter/filters)
 * JedenIn: guid, IP, port - cacheowane dane?
 * przy definiowaniu - guzik Email, który załącza dane w postaci JSON dla importu u kogoś

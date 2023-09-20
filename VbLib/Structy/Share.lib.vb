@@ -47,6 +47,8 @@ Public Class ShareLogin
     Public Property login As Guid ' tym się INNY loguje
     Public Property displayName As String ' widać go jako...
 
+    Public Property enabled As Boolean
+
     <JsonIgnore>
     Public Property channels As List(Of ShareChannel) ' może widzieć kanały...
 
