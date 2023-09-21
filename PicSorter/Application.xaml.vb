@@ -264,6 +264,6 @@ Partial Class Application
     Public Shared gDbase As New Databases(Application.GetDataFolder)
 
 
-    ' Public Shared gWcfServer As Wcf_Server.ServiceWrapper
+    Public Shared gWcfServer As lib_n6_httpSrv.ServerWrapper
 
 End Class

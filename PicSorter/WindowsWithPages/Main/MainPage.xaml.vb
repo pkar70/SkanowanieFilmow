@@ -24,6 +24,19 @@ Class MainPage
 
         uiBrowseArch.IsEnabled = IsAnyArchPresent()
 
+        ' zablokowane, do czasu poprawienia
+        If Vblib.GetSettingsBool("uiServerEnabled") Then
+            Application.gWcfServer =
+                New lib_n6_httpSrv.ServerWrapper(
+                    Application.GetShareLogins,
+                    Application.gDbase)
+
+            ' na tej linii ERROR że nie może znaleźć System.ServiceModel v4.0.0, debugger nie widzi wejścia do StartSvc
+            Application.gWcfServer.StartSvc()
+
+        End If
+
+
         'PoprawkiArchindex20230918()
 
         'Dim pliczek As New BaseList(Of Vblib.OnePic)("E:\Temp\picsortrecovery", "komplet.json")
@@ -186,7 +199,7 @@ Class MainPage
 
     Private Shared Function IsAnyArchPresent() As Boolean
         Dim anyPresent As Boolean = False
-        For Each oArch As VbLibCore3_picSource.LocalStorageMiddle In Application.GetArchivesList.GetList
+        For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.GetList
             If oArch.IsPresent Then Return True
         Next
         Return False

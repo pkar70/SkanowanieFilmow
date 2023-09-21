@@ -42,12 +42,27 @@ Class MainWindow
 
     End Sub
 
-    Private Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
-        If Application.Current.Windows.Count > 2 Then
-            Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
-            Dim iRet As MessageBoxResult = MessageBox.Show("Zamknąć program?", sAppName, MessageBoxButton.YesNo)
-            If iRet = MessageBoxResult.Yes Then Application.Current.Shutdown()
+    Private Async Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
+
+        If Vblib.GetSettingsBool("uiServerEnabled") Then
+            ' *TODO* YNCancel, zamknąć, zikonizować, cancel
+            If Not Await Vblib.DialogBoxYNAsync("Program działa jako serwer, zamknąć go?") Then
+                e.Cancel = True
+                Return
+            End If
+            Application.gWcfServer?.StopSvc()
         End If
+
+        'If Application.Current.Windows.Count > 2 Then
+        '    If Not Await Vblib.DialogBoxYNAsync("Zamknąć program?") Then Return
+        'End If
+
+        ' Application.Current.Shutdown()
+
+        'Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
+        '    Dim iRet As MessageBoxResult = MessageBox.Show("Zamknąć program?", sAppName, MessageBoxButton.YesNo)
+        '    If iRet = MessageBoxResult.Yes Then Application.Current.Shutdown()
+        'End If
     End Sub
 
     Private Async Sub Window_StateChanged(sender As Object, e As EventArgs)
@@ -70,8 +85,3 @@ Class MainWindow
 End Class
 
 'Public Class probaKlasy
-'    Inherits pkar.BaseStruct
-
-'    Public Property cosik As String
-'    Public Property ogps As Vblib.pkar.BasicGeopos
-'End Class
