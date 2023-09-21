@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>Lib_mediaDevices</RootNamespace>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>Process_Signature</RootNamespace>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MediaDevices" Version="1.10.0" />
+    <PackageReference Include="System.Drawing.Common" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

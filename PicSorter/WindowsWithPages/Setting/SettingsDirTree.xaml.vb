@@ -225,7 +225,7 @@ Public Class SettingsDirTree
     Public Shared Sub OpenFolderInPicBrowser(sTargetDir As String)
         ' Dim sTargetDir As String = Application.GetDirTree.GetFullPath(sFolderId)
 
-        For Each oArch As VbLibCore3_picSource.LocalStorageMiddle In Application.GetArchivesList.GetList
+        For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.GetList
             vb14.DumpMessage($"trying archive {oArch.StorageName}")
             Dim sRealPath As String = oArch.GetRealPath(sTargetDir, Vblib.ArchiveIndex.FOLDER_INDEX_FILE)
             vb14.DumpMessage($"real path of index file: {sRealPath}")

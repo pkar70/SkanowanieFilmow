@@ -1,20 +1,17 @@
-Imports System.IO
-'Imports System.Reflection.Metadata
-'Imports System.Text
+
+Imports System.IO   ' for MemoryStream itp.
 Imports Vblib
+
 Imports Windows.Graphics.Imaging
 Imports Windows.Media
 Imports Windows.Media.FaceAnalysis
-'mports Windows.Security.Authentication.Identity.Core
-'Imports Windows.UI.Xaml.Controls
-'Imports Windows.UI.Xaml.Media
 
 
 Public Class Auto_WinFace
     Inherits Vblib.AutotaggerBase
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
     Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoWinFace
-    Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
+    Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje policzyæ twarze u¿ywaj¹c Windows." & vbCrLf & "U¿ywa keyword -fN, gdzie n to liczba twarzy"
     'Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"
 
@@ -69,37 +66,37 @@ Public Class Auto_WinFace
 
         Dim oTransform As New BitmapTransform()
 
-            If oDecoder.PixelHeight > sourceImageHeightLimit Then
-                Dim scalingFactor As Double = sourceImageHeightLimit / oDecoder.PixelHeight
-                oTransform.ScaledWidth = Math.Floor(oDecoder.PixelWidth * scalingFactor)
-                oTransform.ScaledHeight = Math.Floor(oDecoder.PixelHeight * scalingFactor)
+        If oDecoder.PixelHeight > sourceImageHeightLimit Then
+            Dim scalingFactor As Double = sourceImageHeightLimit / oDecoder.PixelHeight
+            oTransform.ScaledWidth = Math.Floor(oDecoder.PixelWidth * scalingFactor)
+            oTransform.ScaledHeight = Math.Floor(oDecoder.PixelHeight * scalingFactor)
+        End If
+
+        Using softbitmap As SoftwareBitmap = Await oDecoder.GetSoftwareBitmapAsync(
+                oDecoder.BitmapPixelFormat, BitmapAlphaMode.Premultiplied, oTransform,
+                ExifOrientationMode.IgnoreExifOrientation, ColorManagementMode.DoNotColorManage)
+
+            Dim convertedBitmap As SoftwareBitmap
+            ' If FaceDetector.IsBitmapPixelFormatSupported(softbitmap.BitmapPixelFormat) Then
+            If softbitmap.BitmapPixelFormat <> faceDetectionPixelFormat Then
+                convertedBitmap = SoftwareBitmap.Convert(softbitmap, faceDetectionPixelFormat)
+            Else
+                convertedBitmap = softbitmap
             End If
 
-            Using softbitmap As SoftwareBitmap = Await oDecoder.GetSoftwareBitmapAsync(
-                    oDecoder.BitmapPixelFormat, BitmapAlphaMode.Premultiplied, oTransform,
-                    ExifOrientationMode.IgnoreExifOrientation, ColorManagementMode.DoNotColorManage)
+            Dim detectedFacesList = Await _FaceEngine.DetectFacesAsync(convertedBitmap)
 
-                Dim convertedBitmap As SoftwareBitmap
-                ' If FaceDetector.IsBitmapPixelFormatSupported(softbitmap.BitmapPixelFormat) Then
-                If softbitmap.BitmapPixelFormat <> faceDetectionPixelFormat Then
-                    convertedBitmap = SoftwareBitmap.Convert(softbitmap, faceDetectionPixelFormat)
-                Else
-                    convertedBitmap = softbitmap
-                End If
+            Dim oAzure As MojeAzure = AzureFromFacesList(detectedFacesList, convertedBitmap.PixelWidth, convertedBitmap.PixelHeight)
+            convertedBitmap.Dispose()
 
-                Dim detectedFacesList = Await _FaceEngine.DetectFacesAsync(convertedBitmap)
+            If detectedFacesList Is Nothing Then Return Nothing
 
-                Dim oAzure As MojeAzure = AzureFromFacesList(detectedFacesList, convertedBitmap.PixelWidth, convertedBitmap.PixelHeight)
-                convertedBitmap.Dispose()
+            Dim oExif As New Vblib.ExifTag(Nazwa)
+            oExif.Keywords = "-f" & oAzure.Faces.lista.Count
+            oExif.AzureAnalysis = oAzure
 
-                If detectedFacesList Is Nothing Then Return Nothing
-
-                Dim oExif As New Vblib.ExifTag(Nazwa)
-                oExif.Keywords = "-f" & oAzure.Faces.lista.Count
-                oExif.AzureAnalysis = oAzure
-
-                Return oExif
-            End Using
+            Return oExif
+        End Using
 
         oStream?.Dispose()
         oArchive?.Dispose()
@@ -125,3 +122,4 @@ Public Class Auto_WinFace
         Return oRet
     End Function
 End Class
+

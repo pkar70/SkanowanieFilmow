@@ -79,7 +79,7 @@ Public Class Publish_Email
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
-        Dim freeSpaceMB As Integer = VbLibCore3_picSource.LocalStorageMiddle.GetMBfreeSpaceForPath(IO.Path.GetTempPath)
+        Dim freeSpaceMB As Integer = lib_PicSource.LocalStorageMiddle.GetMBfreeSpaceForPath(IO.Path.GetTempPath)
         Return freeSpaceMB
 
     End Function

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>Lib_mediaDevices</RootNamespace>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
     <RootNamespace>PicSorterNS</RootNamespace>
     <UseWPF>true</UseWPF>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
@@ -23,20 +23,21 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AsNuget_UseMapi\vblib_cr31_UseMapi.vbproj" />
+    <ProjectReference Include="..\Auto_n6_WinFace\Auto_n6_WinFace.vbproj" />
+    <ProjectReference Include="..\Auto_n6_WinOCR\Auto_n6_WinOCR.vbproj" />
     <ProjectReference Include="..\Auto_std2_Astro\Auto_std2_Astro.vbproj" />
     <ProjectReference Include="..\Auto_std2_Meteo\Auto_std2_Meteo.vbproj" />
-    <ProjectReference Include="..\Auto_WinFace\Auto_cr31_WinFace.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Chomikuj\CloudArch_std20_Chomikuj.vbproj" />
     <ProjectReference Include="..\CloudPubl_std14_SSC\CloudPubl_std2_SSC.vbproj" />
     <ProjectReference Include="..\Database_SQL\Database_SQL.vbproj" />
     <ProjectReference Include="..\HiddenWatermark\AsNuget-HiddenWatermark.csproj" />
-    <ProjectReference Include="..\Process_Signature\Process_SigAndFace.vbproj" />
+    <ProjectReference Include="..\lib_n6_MediaDevices\lib_n6_MediaDevices.vbproj" />
+    <ProjectReference Include="..\lib_n6_UseMapi\lib_n6_UseMapi.vbproj" />
+    <ProjectReference Include="..\lib_PicSource\lib_n6_PicSource.vbproj" />
+    <ProjectReference Include="..\Process_n6_SigAndFace\Process_n6_SigAndFace.vbproj" />
     <ProjectReference Include="..\Publish_Instagram\CloudPubl_std2_Instagram.vbproj" />
     <ProjectReference Include="..\Publish_std2_Facebook\CloudPubl_std2_Facebook.vbproj" />
-    <ProjectReference Include="..\Taggers_OCR\Auto_cr31_WinOCR_lib.vbproj" />
     <ProjectReference Include="..\vb14_GetMyIP\vb14_GetMyIP.vbproj" />
-    <ProjectReference Include="..\VbLibCore3-picSource\VbLibCore3-picSource.vbproj" />
     <ProjectReference Include="..\VblibStd2-mov2jpg\VblibStd2-mov2jpg.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>

@@ -692,7 +692,7 @@ Public Class SearchWindow
 
         For Each oPic As Vblib.OnePic In _queryResults
 
-            For Each oArch As VbLibCore3_picSource.LocalStorageMiddle In Application.GetArchivesList.GetList
+            For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.GetList
                 'vb14.DumpMessage($"trying archive {oArch.StorageName}")
                 Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
                 vb14.DumpMessage($"real path of index file: {sRealPath}")
@@ -719,7 +719,7 @@ Public Class SearchWindow
 
         If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Return
 
-        For Each oArch As VbLibCore3_picSource.LocalStorageMiddle In Application.GetArchivesList.GetList
+        For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.GetList
             'vb14.DumpMessage($"trying archive {oArch.StorageName}")
             Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
             vb14.DumpMessage($"real path of index file: {sRealPath}")

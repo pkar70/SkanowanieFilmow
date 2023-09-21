@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>Taggers_OCR</RootNamespace>
+    <RootNamespace>Auto_WinOCR</RootNamespace>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RunAnalyzersDuringLiveAnalysis>False</RunAnalyzersDuringLiveAnalysis>
   </PropertyGroup>

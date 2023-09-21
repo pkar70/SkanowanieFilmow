@@ -94,14 +94,14 @@ Partial Class Application
     'End Sub
 
 
-    Private Shared gSourcesList As VbLibCore3_picSource.PicSourceList
+    Private Shared gSourcesList As lib_PicSource.PicSourceList
     Private Shared gBuffer As Vblib.BufferSortowania
 
-    Public Shared Function GetSourcesList() As VbLibCore3_picSource.PicSourceList
+    Public Shared Function GetSourcesList() As lib_PicSource.PicSourceList
 
         If gSourcesList Is Nothing Then
             'Vblib.PicSourceBase._dataFolder = Application.GetDataFolder ' żeby JSON mógł wczytać sources
-            gSourcesList = New VbLibCore3_picSource.PicSourceList(Application.GetDataFolder)
+            gSourcesList = New lib_PicSource.PicSourceList(Application.GetDataFolder)
             gSourcesList.Load()
             gSourcesList.InitDataDirectory()
         End If
@@ -120,11 +120,11 @@ Partial Class Application
         gBuffer = Nothing
     End Sub
 
-    Private Shared gArchiveList As BaseList(Of VbLibCore3_picSource.LocalStorageMiddle)
-    Public Shared Function GetArchivesList() As BaseList(Of VbLibCore3_picSource.LocalStorageMiddle)
+    Private Shared gArchiveList As BaseList(Of lib_PicSource.LocalStorageMiddle)
+    Public Shared Function GetArchivesList() As BaseList(Of lib_PicSource.LocalStorageMiddle)
 
         If gArchiveList Is Nothing OrElse gArchiveList.Count < 1 Then
-            gArchiveList = New BaseList(Of VbLibCore3_picSource.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
+            gArchiveList = New BaseList(Of lib_PicSource.LocalStorageMiddle)(Application.GetDataFolder, "archives.json")
             gArchiveList.Load()
         End If
         Return gArchiveList
@@ -220,7 +220,7 @@ Partial Class Application
         New Auto_std2_Meteo.Auto_Meteo_Opad(Application.GetDataFolder),
         New Vblib.Auto_GeoNamePl(Application.GetDataFolder),
         New Vblib.Auto_OSM_POI(Application.GetDataFolder),
-        New Taggers_OCR.AutoTag_WinOCR,
+        New Auto_WinOCR.AutoTag_WinOCR,
         New Auto_WinFace.Auto_WinFace,
         New Vblib.Auto_AzureTest(New Process_ResizeHalf),
         New Auto_CreateId(New UniqID(Application.GetDataFolder))
@@ -262,5 +262,8 @@ Partial Class Application
     End Function
 
     Public Shared gDbase As New Databases(Application.GetDataFolder)
+
+
+    ' Public Shared gWcfServer As Wcf_Server.ServiceWrapper
 
 End Class

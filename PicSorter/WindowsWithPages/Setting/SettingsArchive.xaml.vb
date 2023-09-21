@@ -18,7 +18,7 @@ Class SettingsArchive
     End Sub
 
     Private Sub uiAddSource_Click(sender As Object, e As RoutedEventArgs)
-        Dim oNewSrc As New VbLibCore3_picSource.LocalStorageMiddle
+        Dim oNewSrc As New lib_PicSource.LocalStorageMiddle
         oNewSrc.StorageName = "(" & DateTime.Now.ToString("yy-MM-dd") & ")"
         oNewSrc.enabled = False
         Application.GetArchivesList.Add(oNewSrc)
@@ -114,7 +114,7 @@ Class SettingsArchive
         Dim sPath As String = uiSrcPath.Text
         If String.IsNullOrWhiteSpace(sPath) Then sPath = "" ' nie chcemy NULLa
 
-        sPath = VbLibCore3_picSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath, "")
+        sPath = lib_PicSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath, "")
         SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaz folder na archiwum")
 
     End Sub

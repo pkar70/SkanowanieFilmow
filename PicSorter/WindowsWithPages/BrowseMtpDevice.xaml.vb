@@ -4,14 +4,14 @@ Public Class BrowseMtpDevice
 
 
     Public currentPath As String
-    Private _oMDH As VbLibCore3_mediaDevices.Helper
+    Private _oMDH As Lib_mediaDevices.Helper
 
     Public Sub New(sVolLabel As String, sDefaultPath As String)
 
         ' This call is required by the designer.
         InitializeComponent()
 
-        _oMDH = New VbLibCore3_mediaDevices.Helper(sVolLabel)
+        _oMDH = New Lib_mediaDevices.Helper(sVolLabel)
 
         currentPath = sDefaultPath
     End Sub
