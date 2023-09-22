@@ -210,6 +210,17 @@ Partial Class Application
         Return gShareLogins
     End Function
 
+    Private Shared gShareServers As BaseList(Of ShareServer)
+
+    Public Shared Function GetShareServers() As BaseList(Of ShareServer)
+        If gShareServers IsNot Nothing Then Return gShareServers
+
+        gShareServers = New BaseList(Of ShareServer)(Application.GetDataFolder, "servers.json")
+        gShareServers.Load()
+        Return gShareServers
+    End Function
+
+
 #End Region
 
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
@@ -264,6 +275,7 @@ Partial Class Application
     Public Shared gDbase As New Databases(Application.GetDataFolder)
 
 
-    Public Shared gWcfServer As lib_n6_httpSrv.ServerWrapper
+    Public Shared gWcfServer As lib_sharingNetwork.ServerWrapper
+    Public Shared gLastLoginSharing As New Vblib.ShareLoginData
 
 End Class

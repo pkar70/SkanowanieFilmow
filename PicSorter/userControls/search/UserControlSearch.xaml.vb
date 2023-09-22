@@ -18,8 +18,10 @@ Public Class UserControlSearch
 
     Private Sub FillQueriesCombo()
         uiComboQueries.Items.Clear()
-        For Each oItem As SearchQuery In Application.GetQueries.GetList
-            uiComboQueries.Items.Add(oItem.nazwa)
+
+        For Each oItem As SearchQuery In Application.GetQueries.GetList.OrderBy(Function(x) x.nazwa)
+            Dim oNew As New ComboBoxItem With {.Content = oItem.nazwa}
+            uiComboQueries.Items.Add(oNew)
         Next
     End Sub
 
@@ -48,8 +50,11 @@ Public Class UserControlSearch
 
         query.nazwa = nazwa
         Application.GetQueries.Add(query)
-        Application.GetQueries.Save()
+        Application.GetQueries.Save(True)
         Application.GetShareChannels.ReResolveQueries()
+
+        ' żeby zmiany nie były ciągle w tym samym co właśnie zapisane
+        DataContext = query.Clone
 
         FillQueriesCombo()
         For Each oItem As ComboBoxItem In uiComboQueries.Items

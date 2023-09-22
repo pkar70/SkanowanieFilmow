@@ -25,16 +25,9 @@ Class MainPage
         uiBrowseArch.IsEnabled = IsAnyArchPresent()
 
         ' zablokowane, do czasu poprawienia
-        If Vblib.GetSettingsBool("uiServerEnabled") Then
-            Application.gWcfServer =
-                New lib_n6_httpSrv.ServerWrapper(
-                    Application.GetShareLogins,
-                    Application.gDbase)
-
-            ' na tej linii ERROR że nie może znaleźć System.ServiceModel v4.0.0, debugger nie widzi wejścia do StartSvc
-            Application.gWcfServer.StartSvc()
-
-        End If
+        If Vblib.GetSettingsBool("uiServerEnabled") Then SettingsShare.StartServicing()
+        ' na tej linii ERROR że nie może znaleźć System.ServiceModel v4.0.0, debugger nie widzi wejścia do StartSvc
+        'Application.gWcfServer.StartSvc()
 
 
         'PoprawkiArchindex20230918()

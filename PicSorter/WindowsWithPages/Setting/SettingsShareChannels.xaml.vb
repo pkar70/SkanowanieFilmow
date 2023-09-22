@@ -9,7 +9,7 @@ Class SettingsShareChannels
     Private _kwerendy As List(Of String) 'ObservableList(Of SearchQuery)
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        _lista = Application.GetShareChannels.GetList
+        _lista = Application.GetShareChannels.GetList '.OrderBy(Function(x) x.nazwa)
         uiLista.ItemsSource = _lista
 
         _kwerendy = Application.GetQueries.GetList.Select(Of String)(Function(x) x.nazwa).ToList
@@ -20,7 +20,7 @@ Class SettingsShareChannels
 
     Private Sub uiAddChannel_Click(sender As Object, e As RoutedEventArgs)
         Dim oNew As New ShareChannel
-        'oNew.nazwa = "channel " & Date.Now.ToString("yyyy.MM.dd")
+        'oNew.nazwa = "channelProc " & Date.Now.ToString("yyyy.MM.dd")
         '_lista.Add(oNew)
         ShowToEdit(oNew)
     End Sub
@@ -40,6 +40,14 @@ Class SettingsShareChannels
         Dim oChannel As ShareChannel = TryCast(sender, FrameworkElement)?.DataContext
         If oChannel Is Nothing Then Return
 
+        Dim sLogins As String = GetLoginyKorzystajace(oChannel)
+
+        If sLogins <> "" Then
+            Vblib.DialogBox("Nie można usunąć kanału, bo jest używany przez " & sLogins)
+            Return
+        End If
+
+
         If Not Await Vblib.DialogBoxYNAsync($"Usunąć channel {oChannel.nazwa}?") Then Return
 
         Application.GetShareChannels.Remove(oChannel)
@@ -51,17 +59,7 @@ Class SettingsShareChannels
         Dim oChannel As ShareChannel = TryCast(sender, FrameworkElement)?.DataContext
         If oChannel Is Nothing Then Return
 
-        Dim sLogins As String = ""
-
-        For Each oLogin As ShareLogin In Application.GetShareLogins.GetList
-            If oLogin.channels Is Nothing Then Continue For
-            For Each channel As ShareChannel In oLogin.channels
-                If channel.nazwa = oChannel.nazwa Then
-                    sLogins &= oLogin.displayName & vbCrLf
-                    Exit For
-                End If
-            Next
-        Next
+        Dim sLogins As String = GetLoginyKorzystajace(oChannel)
 
         If sLogins = "" Then
             Vblib.DialogBox("Żaden login nie korzysta z tego kanału")
@@ -72,6 +70,22 @@ Class SettingsShareChannels
         Vblib.ClipPut(sLogins)
 
     End Sub
+
+    Private Function GetLoginyKorzystajace(oChannel As ShareChannel) As String
+        Dim sLogins As String = ""
+
+        For Each oLogin As ShareLogin In Application.GetShareLogins.GetList
+            If oLogin.channels Is Nothing Then Continue For
+            For Each channelProc As ShareChannelProcess In oLogin.channels
+                If channelProc.channelName = oChannel.nazwa Then
+                    sLogins &= oLogin.displayName & vbCrLf
+                    Exit For
+                End If
+            Next
+        Next
+
+        Return sLogins
+    End Function
 #End Region
 
 #Region "edycja kanału"
@@ -95,13 +109,15 @@ Class SettingsShareChannels
                 Exit For
             End If
         Next
-
+        oChannel.nazwa = sName
         ' tu mamy Clone oryginału, którego nie zmieniamy
+
+        uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
 
         With Application.GetShareChannels
             .GetList.Add(oChannel)
             .ReResolveQueries()
-            .Save()
+            .Save(True)
         End With
 
         uiEditChannel.Visibility = Visibility.Collapsed

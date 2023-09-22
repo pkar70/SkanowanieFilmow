@@ -104,7 +104,7 @@
 
                                 <!--<TextBlock Text="{Binding queryName}" />-->
                                 <!--<Button Content=" ... " Grid.Column="1" Click="uiSelQuery_Click" />-->
-                                <local:UserControlPostProcessPipeline Pipeline="{Binding processing, Mode=TwoWay}" Grid.Column="2" />
+                                <local:UserControlPostProcessPipeline Pipeline="{Binding processing, Mode=TwoWay}" Grid.Column="2" Margin="1,0,1,0"/>
                                 <Button Content=" Del " Grid.Column="3" Click="uiDelQuery_Click" Margin="3,0,0,0"/>
                             </Grid>
                         </DataTemplate>
