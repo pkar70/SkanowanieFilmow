@@ -1769,8 +1769,8 @@ Public Class ProcessBrowse
         For Each thumb As ThumbPicek In _thumbsy
             thumb.opacity = _OpacityWygas
 
-            For Each oChannel As ShareChannel In oLogin.channels
-                For Each query As ShareQueryProcess In oChannel.queries
+            For Each oChannel As ShareChannelProcess In oLogin.channels
+                For Each query As ShareQueryProcess In oChannel.channel.queries
 
                     If thumb.oPic.CheckIfMatchesQuery(query.query) Then
                         thumb.opacity = 1

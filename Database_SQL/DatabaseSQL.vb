@@ -229,7 +229,7 @@ Public Class DatabaseSQL
     End Function
 
     ' do listy dodaje pasuj¹ce do kana³u
-    Private Sub SearchChannel(lista As List(Of OnePic), channel As ShareChannel, sinceId As String)
+    Private Sub SearchChannel(lista As List(Of OnePic), channel As ShareChannel, sinceId As String, processing As String)
         If Not IsLoaded Then Return
 
         Dim lastNum As Integer = _allPics.zdjecia.First(Function(x) x.PicGuid = sinceId).serno
@@ -243,7 +243,8 @@ Public Class DatabaseSQL
 
             For Each queryDef As ShareQueryProcess In channel.queries
                 If oItem.CheckIfMatchesQuery(queryDef.query) Then
-                    oItem.toProcessed = queryDef.processing & channel.processing
+                    oItem.toProcessed = queryDef.processing & ";" & channel.processing
+                    If Not String.IsNullOrEmpty(processing) Then oItem.toProcessed &= ";" & processing
                     If Not lista.Exists(Function(x) x.sSuggestedFilename = oItem.sSuggestedFilename) Then
                         lista.Add(oItem)
                     End If
@@ -259,7 +260,7 @@ Public Class DatabaseSQL
         If Not IsLoaded Then Return Nothing
 
         Dim lista As New List(Of OnePic)
-        SearchChannel(lista, channel, sinceId)
+        SearchChannel(lista, channel, sinceId, "")
 
         Return lista
     End Function
@@ -269,8 +270,8 @@ Public Class DatabaseSQL
 
         Dim lista As New List(Of OnePic)
 
-        For Each channel As ShareChannel In shareLogin.channels
-            SearchChannel(lista, channel, sinceId)
+        For Each channel As ShareChannelProcess In shareLogin.channels
+            SearchChannel(lista, channel.channel, sinceId, channel.processing)
         Next
 
         ' *TODO* exclusions loginu
@@ -371,15 +372,15 @@ Public Class DatabaseSQL
                 )
             builder.Entity(GetType(OnePic)).Property("Exifs").HasConversion(konwerterJSONListExifs)
 
-            ' jednak niepotrzebne
+            ' jednak potrzebne?
             ''The property 'AutoWeatherHourSingle.preciptype' could not be mapped, because it is of type 'string[]' which is not a supported primitive type or a valid entity type. Either explicitly map this property, or ignore it using the '[NotMapped]' attribute or by using 'EntityTypeBuilder.Ignore' in 'OnModelCreating'.
             ''The property 'AutoWeatherDay.preciptype' could not be mapped, because it is of type 'string[]' which is not a supported primitive type or a valid entity type. Either explicitly map this property, or ignore it using the '[NotMapped]' attribute or by using 'EntityTypeBuilder.Ignore' in 'OnModelCreating'.
-            'Dim konwerterJSONArray = New ValueConverter(Of String(), String)(
-            '    Function(x) JsonConvert.SerializeObject(x, New JsonSerializerSettings With {.NullValueHandling = NullValueHandling.Ignore, .DefaultValueHandling = DefaultValueHandling.Ignore}),
-            '    Function(x) JsonConvert.DeserializeObject(Of String())(x)
-            '    )
-            'builder.Entity(GetType(AutoWeatherDay)).Property("preciptype").HasConversion(konwerterJSONArray)
-            'builder.Entity(GetType(AutoWeatherHourSingle)).Property("preciptype").HasConversion(konwerterJSONArray)
+            Dim konwerterJSONArray = New ValueConverter(Of String(), String)(
+                Function(x) JsonConvert.SerializeObject(x, New JsonSerializerSettings With {.NullValueHandling = NullValueHandling.Ignore, .DefaultValueHandling = DefaultValueHandling.Ignore}),
+                Function(x) JsonConvert.DeserializeObject(Of String())(x)
+                )
+            builder.Entity(GetType(AutoWeatherDay)).Property("preciptype").HasConversion(konwerterJSONArray)
+            builder.Entity(GetType(AutoWeatherHourSingle)).Property("preciptype").HasConversion(konwerterJSONArray)
 
             'The entity type 'AutoWeatherDay' requires a primary key to be defined. If you intended to use a keyless entity type call 'HasNoKey()'.
             builder.Entity(GetType(AutoWeatherDay)).HasNoKey()

@@ -111,13 +111,13 @@ Public Class DatabaseJSON
 
     Function Search(channel As ShareChannel, sinceId As String) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
         Dim lista As New List(Of OnePic)
-        SearchChannel(lista, channel, sinceId)
+        SearchChannel(lista, channel, sinceId, "")
 
         Return lista
     End Function
 
     ' do listy dodaje pasujące do kanału
-    Private Sub SearchChannel(lista As List(Of OnePic), channel As ShareChannel, sinceId As String)
+    Private Sub SearchChannel(lista As List(Of OnePic), channel As ShareChannel, sinceId As String, processing As String)
         Dim bCopy As Boolean = False
         If String.IsNullOrWhiteSpace(sinceId) Then bCopy = True
 
@@ -135,7 +135,8 @@ Public Class DatabaseJSON
 
             For Each queryDef As ShareQueryProcess In channel.queries
                 If oItem.CheckIfMatchesQuery(queryDef.query) Then
-                    oItem.toProcessed = queryDef.processing & channel.processing
+                    oItem.toProcessed = queryDef.processing & ";" & channel.processing
+                    If Not String.IsNullOrWhiteSpace(processing) Then oItem.toProcessed &= ";" & processing
                     If Not lista.Exists(Function(x) x.sSuggestedFilename = oItem.sSuggestedFilename) Then
                         lista.Add(oItem)
                     End If
@@ -150,8 +151,8 @@ Public Class DatabaseJSON
     Function Search(shareLogin As ShareLogin, sinceId As String) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
         Dim lista As New List(Of OnePic)
 
-        For Each channel As ShareChannel In shareLogin.channels
-            SearchChannel(lista, channel, sinceId)
+        For Each channelProc As ShareChannelProcess In shareLogin.channels
+            SearchChannel(lista, channelProc.channel, sinceId, channelProc.processing)
         Next
 
         ' *TODO* exclusions loginu

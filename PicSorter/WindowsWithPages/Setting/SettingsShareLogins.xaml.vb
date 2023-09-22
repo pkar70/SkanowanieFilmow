@@ -7,7 +7,7 @@ Class SettingsShareLogins
     Dim _channels As List(Of String)
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        uiLista.ItemsSource = Application.GetShareLogins.GetList
+        uiLista.ItemsSource = Application.GetShareLogins.GetList '.OrderBy(Function(x) x.displayName)
         Dim adres As String = Await vb14_GetMyIP.GetMyIP.GetIPString
         _channels = Application.GetShareChannels.GetList.Select(Of String)(Function(x) x.nazwa).ToList
         _channels.Sort()
@@ -34,16 +34,16 @@ Class SettingsShareLogins
         Dim email As New AsNuget_UseMapi.SendFileTo.MAPI
         email.SendMailPopup(subject, body)
 
-        If Await Vblib.DialogBoxYNAsync("Poczekać na połączenie (i zabezpieczyć je)? 'Nie' oznacza mniejsze bezpieczeństwo") Then
-            ' czekamy
-        Else
-            ' bez zabezpieczeń
-            oLogin.ipAddr = ""
-            oLogin.netmask = ""
-            oLogin.remoteHostName = ""
-        End If
+        'If Await Vblib.DialogBoxYNAsync("Poczekać na połączenie (i zabezpieczyć je)? 'Nie' oznacza mniejsze bezpieczeństwo") Then
+        '    ' czekamy
+        'Else
+        ' bez zabezpieczeń
+        oLogin.allowedLogin.IPaddr = ""
+        oLogin.allowedLogin.netmask = ""
+        oLogin.allowedLogin.remoteHostName = ""
+        'End If
 
-        Application.GetShareLogins.Save() ' zmienione uprawnienia
+        Application.GetShareLogins.Save(True) ' zmienione uprawnienia
     End Sub
 
     Private Async Sub uiDel_Click(sender As Object, e As RoutedEventArgs)
@@ -59,6 +59,14 @@ Class SettingsShareLogins
     Private Sub ShowToEdit(oLogin As ShareLogin)
         uiEditLogin.Visibility = Visibility.Visible
         uiEditLogin.DataContext = oLogin.Clone
+
+        If String.IsNullOrWhiteSpace(oLogin.allowedLogin.remoteHostName) Then
+            uiRemHostName.Visibility = Visibility.Visible
+            uiUseRemHostName.Visibility = Visibility.Visible
+        Else
+            uiRemHostName.Visibility = Visibility.Collapsed
+            uiUseRemHostName.Visibility = Visibility.Collapsed
+        End If
     End Sub
 
     Private Sub uiAddLogin_Click(sender As Object, e As RoutedEventArgs)
@@ -73,8 +81,9 @@ Class SettingsShareLogins
         Dim oLogin As ShareLogin = oFE?.DataContext
         If oLogin Is Nothing Then Return
 
-        Dim oNew As New ShareChannel
-        If oLogin.channels Is Nothing Then oLogin.channels = New List(Of ShareChannel)
+        If oLogin.channels Is Nothing Then oLogin.channels = New List(Of ShareChannelProcess)
+        Dim oNew As New ShareChannelProcess
+        oNew.channel = Nothing
         oLogin.channels.Add(oNew)
 
         uiListaKanalow.ItemsSource = Nothing
@@ -89,17 +98,31 @@ Class SettingsShareLogins
         oCB.ItemsSource = _channels
     End Sub
 
+    'Private Sub uiDelChannel_Click(sender As Object, e As RoutedEventArgs)
+    '    Dim oFE As FrameworkElement = sender
+    '    Dim oLogin As ShareChannel = oFE?.DataContext
+    '    If oLogin Is Nothing Then Return
+
+    '    Dim oLogin As ShareLogin = uiEditLogin.DataContext
+    '    oLogin.channels.Remove(oLogin)
+
+    '    uiListaKanalow.ItemsSource = Nothing
+    '    uiListaKanalow.ItemsSource = oLogin.channels
+    'End Sub
+
+
     Private Sub uiDelChannel_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        Dim oChannel As ShareChannel = oFE?.DataContext
-        If oChannel Is Nothing Then Return
+        Dim oQuery As ShareChannelProcess = oFE?.DataContext
+        If oQuery Is Nothing Then Return
 
         Dim oLogin As ShareLogin = uiEditLogin.DataContext
-        oLogin.channels.Remove(oChannel)
+        oLogin.channels.Remove(oQuery)
 
         uiListaKanalow.ItemsSource = Nothing
         uiListaKanalow.ItemsSource = oLogin.channels
     End Sub
+
 
     Private Async Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
@@ -123,12 +146,14 @@ Class SettingsShareLogins
             End If
         Next
 
-        ' tu mamy Clone oryginału, którego nie zmieniamy
+        oLogin.displayName = sName
 
+        ' tu mamy Clone oryginału, którego nie zmieniamy
+        uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
         With Application.GetShareLogins
             .GetList.Add(oLogin)
             .ReResolveChannels()
-            .Save()
+            .Save(True)
         End With
 
         uiEditLogin.Visibility = Visibility.Collapsed
@@ -138,6 +163,15 @@ Class SettingsShareLogins
 
     Private Sub uiEnabled_Checked(sender As Object, e As RoutedEventArgs)
         ' check oraz uncheck
-        Application.GetShareLogins.Save()
+        Application.GetShareLogins.Save(True)
+    End Sub
+
+    Private Sub uiUseRemHostName_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oLogin As ShareLogin = oFE?.DataContext
+        If oLogin Is Nothing Then Return
+
+        oLogin.allowedLogin.remoteHostName = oLogin.lastLogin.remoteHostName.ToUpperInvariant
+        uiRemoteHostName.Text = oLogin.allowedLogin.remoteHostName
     End Sub
 End Class
