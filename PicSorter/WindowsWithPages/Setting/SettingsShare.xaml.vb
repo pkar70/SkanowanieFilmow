@@ -12,23 +12,34 @@ Class SettingsShare
     End Sub
 
     Private Sub uiShareServers_Click(sender As Object, e As RoutedEventArgs)
-
+        Me.NavigationService.Navigate(New SettingsShareServers)
     End Sub
 
+    Dim _loading As Boolean = True
+
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        uiServerEnabled.GetSettingsBool    ' na razie zawsze FALSE
+        uiServerEnabled.GetSettingsBool
         uiServerEnabled.IsEnabled = (Application.GetShareLogins.Count > 0)
+        uiMyName.Text = Environment.MachineName
+        uiLastAccess.DataContext = Application.gLastLoginSharing
+        _loading = False
     End Sub
 
     Private Sub uiSrvEnable_Check(sender As Object, e As RoutedEventArgs)
-        uiServerEnabled.SetSettingsBool
+        If _loading Then Return
 
+        uiServerEnabled.SetSettingsBool
         If uiServerEnabled.IsChecked Then
-            Application.gWcfServer = New lib_n6_httpSrv.ServerWrapper(
-                Application.GetShareLogins, Application.gDbase)
-            Application.gWcfServer.StartSvc()
+            StartServicing()
         Else
             If Application.gWcfServer IsNot Nothing Then Application.gWcfServer.StopSvc()
         End If
+    End Sub
+
+    Public Shared Sub StartServicing()
+        Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(
+                Application.GetShareLogins, Application.gDbase, Application.gLastLoginSharing)
+        Application.gWcfServer.StartSvc()
+
     End Sub
 End Class

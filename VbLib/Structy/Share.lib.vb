@@ -49,10 +49,12 @@ Public Class ShareLogin
 
     Public Property enabled As Boolean
 
-    <JsonIgnore>
-    Public Property channels As List(Of ShareChannel) ' może widzieć kanały...
+    Public Property channels As List(Of ShareChannelProcess) ' widzi kanały i dla każdego może być processing
 
-    Public Property channelNames As String' na dysku są tylko nazwy
+    '<JsonIgnore>
+    'Public Property channels As List(Of ShareChannel) ' może widzieć kanały...
+
+    'Public Property channelNames As String ' na dysku są tylko nazwy
 
     ''' <summary>
     ''' lista PicGuid wyłączanych (mimo że pasują do powyższych filtrów)
@@ -61,16 +63,36 @@ Public Class ShareLogin
 
     Public Property processing As String ' składane do query.processing i channel.processing
     Public Property allowUpload As Boolean ' czy może ten ktoś robić upload
-    Public Property remoteHostName As String ' jego hostname, zgłaszany przez jego PicSort
 
-    ' musi być ="", bo inaczej kontrolka IPaddress ma problem
-    Public Property ipAddr As String = ""   ' albo specjalna klasa adres/maska ' https://github.com/jsakamoto/ipaddressrange/
-    ' uwaga: z telefonu via komórkowy internet http widzi jako 5.173.42.227, więc jest OK
-    Public Property netmask As String = ""   ' IPNetwork w asp.net   'usercontrol: https://github.com/mariugul/IPUserControls
-    Public Property lastLogin As Date ' kiedy ostatnio się logował
+    Public Property allowedLogin As New ShareLoginData
+    Public Property lastLogin As New ShareLoginData
+
 End Class
 
-Public Class ShareServers
+Public Class ShareChannelProcess
+
+    Public Property channelName As String
+    <JsonIgnore>
+    Public Property channel As ShareChannel
+
+    Public Property processing As String
+End Class
+
+
+Public Class ShareLoginData
+    Inherits BaseStruct
+    Public Property kiedy As Date ' kiedy ostatnio się logował / not used
+    Public Property remoteHostName As String ' z jakiego hosta (zgłaszany przez jego PicSort) / tylko taki może
+
+    ' musi być ="", bo inaczej kontrolka IPaddress ma problem
+    Public Property IPaddr As String = ""   ' adres / tylko taki może (wtedy z netmask piętro wyżej)
+    Public Property netmask As String = ""   ' IPNetwork w asp.net   
+
+    ' albo specjalna klasa adres/maska ' https://github.com/jsakamoto/ipaddressrange/
+    ' 'usercontrol: https://github.com/mariugul/IPUserControls
+End Class
+
+Public Class ShareServer
     Inherits BaseStruct
 
     Public Property login As Guid ' mogę się zalogować jako...

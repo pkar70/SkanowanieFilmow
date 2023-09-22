@@ -1,0 +1,53 @@
+﻿<Page x:Class="SettingsShareServers"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PicSorterNS"
+      mc:Ignorable="d" 
+      d:DesignHeight="500" d:DesignWidth="350"
+      Title="SettingsShareServers" Loaded="Page_Loaded">
+    <Page.Resources>
+        <local:KonwersjaDaty x:Key="KonwersjaDaty" />
+    </Page.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock HorizontalAlignment="Center" FontSize="18" Text="Znane serwery:" Margin="5,1,5,10"/>
+
+        <Button Content=" Add " HorizontalAlignment="Right" Margin="5,10,5,5" Click="uiAddSrv_Click" />
+
+        <ListView Name="uiLista" Grid.Row="1">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{Binding displayName, Mode=OneTime}"  Grid.Column="0"/>
+                        <TextBlock Text="{Binding lastCheck, Mode=OneTime, Converter={StaticResource KonwersjaDaty}}"  Grid.Column="1"/>
+                        <Button Content=" Edit " Grid.Column="2" Click="uiEdit_Click" Margin="5,0,5,0" />
+                        <Button Content=" Try " Grid.Column="3" Click="uiTry_Click" Margin="5,0,5,0" />
+                        <Button Content=" Del " Grid.Column="4" Click="uiDel_Click" />
+
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+    </Grid>
+</Page>

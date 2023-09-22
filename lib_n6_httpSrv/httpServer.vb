@@ -6,10 +6,12 @@ Public Class ServerWrapper
     Private _host As HttpListener
     Private Shared _loginy As pkar.BaseList(Of Vblib.ShareLogin)
     Private Shared _databases As Vblib.DatabaseInterface
+    Private Shared _lastAccess As Vblib.ShareLoginData
 
-    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface)
+    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData)
         _loginy = loginy
         _databases = databases
+        _lastAccess = lastAccess
     End Sub
 
     Public Sub StartSvc()
@@ -64,13 +66,19 @@ Public Class ServerWrapper
 
         Do
             Try
+                If _host Is Nothing Then Exit Do
 
                 ' ten call blokuje do pierwszego wywo³ania przez klienta
-                Dim context As HttpListenerContext = _host.GetContext()
+                Dim context As HttpListenerContext = _host?.GetContext()
+                ' a tak reaguje na EXIT:
+                ' The I/O operation has been aborted because of either a thread exit or an application request.'
 
-                Dim request As HttpListenerRequest = context.Request
+                Dim request As HttpListenerRequest = context?.Request
+                If request Is Nothing Then Exit Do   ' takie zabezpieczenie to tylko u³atwienie gdy jest pod debuggerem podczas wy³¹czania programu
 
-                Dim responseString As String = Await MainWork(request.RawUrl, request.LocalEndPoint.Address, request.QueryString)
+                Vblib.DumpMessage("Mam request: " & request.RawUrl) ' on jest typu: /canupload?guid=xxx&clientHost=Hxxxx
+
+                Dim responseString As String = Await MainWork(request.Url.AbsolutePath, request.LocalEndPoint.Address, request.QueryString)
 
                 Dim response As HttpListenerResponse = context.Response
                 Dim buffer As Byte() = System.Text.Encoding.UTF8.GetBytes(responseString)
@@ -99,7 +107,11 @@ Public Class ServerWrapper
 
     Private Const PROTO_VERS As String = "1.0"
 
-    Private Async Function MainWork(rawUrl As String, clientAddress As IPAddress, queryString As NameValueCollection) As Task(Of String)
+    Private Async Function MainWork(command As String, clientAddress As IPAddress, queryString As NameValueCollection) As Task(Of String)
+
+        _lastAccess.remoteHostName = ""
+        _lastAccess.kiedy = Date.Now
+        _lastAccess.IPaddr = clientAddress.ToString
 
         Dim tmp As String = queryString.Item("guid")
         Dim loginGuid As Guid
@@ -111,11 +123,15 @@ Public Class ServerWrapper
         End Try
 
         tmp = queryString.Item("clientHost")
+        _lastAccess.remoteHostName = tmp
 
         Dim oLogin As Vblib.ShareLogin = ResolveLogin(loginGuid, clientAddress, tmp)
         If oLogin Is Nothing Then Return "Sorry Winnetou"
 
-        Select Case rawUrl.ToLowerInvariant
+        ' /JakasKomenda -> jakaskomenda
+        command = command.Substring(1).ToLowerInvariant
+
+        Select Case command
             Case "trylogin"
                 Return "OK"
             Case "getnewpicslist"
@@ -124,7 +140,7 @@ Public Class ServerWrapper
                 Return "Not yet"
             Case "UploadPicDescription"
                 Return "Not yet"
-            Case "CanUpload"
+            Case "canupload"
                 Return If(CanUpload(oLogin), "YES", "NO")
             Case "PutPic"
                 Return "Not yet"
@@ -146,10 +162,14 @@ Public Class ServerWrapper
 
                 If Not oLogin.enabled Then Return Nothing
 
-                If Not String.IsNullOrEmpty(oLogin.remoteHostName) Then
-                    If oLogin.remoteHostName.ToLowerInvariant <> clntName.ToLowerInvariant Then Return Nothing
+                If Not String.IsNullOrEmpty(oLogin.allowedLogin.remoteHostName) Then
+                    If oLogin.allowedLogin.remoteHostName.ToLowerInvariant <> clntName.ToLowerInvariant Then Return Nothing
                 End If
                 ' *TODO* sprawdzenie adresu
+
+                oLogin.lastLogin.remoteHostName = clntName.ToUpperInvariant
+                oLogin.lastLogin.kiedy = Date.Now
+                oLogin.lastLogin.IPaddr = IPaddr.ToString
 
                 Return oLogin
             End If

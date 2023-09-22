@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>lib_n6_httpSrv</RootNamespace>
+    <RootNamespace>lib_sharingNetwork</RootNamespace>
     <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 

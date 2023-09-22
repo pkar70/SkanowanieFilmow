@@ -15,10 +15,37 @@
         <Button Content="Channels" Margin="5,10,5,5" FontSize="18" Click="uiShareChannels_Click"/>
         <Button Content="Logins" Margin="5,10,5,5" FontSize="18" Click="uiShareLogins_Click"/>
 
+        <Grid Name="uiLastAccess" Margin="5,5,5,5">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Last access: " FontSize="10"/>
+            <TextBlock Text="{Binding kiedy}" Grid.Column="1" FontSize="10"/>
+            <TextBlock Text="Adres IP: " Grid.Row="1" FontSize="10"/>
+            <TextBlock Text="{Binding IPaddr}" Grid.Row="1"  Grid.Column="1" FontSize="10"/>
+            <TextBlock Text="Host name: " Grid.Row="2" FontSize="10"/>
+            <TextBlock Text="{Binding remoteHostName}" Grid.Row="2"  Grid.Column="1" FontSize="10"/>
+
+        </Grid>
+
+        
+        
         <TextBlock FontSize="14" Text="As a client:" FontWeight="SemiBold" Margin="5,20,5,0"/>
 
         <Button Content="Servers" Margin="5,10,5,5" FontSize="18" Click="uiShareServers_Click"/>
 
+        <StackPanel Orientation="Horizontal" Margin="5,10,5,0" >
+        <TextBlock Text="(local name: " />
+            <TextBox Text="." Name="uiMyName" IsReadOnly="True" BorderThickness="0"/>
+            <TextBlock Text=")" />
+        </StackPanel>
     </StackPanel>
 
 </Page>
