@@ -61,10 +61,9 @@
                         <MenuItem Header="no Description" Click="uiFilterNoDescr_Click" Name="uiFilterNoDescr"/>
                         <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget"/>
                         <MenuItem Header="Sharing »" Name="uiFilterSharing">
-                            <MenuItem Header="Channels" Name="uiFilterChannels">
-                            </MenuItem>
-                            <MenuItem Header="Logins" Name="uiFilterLogins">
-                            </MenuItem>
+                            <MenuItem Header="For Channel" Name="uiFilterChannels" />
+                            <MenuItem Header="For Login" Name="uiFilterLogins"/>
+                            <MenuItem Header="Cudze" Click="uiFilterCudze_Click" />
                         </MenuItem>
                         <MenuItem Header="Full search" Click="uiFilterSearch_Click" />
                         <MenuItem Header="none" Click="uiFilterNone_Click" />
@@ -152,6 +151,8 @@
                         <MenuItem Header="Copy to clipboard" Click="uiCopyClip_Click" />
                         <MenuItem Header="Get files size" Click="uiGetFileSize_Click" />
                         <Separator/>
+                        <MenuItem Header="Upload to »" Name="uiActionUploadMenu"/>
+                        <Separator Name="uiSeparatorActionUpload"/>
                         <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
                         <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
                     </Menu>

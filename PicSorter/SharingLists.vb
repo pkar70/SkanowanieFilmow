@@ -83,7 +83,8 @@ Public Class ShareLoginsList
         If _list.Count < 1 Then Return
 
         For Each oItem As Vblib.ShareLogin In _list
-            oItem.channels?.Clear()
+            If oItem.channels Is Nothing Then Continue For
+            'oItem.channels?.Clear()
 
             'If String.IsNullOrWhiteSpace(oItem.channelNames) Then Continue For
 

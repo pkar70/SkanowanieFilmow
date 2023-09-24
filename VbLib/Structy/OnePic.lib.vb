@@ -20,7 +20,8 @@ Public Class OnePic
     Public Property Published As Dictionary(Of String, String)
     Public Property TargetDir As String ' OneDirFlat.sId
     Public Property Exifs As New List(Of ExifTag) ' ExifSource.SourceFile ..., )
-    Public Property InBufferPathName As String
+    Public Property InBufferPathName As String ' przy Sharing: GUID pliku, tymczasowe przy odbieraniu z upload
+
     ''' <summary>
     ''' z którego źródła pochodzi plik
     ''' </summary>
@@ -41,6 +42,10 @@ Public Class OnePic
 
     Public Property PicGuid As String = Nothing  ' 0xA420 ImageUniqueID ASCII!
 
+    Public Property sharingFromChannel As String   ' a'la UseNet Path, tyle że rozdzielana ";"; GUIDy kolejne
+    Public Property sharingLockSharing As Boolean
+
+    <Newtonsoft.Json.JsonIgnore>
     Public Property serno As Integer
 
     'Public Property sortOrder As String
@@ -1500,10 +1505,12 @@ End Class
 '    End Sub
 'End Class
 Public Class OneDescription
+    Inherits BaseStruct
+
     Public Property data As String
     Public Property comment As String
     Public Property keywords As String
-    Public Property sourceLogin As String
+    Public Property ShareLoginGuid As String
 
     Public Sub New(sData As String, sComment As String, sKeywords As String)
         data = sData

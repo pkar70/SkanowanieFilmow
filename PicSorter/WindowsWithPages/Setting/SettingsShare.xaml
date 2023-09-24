@@ -11,6 +11,7 @@
 
         <TextBlock FontSize="14" Text="As a server:" FontWeight="SemiBold" Margin="5,1,5,0"/>
         <CheckBox Name="uiServerEnabled" Content="accept connections" Checked="uiSrvEnable_Check" Unchecked="uiSrvEnable_Check"/>
+        <CheckBox Name="uiUploadBlocked" Content="block uploads"  Checked="uiUploadBlocked_Check" Unchecked="uiUploadBlocked_Check"/>
         <!--<Button Content="Queries" Margin="5,10,5,5" FontSize="18" Click="uiShareQueries_Click"/>-->
         <Button Content="Channels" Margin="5,10,5,5" FontSize="18" Click="uiShareChannels_Click"/>
         <Button Content="Logins" Margin="5,10,5,5" FontSize="18" Click="uiShareLogins_Click"/>

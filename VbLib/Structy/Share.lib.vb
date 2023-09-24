@@ -62,6 +62,7 @@ Public Class ShareLogin
     Public Property exclusions As List(Of String)
 
     Public Property processing As String ' składane do query.processing i channel.processing
+
     Public Property allowUpload As Boolean ' czy może ten ktoś robić upload
 
     Public Property allowedLogin As New ShareLoginData
@@ -99,12 +100,21 @@ Public Class ShareServer
     Public Property displayName As String ' widzę to u siebie jako...
     Public Property serverAddress As String ' adres PicSort z którym mam się łączyć
     Public Property filters As List(Of SearchQuery) ' mogę filtrować po swojej stronie
+    Public Property uploadProcessing As String ' jeśli uploaduję, to mogę coś zmieniać
+    Public Property lockForwarding As Boolean ' i mogę zablokować dalsze udostępnianie
+
     Public Property lastCheck As Date ' kiedy ostatnio sprawdzałem
     Public Property lastId As Integer ' jaki ID ostatnio widziałem (serno)
 
 End Class
 
 #End Region
+
+Public Class ShareDescription
+    Public Property picid As String
+    Public Property descr As Vblib.OneDescription
+End Class
+
 
 #Region "listy"
 

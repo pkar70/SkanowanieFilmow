@@ -15,12 +15,13 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <TextBlock HorizontalAlignment="Center" FontSize="18" Text="Znane serwery:" Margin="5,1,5,10"/>
 
-        <Button Content=" Add " HorizontalAlignment="Right" Margin="5,10,5,5" Click="uiAddSrv_Click" />
+        <Button Content=" Add " HorizontalAlignment="Right" Margin="5,10,5,5" Click="uiAddSrv_Click" Grid.Row="1" />
 
-        <ListView Name="uiLista" Grid.Row="1">
+        <ListView Name="uiLista" Grid.Row="2">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
@@ -37,17 +38,24 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
                         <TextBlock Text="{Binding displayName, Mode=OneTime}"  Grid.Column="0"/>
                         <TextBlock Text="{Binding lastCheck, Mode=OneTime, Converter={StaticResource KonwersjaDaty}}"  Grid.Column="1"/>
                         <Button Content=" Edit " Grid.Column="2" Click="uiEdit_Click" Margin="5,0,5,0" />
                         <Button Content=" Try " Grid.Column="3" Click="uiTry_Click" Margin="5,0,5,0" />
                         <Button Content=" Del " Grid.Column="4" Click="uiDel_Click" />
 
+                        <local:UserControlPostProcessPipeline Pipeline="{Binding uploadProcessing, Mode=TwoWay}" Grid.Row="0" Grid.ColumnSpan="2" Margin="10,1,1,1" />
+                        <CheckBox IsChecked="{Binding lockForwarding}" Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="3" Content="Lock" ToolTip="Zakaz redystrybucji" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
         </ListView>
+
+        <Button Content=" OK " HorizontalAlignment="Right" Margin="5,10,5,5" Click="uiOK_Click" Grid.Row="3"/>
 
     </Grid>
 </Page>

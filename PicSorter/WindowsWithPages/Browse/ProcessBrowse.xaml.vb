@@ -86,7 +86,8 @@ Public Class ProcessBrowse
 
         WypelnMenuCloudPublish(Nothing, uiMenuPublish, AddressOf PublishRun)
 
-        WypelnMenuFilterSharing
+        WypelnMenuFilterSharing()
+        WypelnMenuActionSharing()
 
         If _inArchive Then
             ' działamy na archiwum
@@ -337,6 +338,87 @@ Public Class ProcessBrowse
 
 #End Region
 #Region "menu actions"
+
+    Public Function WypelnMenuActionSharing() As Integer
+        uiActionUploadMenu.Items.Clear()
+
+
+        Dim iCnt As Integer = 0
+
+        For Each oLogin As Vblib.ShareServer In Application.GetShareServers.GetList
+
+            Dim oNew As New MenuItem
+            oNew.Header = oLogin.displayName
+            oNew.DataContext = oLogin
+
+            AddHandler oNew.Click, AddressOf ActionSharingUpload
+
+            uiActionUploadMenu.Items.Add(oNew)
+            iCnt += 1
+        Next
+
+        uiActionUploadMenu.Visibility = If(iCnt > 0, Visibility.Visible, Visibility.Collapsed)
+        uiSeparatorActionUpload.Visibility = If(iCnt > 0, Visibility.Visible, Visibility.Collapsed)
+        Return iCnt
+    End Function
+
+    Private Async Sub ActionSharingUpload(sender As Object, e As RoutedEventArgs)
+        uiActionsPopup.IsOpen = False
+
+        Dim oFE As FrameworkElement = sender
+        Dim oPicSortSrv As Vblib.ShareServer = oFE?.DataContext
+        If oPicSortSrv Is Nothing Then Return
+
+        Dim sRet As String = Await lib_sharingNetwork.httpKlient.TryConnect(oPicSortSrv)
+        If Not sRet.StartsWith("OK") Then
+            Vblib.DialogBox("Błąd podłączenia do serwera: " & sRet)
+            Return
+        End If
+
+        sRet = Await lib_sharingNetwork.httpKlient.CanUpload(oPicSortSrv)
+        If Not sRet.StartsWith("YES") Then
+            Vblib.DialogBox("Upload jest niedostępny: " & sRet)
+            Return
+        End If
+
+        uiProgBar.Value = 0
+        uiProgBar.Maximum = uiPicList.SelectedItems.Count
+        uiProgBar.Visibility = Visibility.Visible
+
+        Dim allErrs As String = ""
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            Dim oPic As Vblib.OnePic = oItem.oPic
+
+            If oPic.sharingLockSharing Then
+                allErrs &= oPic.sSuggestedFilename & " is excluded from sharing, ignoring" & vbCrLf
+            Else
+
+                oPic.ResetPipeline()
+                Dim ret As String = Await oPic.RunPipeline(oPicSortSrv.uploadProcessing, Application.gPostProcesory)
+                If ret <> "" Then
+                    ' jakiś błąd
+                    allErrs &= ret & vbCrLf
+                Else
+                    ' pipeline OK
+                    ret = Await lib_sharingNetwork.httpKlient.UploadPic(oPicSortSrv, oPic)
+                    allErrs &= ret & vbCrLf
+                End If
+
+            End If
+
+            oPic.ResetPipeline() ' zwolnienie streamów, readerów, i tak dalej
+            uiProgBar.Value += 1
+        Next
+
+        uiProgBar.Visibility = Visibility.Visible
+
+        If allErrs <> "" Then
+            Vblib.ClipPut(allErrs)
+            Vblib.DialogBox(allErrs)
+        End If
+
+    End Sub
+
     Private Sub uiMenuCopyGeoTag_Click(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
 
@@ -1669,6 +1751,10 @@ Public Class ProcessBrowse
         uiFilterPopup.IsOpen = Not uiFilterPopup.IsOpen
     End Sub
 
+    ''' <summary>
+    ''' jeśli były jakieś zaznaczone, to je pokaż; jeśli nie było nic - przywróć wszystkie
+    ''' </summary>
+    ''' <param name="bMamy">czy był jakiś zaznaczony</param>
     Private Sub KoniecFiltrowania(bMamy As Boolean)
         If Not bMamy Then
             vb14.DialogBox("Nie ma takich zdjęć, wyłączam filtrowanie")
@@ -1700,6 +1786,7 @@ Public Class ProcessBrowse
 
     Public Function FilterSearchCallback(query As SearchQuery, usun As Boolean)
 
+        Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
 
             'If SearchWindow.CheckIfOnePicMatches(thumb.oPic, query) Then
@@ -1708,12 +1795,13 @@ Public Class ProcessBrowse
                 If usun Then
                     thumb.opacity = _OpacityWygas
                 Else
+                    bWas = True
                     thumb.opacity = 1
                 End If
             End If
         Next
 
-        RefreshMiniaturki(False)
+        KoniecFiltrowania(bWas)
 
         Return True
     End Function
@@ -1723,8 +1811,8 @@ Public Class ProcessBrowse
 
         uiFilterLogins.Items.Clear()
 
-        Dim iCnt As Integer = WypelnMenuFilterSharingChannels
-        iCnt += WypelnMenuFilterSharingLogins
+        Dim iCnt As Integer = WypelnMenuFilterSharingChannels()
+        iCnt += WypelnMenuFilterSharingLogins()
 
         If iCnt < 1 Then
             uiFilterSharing.Visibility = Visibility.Collapsed
@@ -1742,22 +1830,44 @@ Public Class ProcessBrowse
         Dim oChannel As Vblib.ShareChannel = oFE?.DataContext
         If oChannel Is Nothing Then Return
 
+
+        Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
             thumb.opacity = _OpacityWygas
 
             For Each query As ShareQueryProcess In oChannel.queries
 
                 If thumb.oPic.CheckIfMatchesQuery(query.query) Then
+                    bWas = True
                     thumb.opacity = 1
                     Exit For
                 End If
             Next
         Next
 
-        RefreshMiniaturki(False)
+        KoniecFiltrowania(bWas)
 
     End Sub
 
+    Private Sub uiFilterCudze_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "cudze"
+
+        Dim bWas As Boolean = False
+        For Each thumb As ThumbPicek In _thumbsy
+            If String.IsNullOrWhiteSpace(thumb.oPic.sharingFromChannel) Then
+                thumb.opacity = _OpacityWygas
+            Else
+                thumb.opacity = 1
+                bWas = True
+            End If
+        Next
+
+        KoniecFiltrowania(bWas)
+
+    End Sub
+
+    '
     Private Sub FilterSharingLogin(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "login"
@@ -1766,6 +1876,8 @@ Public Class ProcessBrowse
         Dim oLogin As Vblib.ShareLogin = oFE?.DataContext
         If oLogin?.channels Is Nothing Then Return
 
+
+        Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
             thumb.opacity = _OpacityWygas
 
@@ -1774,6 +1886,7 @@ Public Class ProcessBrowse
 
                     If thumb.oPic.CheckIfMatchesQuery(query.query) Then
                         thumb.opacity = 1
+                        bWas = True
                         Exit For
                     End If
                 Next
@@ -1783,7 +1896,7 @@ Public Class ProcessBrowse
 
         Next
 
-        RefreshMiniaturki(False)
+        KoniecFiltrowania(bWas)
 
     End Sub
 
@@ -2161,7 +2274,7 @@ Public Class ProcessBrowse
 
         sErr = Await oSrc.SendFiles(lista, AddressOf ProgBarInc)
         If sErr <> "" Then Await vb14.DialogBoxAsync(sErr)
-        ' Await oLogin.Logout()
+        ' Await oPicSortSrv.Logout()
     End Function
 
     Private Sub ProgBarInc()
@@ -2169,11 +2282,11 @@ Public Class ProcessBrowse
         uiProgBar.Value += 1
     End Sub
 
-    'Private Async Function PublishOnePicTo(oLogin As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
+    'Private Async Function PublishOnePicTo(oPicSortSrv As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
     '    If bSendNow Then
-    '        Await oLogin.SendFile(oItem.oPic)
+    '        Await oPicSortSrv.SendFile(oItem.oPic)
     '    Else
-    '        oItem.oPic.AddCloudPublished(oLogin.konfiguracja.nazwa, "")
+    '        oItem.oPic.AddCloudPublished(oPicSortSrv.konfiguracja.nazwa, "")
     '    End If
     '    Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
     '    uiProgBar.Value += 1
@@ -2243,11 +2356,11 @@ Public Class ProcessBrowse
                 Dim oCurrExif As Vblib.ExifTag = oPic.oPic.GetExifOfType(Vblib.ExifSource.ManualTag)
                 If oCurrExif IsNot Nothing Then
 
-                    For iLp = 0 To aKwds.Count - 1
+                    For iLp = 0 To aKwds.Length - 1 ' było: .Count
                         Dim kwd As String = aKwds(iLp).TrimStart
                         If Not oCurrExif.Keywords.Contains(kwd) Then
                             oCurrExif.Keywords &= " " & kwd
-                            If iLp < aOpisy.Count Then oCurrExif.UserComment &= "|" & aOpisy(iLp)
+                            If iLp < aOpisy.Length Then oCurrExif.UserComment &= "|" & aOpisy(iLp)
                         End If
                     Next
 

@@ -1,6 +1,6 @@
 ﻿Imports pkar
 Imports Vblib
-
+Imports pkar.WPF.Configs
 
 Class SettingsShareLogins
 
@@ -8,6 +8,7 @@ Class SettingsShareLogins
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiLista.ItemsSource = Application.GetShareLogins.GetList '.OrderBy(Function(x) x.displayName)
+        uiAdresOverride.GetSettingsString
         Dim adres As String = Await vb14_GetMyIP.GetMyIP.GetIPString
         _channels = Application.GetShareChannels.GetList.Select(Of String)(Function(x) x.nazwa).ToList
         _channels.Sort()
@@ -26,7 +27,8 @@ Class SettingsShareLogins
         Dim oLogin As ShareLogin = TryCast(sender, FrameworkElement)?.DataContext
         If oLogin Is Nothing Then Return
 
-        Dim adres As String = Await vb14_GetMyIP.GetMyIP.GetIPString
+        Dim adres As String = Vblib.GetSettingsString("uiAdresOverride") ' DDNS, jak u mnie - nie adres fizyczny ale symboliczny, spisek...
+        If String.IsNullOrWhiteSpace(adres) Then adres = Await vb14_GetMyIP.GetMyIP.GetIPString
 
         ' wysłanie email
         Dim subject As String = "Dane logowania do mojego PicSort"
@@ -173,5 +175,14 @@ Class SettingsShareLogins
 
         oLogin.allowedLogin.remoteHostName = oLogin.lastLogin.remoteHostName.ToUpperInvariant
         uiRemoteHostName.Text = oLogin.allowedLogin.remoteHostName
+    End Sub
+
+    Private Sub uiAdresOverride_TextChanged(sender As Object, e As TextChangedEventArgs)
+        uiAdresOverrideSet.Visibility = Visibility.Visible
+    End Sub
+
+    Private Sub uiAdresOverrideSet_Click(sender As Object, e As RoutedEventArgs)
+        uiAdresOverride.SetSettingsString
+        uiAdresOverrideSet.Visibility = Visibility.Collapsed
     End Sub
 End Class

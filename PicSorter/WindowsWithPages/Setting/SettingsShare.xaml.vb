@@ -19,6 +19,7 @@ Class SettingsShare
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiServerEnabled.GetSettingsBool
+        uiUploadBlocked.GetSettingsBool
         uiServerEnabled.IsEnabled = (Application.GetShareLogins.Count > 0)
         uiMyName.Text = Environment.MachineName
         uiLastAccess.DataContext = Application.gLastLoginSharing
@@ -36,9 +37,15 @@ Class SettingsShare
         End If
     End Sub
 
+    Private Sub uiUploadBlocked_Check(sender As Object, e As RoutedEventArgs)
+        uiUploadBlocked.SetSettingsBool
+    End Sub
+
     Public Shared Sub StartServicing()
         Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(
-                Application.GetShareLogins, Application.gDbase, Application.gLastLoginSharing)
+                Application.GetShareLogins, Application.gDbase,
+                Application.gLastLoginSharing, Application.GetBuffer,
+                Application.GetShareDescriptions)
         Application.gWcfServer.StartSvc()
 
     End Sub

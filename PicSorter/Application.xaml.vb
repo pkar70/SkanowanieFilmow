@@ -220,6 +220,17 @@ Partial Class Application
         Return gShareServers
     End Function
 
+    Private Shared gShareDescriptions As BaseList(Of Vblib.ShareDescription)
+
+    Public Shared Function GetShareDescriptions() As BaseList(Of ShareDescription)
+        If gShareDescriptions IsNot Nothing Then Return gShareDescriptions
+
+        gShareDescriptions = New BaseList(Of ShareDescription)(Application.GetDataFolder, "shareIncoming.json")
+        gShareDescriptions.Load()
+        Return gShareDescriptions
+    End Function
+
+
 
 #End Region
 

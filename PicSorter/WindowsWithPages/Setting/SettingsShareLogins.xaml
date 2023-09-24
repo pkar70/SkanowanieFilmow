@@ -15,11 +15,17 @@
     <Grid  Margin="2,2,2,2">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="1*" />
             <RowDefinition Height="2*" />
         </Grid.RowDefinitions>
-        <TextBlock Text="Loginy" HorizontalAlignment="Center" FontSize="18" Margin="5,2,5,10"/>
-        <Grid Grid.Row="1">
+        <TextBlock Text="Loginy" HorizontalAlignment="Center" FontSize="18" />
+        <StackPanel Grid.Row="1" Margin="0,10,0,10" Orientation="Horizontal">
+            <TextBlock Text="Address override: " />
+            <TextBox Name="uiAdresOverride" Width="200" ToolTip="Jeśli masz DDNS, to go podaj" TextChanged="uiAdresOverride_TextChanged"/>
+            <Button Name="uiAdresOverrideSet" Click="uiAdresOverrideSet_Click" Content=" Set " Margin="5,0,5,0" Visibility="Collapsed"/>
+        </StackPanel>
+        <Grid Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
@@ -57,7 +63,7 @@
 
         </Grid>
 
-        <Grid Name="uiEditLogin" Margin="10,10,10,2" Grid.Row="2" Visibility="Collapsed">
+        <Grid Name="uiEditLogin" Margin="10,10,10,2" Grid.Row="3" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="*" />
@@ -71,12 +77,17 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <TextBlock Text="Kanały:" />
-                    <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddChannel_Click"/>
+                <TextBlock HorizontalAlignment="Center" FontWeight="Bold" Text="{Binding displayName, Mode=OneTime}" />
 
-                <ListView Name="uiListaKanalow" Grid.Row="2" ItemsSource="{Binding channels, Mode=TwoWay}" Margin="2,0,2,0" >
+                <CheckBox Content="Allow upload" Grid.Row="1" IsChecked="{Binding allowUpload}" />
+
+                <TextBlock Text="Kanały:" Grid.Row="2"/>
+                <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddChannel_Click" Grid.Row="2"/>
+
+                <ListView Name="uiListaKanalow" Grid.Row="3" ItemsSource="{Binding channels, Mode=TwoWay}" Margin="2,0,2,0" >
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
@@ -91,7 +102,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <ComboBox SelectedValue="{Binding nazwa, Mode=TwoWay}" Loaded="uiComboQuery_Loaded" />
+                                <ComboBox SelectedValue="{Binding channelName, Mode=TwoWay}" Loaded="uiComboQuery_Loaded" />
                                 <local:UserControlPostProcessPipeline Pipeline="{Binding processing, Mode=TwoWay}" Grid.Column="1" Margin="1,0,1,0"/>
                                 <Button Content=" Del " Grid.Column="2" Click="uiDelChannel_Click" Margin="3,0,0,0"/>
                             </Grid>
@@ -138,23 +149,23 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Text="Host" Grid.Row="0" Grid.Column="0"/>
-                <TextBox Text="{Binding remoteHostName, Mode=TwoWay}" Grid.Row="0" Grid.Column="1" Name="uiRemoteHostName"/>
+                <TextBox Text="{Binding allowedLogin.remoteHostName, Mode=TwoWay}" Grid.Row="0" Grid.Column="1" Name="uiRemoteHostName"/>
 
                 <TextBlock Text="IP addr" Grid.Row="1" Grid.Column="0"/>
                 <!--<TextBox Text="{Binding ipAddr, Mode=TwoWay}" Grid.Row="1" Grid.Column="1"/>-->
-                <ipAddr:IpField IpAddress="{Binding ipAddr, Mode=TwoWay}" Grid.Row="1" Grid.Column="1"/>
+                <ipAddr:IpField IpAddress="{Binding allowedLogin.IPaddr, Mode=TwoWay}" Grid.Row="1" Grid.Column="1"/>
 
                 <TextBlock Text="IP mask" Grid.Row="2" Grid.Column="0"/>
                 <!--<TextBox Text="{Binding netmask, Mode=TwoWay}" Grid.Row="2" Grid.Column="1"/>-->
-                <ipAddr:IpField IpAddress="{Binding netmask, Mode=TwoWay}" Grid.Row="2" Grid.Column="1"/>
+                <ipAddr:IpField IpAddress="{Binding allowedLogin.netmask, Mode=TwoWay}" Grid.Row="2" Grid.Column="1"/>
 
                 <TextBlock Text="Last login" Grid.Row="3" Grid.Column="0"/>
-                <TextBlock Text="{Binding lastLogin, Mode=OneTime}" Grid.Row="3" Grid.Column="1"/>
+                <TextBlock Text="{Binding lastLogin.kiedy, Mode=OneTime}" Grid.Row="3" Grid.Column="1"/>
 
-                <TextBlock Text="{Binding lastRemoteHost, Mode=OneTime}" Grid.Row="4" Grid.Column="1" Name="uiRemHostName"/>
+                <TextBlock Text="{Binding lastLogin.remoteHostName, Mode=OneTime}" Grid.Row="4" Grid.Column="1" Name="uiRemHostName"/>
                 <Button Content="Use" Grid.Row="4" Grid.Column="2" Click="uiUseRemHostName_Click" Name="uiUseRemHostName"/>
 
-                <TextBlock Text="{Binding lastIP, Mode=OneTime}" Grid.Row="5" Grid.Column="1"/>
+                <TextBlock Text="{Binding lastLogin.IPaddr, Mode=OneTime}" Grid.Row="5" Grid.Column="1"/>
 
             </Grid>
             

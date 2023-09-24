@@ -70,7 +70,9 @@ Class SettingsShareServers
 
     End Sub
 
-
+    Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
+        Application.GetShareServers.Save(True)
+    End Sub
 End Class
 
 Public Class KonwersjaDatyCzasu

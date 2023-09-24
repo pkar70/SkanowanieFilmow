@@ -136,7 +136,7 @@ Public Class BufferSortowania
     ''' zabierz plik (skorzystaj z OnePic.oContent - stream do pliku)
     ''' </summary>
     ''' <param name="pic">tu jest wazne suggestedfileName oraz oContent</param>
-    ''' <returns>OnePic uzupelniony o BufferFileName, FALSE: error (lub ten plik z tą zawartością już jest)</returns>
+    ''' <returns>TRUE i OnePic uzupelniony o BufferFileName, FALSE: error (lub ten plik z tą zawartością już jest)</returns>
     Public Async Function AddFile(oPic As OnePic) As Task(Of Boolean) Implements IBufor.AddFile
         DumpCurrMethod($"({oPic.sSuggestedFilename}")
 
