@@ -10,7 +10,7 @@ Public Class AutoTag_WinOCR
     Inherits Vblib.AutotaggerBase
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
     Public Overrides ReadOnly Property Nazwa As String = ExifSource.AutoWinOCR ' "AUTO_WINOCR"
-    Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
+    Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje zrobiæ OCR u¿ywaj¹c Windows." & vbCrLf & "U¿ywa pola UserComment"
     Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar;*.png"
 
