@@ -60,18 +60,17 @@ Public Class ProcessBrowse
         _title = title
     End Sub
 
+
     Private Sub MenuActionReadOnly()
         Dim oVis As Visibility = If(_inArchive, Visibility.Collapsed, Visibility.Visible)
-
+        ' jedynie dla menu w Action to zadziała, menu context obrazka - nie jest dostępne
         uiDeleteSelected.Visibility = oVis
         uiMenuAutotags.Visibility = oVis
         uiDescribeSelected.Visibility = oVis
-        uiMenuCopyGeoTag.Visibility = oVis
-        uiMenuCreateGeoTag.Visibility = oVis
+        uiGeotagSelected.Visibility = oVis
         uiMenuDateRefit.Visibility = oVis
         uiBatchProcessors.Visibility = oVis
-        uiSetTargetDir.Visibility = oVis
-        uiActionClearTargetDir.Visibility = oVis
+        uiActionTargetDir.Visibility = oVis
         uiDeleteThumbsSelected.Visibility = oVis
     End Sub
 
@@ -83,8 +82,6 @@ Public Class ProcessBrowse
         Await Bufor2Thumbsy()
         SizeMe()
         RefreshMiniaturki(True)
-
-        WypelnMenuCloudPublish(Nothing, uiMenuPublish, AddressOf PublishRun)
 
         WypelnMenuFilterSharing()
         WypelnMenuActionSharing()
@@ -106,8 +103,8 @@ Public Class ProcessBrowse
             ' menu dodatkowych okien
             uiOknaTargetDir.Visibility = Visibility.Visible
 
-            WypelnMenuBatchProcess(uiBatchProcessors, AddressOf PostProcessRun)
-            WypelnMenuAutotagerami(uiMenuAutotags, AddressOf AutoTagRun)
+            'WypelnMenuBatchProcess(uiBatchProcessors, AddressOf PostProcessRun)
+            'WypelnMenuAutotagerami(uiMenuAutotags, AddressOf AutoTagRun)
 
             uiFilterNoTarget.Visibility = Visibility.Visible
             MenuActionReadOnly()
@@ -327,16 +324,6 @@ Public Class ProcessBrowse
     End Sub
 #End Region
 
-#Region "Thumb ContexMenu"
-
-    Private Sub uiCopyPath_Click(sender As Object, e As RoutedEventArgs)
-        Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem.DataContext
-        vb14.ClipPut(oPicek.oPic.InBufferPathName)
-    End Sub
-
-
-#End Region
 #Region "menu actions"
 
     Public Function WypelnMenuActionSharing() As Integer
@@ -483,33 +470,6 @@ Public Class ProcessBrowse
         SaveMetaData()
     End Sub
 
-    Private Sub DodajManualGeoTag(oItem As ThumbPicek, oNewGeoTag As Vblib.ExifTag)
-        oItem.oPic.ReplaceOrAddExif(oNewGeoTag)
-        oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
-        oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
-        oItem.ZrobDymek()
-
-        If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
-    End Sub
-
-    Private Sub uiMenuGeoTag2Clip_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem.DataContext
-
-        Dim oGeo As BasicGeopos = oPicek.oPic.GetGeoTag
-        If oGeo Is Nothing Then
-            vb14.DialogBoxResAsync("Zaznaczone zdjęcie nie ma GeoTag")
-            Return
-        End If
-
-        vb14.ClipPut(oGeo.ToOSMLink(16))
-        vb14.DialogBox("Link do OSM jest w Clipboard")
-
-    End Sub
-
-
     Private Function GetDateBetween(oDate1 As Date, oDate2 As Date) As Date
         Dim minutes As Integer = Math.Abs((oDate1 - oDate2).TotalMinutes)
         If oDate1 < oDate2 Then Return oDate1.AddMinutes(minutes / 2)
@@ -565,29 +525,6 @@ Public Class ProcessBrowse
         SaveMetaData()
         RefreshMiniaturki(True)
 
-    End Sub
-
-    Private Sub uiMenuCreateGeoTag_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        Dim oWnd As New EnterGeoTag
-        If Not oWnd.ShowDialog Then Return
-
-        Dim oNewGeoTag As New Vblib.ExifTag(Vblib.ExifSource.ManualGeo)
-        oNewGeoTag.GeoTag = oWnd.GetGeoPos
-        oNewGeoTag.GeoZgrubne = oWnd.IsZgrubne
-
-        If uiPicList.SelectedItems.Count = 1 Then
-            DodajManualGeoTag(uiPicList.SelectedItems.Item(0), oNewGeoTag)
-        Else
-            For Each oItem As ThumbPicek In uiPicList.SelectedItems
-                If oItem.oPic.GetGeoTag Is Nothing Then DodajManualGeoTag(oItem, oNewGeoTag)
-            Next
-        End If
-
-        ' pokaz na nowo obrazki
-        RefreshMiniaturki(True)
-        SaveMetaData()
     End Sub
 
     Private Sub uiSetTargetDir_Click(sender As Object, e As RoutedEventArgs)
@@ -701,36 +638,33 @@ Public Class ProcessBrowse
 
 #End Region
 
-#Region "Describe"
-
-    Private Sub uiDescribeSelected_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-        Dim oWnd As New AddDescription(Nothing)
-        If Not oWnd.ShowDialog Then Return
-
-        Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
-
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            oItem.oPic.AddDescription(oDesc)
-        Next
-
-        SaveMetaData()  ' bo zmieniono EXIF
+    Private Sub uiMetadataChanged(sender As Object, e As EventArgs)
+        SaveMetaData()
     End Sub
 
-    Private Sub uiDescribe_Click(sender As Object, e As RoutedEventArgs)
-        Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem.DataContext
-
-        Dim oWnd As New AddDescription(oPicek.oPic)
-        oWnd.Owner = Me
-        If Not oWnd.ShowDialog Then Return
-
-        Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
-        oPicek.oPic.AddDescription(oDesc)
-
-        SaveMetaData()  ' bo zmieniono EXIF
+    Private Sub uiTargetMetadataChanged(sender As Object, e As EventArgs)
+        SaveMetaData()
+        ' tu trzeba wraz z reapply filter
+        If _isTargetFilterApplied Then uiFilterNoTarget_Click(Nothing, Nothing)
     End Sub
-#End Region
+    Private Sub uiGeotagMetadataChanged(sender As Object, e As EventArgs)
+        SaveMetaData()
+        ' tu trzeba wraz z reapply filter
+        If _isGeoFilterApplied Then uiFilterNoGeo_Click(Nothing, Nothing)
+    End Sub
+
+    Private Sub uiMetadataChangedReparse(sender As Object, e As EventArgs)
+        ReDymkuj()
+        RefreshMiniaturki(True)
+        SaveMetaData()
+    End Sub
+
+    Private Sub uiMetadataChangedDymkuj(sender As Object, e As EventArgs)
+        ReDymkuj()
+        SaveMetaData()
+    End Sub
+
+
 
     Private Sub uiCopyOut_Click(sender As Object, e As System.Windows.RoutedEventArgs)
         uiActionsPopup.IsOpen = False
@@ -823,22 +757,6 @@ Public Class ProcessBrowse
 
     End Sub
 
-    Private Sub uiShellExec_Click(sender As Object, e As RoutedEventArgs)
-        Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem?.DataContext
-
-        Dim proc As New Process()
-        proc.StartInfo.UseShellExecute = True
-        proc.StartInfo.FileName = oPicek?.oPic?.InBufferPathName
-        proc.Start()
-    End Sub
-
-    Private Sub uiGoWiki_Click(sender As Object, e As RoutedEventArgs)
-        Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem?.DataContext
-
-        ShowBig.OpenWikiForMonth(oPicek.oPic)
-    End Sub
 
     ''' <summary>
     ''' wczytaj ze skalowaniem do 400 na wiekszym boku
@@ -1981,61 +1899,6 @@ Public Class ProcessBrowse
         uiActionsPopup.IsOpen = Not uiActionsPopup.IsOpen
     End Sub
 
-    'Private Shared _UImenuOnClick As RoutedEventHandler
-
-    'Private Shared Sub MenuAutoTaggersRun(sender As Object, e As RoutedEventArgs)
-    '    If _UImenuOnClick Is Nothing Then Return
-    '    _UImenuOnClick(sender, e)
-    'End Sub
-
-    Public Shared Sub WypelnMenuAutotagerami(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
-        oMenuItem.Items.Clear()
-        ' _UImenuOnClick = oEventHandler
-
-        For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
-            Dim oNew As New MenuItem
-            oNew.Header = oEngine.Nazwa.Replace("_", "__")
-            oNew.DataContext = oEngine
-            AddHandler oNew.Click, oEventHandler
-            oMenuItem.Items.Add(oNew)
-        Next
-
-        oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
-
-    End Sub
-
-    Public Shared Sub WypelnMenuBatchProcess(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
-        oMenuItem.Items.Clear()
-        ' _UImenuOnClick = oEventHandler
-
-        For Each oEngine As Vblib.PostProcBase In Application.gPostProcesory
-            Dim oNew As New MenuItem
-            oNew.Header = oEngine.Nazwa.Replace("_", "__")
-            oNew.DataContext = oEngine
-            AddHandler oNew.Click, oEventHandler
-            oMenuItem.Items.Add(oNew)
-        Next
-
-        oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
-
-    End Sub
-
-    'Public Shared Sub WypelnMenuCloudArchive(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
-    '    oMenuItem.Items.Clear()
-    '    ' _UImenuOnClick = oEventHandler
-
-    '    For Each oEngine As Vblib.CloudArchive In Application.gCloudProviders.GetCloudArchiversList
-    '        Dim oNew As New MenuItem
-    '        oNew.Header = oEngine.konfiguracja.nazwa.Replace("_", "__")
-    '        oNew.DataContext = oEngine
-    '        AddHandler oNew.Click, oEventHandler
-    '        oMenuItem.Items.Add(oNew)
-    '    Next
-
-    '    oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
-
-    'End Sub
-
     Private Shared Function NewMenuCloudOperation(sDisplay As String, oEngine As Object, oEventHandler As RoutedEventHandler) As MenuItem
         Dim oNew As New MenuItem
         oNew.Header = sDisplay.Replace("_", "__")
@@ -2050,248 +1913,8 @@ Public Class ProcessBrowse
         Return NewMenuCloudOperation(oEngine.konfiguracja.nazwa, oEngine, Nothing)
     End Function
 
-    Public Shared Sub WypelnMenuCloudPublish(oPic As Vblib.OnePic, oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
-        oMenuItem.Items.Clear()
-        ' _UImenuOnClick = oEventHandler
-
-        For Each oEngine As Vblib.CloudPublish In Application.GetCloudPublishers.GetList
-            Dim oNew As MenuItem = NewMenuCloudOperation(oEngine)
-            oNew.IsCheckable = False    ' aczkolwiek to jest default, więc pewnie nie będzie więcej miejsca od tego
-
-            If oPic Is Nothing OrElse Not oPic.IsCloudPublishedIn(oEngine.konfiguracja.nazwa) Then
-                AddHandler oNew.Click, oEventHandler
-            Else
-                oNew.Items.Add(NewMenuCloudOperation("Open", oEngine, oEventHandler))
-                oNew.Items.Add(NewMenuCloudOperation("Share link", oEngine, oEventHandler))
-                oNew.Items.Add(NewMenuCloudOperation("Get tags", oEngine, oEventHandler))
-                oNew.Items.Add(New Separator)
-                oNew.Items.Add(NewMenuCloudOperation("Delete", oEngine, oEventHandler))
-            End If
-
-            oMenuItem.Items.Add(oNew)
-
-        Next
-
-        oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
-
-    End Sub
-
-    Public Shared Sub WypelnMenuCloudArchives(oPic As Vblib.OnePic, oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
-        oMenuItem.Items.Clear()
-        ' _UImenuOnClick = oEventHandler
-
-        For Each oEngine As Vblib.CloudArchive In Application.GetCloudArchives.GetList
-            If Not oPic.IsCloudArchivedIn(oEngine.konfiguracja.nazwa) Then Continue For
-
-            Dim oNew As MenuItem = NewMenuCloudOperation(oEngine)
-
-            oNew.Items.Add(NewMenuCloudOperation("Open", oEngine, oEventHandler))
-            oNew.Items.Add(NewMenuCloudOperation("Share link", oEngine, oEventHandler))
-            oNew.Items.Add(NewMenuCloudOperation("Get tags", oEngine, oEventHandler))
-
-            oMenuItem.Items.Add(oNew)
-
-        Next
-
-        oMenuItem.IsEnabled = (oMenuItem.Items.Count > 0)
-
-    End Sub
 
 #End Region
-    Private Async Sub AutoTagRun(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        Dim oFE As FrameworkElement = sender
-        Dim oEngine As Vblib.AutotaggerBase = oFE?.DataContext
-        If oEngine Is Nothing Then Return
-
-        uiProgBar.Value = 0
-        uiProgBar.Maximum = uiPicList.SelectedItems.Count
-        uiProgBar.Visibility = Visibility.Visible
-
-        Application.ShowWait(True)
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            uiProgBar.ToolTip = oItem.oPic.InBufferPathName
-            If oItem.oPic.GetExifOfType(oEngine.Nazwa) Is Nothing Then
-                Dim oExif As Vblib.ExifTag = Await oEngine.GetForFile(oItem.oPic)
-                If oExif Is Nothing Then
-                    If oEngine.Nazwa = ExifSource.AutoAzure Then Exit For
-                Else
-                    oItem.oPic.Exifs.Add(oExif)
-                    oItem.oPic.TagsChanged = True
-                    oItem.ZrobDymek()
-                End If
-                Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
-            End If
-            uiProgBar.Value += 1
-        Next
-        uiProgBar.ToolTip = ""
-        Application.ShowWait(False)
-
-        uiProgBar.Visibility = Visibility.Collapsed
-
-        SaveMetaData() ' bo zmieniono EXIF
-
-        ' ale nie mamy pamiętane jaki jest aktualnie filtr
-        'If oEngine.Nazwa = ExifSource.AutoAzure Then
-        '    RefreshMiniaturki(False)
-        'End If
-
-
-    End Sub
-
-    Private Async Sub PostProcessRun(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        Dim oFE As FrameworkElement = sender
-        Dim oEngine As Vblib.PostProcBase = oFE?.DataContext
-        If oEngine Is Nothing Then Return
-
-        uiProgBar.Maximum = uiPicList.SelectedItems.Count
-        uiProgBar.Visibility = Visibility.Visible
-
-        Application.ShowWait(True)
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Await oEngine.Apply(oItem.oPic, False, "")
-            Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
-            uiProgBar.Value += 1
-        Next
-        Application.ShowWait(False)
-
-        uiProgBar.Visibility = Visibility.Collapsed
-
-        SaveMetaData()  ' bo zmieniono EXIF
-
-    End Sub
-
-    Private Async Sub GetRemoteTagsRun(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        Dim oFE As FrameworkElement = sender
-        Dim oSrc As Vblib.CloudPublish = oFE?.DataContext
-        If oSrc Is Nothing Then Return
-
-        uiProgBar.Maximum = uiPicList.SelectedItems.Count
-        uiProgBar.Visibility = Visibility.Visible
-
-        Application.ShowWait(True)
-
-        Dim sErr As String = Await oSrc.Login
-        If sErr <> "" Then
-            Await vb14.DialogBoxAsync(sErr)
-            Application.ShowWait(False)
-            Return
-        End If
-
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Await oSrc.GetRemoteTags(oItem.oPic)
-        Next
-
-        Application.ShowWait(False)
-
-        uiProgBar.Visibility = Visibility.Collapsed
-
-        SaveMetaData()  ' bo zmieniono dane plików
-
-    End Sub
-
-    Private Async Sub PublishRun(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        ' test na adultpice
-        Dim iCnt As Integer = 0
-        Dim sNames As String = ""
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            If oItem.oPic.IsAdultInExifs OrElse Application.GetKeywords.IsAdultInAnyKeyword(oItem.oPic.GetAllKeywords) Then
-                iCnt += 1
-                sNames = sNames & vbCrLf & oItem.oPic.sSuggestedFilename
-            End If
-        Next
-        If iCnt > 0 Then
-            Dim sMsg As String = "plików zawiera"
-            If iCnt = 1 Then sMsg = "plik zawiera"
-            If iCnt > 1 AndAlso iCnt < 5 Then sMsg = "pliki zawierają"
-
-            If Not Await vb14.DialogBoxYNAsync($"{iCnt} {sMsg} ograniczenia wiekowe, kontynuować? ") Then
-                vb14.ClipPut(sNames)
-                vb14.DialogBox("Lista plików - w clipboard")
-                Return
-            End If
-        End If
-
-
-        Dim oFE As FrameworkElement = sender
-        Dim oSrc As Vblib.CloudPublish = oFE?.DataContext
-        If oSrc Is Nothing Then Return
-
-        Dim bSendNow As Boolean = True
-
-        If oSrc.sProvider = Vblib.Publish_AdHoc.PROVIDERNAME Then
-            Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
-            If sFolder = "" Then Return
-            oSrc.sZmienneZnaczenie = sFolder
-        Else
-            bSendNow = Await vb14.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
-        End If
-
-        If bSendNow Then
-
-            Dim lista As New List(Of Vblib.OnePic)
-
-            For Each oItem As ThumbPicek In uiPicList.SelectedItems
-                lista.Add(oItem.oPic)
-            Next
-
-            uiProgBar.Maximum = lista.Count
-            uiProgBar.Visibility = Visibility.Visible
-
-            Application.ShowWait(True)
-            Await PublishAllFilesTo(oSrc, lista)
-            Application.ShowWait(False)
-
-            uiProgBar.Visibility = Visibility.Collapsed
-        Else
-            For Each oItem As ThumbPicek In uiPicList.SelectedItems
-                oItem.oPic.AddCloudPublished(oSrc.konfiguracja.nazwa, "")
-            Next
-        End If
-
-        SaveMetaData()  ' bo zmieniono dane plików
-
-    End Sub
-
-    Private Async Function PublishAllFilesTo(oSrc As Vblib.CloudPublish, lista As List(Of Vblib.OnePic)) As Task
-        Dim sErr As String = Await oSrc.Login
-        If sErr <> "" Then
-            Await vb14.DialogBoxAsync(sErr)
-            Return
-        End If
-
-        ' to pozwala robić dwie publikacje po kolei
-        For Each oFile As Vblib.OnePic In lista
-            oFile.ResetPipeline()
-        Next
-
-        sErr = Await oSrc.SendFiles(lista, AddressOf ProgBarInc)
-        If sErr <> "" Then Await vb14.DialogBoxAsync(sErr)
-        ' Await oPicSortSrv.Logout()
-    End Function
-
-    Private Sub ProgBarInc()
-
-        uiProgBar.Value += 1
-    End Sub
-
-    'Private Async Function PublishOnePicTo(oPicSortSrv As CloudPublish, bSendNow As Boolean, oItem As ThumbPicek) As Task
-    '    If bSendNow Then
-    '        Await oPicSortSrv.SendFile(oItem.oPic)
-    '    Else
-    '        oItem.oPic.AddCloudPublished(oPicSortSrv.konfiguracja.nazwa, "")
-    '    End If
-    '    Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
-    '    uiProgBar.Value += 1
-    'End Function
-
 
 #Region "Keywords window"
 
@@ -2302,36 +1925,6 @@ Public Class ProcessBrowse
         Return Nothing
     End Function
 
-    ' było jak jeszcze nie było otwierania wielu sub-okien (#, describe, exif...)
-    'Private Sub uiKeywords_Click(sender As Object, e As RoutedEventArgs)
-
-    '    ' step 1: sprawdzenie czy nie ma takiego już otwartego
-    '    Dim oWnd As Window = GetKwdWnd()
-    '    If oWnd IsNot Nothing Then
-    '        oWnd.BringIntoView()
-    '        Return
-    '    End If
-
-    '    ' step 2: pokaż takie okno
-    '    oWnd = New BrowseKeywordsWindow()
-    '    oWnd.Owner = Me
-    '    oWnd.Name = "BrowseKeywords"
-    '    oWnd.Show()
-
-    '    ' step 3: pokaż w nim selected pic
-    '    If uiPicList.SelectedItems.Count = 1 Then
-    '        Dim oItem As ThumbPicek = uiPicList.SelectedItems(0)
-    '        RefreshOwnedWindows(oItem)
-    '        ' ShowKwdForPic(oItem)
-    '    End If
-    'End Sub
-
-    'Private Sub ShowKwdForPic(oPic As ThumbPicek)
-    '    Dim oWnd As BrowseKeywordsWindow = GetKwdWnd()
-    '    If oWnd IsNot Nothing Then
-    '        oWnd.InitForPic(oPic)
-    '    End If
-    'End Sub
 
     Public Sub ChangedKeywords(oExif As Vblib.ExifTag, oPic1 As ThumbPicek)
         ' callback z BrowseKeywordsWindow - do zaznaczonego (jednego bądź wielu)
@@ -2410,31 +2003,6 @@ Public Class ProcessBrowse
 #End Region
 #Region "ExifTag window"
 
-    'Private Const EXIFTAG_WINDOW As String = "BrowseExifs"
-
-    'Private Function GetExifWnd() As Window
-    '    For Each oWnd As Window In Me.OwnedWindows
-    '        If oWnd.Name = EXIFTAG_WINDOW Then Return oWnd
-    '    Next
-    '    Return Nothing
-    'End Function
-
-    Private Sub uiShowExifs_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        Dim oItem As FrameworkElement = sender
-        Dim oPicek As ThumbPicek = oItem.DataContext
-
-        Dim oWnd As New ShowExifs(False) '(oPicek.oPic)
-
-        ' step 2: pokaż takie okno
-        oWnd.Owner = Me
-        'oWnd.Name = EXIFTAG_WINDOW
-        oWnd.DataContext = oPicek
-        oWnd.Show()
-
-    End Sub
-
 #Region "menu otwierania okien"
 
     Private Sub uiOkna_Click(sender As Object, e As RoutedEventArgs)
@@ -2485,16 +2053,13 @@ Public Class ProcessBrowse
 
     Private Sub uiOknaManualAzureExif_Click(sender As Object, e As RoutedEventArgs)
         OpenSubWindow(New EditOneExif(Vblib.ExifSource.AutoAzure, _inArchive))
+
+        Dim b As New ThumbPicek(Nothing, 10)
+        Dim c As OnePic = b
+
     End Sub
 
 #End Region
-
-    'Private Sub ShowExifForPic(oPic As ThumbPicek)
-    '    Dim oWnd As ShowExifs = GetExifWnd()
-    '    If oWnd IsNot Nothing Then
-    '        oWnd.SetForPic(oPic.oPic)
-    '    End If
-    'End Sub
 
 
 #End Region
@@ -2559,6 +2124,10 @@ Public Class ProcessBrowse
             End If
 
         End Sub
+
+        Public Shared Widening Operator CType(ByVal thumb As ThumbPicek) As Vblib.OnePic
+            Return thumb.oPic
+        End Operator
 
     End Class
 

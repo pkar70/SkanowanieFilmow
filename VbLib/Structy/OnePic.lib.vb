@@ -1065,13 +1065,22 @@ Public Class OnePic
         If Not CheckStringContains(PicGuid, query.ogolne.GUID) Then Return False
 
         If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
+            ' TAGS może mieć "!"
             Dim kwrds As String = query.ogolne.Tags
+            If kwrds = "!" Then
+                For Each oExif1 As ExifTag In Exifs
+                    If oExif1.Keywords IsNot Nothing Then Return False
+                Next
+            End If
             ' automatyczne wyłączenie =X, jeśli nie jest podane wprost
             If Not kwrds.Contains("=X") Then kwrds &= " !=X"
             If Not MatchesKeywords(kwrds.Split(" ")) Then Return False
         End If
 
         Dim descripsy As String = GetSumOfDescriptionsText() & " " & GetSumOfCommentText()
+        If query.ogolne.Descriptions = "!" Then
+            If descripsy.Trim <> "" Then Return False
+        End If
         If Not CheckStringMasks(descripsy, query.ogolne.Descriptions) Then Return False
 
         ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
@@ -1087,6 +1096,7 @@ Public Class OnePic
 
 #Region "ogólne - advanced"
 
+        If query.ogolne.adv.TargetDir = "!" Then If Not String.IsNullOrWhiteSpace(TargetDir) Then Return False
         If Not CheckStringMasks(TargetDir, query.ogolne.adv.TargetDir) Then Return False
         If Not CheckStringContains(sSourceName, query.ogolne.adv.Source) Then Return False
 
@@ -1100,6 +1110,7 @@ Public Class OnePic
         End If
         ' If Not uiTypeOth.IsChecked Then
 
+        If query.ogolne.adv.CloudArchived = "!" Then If Not String.IsNullOrWhiteSpace(CloudArchived) Then Return False
         If Not CheckStringMasks(CloudArchived, query.ogolne.adv.CloudArchived) Then Return False
 
         If Not String.IsNullOrWhiteSpace(query.ogolne.adv.Published) Then
@@ -1108,6 +1119,7 @@ Public Class OnePic
                 publishy = publishy & " " & item.Key
             Next
 
+            If query.ogolne.adv.Published = "!" Then If Not String.IsNullOrWhiteSpace(publishy) Then Return False
             If Not CheckStringMasks(publishy, query.ogolne.adv.Published) Then Return False
 
         End If
@@ -1120,7 +1132,10 @@ Public Class OnePic
         If Not String.IsNullOrWhiteSpace(query.ogolne.geo.Name) Then
             Dim sGeoName As String = ""
             For Each oExif In Exifs
-                If Not String.IsNullOrWhiteSpace(oExif.GeoName) Then sGeoName = sGeoName & " " & oExif.GeoName
+                If Not String.IsNullOrWhiteSpace(oExif.GeoName) Then
+                    If query.ogolne.geo.Name = "!" Then Return False
+                    sGeoName = sGeoName & " " & oExif.GeoName
+                End If
             Next
 
             If Not CheckStringMasks(sGeoName, query.ogolne.geo.Name) Then Return False
@@ -1145,6 +1160,7 @@ Public Class OnePic
 
         oExif = GetExifOfType(Vblib.ExifSource.SourceDefault)
         If oExif IsNot Nothing Then
+            If query.source_author = "!" Then If Not String.IsNullOrWhiteSpace(oExif.Author) Then Return False
             If Not CheckStringMasks(oExif.Author, query.source_author) Then Return False
 
             If query.source_type > -1 Then
@@ -1158,6 +1174,7 @@ Public Class OnePic
 #Region "AutoExif"
         oExif = GetExifOfType(Vblib.ExifSource.FileExif)
         If oExif IsNot Nothing Then
+            If query.exif_camera = "!" Then If Not String.IsNullOrWhiteSpace(oExif.CameraModel) Then Return False
             If Not CheckStringMasks(oExif.CameraModel, query.exif_camera) Then Return False
         End If
 

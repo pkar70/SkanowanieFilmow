@@ -58,11 +58,12 @@
                 <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center" Width="100" Height="100">
                     <Image.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="Copy path" Click="uiCopyPath_Click"/>
-                            <MenuItem Header="Metadata" Click="uiShowMetadata_Click"/>
-                            <MenuItem Header="File EXIF" Click="uiShowExif_Click" Name="uiShowExif"/>
-                            <MenuItem Header="Auto-tags" Name="uiMenuTaggers" />
-                            <MenuItem Header="Describe" Click="uiDescribe_Click" />
+                            <!-- readonly simple metadata -->
+                            <local:PicMenuCopyPath />
+                            <local:PicMenuShowMetadata />
+                            <local:PicMenuFileExif />
+
+                            <!-- sequence step CROP/EDIT -->
                             <MenuItem Header="Pic edit" Name="uiEditModes" >
                                 <MenuItem Header="Crop" Click="uiCrop_Click" Name="uiEditCrop"/>
                                 <!--<MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>-->
@@ -80,15 +81,27 @@
                                 <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
                                 <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
                             </MenuItem>
-                            <MenuItem Header="Batch process" Name="uiBatchProcessors" />
-                            <MenuItem Header="Cloud arch" Name="uiMenuCloudArch"  />
-                            <MenuItem Header="Publish" Name="uiMenuPublish"  />
-                            <!--<MenuItem Header="On map" Name="uiOnMap" Click="uiOnMap_Click" />-->
-                            <MenuItem Header="On map" Name="uiOnMap" />
+                            <local:PicMenuBatchProc x:Name="uiBatchProcessors"  MetadataChanged="uiPictureChanged" />
+                            <!-- sequence step GEOTAG -->
+                            <local:PicMenuGeotag x:Name="uiGeotag" MetadataChanged="uiMetadataChanged" />
+                            <!-- sequence step AUTOTAGs -->
+                            <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
+                            <!-- sequence step KEYWORDs -->
+                            <!-- sequence step DESCRIBE -->
+                            <local:PicMenuDescribe x:Name="uiDescribe" MetadataChanged="uiMetadataChanged" />
+                            <!-- sequence step TARGET -->
+                            <local:PicMenuTargetDir x:Name="uiTargetDir" MetadataChanged="uiMetadataChanged" />
+                            <!-- sequence step PUBLISH, ARCHIVE -->
+                            <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" />
+                            <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
+
+                            <!-- readonly metadata 2 -->
+                            <local:PicMenuOnMap />
+                            <local:PicMenuShowWiki  />
+                            <local:PicMenuShellExec  />
                             <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
-                            <MenuItem Header="Wiki for month" Click="uiGoWiki_Click" />
-                            <MenuItem Header="ShellExec" Click="uiShellExec_Click" />
                             <Separator/>
+                            <!-- delete -->
                             <MenuItem Header="Delete" Click="uiDelPic_Click" Name="uiDelete" />
                         </ContextMenu>
                     </Image.ContextMenu>

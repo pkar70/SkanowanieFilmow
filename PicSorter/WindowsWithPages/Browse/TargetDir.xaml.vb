@@ -15,6 +15,7 @@ Public Class TargetDir
 
     Private _thumbsy As List(Of ProcessBrowse.ThumbPicek)
     Private _selected As List(Of ProcessBrowse.ThumbPicek)
+    Private _onePic As Vblib.OnePic
 
     Public Sub New(wholeList As List(Of ProcessBrowse.ThumbPicek), selectedList As List(Of ProcessBrowse.ThumbPicek))
 
@@ -28,21 +29,40 @@ Public Class TargetDir
 
     End Sub
 
+    Public Sub New(oPic As Vblib.OnePic)
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        _onePic = oPic
+        ' symulacja listy - będzie przydatne później, w Window_Loaded
+        _selected = New List(Of ProcessBrowse.ThumbPicek)
+        _selected.Add(New ProcessBrowse.ThumbPicek(oPic, 0))
+    End Sub
+
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
 
         Dim sFirstItemFilename As String = _selected(0).oPic.InBufferPathName
-        Dim iFirstPtr As Integer = -1
-        For iLp As Integer = 0 To _thumbsy.Count
-            If _thumbsy(iLp).oPic.InBufferPathName = sFirstItemFilename Then
-                iFirstPtr = iLp
-                Exit For
-            End If
-        Next
 
-        If iFirstPtr < 0 Then Return ' nie powinno się zdarzyć
+        If _onePic Is Nothing Then
+            Dim iFirstPtr As Integer = -1
+            For iLp As Integer = 0 To _thumbsy.Count
+                If _thumbsy(iLp).oPic.InBufferPathName = sFirstItemFilename Then
+                    iFirstPtr = iLp
+                    Exit For
+                End If
+            Next
 
-        PokazOpcjeCzasowe(iFirstPtr)
-        PokazOpcjeGeo(iFirstPtr)
+            If iFirstPtr < 0 Then Return ' nie powinno się zdarzyć
+            PokazOpcjeCzasowe(iFirstPtr)
+            PokazOpcjeGeo(iFirstPtr)
+        Else
+            ' tylko jeden obrazek
+            'uiNoDateSplit
+            'uiAutoDateSplit
+            'uiNoGeoSplit
+            'uiAutoGeoSplit
+        End If
+
         PokazIstniejaceKatalogi(_selected(0).dateMin, _selected(_selected.Count - 1).dateMin)
 
         uiCalendar.DisplayDateStart = _selected(0).dateMin.AddDays(-7)

@@ -11,7 +11,7 @@ Imports Windows.Storage.Streams
 Imports CompactExifLib
 Imports Vblib
 Imports pkar
-Imports Windows.UI.Xaml.Controls
+'Imports Windows.UI.Xaml.Controls
 Imports MediaDevices
 Imports Org.BouncyCastle.Asn1.X509
 
@@ -31,6 +31,7 @@ Public Class ShowBig
         _picek = oPicek
         _inArchive = bInArchive
         _inSlideShow = bSlideShow
+        DataContext = _picek.oPic
 
         AddHandler _timer.Tick, AddressOf Timer_Ticked
     End Sub
@@ -44,6 +45,7 @@ Public Class ShowBig
         _picek = New ProcessBrowse.ThumbPicek(oPicek, 0)
         _inArchive = bInArchive
         _inSlideShow = bSlideShow
+        DataContext = _picek.oPic
 
         AddHandler _timer.Tick, AddressOf Timer_Ticked
     End Sub
@@ -134,23 +136,16 @@ Public Class ShowBig
             uiBatchProcessors.Visibility = Visibility.Collapsed
             uiEditModes.Visibility = Visibility.Collapsed
             uiDelete.Visibility = Visibility.Collapsed
-            uiShowExif.Visibility = Visibility.Collapsed
         Else
-            ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
+            'ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
             uiBatchProcessors.Visibility = Visibility.Visible
             uiEditModes.Visibility = Visibility.Visible
             uiDelete.Visibility = Visibility.Visible
-            uiShowExif.Visibility = Visibility.Visible
         End If
 
-        ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
-        ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
-        ProcessBrowse.WypelnMenuCloudArchives(_picek.oPic, uiMenuCloudArch, AddressOf ApplyCloudArch)
-
-        OnOffMap()
-        SettingsMapsy.WypelnMenuMapami(uiOnMap, AddressOf uiOnMap_Click)
-        DodajMenuFlicker(uiOnMap)
-
+        'ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
+        'ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
+        'ProcessBrowse.WypelnMenuCloudArchives(_picek.oPic, uiMenuCloudArch, AddressOf ApplyCloudArch)
 
         If String.IsNullOrEmpty(_picek.oPic.fileTypeDiscriminator) Then
             uiIkonkaTypu.Visibility = Visibility.Collapsed
@@ -168,82 +163,6 @@ Public Class ShowBig
         ' MenuAutoTaggerow()
 
     End Sub
-
-#Region "flicker"
-
-    Private Sub DodajMenuFlicker(uiMenu As MenuItem)
-
-        Dim oMenuFlicker As New MenuItem
-        oMenuFlicker.Header = "Flickr"
-
-        Dim oNew As New MenuItem
-        oNew.Header = "phototime"
-        AddHandler oNew.Click, AddressOf oFlickerFotoTime
-        oMenuFlicker.Items.Add(oNew)
-
-        oNew = New MenuItem
-        oNew.Header = "same day"
-        AddHandler oNew.Click, AddressOf oFlickerSameDay
-        oMenuFlicker.Items.Add(oNew)
-
-        oNew = New MenuItem
-        oNew.Header = "same month"
-        AddHandler oNew.Click, AddressOf oFlickerSameMonth
-        oMenuFlicker.Items.Add(oNew)
-
-        oNew = New MenuItem
-        oNew.Header = "same year"
-        AddHandler oNew.Click, AddressOf oFlickerSameYear
-        oMenuFlicker.Items.Add(oNew)
-
-        oNew = New MenuItem
-        oNew.Header = "anytime"
-        AddHandler oNew.Click, AddressOf oFlickerAnyTime
-        oMenuFlicker.Items.Add(oNew)
-
-        uiMenu.Items.Add(oMenuFlicker)
-    End Sub
-
-    Private Sub oFlickerFotoTime(sender As Object, e As RoutedEventArgs)
-
-        Dim minDate As String = _picek.oPic.GetMinDate.ToString("yyyy-MM-dd")
-        Dim maxDate As String = _picek.oPic.GetMaxDate.ToString("yyyy-MM-dd")
-        UseFlickerLink(minDate, maxDate)
-    End Sub
-
-    Private Sub oFlickerSameDay(sender As Object, e As RoutedEventArgs)
-        Dim minDate As String = _picek.oPic.GetMostProbablyDate.ToString("yyyy-MM-dd")
-        UseFlickerLink(minDate, minDate)
-    End Sub
-
-    Private Sub oFlickerSameMonth(sender As Object, e As RoutedEventArgs)
-        Dim minDate As Date = _picek.oPic.GetMostProbablyDate
-        minDate = minDate.AddDays(-minDate.Day + 1)
-        Dim maxDate As Date = minDate.AddMonths(1).AddDays(-1)
-        UseFlickerLink(minDate.ToString("yyyy-MM-dd"), maxDate.ToString("yyyy-MM-dd"))
-    End Sub
-
-    Private Sub oFlickerSameYear(sender As Object, e As RoutedEventArgs)
-        Dim minDate As Integer = _picek.oPic.GetMostProbablyDate.Year
-        UseFlickerLink(minDate.ToString & "-01-01", minDate.ToString & "-12-31")
-    End Sub
-
-    Private Sub oFlickerAnyTime(sender As Object, e As RoutedEventArgs)
-        UseFlickerLink("1800-01-01", Date.Now.ToString("yyyy-MM-dd"))
-    End Sub
-
-    Private Sub UseFlickerLink(dateMin As String, dateMax As String)
-        Dim oGps As BasicGeopos = _picek.oPic.GetGeoTag
-        If oGps Is Nothing Then Return
-
-        Dim sUri As String = oGps.FormatLink("https://www.flickr.com/map?&fLat=%lat&fLon=%lon&zl=14&")
-        sUri &= $"min_taken_date={dateMin}%252000%253A00%253A00&max_taken_date={dateMax}%252023%253A59%253A59"
-
-        ' https://www.flickr.com/map?&fLat=50.0439&fLon=19.9484&zl=10&min_upload_date=2023-01-01%252000%253A00%253A00&max_upload_date=2023-06-16%252000%253A00%253A00
-        Dim oUri As New Uri(sUri)
-        oUri.OpenBrowser
-    End Sub
-#End Region
 
     Private Sub ZmienRozmiarOkna(iObrot As Rotation)
         DumpCurrMethod($"(iObrot={iObrot})")
@@ -337,128 +256,6 @@ Public Class ShowBig
         Return Rotation.Rotate0
     End Function
 
-    Private Sub OnOffMap()
-        Dim oGps As BasicGeopos = _picek.oPic.GetGeoTag
-        uiOnMap.IsEnabled = (oGps IsNot Nothing)
-
-    End Sub
-
-
-
-    Private Async Sub ApplyTagger(sender As Object, e As RoutedEventArgs)
-        Dim oFE As FrameworkElement = sender
-        Dim oSrc As Vblib.AutotaggerBase = oFE?.DataContext
-        If oSrc Is Nothing Then Return
-
-        Application.ShowWait(True)
-        Dim oExif As Vblib.ExifTag = Await oSrc.GetForFile(_picek.oPic)
-        Application.ShowWait(False)
-        If oExif IsNot Nothing Then
-            _picek.oPic.Exifs.Add(oExif)
-            _picek.oPic.TagsChanged = True
-        End If
-        SaveMetaData()  ' bo zmieniono EXIF
-
-        OnOffMap()    ' bo moze juz bedzie mozna to pokazać
-    End Sub
-
-    Private Async Sub ApplyBatchProcess(sender As Object, e As RoutedEventArgs)
-        Dim oFE As FrameworkElement = sender
-        Dim oSrc As Vblib.PostProcBase = oFE?.DataContext
-        If oSrc Is Nothing Then Return
-
-        Application.ShowWait(True)
-        Await oSrc.Apply(_picek.oPic, False, "")
-        Application.ShowWait(False)
-
-    End Sub
-
-    Private Async Sub ApplyPublish(sender As Object, e As RoutedEventArgs)
-        Dim oFE As MenuItem = sender
-        Dim oCloud As Vblib.CloudPublish = oFE?.DataContext
-        If oCloud Is Nothing Then Return
-
-        Select Case oFE.Header.ToString.ToLowerInvariant
-            Case "open"
-                Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
-                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
-                    pkar.OpenBrowser(sLink)
-                Else
-                    If sLink = "" Then sLink = "ERROR getting sharing link"
-                    vb14.DialogBox(sLink)   ' error message
-                End If
-            Case "delete"
-                Await oCloud.Delete(_picek.oPic)
-            Case "get tags"
-                Await oCloud.GetRemoteTags(_picek.oPic)
-            Case "share link"
-                Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
-                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
-                    vb14.ClipPut(sLink)
-                    vb14.DialogBox("Link in ClipBoard")
-                Else
-                    If sLink = "" Then sLink = "ERROR getting sharing link"
-                    vb14.DialogBox(sLink)   ' error message
-                End If
-            Case Else
-                If oCloud.sProvider = Publish_AdHoc.PROVIDERNAME Then
-                    Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
-                    If sFolder = "" Then Return
-                    oCloud.sZmienneZnaczenie = sFolder
-                End If
-
-                Application.ShowWait(True)
-                Dim sErr As String = Await oCloud.Login
-                If sErr <> "" Then
-                    Await vb14.DialogBoxAsync(sErr)
-                    Application.ShowWait(False)
-                    Return
-                End If
-
-                Dim sRet As String = Await oCloud.SendFile(_picek.oPic)
-                Application.ShowWait(False)
-                If sRet <> "" Then Await vb14.DialogBoxAsync(sRet)
-
-        End Select
-
-        ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
-
-        SaveMetaData()  ' bo zmieniono info o publishingu
-    End Sub
-
-
-    Private Async Sub ApplyCloudArch(sender As Object, e As RoutedEventArgs)
-        Dim oFE As MenuItem = sender
-        Dim oCloud As Vblib.CloudArchive = oFE?.DataContext
-        If oCloud Is Nothing Then Return
-
-        Select Case oFE.Header.ToString.ToLowerInvariant
-            Case "open"
-                Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
-                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
-                    pkar.OpenBrowser(sLink)
-                Else
-                    If sLink = "" Then sLink = "ERROR getting sharing link"
-                    vb14.DialogBox(sLink)   ' error message
-                End If
-            Case "get tags"
-                Await oCloud.GetRemoteTags(_picek.oPic)
-                SaveMetaData()  ' bo zmieniono info o publishingu
-            Case "share link"
-                Dim sLink As String = Await oCloud.GetShareLink(_picek.oPic)
-                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
-                    vb14.ClipPut(sLink)
-                    vb14.DialogBox("Link in ClipBoard")
-                Else
-                    If sLink = "" Then sLink = "ERROR getting sharing link"
-                    vb14.DialogBox(sLink)   ' error message
-                End If
-        End Select
-
-    End Sub
-    'Private Sub uiFullPicture_MouseRightButtonDown(sender As Object, e As MouseButtonEventArgs) Handles uiFullPicture.MouseRightButtonDown
-    '    uiFlyout.IsOpen = True
-    'End Sub
 
     Private _inWinResize As Boolean
 
@@ -488,37 +285,14 @@ Public Class ShowBig
 
     End Sub
 
-    Private Sub uiCopyPath_Click(sender As Object, e As RoutedEventArgs)
-        'uiFlyout.IsOpen = False
-        vb14.ClipPut(_picek.oPic.InBufferPathName)
+    Private Sub uiMetadataChanged(sender As Object, e As EventArgs)
+        SaveMetaData()
     End Sub
 
-    Private Sub uiShowExif_Click(sender As Object, e As RoutedEventArgs)
-        'uiFlyout.IsOpen = False
-        Dim oWnd As New ShowExifs(True) '(_picek.oPic)
-        oWnd.DataContext = _picek
-        oWnd.Show()
+    Private Sub uiPictureChanged(sender As Object, e As EventArgs)
+        Window_Loaded(sender, Nothing)
     End Sub
 
-    Private Sub uiShowMetadata_Click(sender As Object, e As RoutedEventArgs)
-        'uiFlyout.IsOpen = False
-        Dim oWnd As New ShowExifs(False) '(_picek.oPic)
-        oWnd.DataContext = _picek
-        oWnd.Show()
-    End Sub
-
-    Private Sub uiOnMap_Click(sender As Object, e As RoutedEventArgs)
-        Dim oGps As BasicGeopos = _picek.oPic.GetGeoTag
-        If oGps Is Nothing Then Return
-
-        Dim oFE As FrameworkElement = sender
-        Dim oMapa As Vblib.JednaMapa = oFE?.DataContext
-
-        Dim sUri As Uri = oMapa.UriForGeo(oGps)
-
-        'Dim sUri As New Uri("https://www.openstreetmap.org/#map=16/" & oGps.Latitude & "/" & oGps.Longitude)
-        sUri.OpenBrowser
-    End Sub
 
     Private Sub uiDescribe_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AddDescription(_picek.oPic)
@@ -554,6 +328,7 @@ Public Class ShowBig
             Else
                 ' to okno
                 _picek = picek
+                DataContext = _picek.oPic
                 Window_Loaded(Nothing, Nothing)
             End If
 
@@ -1105,28 +880,6 @@ Public Class ShowBig
         uiIkonkaTypu.Content = "►"
     End Sub
 
-    Private Sub uiGoWiki_Click(sender As Object, e As RoutedEventArgs)
-        OpenWikiForMonth(_picek.oPic)
-    End Sub
-
-    Private Sub uiShellExec_Click(sender As Object, e As RoutedEventArgs)
-        Dim proc As New Process()
-        proc.StartInfo.UseShellExecute = True
-        proc.StartInfo.FileName = _picek.oPic.InBufferPathName
-        proc.Start()
-    End Sub
-
-    Public Shared Sub OpenWikiForMonth(oPic As Vblib.OnePic)
-        Dim data As Date = oPic.GetMostProbablyDate
-
-        ' https://en.wikipedia.org/wiki/January_1970
-        Dim sLink As String = data.ToString("MMMM_yyyy", System.Globalization.CultureInfo.InvariantCulture)
-        sLink = "https://en.wikipedia.org/wiki/" & sLink
-
-        pkar.OpenBrowser(sLink)
-
-    End Sub
-
     Private Sub uiSlideshow_Click(sender As Object, e As RoutedEventArgs)
         vb14.DialogBox("jeszcze nie umiem stąd zrobić")
     End Sub
@@ -1143,11 +896,3 @@ Public Class ShowBig
 #End Region
 
 End Class
-
-Public Module rotext
-    <Runtime.CompilerServices.Extension>
-    Public Function cosik(ByVal par1 As Rotation) As Boolean
-        'Public Enum OrientationEnum
-
-    End Function
-End Module

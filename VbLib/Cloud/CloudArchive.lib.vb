@@ -6,12 +6,13 @@
 
 ' Archiwum: zachowuje nazwy plików oraz ich pierwotny content (żadnego przetwarzania po ich stronie)
 Public MustInherit Class CloudArchive
+    Inherits CloudArchPublBase
     Implements AnyStorage, AnyCloudStorage
 
-    Public Property konfiguracja As CloudConfig
+    'Public Property konfiguracja As CloudConfig
 
     ' te dwa muszą się zgadzać z tym co w konfiguracja
-    Public MustOverride Property sProvider As String
+    Public MustOverride Overrides Property sProvider As String
     Public Property eTyp As CloudTyp = CloudTyp.publish
 
     Protected _PostProcs As PostProcBase()
@@ -31,7 +32,7 @@ Public MustInherit Class CloudArchive
     Public MustOverride Async Function Logout() As Task(Of String) Implements AnyCloudStorage.Logout
     Public MustOverride Function CreateNew(oConfig As CloudConfig, oPostProcs As PostProcBase(), sDataDir As String) As AnyStorage Implements AnyCloudStorage.CreateNew
 
-    Public Async Function SendFile(oPic As OnePic) As Task(Of String)
+    Public Overrides Async Function SendFile(oPic As OnePic) As Task(Of String)
         ' sprawdź maski
         If Not oPic.MatchesMasks(konfiguracja.includeMask, konfiguracja.excludeMask) Then Return ""
 

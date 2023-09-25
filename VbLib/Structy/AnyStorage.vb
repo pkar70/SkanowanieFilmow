@@ -1,7 +1,7 @@
 ﻿
 ' https://community.cryptomator.org/t/webdav-urls-of-common-cloud-storage-services/75
 
-Public Delegate Sub JedenWiecejPlik()
+Public Delegate Function JedenWiecejPlik()
 
 Public Interface AnyStorage
 

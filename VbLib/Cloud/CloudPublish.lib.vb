@@ -6,14 +6,15 @@
 ' Publish, czyli po stronie serwisu są jakieś zmiany
 
 Public MustInherit Class CloudPublish
+    Inherits CloudArchPublBase
     Implements AnyStorage, AnyCloudStorage
 
-    Public Property konfiguracja As CloudConfig
+    ' Public Property konfiguracja As CloudConfig
 
     Public Property _PostProcs As PostProcBase()
 
     ' te dwa muszą się zgadzać z tym co w konfiguracja
-    Public MustOverride Property sProvider As String
+    Public MustOverride Overrides Property sProvider As String
     Public Property eTyp As CloudTyp = CloudTyp.publish
 
     ''' <summary>
@@ -60,7 +61,7 @@ Public MustInherit Class CloudPublish
     End Function
 
 
-    Public Async Function SendFile(oPic As OnePic) As Task(Of String)
+    Public Overrides Async Function SendFile(oPic As OnePic) As Task(Of String)
         DumpCurrMethod()
         ' sprawdź maski
         If oPic.locked Then Return ""
