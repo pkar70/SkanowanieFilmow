@@ -21,6 +21,9 @@ Public Class Process_EmbedExif
 
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
 
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
+
         Dim bRet As Boolean = False
 
         oPic.InitEdit(bPipeline)
@@ -138,6 +141,8 @@ Public Class Process_EmbedBasicExif
     Public Overrides Property dymekAbout As String = "Wklejenie podstawowych znaczników EXIF do zdjęcia"
 
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
 
         Dim bRet As Boolean = False
 
@@ -199,6 +204,8 @@ Public Class Process_RemoveExif
     Public Overrides Property dymekAbout As String = "Usunięcie danych EXIF ze zdjęcia"
 
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
 
         Dim bRet As Boolean = False
 

@@ -14,7 +14,9 @@ Public Class Auto_MoonPhase
     Public Overrides ReadOnly Property DymekAbout As String = "Wylicza (dla daty zdjêcia) fazê Ksiê¿yca"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         ' musimy mieæ prawdziw¹ datê
         Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.FileExif)
@@ -46,7 +48,9 @@ Public Class Auto_Astro
     Public Overrides ReadOnly Property DymekAbout As String = "Wylicza (dla daty zdjêcia) fazê Ksiê¿yca, wschód i zachód S³oñca oraz Ksiê¿yca"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         ' musimy mieæ prawdziw¹ datê
         Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.FileExif)

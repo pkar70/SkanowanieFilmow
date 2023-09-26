@@ -65,6 +65,8 @@ Public Class Process_ScalePic
     Public Overrides Property dymekAbout As String = $"Skalowanie wg podanej skali (<1 zmniejszanie; zakres 0.2 do 5)"
 
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
 
         oPic.InitEdit(bPipeline)
 
@@ -131,6 +133,10 @@ Public MustInherit Class Process_ResizeBase
 #End If
 
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
+
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
+
 
         oPic.InitEdit(bPipeline)
 

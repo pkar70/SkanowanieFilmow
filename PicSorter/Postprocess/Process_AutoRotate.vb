@@ -24,6 +24,9 @@ Public Class Process_AutoRotate
         If oExif Is Nothing Then Return True
         If oExif.Orientation = Vblib.OrientationEnum.topLeft Then Return True
 
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
+
         ' Dim bRet As Boolean = True
 
         oPic.InitEdit(bPipeline)
@@ -60,6 +63,8 @@ Public Class Process_AutoRotate
     'End Function
 
     Public Shared Async Function LoadSoftBitmapAsync(oPic As Vblib.OnePic) As Task(Of wingraph.SoftwareBitmap)
+        If Not OperatingSystem.IsWindows Then Return Nothing
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return Nothing
 
         Dim oDec As wingraph.BitmapDecoder = Await wingraph.BitmapDecoder.CreateAsync(oPic._PipelineInput.AsRandomAccessStream)
         Dim oSoftBitmap As wingraph.SoftwareBitmap = Await oDec.GetSoftwareBitmapAsync()
@@ -84,6 +89,8 @@ Public Class Process_AutoRotate
     'End Function
 
     Public Shared Sub SaveSoftBitmap(oStream As winstreams.InMemoryRandomAccessStream, oPic As Vblib.OnePic)
+        If Not OperatingSystem.IsWindows Then Return
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return
 
         oStream.Seek(0)
         oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
@@ -103,6 +110,9 @@ Public Class Process_AutoRotate
     End Sub
 
     Public Shared Function GetJpgEncoderProperty() As wingraph.BitmapPropertySet
+        If Not OperatingSystem.IsWindows Then Return Nothing
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return Nothing
+
         Dim qualityValue As New wingraph.BitmapTypedValue(
                     vb14.GetSettingsInt("uiJpgQuality") / 100.0,
                     Windows.Foundation.PropertyType.Single)
@@ -113,6 +123,8 @@ Public Class Process_AutoRotate
     End Function
 
     Public Shared Async Function GetJpgEncoderAsync(oStream As winstreams.InMemoryRandomAccessStream) As Task(Of wingraph.BitmapEncoder)
+        If Not OperatingSystem.IsWindows Then Return Nothing
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return Nothing
 
         Dim oEncoder As wingraph.BitmapEncoder =
             Await wingraph.BitmapEncoder.CreateAsync(wingraph.BitmapEncoder.JpegEncoderId, oStream, GetJpgEncoderProperty)

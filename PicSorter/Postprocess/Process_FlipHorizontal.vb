@@ -18,6 +18,8 @@ Public Class Process_FlipHorizontal
 #End If
 
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
 
         oPic.InitEdit(bPipeline)
 

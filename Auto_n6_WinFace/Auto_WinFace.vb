@@ -11,7 +11,7 @@ Public Class Auto_WinFace
     Inherits Vblib.AutotaggerBase
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
     Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoWinFace
-    Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
+    Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje policzyæ twarze u¿ywaj¹c Windows." & vbCrLf & "U¿ywa keyword -fN, gdzie n to liczba twarzy"
     'Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"
 
@@ -32,6 +32,9 @@ Public Class Auto_WinFace
     Private Const faceDetectionPixelFormat As BitmapPixelFormat = BitmapPixelFormat.Gray8
 
     Private Async Function ZrobMain(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+        ' zabezpieczenie przed wywo³aniem na starszych Windows
+        If Not OperatingSystem.IsWindows Then Return Nothing
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return Nothing
 
         ' jakby Create zajmowa³o wiêcej czasu - a przecie¿ moze byæ setki zdjêæ do OCR po kolei
         If _FaceEngine Is Nothing Then _FaceEngine = Await FaceDetector.CreateAsync
@@ -104,6 +107,10 @@ Public Class Auto_WinFace
     End Function
 
     Private Function AzureFromFacesList(detectedFacesList As IList(Of DetectedFace), iWidth As Integer, iHeight As Integer) As MojeAzure
+        ' zabezpieczenie przed wywo³aniem na starszych Windows
+        If Not OperatingSystem.IsWindows Then Return Nothing
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return Nothing
+
         Dim oRet As New MojeAzure
         oRet.Faces = New ListTextWithProbabAndBox
         If detectedFacesList Is Nothing Then Return oRet
