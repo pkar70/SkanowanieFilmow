@@ -11,16 +11,16 @@
         <ComboBox Name="uiComboSource" ToolTip="Select source" SelectionChanged="uiComboSource_SelectionChanged"/>
 
         <TextBlock Text="Target dir" Margin="0,5,0,0"/>
-        <TextBox Text="{Binding TargetDir, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+        <TextBox Text="{Binding TargetDir, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, or '!' to search for empty" />
 
         <TextBlock Text="Filename" Margin="0,5,0,0"/>
         <TextBox ToolTip="Enter DOS filename mask" Text="{Binding Filename, Mode=TwoWay}"/>
 
         <TextBlock Text="Published" Margin="0,5,0,0"/>
-        <TextBox Text="{Binding Published, Mode=TwoWay}" ToolTip="Space separated name's fragments, prefixed with '!' to negate" />
+        <TextBox Text="{Binding Published, Mode=TwoWay}" ToolTip="Space separated name's fragments, prefixed with '!' to negate, or '!' to search for empty" />
 
         <TextBlock Text="Cloud archived" Margin="0,5,0,0"/>
-        <TextBox Text="{Binding CloudArchived, Mode=TwoWay}" ToolTip="Space separated name's fragments, prefixed with '!' to negate" />
+        <TextBox Text="{Binding CloudArchived, Mode=TwoWay}" ToolTip="Space separated name's fragments, prefixed with '!' to negate, or '!' to search for empty" />
 
         <TextBlock Text="Type of file" Margin="0,5,0,0"/>
         <CheckBox Content="Photo" IsChecked="{Binding TypePic, Mode=TwoWay}"/>

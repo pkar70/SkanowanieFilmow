@@ -31,10 +31,10 @@
             <TextBlock Text="Tags" Margin="0,5,0,0"/>
             <Button Content=" ... " Click="uiTagsSelect_Click" Grid.Column="1" />
         </Grid>
-        <TextBox Text="{Binding Tags, Mode=TwoWay}" ToolTip="Space separated tags, prefixed with '!' to negate" />
+        <TextBox Text="{Binding Tags, Mode=TwoWay}" ToolTip="Space separated tags, prefixed with '!' to negate, or '!' to search for empty" />
 
             <TextBlock Text="Descriptions" Margin="0,5,0,0"/>
-        <TextBox Text="{Binding Descriptions, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, from Descriptions or Comments" />
+        <TextBox Text="{Binding Descriptions, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, from Descriptions or Comments, or '!' to search for empty" />
 
             <TextBlock Text="Gdziegolwiek" Margin="0,5,0,0"/>
         <TextBox Text="{Binding Gdziekolwiek, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, to be searched in Descriptions, Comments, Folder, Filename, OCR, Azure description" />

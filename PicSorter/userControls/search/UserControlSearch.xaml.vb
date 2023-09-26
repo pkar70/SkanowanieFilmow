@@ -119,7 +119,7 @@ Public Class UserControlSearch
         If Not String.IsNullOrEmpty(query.ogolne.Tags) AndAlso query.ogolne.Tags.ToLowerInvariant = query.ogolne.Tags Then
             If Await vb14.DialogBoxYNAsync("Keywords ma tylko małe litery, czy zmienić na duże?") Then
                 'uiTags.Text = uiTags.Text.ToUpper
-                query.ogolne.Tags = query.ogolne.Tags.ToUpper
+                query.ogolne.Tags = query.ogolne.Tags.ToUpperInvariant
             End If
         End If
 

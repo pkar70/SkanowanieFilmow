@@ -30,7 +30,7 @@
             <TextBlock Text="Radius (km): " Grid.Row="0"/>
             <TextBox Name="uiGeoRadius" Grid.Row="0" Grid.Column="1" InputScope="Digits" ToolTip="Max. odległość" Text="20" TextChanged="uiGeoRadius_TextChanged"/>
             <TextBlock Text="Nazwa: " Grid.Row="1"/>
-            <TextBox Grid.Row="1" Grid.Column="1" ToolTip="Space separated fragments, prefixed with '!' to negate" Text="{Binding Name, Mode=TwoWay}"/>
+            <TextBox Grid.Row="1" Grid.Column="1" ToolTip="Space separated fragments, prefixed with '!' to negate, or '!' to search for empty" Text="{Binding Name, Mode=TwoWay}"/>
         </Grid>
     </StackPanel>
 </UserControl>

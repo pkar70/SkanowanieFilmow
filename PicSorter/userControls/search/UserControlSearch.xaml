@@ -38,14 +38,14 @@
                 <StackPanel >
                     <ComboBox Name="uiComboDevType" ToolTip="Select device type (not selected means all)" SelectionChanged="uiComboDevType_SelectionChanged"/>
                     <TextBlock Text="Autor:" />
-                    <TextBox Text="{Binding source_author, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+                        <TextBox Text="{Binding source_author, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, or '!' to search for empty" />
                 </StackPanel>
             </Expander>
 
             <Expander Header="File EXIF" ToolTip="Parametry odczytane z pliku zdjęcia" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
                 <StackPanel >
                     <TextBlock Text="Camera:" />
-                    <TextBox Text="{Binding exif_camera, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+                        <TextBox Text="{Binding exif_camera, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, or '!' to search for empty" />
                 </StackPanel>
             </Expander>
 
