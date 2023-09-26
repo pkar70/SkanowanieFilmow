@@ -145,7 +145,7 @@ Public Class DatabaseSQL
 
             _allPics = New ArchivePics(GetConnString)
             ' Dim sql As String = _allPics.Database.GenerateCreateScript ' create table
-            ' _allPics.Database.EnsureDeleted()
+            _allPics.Database.EnsureDeleted()
             _allPics.Database.EnsureCreated()
 
             'Dim retcnt = _allPics.zdjecia.Count
