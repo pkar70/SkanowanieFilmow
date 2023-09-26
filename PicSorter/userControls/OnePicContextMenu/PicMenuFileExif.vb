@@ -1,5 +1,5 @@
 ﻿
-Public Class PicMenuFileExif
+Public NotInheritable Class PicMenuFileExif
     Inherits PicMenuBase
 
     Public Overrides Sub OnApplyTemplate()

@@ -1,4 +1,5 @@
-﻿Public Class PicMenuBatchProc
+﻿
+Public NotInheritable Class PicMenuBatchProc
     Inherits PicMenuBase
 
 
@@ -9,7 +10,7 @@
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Batch process") Then Return
+        If Not InitEnableDisable("Batch process", True) Then Return
 
         WypelnMenuBatchProcess(Me, AddressOf ApplyBatchProcess)
 

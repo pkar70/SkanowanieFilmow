@@ -1,6 +1,6 @@
 ﻿
 
-Public Class PicMenuShowWiki
+Public NotInheritable Class PicMenuShowWiki
     Inherits PicMenuBase
 
 
@@ -11,17 +11,10 @@ Public Class PicMenuShowWiki
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Show wiki") Then Return
+        If Not InitEnableDisable("Show wiki", True) Then Return
 
-        Dim oNew As New MenuItem
-        oNew.Header = "for day"
-        AddHandler oNew.Click, AddressOf ShowWikiDay
-        Me.Items.Add(oNew)
-
-        oNew = New MenuItem
-        oNew.Header = "for month"
-        AddHandler oNew.Click, AddressOf ShowWikiMonth
-        Me.Items.Add(oNew)
+        Me.Items.Add(NewMenuItem("for day", AddressOf ShowWikiDay))
+        Me.Items.Add(NewMenuItem("for month", AddressOf ShowWikiMonth))
 
         _wasApplied = True
     End Sub

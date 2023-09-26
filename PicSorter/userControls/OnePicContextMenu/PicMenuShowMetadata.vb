@@ -1,5 +1,5 @@
 ﻿
-Public Class PicMenuShowMetadata
+Public NotInheritable Class PicMenuShowMetadata
     Inherits PicMenuBase
 
 

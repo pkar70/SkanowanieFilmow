@@ -50,9 +50,11 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ''' </summary>
     ''' <param name="header">Defaultowy Header dla MenuItem</param>
     ''' <returns>TRUE gdy jest enabled</returns>
-    Protected Function InitEnableDisable(header As String)
+    Protected Function InitEnableDisable(header As String, Optional bSubItems As Boolean = False)
 
-        If String.IsNullOrWhiteSpace(Me.Header) Then Me.Header = header
+        If String.IsNullOrWhiteSpace(Me.Header) Then
+            Me.Header = header & If(UseSelectedItems AndAlso bSubItems, " »", "")
+        End If
 
         If UseSelectedItems Then
             _picek = Nothing
@@ -72,6 +74,15 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
 
     End Function
 
+    Protected Function NewMenuItem(header As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
+        Dim oNew As New MenuItem
+        oNew.Header = header
+        oNew.IsEnabled = isenabled
+        If handler IsNot Nothing Then AddHandler oNew.Click, handler
+        Return oNew
+    End Function
+
+
     Protected Sub EventRaise(sender As Object, Optional data As EventArgs = Nothing)
         RaiseEvent MetadataChanged(sender, data)
     End Sub
@@ -79,6 +90,10 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     Protected Function GetSelectedItems() As IList
         Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
         Return fe?.SelectedItems
+    End Function
+    Protected Function GetFullLista() As IList
+        Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
+        Return fe?.Items
     End Function
 
     Protected Function FindUiElement(name As String) As FrameworkElement
@@ -89,7 +104,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ''' <summary>
     ''' próbuje znaleźć ProgressBar w oknie (i przygotować się do jego użycia)
     ''' </summary>
-    Private Sub TryUseProgBar()
+    Protected Sub TryUseProgBar()
         _progBar = Nothing
         If Not UseProgBar Then Return
         _progBar = TryCast(FindUiElement("uiProgBar"), ProgressBar)

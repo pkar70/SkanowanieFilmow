@@ -1,9 +1,6 @@
 ﻿
-' ale to dopiero później, bo trzeba robić SAVE, a poza SAVE - także odsyłanie jeśli "cudze'
 
-Imports PicSorterNS.ProcessBrowse
-
-Public Class PicMenuDescribe
+Public NotInheritable Class PicMenuDescribe
     Inherits PicMenuBase
 
     Public Overrides Sub OnApplyTemplate()

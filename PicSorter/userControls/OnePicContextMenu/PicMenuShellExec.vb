@@ -1,6 +1,6 @@
 ﻿
 
-Public Class PicMenuShellExec
+Public NotInheritable Class PicMenuShellExec
     Inherits PicMenuBase
 
 

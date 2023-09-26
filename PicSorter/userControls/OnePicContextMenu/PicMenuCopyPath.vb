@@ -1,5 +1,5 @@
 ﻿
-Public Class PicMenuCopyPath
+Public NotInheritable Class PicMenuCopyPath
     Inherits PicMenuBase
 
 
