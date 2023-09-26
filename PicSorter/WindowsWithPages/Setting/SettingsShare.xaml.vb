@@ -23,6 +23,7 @@ Class SettingsShare
         uiServerEnabled.IsEnabled = (Application.GetShareLogins.Count > 0)
         uiMyName.Text = Environment.MachineName
         uiLastAccess.DataContext = Application.gLastLoginSharing
+        uiSharingAutoUploadComment.GetSettingsBool
         _loading = False
     End Sub
 
@@ -45,8 +46,12 @@ Class SettingsShare
         Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(
                 Application.GetShareLogins, Application.gDbase,
                 Application.gLastLoginSharing, Application.GetBuffer,
-                Application.GetShareDescriptions)
+                Application.GetShareDescriptionsIn)
         Application.gWcfServer.StartSvc()
 
+    End Sub
+
+    Private Sub uiSharingAutoUploadComment_Checked(sender As Object, e As RoutedEventArgs)
+        uiSharingAutoUploadComment.SetSettingsBool
     End Sub
 End Class

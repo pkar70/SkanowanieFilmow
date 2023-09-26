@@ -1,4 +1,5 @@
 ﻿
+Imports Newtonsoft.Json
 Imports pkar
 
 #Region "query definition"
@@ -42,6 +43,9 @@ Public Class QueryOgolne
     Public Property IgnoreYear As Boolean
     Public Property GUID As String = ""
     Public Property Tags As String = ""
+    <JsonIgnore>
+    Public Property AllSubTags As List(Of String)
+
     Public Property Descriptions As String = ""
     Public Property Gdziekolwiek As String = ""
 

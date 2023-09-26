@@ -1,4 +1,5 @@
 ﻿Imports System.IO.Compression
+Imports lib_sharingNetwork
 Imports Vblib
 
 Imports vb14 = Vblib.pkarlibmodule14
@@ -16,7 +17,7 @@ Public Class SimpleDescribe
         _readonly = bReadOnly
     End Sub
 
-    Private Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
 
         ' bez zmian
         If _orgDescribe = uiAllDescribe.Text Then Return
@@ -25,6 +26,25 @@ Public Class SimpleDescribe
         Dim descr As String = uiAllDescribe.Text
         AddToMenu(descr)
         oPicek.oPic.ReplaceAllDescriptions(descr)
+
+        If Not String.IsNullOrWhiteSpace(oPicek.oPic.sharingFromGuid) Then
+            ' to jest 'obce' zdjęcie, i description można temu loginowi wysłać
+
+            Dim oNew As Vblib.ShareDescription = ShareDescription.GetForPic(oPicek, descr)
+            Application.GetShareDescriptionsOut.Add(oNew)
+
+            Dim peer = oPicek.GetLastSharePeer
+            If peer IsNot Nothing Then
+                If peer.GetType Is GetType(ShareServer) Then
+                    ' zdjęcie jest z serwera, więc jest mu jak wysłać komentarz
+                    If Vblib.GetSettingsBool("uiSharingAutoUploadComment") OrElse Await Vblib.DialogBoxYNAsync("Zdjęcie przysłane - spróbować odesłać komentarz?") Then
+                        Await httpKlient.UploadPicDescription(Application.GetShareDescriptionsOut, oNew.descr.PeerGuid, peer)
+                    End If
+                Else
+                    ' *TODO* mamy do czynienia z loginem, czyli ktoś nam wrzucił - nie mamy jak mu wysłać komentarza, on sobie musi odebrać
+                End If
+            End If
+        End If
 
         If uiDescribeSetAndNext.IsChecked Then GoNextPic()
 

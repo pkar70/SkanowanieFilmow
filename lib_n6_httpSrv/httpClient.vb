@@ -7,6 +7,7 @@ Imports System.Net.Http.Json
 Imports Microsoft
 Imports Microsoft.Rest
 Imports Microsoft.SqlServer
+Imports pkar
 Imports Vblib
 
 Public Class httpKlient
@@ -172,15 +173,37 @@ Public Class httpKlient
 #Region "uploading descriptions"
 
     ''' <summary>
+    ''' wyślij wszystkie komentarze z kolejki do podanego serwera (dla loginu nie da się wysłać :), guid ma być prefiksowany jak w liscie
+    ''' </summary>
+    Public Shared Async Function UploadPicDescription(lista As BaseList(Of Vblib.ShareDescription), serverGuid As String, peer As ShareServer) As Task(Of Boolean)
+        If lista Is Nothing Then Return True    ' nie ma nic do wysłania
+
+        Do
+            Dim jeden As ShareDescription = lista.GetList.First(Function(x) x.descr.PeerGuid = serverGuid)
+            If jeden Is Nothing Then Exit Do
+
+            Dim ret As String = Await UploadDesc(peer, jeden.picid, jeden.descr)
+            If ret <> "OK" Then Exit Do
+
+            lista.Remove(jeden)
+        Loop
+
+        lista.Save(True)
+
+        Return True
+    End Function
+
+
+
+    ''' <summary>
     ''' Upload oDesc jako description dla oPic (konieczny oPic.PicGuid)
     ''' </summary>
     ''' <returns>OK lub error</returns>
-    Public Shared Async Function UploadDesc(oServer As Vblib.ShareServer, oPic As Vblib.OnePic, oDesc As Vblib.OneDescription) As Task(Of String)
+    Public Shared Async Function UploadDesc(oServer As Vblib.ShareServer, picid As String, oDesc As Vblib.OneDescription) As Task(Of String)
         If Not EnsureClient() Then Return "FAIL EnsureClient"
 
         Try ' dla Finally
 
-            Dim picid As String = oPic.PicGuid
             ' musi być PicGuid jako identyfikator do czego dopisać trzeba description
             If String.IsNullOrWhiteSpace(picid) Then Return "FAIL no picguid given!"
 
@@ -188,7 +211,7 @@ Public Class httpKlient
 
             Dim resp As HttpResponseMessage
             Try
-                resp = Await _clientQuick.PutAsync(GetUri(oServer, "uploadpicdesc"), contentJson)
+                resp = Await _clientQuick.PutAsync(GetUri(oServer, "uploadpicdesc", "picid=" & picid), contentJson)
                 If Not resp.IsSuccessStatusCode Then Return "FAIL meta notOK"
             Catch ex As Exception
                 Return "FAIL Sending meta"

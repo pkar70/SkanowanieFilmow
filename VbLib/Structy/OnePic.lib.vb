@@ -42,7 +42,7 @@ Public Class OnePic
 
     Public Property PicGuid As String = Nothing  ' 0xA420 ImageUniqueID ASCII!
 
-    Public Property sharingFromChannel As String   ' a'la UseNet Path, tyle że rozdzielana ";"; GUIDy kolejne
+    Public Property sharingFromGuid As String   ' a'la UseNet Path, tyle że rozdzielana ";"; GUIDy kolejne; wpsywane przez httpserver.lib; prefiksy: "L:" z loginu, "S:" z serwera
     Public Property sharingLockSharing As Boolean
 
     <Newtonsoft.Json.JsonIgnore>
@@ -456,6 +456,9 @@ Public Class OnePic
         Return False
     End Function
 
+    ''' <summary>
+    ''' usuwa wszystkie descriptions, i wstawia nowe - jako "dzisiejsze"
+    ''' </summary>
     Public Sub ReplaceAllDescriptions(sDesc As String)
         descriptions = New List(Of OneDescription)
         AddDescription(New OneDescription(sDesc, ""))
@@ -1022,6 +1025,60 @@ Public Class OnePic
 
     End Function
 
+    ''' <summary>
+    ''' zwraca ostatni zapis ze ścieżki sharing, czyli GUID poprzedzony L: / S:, lub ""
+    ''' </summary>
+    ''' <returns>L:guid / S:guid / "" gdy nie ma</returns>
+    Public Function GetLastShareGuid() As String
+        If String.IsNullOrWhiteSpace(sharingFromGuid) Then Return ""
+
+        Dim tempGuid As String = sharingFromGuid
+        If tempGuid.EndsWith(";") Then tempGuid = tempGuid.Substring(0, tempGuid.Length - 1)
+        Dim iInd As Integer = tempGuid.LastIndexOf(";")
+        If iInd < 0 Then Return tempGuid
+        tempGuid = tempGuid.Substring(iInd + 1)
+        Return tempGuid
+    End Function
+
+    'Private Function GetLastShareLogin(lista As ShareLoginsList) As SharePeer
+    '    Dim tempGuid As String = GetLastShareGuid()
+    '    If tempGuid = "" Then Return Nothing
+    '    If tempGuid.StartsWith("L:") Then
+    '        Return lista.FindByLogin(tempGuid)
+    '    Else
+    '        ' to będzie w takim razie z ShareServer, nie ShareLogin
+    '        Return Nothing
+    '    End If
+    'End Function
+
+    'Private Function GetLastShareServer(lista As ShareServerList) As ShareServer
+    '    Dim tempGuid As String = GetLastShareGuid()
+    '    If tempGuid = "" Then Return Nothing
+    '    If tempGuid.StartsWith("L:") Then
+    '        Return lista.FindByLogin(tempGuid)
+    '    Else
+    '        ' to będzie w takim razie z ShareServer, nie ShareLogin
+    '        Return Nothing
+    '    End If
+    'End Function
+
+    ''' <summary>
+    ''' Zwraca ShareLogin bądź ShareServer, ostatni który jest na ścieżce; łatwiej użyć z ThumbsPicek
+    ''' </summary>
+    Public Function GetLastSharePeer(serwery As ShareServerList, loginy As ShareLoginsList) As SharePeer
+        Dim tempGuid As String = GetLastShareGuid()
+        If tempGuid = "" Then Return Nothing
+        If tempGuid.StartsWith("L:") Then
+            Return loginy.FindByGuid(tempGuid.Substring(2))
+        ElseIf tempGuid.StartsWith("S:") Then
+            ' to będzie w takim razie z ShareServer, nie ShareLogin
+            Return serwery.FindByGuid(tempGuid.Substring(2))
+        Else
+            Return Nothing
+        End If
+    End Function
+
+
 #Region "searching by query"
 
     Public Function CheckIfMatchesQuery(query As SearchQuery) As Boolean
@@ -1527,7 +1584,10 @@ Public Class OneDescription
     Public Property data As String
     Public Property comment As String
     Public Property keywords As String
-    Public Property ShareLoginGuid As String
+    ''' <summary>
+    ''' guid prefiksowany L:, S:
+    ''' </summary>
+    Public Property PeerGuid As String
 
     Public Sub New(sData As String, sComment As String, sKeywords As String)
         data = sData
@@ -1535,6 +1595,9 @@ Public Class OneDescription
         keywords = sKeywords
     End Sub
 
+    ''' <summary>
+    ''' Stworzenie OneDescription dla dzisiejszej daty
+    ''' </summary>
     <JsonConstructor>
     Public Sub New(sComment As String, sKeywords As String)
         data = Date.Now.ToString("yyyy.MM.dd HH:mm")

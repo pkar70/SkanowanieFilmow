@@ -195,7 +195,7 @@ Partial Class Application
     Public Shared Function GetShareChannels() As ShareChannelsList
         If gShareChannels IsNot Nothing Then Return gShareChannels
 
-        gShareChannels = New ShareChannelsList(Application.GetDataFolder)
+        gShareChannels = New ShareChannelsList(Application.GetDataFolder, GetQueries)
         gShareChannels.Load()
         Return gShareChannels
     End Function
@@ -205,31 +205,40 @@ Partial Class Application
     Public Shared Function GetShareLogins() As ShareLoginsList
         If gShareLogins IsNot Nothing Then Return gShareLogins
 
-        gShareLogins = New ShareLoginsList(Application.GetDataFolder)
+        gShareLogins = New ShareLoginsList(Application.GetDataFolder, GetShareChannels)
         gShareLogins.Load()
         Return gShareLogins
     End Function
 
-    Private Shared gShareServers As BaseList(Of ShareServer)
+    Private Shared gShareServers As ShareServerList
 
-    Public Shared Function GetShareServers() As BaseList(Of ShareServer)
+    Public Shared Function GetShareServers() As ShareServerList
         If gShareServers IsNot Nothing Then Return gShareServers
 
-        gShareServers = New BaseList(Of ShareServer)(Application.GetDataFolder, "servers.json")
+        gShareServers = New ShareServerList(Application.GetDataFolder)
         gShareServers.Load()
         Return gShareServers
     End Function
 
-    Private Shared gShareDescriptions As BaseList(Of Vblib.ShareDescription)
+    Private Shared gShareDescriptionsIn As BaseList(Of Vblib.ShareDescription)
 
-    Public Shared Function GetShareDescriptions() As BaseList(Of ShareDescription)
-        If gShareDescriptions IsNot Nothing Then Return gShareDescriptions
+    Public Shared Function GetShareDescriptionsIn() As BaseList(Of ShareDescription)
+        If gShareDescriptionsIn IsNot Nothing Then Return gShareDescriptionsIn
 
-        gShareDescriptions = New BaseList(Of ShareDescription)(Application.GetDataFolder, "shareIncoming.json")
-        gShareDescriptions.Load()
-        Return gShareDescriptions
+        gShareDescriptionsIn = New BaseList(Of ShareDescription)(Application.GetDataFolder, "shareIncoming.json")
+        gShareDescriptionsIn.Load()
+        Return gShareDescriptionsIn
     End Function
 
+    Private Shared gShareDescriptionsOut As BaseList(Of Vblib.ShareDescription)
+
+    Public Shared Function GetShareDescriptionsOut() As BaseList(Of ShareDescription)
+        If gShareDescriptionsOut IsNot Nothing Then Return gShareDescriptionsOut
+
+        gShareDescriptionsOut = New BaseList(Of ShareDescription)(Application.GetDataFolder, "shareOutgoing.json")
+        gShareDescriptionsOut.Load()
+        Return gShareDescriptionsOut
+    End Function
 
 
 #End Region

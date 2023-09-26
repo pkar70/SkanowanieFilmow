@@ -8,6 +8,7 @@ Class SettingsMapsy
 
 
     Public Shared Sub WypelnMenuMapami(oMenuItem As MenuItem, oEvent As RoutedEventHandler)
+        vb14.DumpCurrMethod()
         initLista()
 
         oMenuItem.Items.Clear()

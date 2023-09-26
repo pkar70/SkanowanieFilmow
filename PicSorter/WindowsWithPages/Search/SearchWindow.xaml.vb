@@ -140,6 +140,16 @@ Public Class SearchWindow
         '    iCount += 1
         'Next
 
+        ' konwersja subtagów - ale to jest skomplikowane, i niekoniecznie tak zadziała, odkładam na później do przemyślenia
+        query.ogolne.AllSubTags.Clear()
+        If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
+            For Each sKwd As String In query.ogolne.Tags.Split(" ")
+                If Not sKwd.StartsWith("!") Then
+                    query.ogolne.AllSubTags.Add(Application.GetKeywords.GetAllChilds(sKwd))
+                End If
+            Next
+        End If
+
         If lista Is Nothing Then
             ' po pełnym
             _queryResults = Application.gDbase.Search(query)
@@ -149,7 +159,7 @@ Public Class SearchWindow
         End If
         Application.ShowWait(False)
 
-        Return _queryResults.Count
+        Return _queryResults.ToList.Count
         'Return iCount
     End Function
 

@@ -4,6 +4,7 @@ Imports System.Net
 Imports System.Net.Http
 Imports System.Text.RegularExpressions
 Imports Microsoft.Rest.TransientFaultHandling
+Imports pkar
 Imports Vblib
 
 Public Class ServerWrapper
@@ -13,9 +14,9 @@ Public Class ServerWrapper
     Private Shared _databases As Vblib.DatabaseInterface
     Private Shared _lastAccess As Vblib.ShareLoginData
     Private Shared _buffer As Vblib.IBufor
-    Private Shared _shareDesc As pkar.BaseList(Of Vblib.OneDescription)
+    Private Shared _shareDesc As pkar.BaseList(Of Vblib.ShareDescription)
 
-    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDesc As pkar.BaseList(Of Vblib.OneDescription))
+    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDesc As pkar.BaseList(Of Vblib.ShareDescription))
         _loginy = loginy
         _databases = databases
         _lastAccess = lastAccess
@@ -179,11 +180,14 @@ Public Class ServerWrapper
                 ' return: OK, BADDATA (b³¹d wczytywania JSON) lub error (ju¿ wczeœniej, przed Select Case)
                 Return GotDescription(oLogin, queryString.Item("picid"), request)
 
+
+            Case "querypicdescqueue"
+                ' input: QueryPicDescQueue, guid, clientHost
+                ' return: JSON z dumpem wszystkich z kolejki
+
             Case "getnewpicslist"
                 Return GetNewPicsList(oLogin, queryString.Item("sinceId"))
             Case "GetPic"
-                Return "Not yet"
-            Case "UploadPicDescription"
                 Return "Not yet"
                 'Case "putpic"
                 '    Return PrzyjmijPlik(oLogin, request)
@@ -200,18 +204,18 @@ Public Class ServerWrapper
 
         Dim oDesc As Vblib.OneDescription
         Try
-            oDesc = _shareDesc.LoadItem(json)
+            oDesc = Newtonsoft.Json.JsonConvert.DeserializeObject(json, GetType(Vblib.OneDescription))
         Catch ex As Exception
             Return "BADDATA"
         End Try
 
-        oDesc.ShareLoginGuid = oLogin.login.ToString
+        oDesc.PeerGuid = "L:" & oLogin.login.ToString
 
         Dim oNew As New Vblib.ShareDescription
         oNew.descr = oDesc
         oNew.picid = request.QueryString.Item("picid")
 
-        _shareDesc.Add(oDesc)
+        _shareDesc.Add(oNew)
         _shareDesc.Save(True)
 
         Vblib.DumpMessage("Got description for " & oNew.picid)
@@ -221,7 +225,7 @@ Public Class ServerWrapper
     End Function
 
 #Region "incoming pictures (uploaded)"
-    Private _nowePicki As New pkar.BaseList(Of Vblib.OnePic)("dummy")   ' dopóki nie bêdzie load, albo save, getdate, itp., plik nie zostanie utworzony
+    Private _nowePicki As New pkar.BaseList(Of Vblib.OnePic)("dummyfolder")   ' dopóki nie bêdzie load, albo save, getdate, itp., plik nie zostanie utworzony
 
     ''' <summary>
     ''' przyjêcie do w³asnego bufora oDesc
@@ -243,7 +247,7 @@ Public Class ServerWrapper
         End Try
 
         ' teraz nadaj w³asny ID - GUID najlepiej, by by³o niepowtarzalne - albo, po prostu, pozycja na liœcie
-        oPic.sharingFromChannel &= oLogin.login.ToString & ";" ' aktualny jest na koñcu
+        oPic.sharingFromGuid &= $"L:{oLogin.login.ToString};" ' aktualny jest na koñcu
         oPic.InBufferPathName = Guid.NewGuid.ToString
         _nowePicki.Add(oPic)
 

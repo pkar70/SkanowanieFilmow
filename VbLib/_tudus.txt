@@ -1,3 +1,10 @@
+
+' https://github.com/xceedsoftware/wpftoolkit
+' https://github.com/xceedsoftware/wpftoolkit/wiki/WatermarkTextBox (z podpowiedzią znikającą)
+' https://github.com/xceedsoftware/wpftoolkit/wiki/TimePicker
+' https://github.com/xceedsoftware/wpftoolkit/wiki/DateTimePicker
+' https://github.com/xceedsoftware/wpftoolkit/wiki/Zoombox
+
 5) pytania via search do bazy
 
 GetFolderList -> list(of oneFolder)
@@ -72,7 +79,6 @@ AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
 AUTOTAG: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 
-BROWSER: right button, delete thumb (teraz jest tylko dla grupowych)
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
 BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
 BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
@@ -82,24 +88,18 @@ BROWSER SET-TARGET-DIR:jakos weryfikacja czy już nie ma takiego (żeby się nie
 BROWSER: #Wnd KWD SMALL: dodanie Kwd, razem z opisem może jednak, bo do SEARCH byłoby dobrze mieć "Kurcz" w opisie
 BROWSER action:keywords, brakuje jednego poziomu słów kliczowych?
 BROWSER.Action: LOCK/UNLOCK - tych zdjec nie wysyla nigdzie
-BROWSER: stykówka z zaznaczonych, np z podaniem targetDir jako tytułu - na stykówce nazwa katalogu, data stworzenia, i zdjęcia
 BROWSER: korekta daty: pole teraz, i teraz w telefonie; wylicza sobie offset.
 9 june 19:13 -> 11 june 18:01, wtedy chyba GPS ma też błąd
-- to może być tool z menu settings lub czegoś takiego (np. z retrieve?)
 BROWSER: pliki zniknięte - najpierw zapytać o clip nazw, potem czy skasować
 BROWSER: DRAG&drop, może z odpalaniem dedykowanego publish? (o nazwie "drag") - ale czy to potrzebne po dodaniu email?
 BROWSER: open folder (explorer, albo i lista w Settingsach)
 BROWSER: kasując pliki ("już wysłane") nie kasuje BAKów?
-BROWSER: force date (na podaną datę i czas)
 BROWSER: drop katalogu jako adhoc
-BROWSER: Keywords, dla selectedcount > 1: tylko dodaje, żadnych nie usuwać
 BROWSER: add keywords, dodać gren('  ',' ') i spacja na koniec zawsze
 BROWSER: usunac wpelni zarchiwizowane, YES - to pytanie o backup config, ten sam co w Settings - tu dodac tez backupowanie bazy danych
 BROWSER: search by query, nie pokazuje okna gdy się go raz zamknie
 BROWSER: slideshow z zaznaczonych? w ten sposób można byłoby szukać niewidocznej selekcji (filter, action filter->select, action slideshow)
 BROWSER: blokować akcje InArchive gdy jest read-only
-
-BROWSER/SHOWBIG: menu context obrazka jako UserControl? Żeby było takie samo.
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi
@@ -146,7 +146,6 @@ RETROEVE run AUTOEXIF gdy settings tak mówi
 SEARCH: sekcja OPAD
 SEARCH: wirtualne katalogi z query można robić
 SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
-SEARCH: "!" w polu szuka empty
 SEARCH: poza tagiem również tagi nadrzędne (-ROK dla -DW)
 SEARCH: combo z listą pól pogodowych? pól Azure, i tak dalej?
 SEARCH: case sensitive jest teraz, i "kur" nie znajduje autor "Kurcz"

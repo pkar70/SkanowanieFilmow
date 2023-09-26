@@ -194,6 +194,38 @@ Public Class KeywordsList
 
 #End Region
 
+#Region "dla query - szukanie parentów oraz childów"
+
+    '''' <summary>
+    '''' dla podanego KEYWORD znajdź wszystkie parenty, aż do root, np. -JA => -JA -RO -R, -DW => -DW -ROK -RO -R
+    '''' </summary>
+    'Public Function GetAllParents(keyword As String) As String
+
+    'End Function
+
+    ''' <summary>
+    ''' dla podanego KEYWORD znajdź wszystkie childy, np. -ROK => -ROK -DW -BS ...
+    ''' </summary>
+    Public Function GetAllChilds(keyword As String) As String
+        Return GetAllChilds(GetKeyword(keyword))
+    End Function
+
+    ''' <summary>
+    ''' dla podanego KEYWORD znajdź wszystkie childy, np. -ROK => -ROK -DW -BS ...
+    ''' </summary>
+    Public Function GetAllChilds(keyword As OneKeyword) As String
+        Dim sRet As String = keyword.sId
+        If keyword?.SubItems Is Nothing Then Return sRet
+        For Each subkey As OneKeyword In keyword.SubItems
+            sRet &= GetAllChilds(subkey)
+        Next
+
+        Return sRet
+    End Function
+
+
+#End Region
+
 
 End Class
 

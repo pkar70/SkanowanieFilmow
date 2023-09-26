@@ -65,6 +65,11 @@ Public Class EnterGeoTag
 
     'z przypomnijTu
     Private Async Function POIfill(sSearchQuery As String) As Task
+
+        If Not OperatingSystem.IsWindows Then Return
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return
+
+
         ' https://operations.osmfoundation.org/policies/nominatim/ (1 search/sec, UserAgent na serio)
         ' zrob listę, do każdego jako DataContext dodaj Windows.Devices.Geolocation.BasicGeoposition ze wspolrzednymi
 

@@ -53,16 +53,12 @@ Class MainWindow
             Application.gWcfServer?.StopSvc()
         End If
 
-        'If Application.Current.Windows.Count > 2 Then
-        '    If Not Await Vblib.DialogBoxYNAsync("Zamknąć program?") Then Return
-        'End If
+        If Application.Current.Windows.Count > 2 Then
+            '    If Not Await Vblib.DialogBoxYNAsync("Zamknąć program?") Then Return
+            ' bez tego zamyka tylko to jedno okno, a reszty już NIE
+            Application.Current.Shutdown()
+        End If
 
-        ' Application.Current.Shutdown()
-
-        'Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
-        '    Dim iRet As MessageBoxResult = MessageBox.Show("Zamknąć program?", sAppName, MessageBoxButton.YesNo)
-        '    If iRet = MessageBoxResult.Yes Then Application.Current.Shutdown()
-        'End If
     End Sub
 
     Private Async Sub Window_StateChanged(sender As Object, e As EventArgs)

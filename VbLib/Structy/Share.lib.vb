@@ -41,11 +41,16 @@ Public Class ShareQueryProcess
     Public Property processing As String
 End Class
 
-Public Class ShareLogin
+
+Public MustInherit Class SharePeer
     Inherits BaseStruct
 
     Public Property login As Guid ' tym się INNY loguje
     Public Property displayName As String ' widać go jako...
+End Class
+
+Public Class ShareLogin
+    Inherits SharePeer
 
     Public Property enabled As Boolean
 
@@ -94,10 +99,8 @@ Public Class ShareLoginData
 End Class
 
 Public Class ShareServer
-    Inherits BaseStruct
+    Inherits SharePeer
 
-    Public Property login As Guid ' mogę się zalogować jako...
-    Public Property displayName As String ' widzę to u siebie jako...
     Public Property serverAddress As String ' adres PicSort z którym mam się łączyć
     Public Property filters As List(Of SearchQuery) ' mogę filtrować po swojej stronie
     Public Property uploadProcessing As String ' jeśli uploaduję, to mogę coś zmieniać
@@ -108,14 +111,143 @@ Public Class ShareServer
 
 End Class
 
+
+
+
 #End Region
 
 Public Class ShareDescription
+    ''' <summary>
+    ''' id zdjęcia którego dotyczy komentarz (picguid, lub suggestedfilename z prefiksem ':')
+    ''' </summary>
     Public Property picid As String
+    ''' <summary>
+    ''' normalny opis, w nim pole peerGuid
+    ''' </summary>
     Public Property descr As Vblib.OneDescription
+
+    ''' <summary>
+    ''' w tym ustawienie oNew.descr.PeerGuid (na prefiksowany L/S)
+    ''' </summary>
+    Public Shared Function GetForPic(picek As Vblib.OnePic, descr As String) As ShareDescription
+        Dim oNew As New Vblib.ShareDescription
+        oNew.descr = New Vblib.OneDescription(descr, "")
+        oNew.descr.PeerGuid = picek.GetLastShareGuid
+        oNew.picid = picek.PicGuid
+        If String.IsNullOrWhiteSpace(oNew.picid) Then oNew.picid = ":" & picek.sSuggestedFilename
+        Return oNew
+    End Function
 End Class
 
 
+
+
 #Region "listy"
+Public Class ShareChannelsList
+    Inherits BaseList(Of Vblib.ShareChannel)
+
+    Private _queries As BaseList(Of SearchQuery)
+
+    Public Sub New(sFolder As String, queriesList As BaseList(Of SearchQuery))
+        MyBase.New(sFolder, "channels.json")
+        _queries = queriesList
+    End Sub
+
+    Public Overrides Function Load() As Boolean
+        Dim ret As Boolean = MyBase.Load()
+        If Not ret Then Return False
+
+        ReResolveQueries()
+        Return True
+    End Function
+
+    Public Sub ReResolveQueries()
+        If _list Is Nothing Then Return
+        If _list.Count < 1 Then Return
+
+        For Each oItem As Vblib.ShareChannel In _list
+            If oItem.queries Is Nothing Then Continue For
+            For Each queryData As Vblib.ShareQueryProcess In oItem.queries
+
+                For Each query As Vblib.SearchQuery In _queries.GetList
+                    If query.nazwa = queryData.queryName Then
+                        queryData.query = query
+                        Exit For
+                    End If
+                Next
+            Next
+        Next
+
+    End Sub
+
+
+End Class
+
+Public Class ShareLoginsList
+    Inherits BaseList(Of Vblib.ShareLogin)
+
+    Dim _channelsList As ShareChannelsList
+
+    Public Sub New(sFolder As String, channels As ShareChannelsList)
+        MyBase.New(sFolder, "logins.json")
+        _channelsList = channels
+    End Sub
+
+    Public Overrides Function Load() As Boolean
+        Dim ret As Boolean = MyBase.Load()
+        If Not ret Then Return False
+
+        ReResolveChannels()
+        Return True
+    End Function
+
+    Public Sub ReResolveChannels()
+        If _list Is Nothing Then Return
+        If _list.Count < 1 Then Return
+
+        For Each oItem As Vblib.ShareLogin In _list
+            If oItem.channels Is Nothing Then Continue For
+
+            For Each channelProc As ShareChannelProcess In oItem.channels
+                If String.IsNullOrWhiteSpace(channelProc.channelName.Trim) Then Continue For ' dwa ;; pod rząd
+
+                '' zjakiegoś powodu się zwielokratnia, więc tu ucinam dublety
+                'Dim sNewChanName As String = $";{channelName};"
+                'If sChanNames.Contains(sNewChanName) Then Continue For
+                'sChanNames &= sNewChanName
+
+                For Each channel As Vblib.ShareChannel In _channelsList.GetList
+                    If channel.nazwa = channelProc.channelName Then ' channelName.Trim Then
+                        'If oItem.channels Is Nothing Then oItem.channels = New List(Of ShareChannel)
+                        'oItem.channels.Add(channel)
+                        channelProc.channel = channel
+                        Exit For
+                    End If
+                Next
+
+            Next
+        Next
+
+    End Sub
+
+    Public Function FindByGuid(loginGuid As String) As ShareLogin
+        Return MyBase.Find(Function(x) x.login.ToString = loginGuid)
+    End Function
+End Class
+
+
+
+Public Class ShareServerList
+    Inherits BaseList(Of ShareServer)
+
+    Public Sub New(folder As String)
+        MyBase.New(folder, "servers.json")
+    End Sub
+
+    Public Function FindByGuid(loginGuid As String) As ShareServer
+        Return MyBase.Find(Function(x) x.login.ToString = loginGuid)
+    End Function
+
+End Class
 
 #End Region

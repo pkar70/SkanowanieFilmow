@@ -42,6 +42,8 @@
 
         <Button Content="Servers" Margin="5,10,5,5" FontSize="18" Click="uiShareServers_Click"/>
 
+        <CheckBox Name="uiSharingAutoUploadComment" Content="Auto upload descriptions" Checked="uiSharingAutoUploadComment_Checked" Unchecked="uiSharingAutoUploadComment_Checked"/>
+
         <StackPanel Orientation="Horizontal" Margin="5,10,5,0" >
         <TextBlock Text="(local name: " />
             <TextBox Text="." Name="uiMyName" IsReadOnly="True" BorderThickness="0"/>
