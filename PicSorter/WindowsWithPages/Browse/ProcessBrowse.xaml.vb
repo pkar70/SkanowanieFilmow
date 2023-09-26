@@ -68,7 +68,7 @@ Public Class ProcessBrowse
         uiMenuAutotags.Visibility = oVis
         uiDescribeSelected.Visibility = oVis
         uiGeotagSelected.Visibility = oVis
-        uiMenuDateRefit.Visibility = oVis
+        'uiMenuDateRefit.Visibility = oVis
         uiBatchProcessors.Visibility = oVis
         uiActionTargetDir.Visibility = oVis
         uiDeleteThumbsSelected.Visibility = oVis
@@ -84,7 +84,7 @@ Public Class ProcessBrowse
         RefreshMiniaturki(True)
 
         WypelnMenuFilterSharing()
-        WypelnMenuActionSharing()
+        'WypelnMenuActionSharing()
 
         If _inArchive Then
             ' działamy na archiwum
@@ -238,7 +238,7 @@ Public Class ProcessBrowse
 
     End Function
 
-    Private Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oItem As ThumbPicek, Optional bRecreate As Boolean = False) As Task
+    Public Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oItem As ThumbPicek, Optional bRecreate As Boolean = False) As Task
 
         Dim miniaturkaPathname As String = oItem.oPic.InBufferPathName & THUMB_SUFIX
 
@@ -326,232 +326,117 @@ Public Class ProcessBrowse
 
 #Region "menu actions"
 
-    Public Function WypelnMenuActionSharing() As Integer
-        uiActionUploadMenu.Items.Clear()
+    'Public Function WypelnMenuActionSharing() As Integer
+    '    uiActionUploadMenu.Items.Clear()
 
 
-        Dim iCnt As Integer = 0
+    '    Dim iCnt As Integer = 0
 
-        For Each oLogin As Vblib.ShareServer In Application.GetShareServers.GetList
+    '    For Each oLogin As Vblib.ShareServer In Application.GetShareServers.GetList
 
-            Dim oNew As New MenuItem
-            oNew.Header = oLogin.displayName
-            oNew.DataContext = oLogin
+    '        Dim oNew As New MenuItem
+    '        oNew.Header = oLogin.displayName
+    '        oNew.DataContext = oLogin
 
-            AddHandler oNew.Click, AddressOf ActionSharingUpload
+    '        AddHandler oNew.Click, AddressOf ActionSharingUpload
 
-            uiActionUploadMenu.Items.Add(oNew)
-            iCnt += 1
-        Next
+    '        uiActionUploadMenu.Items.Add(oNew)
+    '        iCnt += 1
+    '    Next
 
-        uiActionUploadMenu.Visibility = If(iCnt > 0, Visibility.Visible, Visibility.Collapsed)
-        uiSeparatorActionUpload.Visibility = If(iCnt > 0, Visibility.Visible, Visibility.Collapsed)
-        Return iCnt
-    End Function
+    '    uiActionUploadMenu.Visibility = If(iCnt > 0, Visibility.Visible, Visibility.Collapsed)
+    '    uiSeparatorActionUpload.Visibility = If(iCnt > 0, Visibility.Visible, Visibility.Collapsed)
+    '    Return iCnt
+    'End Function
 
-    Private Async Sub ActionSharingUpload(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
+    'Private Async Sub ActionSharingUpload(sender As Object, e As RoutedEventArgs)
+    '    uiActionsPopup.IsOpen = False
 
-        Dim oFE As FrameworkElement = sender
-        Dim oPicSortSrv As Vblib.ShareServer = oFE?.DataContext
-        If oPicSortSrv Is Nothing Then Return
+    '    Dim oFE As FrameworkElement = sender
+    '    Dim oPicSortSrv As Vblib.ShareServer = oFE?.DataContext
+    '    If oPicSortSrv Is Nothing Then Return
 
-        Dim sRet As String = Await lib_sharingNetwork.httpKlient.TryConnect(oPicSortSrv)
-        If Not sRet.StartsWith("OK") Then
-            Vblib.DialogBox("Błąd podłączenia do serwera: " & sRet)
-            Return
-        End If
+    '    Dim sRet As String = Await lib_sharingNetwork.httpKlient.TryConnect(oPicSortSrv)
+    '    If Not sRet.StartsWith("OK") Then
+    '        Vblib.DialogBox("Błąd podłączenia do serwera: " & sRet)
+    '        Return
+    '    End If
 
-        sRet = Await lib_sharingNetwork.httpKlient.CanUpload(oPicSortSrv)
-        If Not sRet.StartsWith("YES") Then
-            Vblib.DialogBox("Upload jest niedostępny: " & sRet)
-            Return
-        End If
+    '    sRet = Await lib_sharingNetwork.httpKlient.CanUpload(oPicSortSrv)
+    '    If Not sRet.StartsWith("YES") Then
+    '        Vblib.DialogBox("Upload jest niedostępny: " & sRet)
+    '        Return
+    '    End If
 
-        uiProgBar.Value = 0
-        uiProgBar.Maximum = uiPicList.SelectedItems.Count
-        uiProgBar.Visibility = Visibility.Visible
+    '    uiProgBar.Value = 0
+    '    uiProgBar.Maximum = uiPicList.SelectedItems.Count
+    '    uiProgBar.Visibility = Visibility.Visible
 
-        Dim allErrs As String = ""
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Dim oPic As Vblib.OnePic = oItem.oPic
+    '    Dim allErrs As String = ""
+    '    For Each oItem As ThumbPicek In uiPicList.SelectedItems
+    '        Dim oPic As Vblib.OnePic = oItem.oPic
 
-            If oPic.sharingLockSharing Then
-                allErrs &= oPic.sSuggestedFilename & " is excluded from sharing, ignoring" & vbCrLf
-            Else
+    '        If oPic.sharingLockSharing Then
+    '            allErrs &= oPic.sSuggestedFilename & " is excluded from sharing, ignoring" & vbCrLf
+    '        Else
 
-                oPic.ResetPipeline()
-                Dim ret As String = Await oPic.RunPipeline(oPicSortSrv.uploadProcessing, Application.gPostProcesory)
-                If ret <> "" Then
-                    ' jakiś błąd
-                    allErrs &= ret & vbCrLf
-                Else
-                    ' pipeline OK
-                    ret = Await lib_sharingNetwork.httpKlient.UploadPic(oPicSortSrv, oPic)
-                    allErrs &= ret & vbCrLf
-                End If
+    '            oPic.ResetPipeline()
+    '            Dim ret As String = Await oPic.RunPipeline(oPicSortSrv.uploadProcessing, Application.gPostProcesory)
+    '            If ret <> "" Then
+    '                ' jakiś błąd
+    '                allErrs &= ret & vbCrLf
+    '            Else
+    '                ' pipeline OK
+    '                ret = Await lib_sharingNetwork.httpKlient.UploadPic(oPicSortSrv, oPic)
+    '                allErrs &= ret & vbCrLf
+    '            End If
 
-            End If
+    '        End If
 
-            oPic.ResetPipeline() ' zwolnienie streamów, readerów, i tak dalej
-            uiProgBar.Value += 1
-        Next
+    '        oPic.ResetPipeline() ' zwolnienie streamów, readerów, i tak dalej
+    '        uiProgBar.Value += 1
+    '    Next
 
-        uiProgBar.Visibility = Visibility.Visible
+    '    uiProgBar.Visibility = Visibility.Visible
 
-        If allErrs <> "" Then
-            Vblib.ClipPut(allErrs)
-            Vblib.DialogBox(allErrs)
-        End If
+    '    If allErrs <> "" Then
+    '        Vblib.ClipPut(allErrs)
+    '        Vblib.DialogBox(allErrs)
+    '    End If
 
-    End Sub
-
-    Private Sub uiMenuCopyGeoTag_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        If uiPicList.SelectedItems.Count < 2 Then
-            vb14.DialogBox("Funkcja kopiowania GeoTag wymaga zaznaczenia przynajmniej dwu zdjęć")
-            Return
-        End If
-
-        ' step 1: znajdź pierwszy geotag
-        Dim oNewGeoTag As New Vblib.ExifTag(Vblib.ExifSource.ManualGeo)
-        Dim oExifOSM As Vblib.ExifTag = Nothing
-        Dim oExifImgw As Vblib.ExifTag = Nothing
-
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Dim oGeo As BasicGeopos = oItem.oPic.GetGeoTag
-            If oGeo Is Nothing Then Continue For
-            oNewGeoTag.GeoTag = oGeo
-            oExifOSM = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
-            oExifImgw = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoImgw)
-        Next
-        If oNewGeoTag.GeoTag Is Nothing OrElse oNewGeoTag.GeoTag.IsEmpty Then
-            vb14.DialogBox("Nie mogę znaleźć zdjęcia z GeoTag")
-            Return
-        End If
-
-        ' step 2: sprawdź czy wszystkie zaznaczone zdjęcia, jeśl mają geotagi, to z tych samych okolic
-        Dim iMaxOdl As Integer = 0
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Dim oCurrGeo As BasicGeopos = oItem.oPic.GetGeoTag
-            If oCurrGeo IsNot Nothing Then iMaxOdl = Math.Max(iMaxOdl, oNewGeoTag.GeoTag.DistanceTo(oCurrGeo))
-        Next
-
-        If iMaxOdl > 1000 Then
-            vb14.DialogBox($"Wybrane zdjęcia mają między sobą odległość {iMaxOdl} metrów")
-            Return
-        End If
-
-
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-
-            oItem.oPic.ReplaceOrAddExif(oNewGeoTag)
-
-            If oExifOSM Is Nothing Then
-                oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
-            Else
-                oItem.oPic.ReplaceOrAddExif(oExifOSM)
-            End If
-
-            If oExifImgw Is Nothing Then
-                oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
-            Else
-                oItem.oPic.ReplaceOrAddExif(oExifImgw)
-            End If
-
-            oItem.ZrobDymek()
-
-            If _isGeoFilterApplied Then oItem.opacity = _OpacityWygas
-        Next
-
-        ' pokaz na nowo obrazki
-        RefreshMiniaturki(True)
-        SaveMetaData()
-    End Sub
+    'End Sub
 
     Private Function GetDateBetween(oDate1 As Date, oDate2 As Date) As Date
         Dim minutes As Integer = Math.Abs((oDate1 - oDate2).TotalMinutes)
         If oDate1 < oDate2 Then Return oDate1.AddMinutes(minutes / 2)
         Return oDate2.AddMinutes(minutes / 2)
     End Function
-    Private Sub uiMenuDateRefit_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
 
-        If uiPicList.SelectedItems.Count <> 3 Then
-            vb14.DialogBox("Date refit działa tylko przy trzech zaznaczonych zdjęciach")
-            Return
-        End If
+    'Private Sub uiSetTargetDir_Click(sender As Object, e As RoutedEventArgs)
+    '    uiActionsPopup.IsOpen = False
 
-        Dim oPic1 As ThumbPicek = uiPicList.SelectedItems(0)
-        Dim oPic2 As ThumbPicek = uiPicList.SelectedItems(1)
-        Dim oPic3 As ThumbPicek = uiPicList.SelectedItems(2)
+    '    If uiPicList.SelectedItems.Count < 1 Then Return
 
-        Dim date1 As Date = oPic1.oPic.GetMostProbablyDate
-        Dim date2 As Date = oPic2.oPic.GetMostProbablyDate
-        Dim date3 As Date = oPic3.oPic.GetMostProbablyDate
+    '    Dim lSelected As New List(Of ThumbPicek)
+    '    For Each oItem As ThumbPicek In uiPicList.SelectedItems
+    '        lSelected.Add(oItem)
+    '    Next
 
-        If Math.Abs((date1 - date2).TotalHours) < 1 AndAlso Math.Abs((date2 - date3).TotalHours) < 1 AndAlso Math.Abs((date1 - date3).TotalHours) < 1 Then
-            vb14.DialogBox("Za mała różnica czasu pomiędzy zdjęciami")
-            Return
-        End If
+    '    Dim oWnd As New TargetDir(_thumbsy.ToList, lSelected)
+    '    If Not oWnd.ShowDialog Then Return
 
-        Dim oNew As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
+    '    If _isTargetFilterApplied Then
+    '        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+    '            oItem.opacity = _OpacityWygas
+    '        Next
+    '    End If
 
-        If Math.Abs((date1 - date2).TotalHours) < 1 Then
-            ' czyli date3 jest "za daleko"
-            Dim dNew As Date = GetDateBetween(date1, date2)
-            oNew.DateTimeOriginal = dNew.ToExifString
-            oPic3.oPic.ReplaceOrAddExif(oNew)
-            oPic3.dateMin = dNew
-        ElseIf Math.Abs((date2 - date3).TotalHours) < 1 Then
-            ' czyli date1 jest "za daleko"
-            Dim dNew As Date = GetDateBetween(date2, date3)
-            oNew.DateTimeOriginal = dNew.ToExifString
-            oPic1.oPic.ReplaceOrAddExif(oNew)
-            oPic1.dateMin = dNew
-        ElseIf Math.Abs((date1 - date3).TotalHours) < 1 Then
-            ' czyli date2 jest "za daleko"
-            Dim dNew As Date = GetDateBetween(date1, date3)
-            oNew.DateTimeOriginal = dNew.ToExifString
-            oPic2.oPic.ReplaceOrAddExif(oNew)
-            oPic2.dateMin = dNew
-        Else
-            vb14.DialogBox("Nie ma dwu zdjęć blisko siebie, nie mam jak policzyć średniej")
-            Return
-        End If
+    '    ' pokaz na nowo obrazki
+    '    ReDymkuj()
+    '    RefreshMiniaturki(False)
 
-
-        SaveMetaData()
-        RefreshMiniaturki(True)
-
-    End Sub
-
-    Private Sub uiSetTargetDir_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        If uiPicList.SelectedItems.Count < 1 Then Return
-
-        Dim lSelected As New List(Of ThumbPicek)
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            lSelected.Add(oItem)
-        Next
-
-        Dim oWnd As New TargetDir(_thumbsy.ToList, lSelected)
-        If Not oWnd.ShowDialog Then Return
-
-        If _isTargetFilterApplied Then
-            For Each oItem As ThumbPicek In uiPicList.SelectedItems
-                oItem.opacity = _OpacityWygas
-            Next
-        End If
-
-        ' pokaz na nowo obrazki
-        ReDymkuj()
-        RefreshMiniaturki(False)
-
-        SaveMetaData()
-    End Sub
+    '    SaveMetaData()
+    'End Sub
 
     Private Sub uiActionLock_Click(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
@@ -564,66 +449,6 @@ Public Class ProcessBrowse
 
     End Sub
 
-    Private Sub uiActionCopyTargetDir_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        If uiPicList.SelectedItems.Count < 2 Then Return
-
-        Dim sTarget As String = ""
-
-        ' ustalenie katalogu, i sprawdzenie czy nie ma różnych
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            If sTarget = "" Then
-                ' jeszcze nie było
-                If Not String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then sTarget = oItem.oPic.TargetDir
-            Else
-                If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then Continue For
-
-                If sTarget <> oItem.oPic.TargetDir Then
-                    vb14.DialogBox("Są ustalone różne TargetDir dla zaznaczonych plików, więc nic nie robię" & vbCrLf & sTarget & vbCrLf & oItem.oPic.TargetDir)
-                    Return
-                End If
-            End If
-        Next
-
-        If String.IsNullOrWhiteSpace(sTarget) Then
-            vb14.DialogBox("Nie znalazłem żadnego TargetDir")
-            Return
-        End If
-
-
-        ' uzupełniamy tam gdzie nie ma ustalonego
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            If String.IsNullOrEmpty(oItem.oPic.TargetDir) Then
-                oItem.oPic.TargetDir = sTarget
-                If _isTargetFilterApplied Then oItem.opacity = _OpacityWygas
-            End If
-        Next
-
-        ' pokaz na nowo obrazki
-        ReDymkuj()
-        RefreshMiniaturki(False)
-
-        SaveMetaData()
-    End Sub
-
-
-    Private Sub uiActionClearTargetDir_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
-
-        If uiPicList.SelectedItems.Count < 1 Then Return
-
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            oItem.oPic.TargetDir = Nothing
-            If _isTargetFilterApplied Then oItem.opacity = 1
-        Next
-
-        ' pokaz na nowo obrazki
-        ReDymkuj()
-        RefreshMiniaturki(False)
-
-        SaveMetaData()
-    End Sub
 
     Private Sub uiActionSelectFilter_Click(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = False
@@ -639,69 +464,74 @@ Public Class ProcessBrowse
 #End Region
 
     Private Sub uiMetadataChanged(sender As Object, e As EventArgs)
+        uiActionsPopup.IsOpen = False
         SaveMetaData()
     End Sub
 
     Private Sub uiTargetMetadataChanged(sender As Object, e As EventArgs)
+        uiActionsPopup.IsOpen = False
         SaveMetaData()
         ' tu trzeba wraz z reapply filter
         If _isTargetFilterApplied Then uiFilterNoTarget_Click(Nothing, Nothing)
     End Sub
     Private Sub uiGeotagMetadataChanged(sender As Object, e As EventArgs)
+        uiActionsPopup.IsOpen = False
         SaveMetaData()
         ' tu trzeba wraz z reapply filter
         If _isGeoFilterApplied Then uiFilterNoGeo_Click(Nothing, Nothing)
     End Sub
 
     Private Sub uiMetadataChangedReparse(sender As Object, e As EventArgs)
+        uiActionsPopup.IsOpen = False
         ReDymkuj()
         RefreshMiniaturki(True)
         SaveMetaData()
     End Sub
 
     Private Sub uiMetadataChangedDymkuj(sender As Object, e As EventArgs)
+        uiActionsPopup.IsOpen = False
         ReDymkuj()
         SaveMetaData()
     End Sub
 
 
 
-    Private Sub uiCopyOut_Click(sender As Object, e As System.Windows.RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
+    'Private Sub uiCopyOut_Click(sender As Object, e As System.Windows.RoutedEventArgs)
+    '    uiActionsPopup.IsOpen = False
 
-        Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie skopiować pliki?")
-        If sFolder = "" Then Return
-        If Not IO.Directory.Exists(sFolder) Then Return
+    '    Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie skopiować pliki?")
+    '    If sFolder = "" Then Return
+    '    If Not IO.Directory.Exists(sFolder) Then Return
 
-        Dim iErrCount As Integer = 0
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Try
-                IO.File.Copy(oItem.oPic.InBufferPathName, IO.Path.Combine(sFolder, oItem.oPic.sSuggestedFilename))
-            Catch ex As Exception
-                iErrCount += 1
-            End Try
-        Next
+    '    Dim iErrCount As Integer = 0
+    '    For Each oItem As ThumbPicek In uiPicList.SelectedItems
+    '        Try
+    '            IO.File.Copy(oItem.oPic.InBufferPathName, IO.Path.Combine(sFolder, oItem.oPic.sSuggestedFilename))
+    '        Catch ex As Exception
+    '            iErrCount += 1
+    '        End Try
+    '    Next
 
-        If iErrCount < 1 Then Return
+    '    If iErrCount < 1 Then Return
 
-        vb14.DialogBox($"{iErrCount} errors while copying")
+    '    vb14.DialogBox($"{iErrCount} errors while copying")
 
-    End Sub
+    'End Sub
 
-    Private Sub uiCopyClip_Click(sender As Object, e As System.Windows.RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
+    'Private Sub uiCopyClip_Click(sender As Object, e As System.Windows.RoutedEventArgs)
+    '    uiActionsPopup.IsOpen = False
 
-        Clipboard.Clear()
-        Dim lista As New Specialized.StringCollection
-        For Each oTB As ThumbPicek In uiPicList.SelectedItems
-            lista.Add(oTB.oPic.InBufferPathName)
-        Next
+    '    Clipboard.Clear()
+    '    Dim lista As New Specialized.StringCollection
+    '    For Each oTB As ThumbPicek In uiPicList.SelectedItems
+    '        lista.Add(oTB.oPic.InBufferPathName)
+    '    Next
 
-        Clipboard.SetFileDropList(lista)
+    '    Clipboard.SetFileDropList(lista)
 
-        vb14.DialogBox("Files in Clipboard")
+    '    vb14.DialogBox("Files in Clipboard")
 
-    End Sub
+    'End Sub
 
     Private Sub uiPicList_MouseMove(sender As Object, e As MouseEventArgs) Handles uiPicList.MouseMove
         MyBase.OnMouseMove(e)
@@ -1773,7 +1603,7 @@ Public Class ProcessBrowse
 
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
-            If String.IsNullOrWhiteSpace(thumb.oPic.sharingFromChannel) Then
+            If String.IsNullOrWhiteSpace(thumb.oPic.sharingFromGuid) Then
                 thumb.opacity = _OpacityWygas
             Else
                 thumb.opacity = 1
@@ -1899,19 +1729,6 @@ Public Class ProcessBrowse
         uiActionsPopup.IsOpen = Not uiActionsPopup.IsOpen
     End Sub
 
-    Private Shared Function NewMenuCloudOperation(sDisplay As String, oEngine As Object, oEventHandler As RoutedEventHandler) As MenuItem
-        Dim oNew As New MenuItem
-        oNew.Header = sDisplay.Replace("_", "__")
-        oNew.DataContext = oEngine
-
-        If oEventHandler IsNot Nothing Then AddHandler oNew.Click, oEventHandler
-
-        Return oNew
-    End Function
-
-    Private Shared Function NewMenuCloudOperation(oEngine As Object) As MenuItem
-        Return NewMenuCloudOperation(oEngine.konfiguracja.nazwa, oEngine, Nothing)
-    End Function
 
 
 #End Region
@@ -2087,9 +1904,19 @@ Public Class ProcessBrowse
             ZrobDymek()
         End Sub
 
+        Public Function GetLastSharePeer() As Vblib.SharePeer
+            Return oPic.GetLastSharePeer(Application.GetShareServers, Application.GetShareLogins)
+        End Function
+
         Public Sub ZrobDymek()
             sDymek = oPic.sSuggestedFilename
-            If oPic.sSourceName.ToLower <> "adhoc" Then sDymek = sDymek & vbCrLf & "Src: " & oPic.sSourceName
+
+            ' jeśli przybywa "skądś"
+            If Not String.IsNullOrWhiteSpace(oPic.sharingFromGuid) Then
+                sDymek &= vbCrLf & GetLastSharePeer()?.displayName & "\" & oPic.sSourceName
+            Else
+                If oPic.sSourceName.ToLower <> "adhoc" Then sDymek = sDymek & vbCrLf & "Src: " & oPic.sSourceName
+            End If
 
             Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
             If oExifTag IsNot Nothing Then

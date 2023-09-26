@@ -1,4 +1,5 @@
-﻿Public Class PicMenuAutotaggers
+﻿
+Public NotInheritable Class PicMenuAutotaggers
     Inherits PicMenuBase
 
     Public Overrides Sub OnApplyTemplate()
@@ -8,7 +9,7 @@
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Auto-taggers") Then Return
+        If Not InitEnableDisable("Auto-taggers", True) Then Return
 
         WypelnMenuAutotagerami(Me, AddressOf ApplyProcess)
 
@@ -44,9 +45,14 @@
     End Sub
 
     Private Async Function ApplyTagger(oPic As Vblib.OnePic) As Task
+
+        If UseSelectedItems Then
+            If oPic.GetExifOfType(_engine.Nazwa) IsNot Nothing Then Return
+        End If
+
         Dim oExif As Vblib.ExifTag = Await _engine.GetForFile(oPic)
         If oExif IsNot Nothing Then
-            oPic.Exifs.Add(oExif)
+            oPic.ReplaceOrAddExif(oExif)
             oPic.TagsChanged = True
         End If
     End Function

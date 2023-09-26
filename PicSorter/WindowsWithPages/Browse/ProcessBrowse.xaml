@@ -133,24 +133,25 @@
                         <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
                         <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" IsEnabled="False"/>
                         <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" UseSelectedItems="True"/>
-                        <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiMetadataChangedReparse" UseSelectedItems="True" />
-                        <MenuItem Header="Date refit" Click="uiMenuDateRefit_Click" Name="uiMenuDateRefit" />
+                        <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiTargetMetadataChanged" UseSelectedItems="True" />
+                        <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />
                         <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" />
                         
                         <MenuItem Header="Lock" Click="uiActionLock_Click"  />
                         <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
                         <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
+                        <local:PicMenuShareUpload UseSelectedItems="True" UseProgBar="True"/>
+                    
                         <!--<MenuItem Header="Publish  »" Name="uiMenuPublish"  />-->
                         <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
+                        <!--<MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>-->
                         <local:PicMenuTargetDir MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
+                    
                         <Separator/>
                         <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
-                        <MenuItem Header="Copy to..." Click="uiCopyOut_Click" />
-                        <MenuItem Header="Copy to clipboard" Click="uiCopyClip_Click" />
+                        <local:PicMenuCopyOut  UseSelectedItems="True"/>
                         <MenuItem Header="Get files size" Click="uiGetFileSize_Click" />
                         <Separator/>
-                        <MenuItem Header="Upload to »" Name="uiActionUploadMenu"/>
-                        <Separator Name="uiSeparatorActionUpload"/>
                         <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
                         <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
                     </Menu>
@@ -188,29 +189,42 @@
                                 <ContextMenu>
                                         <!-- readonly simple metadata -->
                                         <local:PicMenuCopyPath   />
-                                        <local:PicMenuShowMetadata UseOwner="True" />
-                                        <local:PicMenuFileExif  UseOwner="True" />
 
                                         <MenuItem Header="Show big" Click="uiShowBig_Click"/>
 
                                     <!-- sequence step CROP/EDIT -->
-                                        <local:PicMenuBatchProc UseProgBar="True" MetadataChanged="uiMetadataChanged" />
                                         <!-- sequence step GEOTAG -->
-                                        <local:PicMenuGeotag MetadataChanged="uiGeotagMetadataChanged" />
                                         <!-- sequence step AUTOTAGs -->
-                                        <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
                                         <!-- sequence step KEYWORDs -->
                                         <!-- sequence step DESCRIBE -->
                                         <local:PicMenuDescribe MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" />
                                         <!-- sequence step TARGET -->
                                         <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged"  />
                                         <!-- sequence step PUBLISH, ARCHIVE -->
-                                        <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" />
-                                        <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
+                                        <local:PicMenuShareUpload />
+
                                         <!-- readonly metadata 2 -->
                                         <local:PicMenuOnMap  />
-                                        <local:PicMenuShowWiki />
                                         <local:PicMenuShellExec  />
+
+                                        <MenuItem Header="other...">
+                                            <!-- readonly simple metadata -->
+                                            <local:PicMenuShowMetadata UseOwner="True" />
+                                            <local:PicMenuFileExif  UseOwner="True" />
+                                            <!-- sequence step CROP/EDIT -->
+                                            <local:PicMenuBatchProc UseProgBar="True" MetadataChanged="uiMetadataChanged" />
+                                            <!-- sequence step GEOTAG -->
+                                            <local:PicMenuGeotag MetadataChanged="uiGeotagMetadataChanged" />
+                                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" />
+                                            <!-- sequence step AUTOTAGs -->
+                                            <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
+                                            <!-- sequence step PUBLISH, ARCHIVE -->
+                                            <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" />
+                                            <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
+                                            <!-- readonly metadata 2 -->
+                                            <local:PicMenuShowWiki />
+                                            <local:PicMenuCopyOut  />
+                                        </MenuItem>
                                         <!-- delete -->
                                         <Separator/>
                                     <MenuItem Header="Delete" Click="uiDelOne_Click"/>

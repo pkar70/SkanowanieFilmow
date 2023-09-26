@@ -84,22 +84,30 @@
                             <local:PicMenuBatchProc x:Name="uiBatchProcessors"  MetadataChanged="uiPictureChanged" />
                             <!-- sequence step GEOTAG -->
                             <local:PicMenuGeotag x:Name="uiGeotag" MetadataChanged="uiMetadataChanged" />
+                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step AUTOTAGs -->
-                            <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step KEYWORDs -->
                             <!-- sequence step DESCRIBE -->
                             <local:PicMenuDescribe x:Name="uiDescribe" MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step TARGET -->
-                            <local:PicMenuTargetDir x:Name="uiTargetDir" MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step PUBLISH, ARCHIVE -->
-                            <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" />
-                            <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
-
                             <!-- readonly metadata 2 -->
                             <local:PicMenuOnMap />
-                            <local:PicMenuShowWiki  />
                             <local:PicMenuShellExec  />
-                            <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
+                            <MenuItem Header="other..." >
+                                <!-- sequence step AUTOTAGs -->
+                                <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
+                                <!-- sequence step TARGET -->
+                                <local:PicMenuTargetDir x:Name="uiTargetDir" MetadataChanged="uiMetadataChanged" />
+                                <!-- sequence step PUBLISH, ARCHIVE -->
+                                <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" />
+                                <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
+                                <local:PicMenuShareUpload />
+                                <!-- readonly metadata 2 -->
+                                <local:PicMenuShowWiki  />
+                                <local:PicMenuCopyOut  />
+                                <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
+                            </MenuItem>
                             <Separator/>
                             <!-- delete -->
                             <MenuItem Header="Delete" Click="uiDelPic_Click" Name="uiDelete" />

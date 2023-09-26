@@ -1,8 +1,8 @@
 ﻿'Imports Vblib
-Imports PicSorterNS.ProcessBrowse
+'Imports PicSorterNS.ProcessBrowse
 Imports pkar.DotNetExtensions
 
-Public Class PicMenuCloudPublish
+Public NotInheritable Class PicMenuCloudPublish
     Inherits PicMenuCloudBase
 
     Public Overrides Sub OnApplyTemplate()
@@ -12,7 +12,7 @@ Public Class PicMenuCloudPublish
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Cloud publish") Then Return
+        If Not InitEnableDisable("Cloud publish", True) Then Return
 
         WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
 
@@ -25,6 +25,10 @@ Public Class PicMenuCloudPublish
 
     Private _retMsg As String = ""
     Private Async Function ApplyOnSingle(oPic As Vblib.OnePic) As Task
+        If UseSelectedItems Then
+            If oPic.IsCloudPublishedIn(_engine.konfiguracja.nazwa) Then Return
+        End If
+
         _retMsg &= Await _engine.SendFile(oPic) & vbCrLf
     End Function
 
@@ -32,7 +36,7 @@ Public Class PicMenuCloudPublish
         ' test na adultpice
         Dim iCnt As Integer = 0
         Dim sNames As String = ""
-        For Each oItem As ThumbPicek In GetSelectedItems()
+        For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
             If oItem.oPic.IsAdultInExifs OrElse Application.GetKeywords.IsAdultInAnyKeyword(oItem.oPic.GetAllKeywords) Then
                 iCnt += 1
                 sNames = sNames & vbCrLf & oItem.oPic.sSuggestedFilename

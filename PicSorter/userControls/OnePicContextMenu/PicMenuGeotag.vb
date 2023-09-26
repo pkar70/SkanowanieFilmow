@@ -1,7 +1,8 @@
 ﻿
+'Imports PicSorterNS.ProcessBrowse
 Imports pkar
 
-Public Class PicMenuGeotag
+Public NotInheritable Class PicMenuGeotag
     Inherits PicMenuBase
 
     Private Shared _clip As BasicGeoposWithRadius
@@ -14,35 +15,84 @@ Public Class PicMenuGeotag
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Geotags") Then Return
+        If Not InitEnableDisable("Geotags", True) Then Return
 
         Me.Items.Clear()
 
-        Dim oNew As New MenuItem
-        oNew.Header = "Create Geotag"
-        AddHandler oNew.Click, AddressOf uiCreateGeotag_Click
-        Me.Items.Add(oNew)
+        Me.Items.Add(NewMenuItem("Create Geotag", AddressOf uiCreateGeotag_Click))
 
+        If UseSelectedItems Then
+            Me.Items.Add(NewMenuItem("Make same", AddressOf uiGeotagMakeSame_Click))
+        End If
 
-        oNew = New MenuItem
-            oNew.Header = "Copy Geotag"
-        oNew.IsEnabled = Not UseSelectedItems   ' COPY nie ma sensu na grupie
-        AddHandler oNew.Click, AddressOf uiGeotagToClip_Click
-            Me.Items.Add(oNew)
+        Me.Items.Add(NewMenuItem("Copy Geotag", AddressOf uiGeotagToClip_Click, Not UseSelectedItems))
 
-        _itemPaste.Header = "Paste Geotag"
-        _itemPaste.IsEnabled = _clip IsNot Nothing
-        AddHandler _itemPaste.Click, AddressOf uiGeotagPaste_Click
+        _itemPaste = NewMenuItem("Paste Geotag", AddressOf uiGeotagPaste_Click, _clip IsNot Nothing)
         Me.Items.Add(_itemPaste)
 
-        oNew = New MenuItem
-        oNew.Header = "Reset geotag"
-        AddHandler oNew.Click, AddressOf uiGeotagClear_Click
-        oNew.IsEnabled = _picek.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing
-        Me.Items.Add(oNew)
 
+        Me.Items.Add(NewMenuItem("Reset Geotag", AddressOf uiGeotagClear_Click, UseSelectedItems OrElse _picek.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing))
 
         _wasApplied = True
+    End Sub
+
+    Private Sub uiGeotagMakeSame_Click(sender As Object, e As RoutedEventArgs)
+        ' tu wejdzie tylko przy UseSelectedItems
+
+        If GetSelectedItems.Count < 2 Then
+            Vblib.DialogBox("Funkcja kopiowania GeoTag wymaga zaznaczenia przynajmniej dwu zdjęć")
+            Return
+        End If
+
+        ' step 1: znajdź pierwszy geotag
+        Dim oNewGeoTag As New Vblib.ExifTag(Vblib.ExifSource.ManualGeo)
+        Dim oExifOSM As Vblib.ExifTag = Nothing
+        Dim oExifImgw As Vblib.ExifTag = Nothing
+
+        For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+            Dim oGeo As BasicGeopos = oItem.oPic.GetGeoTag
+            If oGeo Is Nothing Then Continue For
+            oNewGeoTag.GeoTag = oGeo
+            oExifOSM = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
+            oExifImgw = oItem.oPic.GetExifOfType(Vblib.ExifSource.AutoImgw)
+        Next
+        If oNewGeoTag.GeoTag Is Nothing OrElse oNewGeoTag.GeoTag.IsEmpty Then
+            Vblib.DialogBox("Nie mogę znaleźć zdjęcia z GeoTag wśród zaznaczonych")
+            Return
+        End If
+
+        ' step 2: sprawdź czy wszystkie zaznaczone zdjęcia, jeśl mają geotagi, to z tych samych okolic
+        Dim iMaxOdl As Integer = 0
+        For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+            Dim oCurrGeo As BasicGeopos = oItem.oPic.GetGeoTag
+            If oCurrGeo IsNot Nothing Then iMaxOdl = Math.Max(iMaxOdl, oNewGeoTag.GeoTag.DistanceTo(oCurrGeo))
+        Next
+
+        If iMaxOdl > 1000 Then
+            Vblib.DialogBox($"Wybrane zdjęcia mają między sobą odległość {iMaxOdl} metrów")
+            Return
+        End If
+
+        For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+
+            oItem.oPic.ReplaceOrAddExif(oNewGeoTag)
+
+            If oExifOSM Is Nothing Then
+                oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
+            Else
+                oItem.oPic.ReplaceOrAddExif(oExifOSM)
+            End If
+
+            If oExifImgw Is Nothing Then
+                oItem.oPic.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
+            Else
+                oItem.oPic.ReplaceOrAddExif(oExifImgw)
+            End If
+
+        Next
+
+        EventRaise(Me)
+
     End Sub
 
     Private Sub GeotagClear(oPic As Vblib.OnePic)
@@ -70,6 +120,10 @@ Public Class PicMenuGeotag
     End Sub
 
     Private Sub GeotagSet(oPic As Vblib.OnePic)
+        If UseSelectedItems Then
+            If oPic.GetGeoTag IsNot Nothing Then Return
+        End If
+
         _picek.ReplaceOrAddExif(_exifGeoToPaste)
         _picek.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
         _picek.RemoveExifOfType(Vblib.ExifSource.AutoImgw)

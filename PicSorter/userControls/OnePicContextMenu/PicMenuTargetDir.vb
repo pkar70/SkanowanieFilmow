@@ -1,6 +1,9 @@
 ﻿
 
-Public Class PicMenuTargetDir
+
+Imports PicSorterNS.ProcessBrowse
+
+Public NotInheritable Class PicMenuTargetDir
     Inherits PicMenuBase
 
     Private _itemPaste As New MenuItem
@@ -13,61 +16,93 @@ Public Class PicMenuTargetDir
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Target dir") Then Return
+        If Not InitEnableDisable("Target dir", True) Then Return
 
         Me.Items.Clear()
 
-        Dim oNew As MenuItem
-
         If UseSelectedItems Then
             ' dla pojedyńczego trudno jest ustalić TargetDir (radiobuttony automatycznego podziału)
-            oNew = New MenuItem
-            oNew.Header = "Set target dir"
-            AddHandler oNew.Click, AddressOf uiCreateGeotag_Click
-            Me.Items.Add(oNew)
+            Me.Items.Add(NewMenuItem("Set target dir", AddressOf uiCreateTargetDir_Click))
+        End If
+
+        If UseSelectedItems Then
+            Me.Items.Add(NewMenuItem("Make same", AddressOf uiTargetMakeSame_Click))
         End If
 
         If Not UseSelectedItems Then
-            oNew = New MenuItem
-            oNew.Header = "Copy TargetDir"
-            AddHandler oNew.Click, AddressOf uiGeotagToClip_Click
-            oNew.IsEnabled = String.IsNullOrWhiteSpace(_picek.TargetDir)
-            Me.Items.Add(oNew)
+            Me.Items.Add(NewMenuItem("Copy TargetDir", AddressOf uiTargetToClip_Click, String.IsNullOrWhiteSpace(_picek.TargetDir)))
         End If
 
         'oNew = New MenuItem
-        _itemPaste.Header = "Paste TargetDir"
-        _itemPaste.IsEnabled = Not String.IsNullOrWhiteSpace(_clipForTargetDir)
-        AddHandler _itemPaste.Click, AddressOf uiGeotagPaste_Click
+        _itemPaste = NewMenuItem("Paste TargetDir", AddressOf uiTargetPaste_Click, Not String.IsNullOrWhiteSpace(_clipForTargetDir))
         Me.Items.Add(_itemPaste)
 
-        oNew = New MenuItem
-        oNew.Header = "Clear TargetDir"
-        AddHandler oNew.Click, AddressOf uiGeotagClear_Click
-        oNew.IsEnabled = String.IsNullOrWhiteSpace(_picek.TargetDir)
-        Me.Items.Add(oNew)
+        Me.Items.Add(NewMenuItem("Clear TargetDir", AddressOf uiTargetClear_Click, UseSelectedItems OrElse String.IsNullOrWhiteSpace(_picek.TargetDir)))
 
         _wasApplied = True
     End Sub
 
-    Private Sub uiGeotagClear_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiTargetMakeSame_Click(sender As Object, e As RoutedEventArgs)
+        If GetSelectedItems.Count < 2 Then
+            Vblib.DialogBox("Funkcja kopiowania TargetDir wymaga zaznaczenia przynajmniej dwu zdjęć")
+            Return
+        End If
+
+        Dim sTarget As String = ""
+
+        ' ustalenie katalogu, i sprawdzenie czy nie ma różnych
+        For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+
+            If sTarget = "" Then
+                ' jeszcze nie było
+                If Not String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then sTarget = oItem.oPic.TargetDir
+            Else
+                If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then Continue For
+
+                If sTarget <> oItem.oPic.TargetDir Then
+                    Vblib.DialogBox("Są ustalone różne TargetDir dla zaznaczonych plików, więc nic nie robię" & vbCrLf & sTarget & vbCrLf & oItem.oPic.TargetDir)
+                    Return
+                End If
+            End If
+        Next
+
+        If String.IsNullOrWhiteSpace(sTarget) Then
+            Vblib.DialogBox("Nie znalazłem żadnego TargetDir")
+            Return
+        End If
+
+
+        ' uzupełniamy tam gdzie nie ma ustalonego
+        For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+            If String.IsNullOrEmpty(oItem.oPic.TargetDir) Then
+                oItem.oPic.TargetDir = sTarget
+            End If
+        Next
+
+    End Sub
+
+    Private Sub uiTargetClear_Click(sender As Object, e As RoutedEventArgs)
         OneOrMany(Sub(x) x.TargetDir = "")
         EventRaise(Me)
     End Sub
 
 
-    Private Sub uiGeotagToClip_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiTargetToClip_Click(sender As Object, e As RoutedEventArgs)
         _clipForTargetDir = _picek.TargetDir
     End Sub
 
-    Private Sub uiGeotagPaste_Click(sender As Object, e As RoutedEventArgs)
-        OneOrMany(Sub(x) x.TargetDir = _clipForTargetDir)
+    Private Sub uiTargetPaste_Click(sender As Object, e As RoutedEventArgs)
+        OneOrMany(Sub(x) If String.IsNullOrWhiteSpace(x.TargetDir) Then x.TargetDir = _clipForTargetDir)
         EventRaise(Me)
     End Sub
 
-    Private Sub uiCreateGeotag_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiCreateTargetDir_Click(sender As Object, e As RoutedEventArgs)
 
-        Dim oWnd As New TargetDir(Nothing, Nothing)
+        If Not UseSelectedItems Then Return ' działa tylko na wielu zdjęciach
+        Dim listaSelected As List(Of ProcessBrowse.ThumbPicek) = GetSelectedItems()
+        Dim listaFull As List(Of ProcessBrowse.ThumbPicek) = GetFullLista()
+
+        Dim oWnd As New TargetDir(listaFull, listaSelected)
         If Not oWnd.ShowDialog Then Return
         ' ale to jest bardzo skomplikowane, bo operuje na całej liście do auto-dzielenia
 

@@ -136,11 +136,15 @@ Public Class ShowBig
             uiBatchProcessors.Visibility = Visibility.Collapsed
             uiEditModes.Visibility = Visibility.Collapsed
             uiDelete.Visibility = Visibility.Collapsed
+            uiGeotag.Visibility = Visibility.Collapsed
+            uiDatetag.Visibility = Visibility.Collapsed
         Else
             'ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
             uiBatchProcessors.Visibility = Visibility.Visible
             uiEditModes.Visibility = Visibility.Visible
             uiDelete.Visibility = Visibility.Visible
+            uiGeotag.Visibility = Visibility.Visible
+            uiDatetag.Visibility = Visibility.Visible
         End If
 
         'ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
@@ -294,14 +298,14 @@ Public Class ShowBig
     End Sub
 
 
-    Private Sub uiDescribe_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New AddDescription(_picek.oPic)
-        If Not oWnd.ShowDialog Then Return
+    'Private Sub uiDescribe_Click(sender As Object, e As RoutedEventArgs)
+    '    Dim oWnd As New AddDescription(_picek.oPic)
+    '    If Not oWnd.ShowDialog Then Return
 
-        Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
-        _picek.oPic.AddDescription(oDesc)
-        SaveMetaData()
-    End Sub
+    '    Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
+    '    _picek.oPic.AddDescription(oDesc)
+    '    SaveMetaData()
+    'End Sub
 
     Private Sub SaveMetaData()
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
@@ -345,6 +349,7 @@ Public Class ShowBig
         End If
 
         Dim bShifty As Boolean = Keyboard.IsKeyDown(Key.RightShift) Or Keyboard.IsKeyDown(Key.LeftShift)
+        Dim bCntr As Boolean = Keyboard.IsKeyDown(Key.RightCtrl) Or Keyboard.IsKeyDown(Key.LeftCtrl)
 
         Select Case e.Key
             Case Key.Space, Key.PageDown
@@ -353,7 +358,8 @@ Public Class ShowBig
                 ChangePicture(True, bShifty)
             Case Key.Delete
                 uiDelPic_Click(Nothing, Nothing)
-
+            'Case Key.D
+            '    If bCntr Then uiDescribe - tylko co dalej? nie RaiseEvent, nie .CLick
             'Case Key.Enter
             '    ' full screen / mały screen
             Case Key.Escape
@@ -364,6 +370,7 @@ Public Class ShowBig
 
     End Sub
 
+    ' jako zwykły menuitem, bo jest też wywoływany klawiszowo
     Private Async Sub uiDelPic_Click(sender As Object, e As RoutedEventArgs)
         If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
             If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcie ({_picek.oPic.sSuggestedFilename})?") Then Return
@@ -457,6 +464,8 @@ Public Class ShowBig
     'End Function
 
     Private Async Function SaveChanges() As Task
+        If Not OperatingSystem.IsWindows Then Return
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return
 
         Dim transf As New wingraph.BitmapTransform
         Dim sHistory As String = ""
@@ -607,9 +616,18 @@ Public Class ShowBig
 
 
     Private Async Function ZapiszZmianyObrazka(bmpTrans As wingraph.BitmapTransform) As Task(Of Boolean)
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
+
         DumpCurrMethod($"(Transform: rotation={bmpTrans.Rotation.ToString}, crop={bmpTrans.Bounds.X}+{bmpTrans.Bounds.Width}, {bmpTrans.Bounds.Y}+ {bmpTrans.Bounds.Height})")
+
+
         ' *TODO* (może) do Settings:Misc, [] ask for confirm after EditSave (przy Crop, i ew. Rotate)
         ' If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
+
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
+
 
         _picek.oPic.InitEdit(False)
 

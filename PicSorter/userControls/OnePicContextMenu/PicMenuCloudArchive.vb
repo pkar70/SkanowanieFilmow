@@ -1,7 +1,7 @@
 ﻿Imports pkar.DotNetExtensions
 
 
-Public Class PicMenuCloudArchive
+Public NotInheritable Class PicMenuCloudArchive
     Inherits PicMenuCloudBase
 
     Public Overrides Sub OnApplyTemplate()
@@ -11,7 +11,7 @@ Public Class PicMenuCloudArchive
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Cloud archive") Then Return
+        If Not InitEnableDisable("Cloud archive", True) Then Return
 
         WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
 
@@ -23,6 +23,10 @@ Public Class PicMenuCloudArchive
 
     Private _retMsg As String = ""
     Private Async Function ApplyOnSingle(oPic As Vblib.OnePic) As Task
+
+        If UseSelectedItems Then
+            If oPic.IsCloudArchivedIn(_engine.konfiguracja.nazwa) Then Return
+        End If
         _retMsg &= Await _engine.SendFile(oPic) & vbCrLf
     End Function
 
