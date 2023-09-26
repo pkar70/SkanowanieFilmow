@@ -73,6 +73,9 @@ Class SettingsMain
 
         Dim filename As String = oPicker.FileName
 
+        ' np. dump SQLa, i tym podobne rzeczy, z baz; zawsze robi LOAD bazy.
+        Application.gDbase.PreBackup()
+
         ' jednak można do tego samego katalogu, bo pakujemy tylko JSON i TXT
         'If IO.Path.GetDirectoryName(filename).ToLowerInvariant = Application.GetDataFolder.ToLowerInvariant Then
         '    vb14.DialogBox("Nie można robić backup do katalogu z konfiguracją")
