@@ -117,6 +117,8 @@ End Class
 #End Region
 
 Public Class ShareDescription
+    Inherits BaseStruct
+
     ''' <summary>
     ''' id zdjęcia którego dotyczy komentarz (picguid, lub suggestedfilename z prefiksem ':')
     ''' </summary>

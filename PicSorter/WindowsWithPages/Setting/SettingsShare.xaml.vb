@@ -46,7 +46,7 @@ Class SettingsShare
         Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(
                 Application.GetShareLogins, Application.gDbase,
                 Application.gLastLoginSharing, Application.GetBuffer,
-                Application.GetShareDescriptionsIn)
+                Application.GetShareDescriptionsIn, Application.GetShareDescriptionsOut)
         Application.gWcfServer.StartSvc()
 
     End Sub

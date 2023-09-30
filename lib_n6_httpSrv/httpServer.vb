@@ -1,10 +1,7 @@
 Imports System.Collections.Specialized
 Imports System.IO
 Imports System.Net
-Imports System.Net.Http
-Imports System.Text.RegularExpressions
-Imports Microsoft.Rest.TransientFaultHandling
-Imports pkar
+
 Imports Vblib
 
 Public Class ServerWrapper
@@ -14,14 +11,16 @@ Public Class ServerWrapper
     Private Shared _databases As Vblib.DatabaseInterface
     Private Shared _lastAccess As Vblib.ShareLoginData
     Private Shared _buffer As Vblib.IBufor
-    Private Shared _shareDesc As pkar.BaseList(Of Vblib.ShareDescription)
+    Private Shared _shareDescIn As pkar.BaseList(Of Vblib.ShareDescription)
+    Private Shared _shareDescOut As pkar.BaseList(Of Vblib.ShareDescription)
 
-    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDesc As pkar.BaseList(Of Vblib.ShareDescription))
+    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDescIn As pkar.BaseList(Of Vblib.ShareDescription), shareDescOut As pkar.BaseList(Of Vblib.ShareDescription))
         _loginy = loginy
         _databases = databases
         _lastAccess = lastAccess
         _buffer = buffer
-        _shareDesc = shareDesc
+        _shareDescIn = shareDescIn
+        _shareDescOut = shareDescOut
     End Sub
 
     Public Sub StartSvc()
@@ -158,7 +157,9 @@ Public Class ServerWrapper
                 ' return: nr wersji protokolu lub error (ju¿ wczeœniej, przed Select Case)
                 Return PROTO_VERS
 
+
                 ' done 2023.09.24
+                ' Aœka wysy³a zdjêcie do mnie
 
             Case "canupload"
                 ' input: CanUpload, guid, clientHost
@@ -175,15 +176,29 @@ Public Class ServerWrapper
                 ' return: OK, NOWAY (kana³ nie ma zgody na upload), TEMPLOCK (chwilowo wstrzymane), BADPICGUID (nie ma takiego OnePic w buforze), BADDATA (b³¹d wczytywania JSON) lub error (ju¿ wczeœniej, przed Select Case)
                 Return Await PrzyjmijPlikData(oLogin, request)
 
+
+                ' done: 2023.09.26
+                ' Aœka wysy³a do mnie opis do zdjêcia ode mnie
+
             Case "uploadpicdesc"
                 ' input: UploadPicDesc, guid, clientHost, picid; POST: JSON z OneDescription
                 ' return: OK, BADDATA (b³¹d wczytywania JSON) lub error (ju¿ wczeœniej, przed Select Case)
                 Return GotDescription(oLogin, queryString.Item("picid"), request)
 
 
+                ' *TODO* done: 2023.09.29
+                ' Aœka pyta mnie o opisy do jej zdjêæ
+
             Case "querypicdescqueue"
-                ' input: QueryPicDescQueue, guid, clientHost
+                ' input: guid, clientHost
+                ' return: JSON z dumpem wszystkich ShareDescription z kolejki
+                Return SendDescriptionQueue(oLogin)
+            Case "confirmpicdescqueue"
+                ' input: guid, clientHost, lastPicId
                 ' return: JSON z dumpem wszystkich z kolejki
+                Return ConfirmDescriptionQueue(oLogin, queryString.Item("lastpicid"))
+
+
 
             Case "getnewpicslist"
                 Return GetNewPicsList(oLogin, queryString.Item("sinceId"))
@@ -197,6 +212,50 @@ Public Class ServerWrapper
 
     End Function
 
+#Region "odsy³anie skolejkowanych komentarzy"
+
+    ' obs³uga kolejki ShareDescOut
+
+    ''' <summary>
+    ''' Odes³anie Listy OneDescription dla podanego loginu z ShareDescOut (parameter New())
+    ''' </summary>
+    Private Function SendDescriptionQueue(oLogin As ShareLogin) As String
+
+        ' szukamy tych dla podanego GUID (obojêtnie czy login czy server)
+        Dim peerGuid As String = oLogin.login.ToString
+        Dim ret As String = ""
+        For Each oDesc As Vblib.ShareDescription In _shareDescOut.GetList.Where(Function(x) x.descr.PeerGuid.EndsWith(peerGuid))
+            If ret <> "" Then ret &= ","
+            ret &= oDesc.DumpAsJSON(True)
+        Next
+
+        Return "[" & ret & "]"
+    End Function
+
+    ''' <summary>
+    ''' Potwierdzenie przyjêcia komentarzy a¿ do lastpicid - mo¿na je skasowaæ z kolejki OUT (jakbym akurat jednoczeœnie opisywa³)
+    ''' </summary>
+    Private Function ConfirmDescriptionQueue(oLogin As ShareLogin, lastpicid As String) As String
+        ' szukamy tych dla podanego GUID (obojêtnie czy login czy server)
+        Dim peerGuid As String = oLogin.login.ToString
+
+        Dim iCnt As Integer = 0
+        Do
+            Dim oItem As Vblib.ShareDescription = _shareDescOut.Find(Function(x) x.descr.PeerGuid.EndsWith(peerGuid))
+            If oItem Is Nothing Then Exit Do
+            iCnt += 1
+            _shareDescOut.Remove(oItem)
+            If oItem.picid = lastpicid Then Exit Do
+        Loop
+
+        Return $"OK, deleted {iCnt} items from queue"
+    End Function
+#End Region
+
+#Region "przyjmowanie opisu do zdjêcia od nas wziêtego"
+    ''' <summary>
+    ''' Przyjêcie OneDescription, opakowanie go w ShareDescription i zapisanie do listy ShareDescIn (parametr New())
+    ''' </summary>
     Private Function GotDescription(oLogin As ShareLogin, picid As String, request As HttpListenerRequest) As String
         Vblib.DumpCurrMethod()
 
@@ -215,20 +274,21 @@ Public Class ServerWrapper
         oNew.descr = oDesc
         oNew.picid = request.QueryString.Item("picid")
 
-        _shareDesc.Add(oNew)
-        _shareDesc.Save(True)
+        _shareDescIn.Add(oNew)
+        _shareDescIn.Save(True)
 
         Vblib.DumpMessage("Got description for " & oNew.picid)
 
         Return "OK"
 
     End Function
+#End Region
 
 #Region "incoming pictures (uploaded)"
     Private _nowePicki As New pkar.BaseList(Of Vblib.OnePic)("dummyfolder")   ' dopóki nie bêdzie load, albo save, getdate, itp., plik nie zostanie utworzony
 
     ''' <summary>
-    ''' przyjêcie do w³asnego bufora oDesc
+    ''' przyjêcie do bufora zdalnego OnePic (metadata only)
     ''' </summary>
     ''' <returns>tekst b³êdu, lub OK wraz z tutejszym ID pliku - uploader ma to potem wykorzystaæ</returns>
     Private Function PrzyjmijPlikMeta(oLogin As Vblib.ShareLogin, request As HttpListenerRequest) As String
@@ -259,7 +319,7 @@ Public Class ServerWrapper
 
 
     ''' <summary>
-    ''' przyjêcie pliku, korzystaj¹c z bufora oDesc, i zapisanie go w odpowiednim miejscu
+    ''' przyjêcie pliku, i razem z wczeœniej wstawionym OnePic, zapisanie go w IBuffer - parametrze w New()
     ''' </summary>
     ''' <returns>tekst b³êdu, lub OK wraz z tutejszym ID pliku - uploader ma to potem wykorzystaæ</returns>
     Private Async Function PrzyjmijPlikData(oLogin As Vblib.ShareLogin, request As HttpListenerRequest) As Task(Of String)
@@ -305,105 +365,14 @@ Public Class ServerWrapper
     End Function
 
 #End Region
+
+#Region "tools"
     Private Function ReadReqAsString(request As HttpListenerRequest) As String
         Using rdr As New StreamReader(request.InputStream)
             Return rdr.ReadToEnd
         End Using
     End Function
 
-#If TRYMULTIPART Then
-    ' https://stackoverflow.com/questions/8466703/httplistener-and-file-upload
-
-    Private Shared Function GetBoundary(contType As String)
-        Return "--" & contType.Split(";")(1).Split("=")(1)
-    End Function
-
-    Private Shared Function IndexOf(buffer As Byte(), len As Int32, boundaryBytes As Byte()) As Integer
-        For i As Integer = 0 To len - boundaryBytes.Length
-            Dim match As Boolean = True
-            For j As Integer = 0 To boundaryBytes.Length - 1
-                match = buffer(i + j) = boundaryBytes(j)
-                If Not match Then Exit For
-            Next
-            If match Then Return i
-        Next
-        Return -1
-    End Function
-
-
-    Private Function PrzyjmijPlik(oLogin As ShareLogin, request As HttpListenerRequest) As String
-        If Not CanUpload(oLogin) Then Return "NOWAY"
-        If Vblib.GetSettingsBool("uiUploadBlocked") Then Return "TEMPLOCK"
-
-        ' Encoding enc, String boundary, Stream input
-        ' context.Request.ContentEncoding, GetBoundary(context.Request.ContentType), context.Request.InputStream
-
-        Dim enc As Text.Encoding = request.ContentEncoding
-        Dim boundary As String = GetBoundary(request.ContentType)
-        Dim input As IO.Stream = request.InputStream
-
-        Dim boundaryBytes As Byte() = enc.GetBytes(boundary)
-        Dim boundaryLen As Integer = boundaryBytes.Length
-
-        Using output As New IO.FileStream("data", IO.FileMode.Create, IO.FileAccess.Write)
-
-            Dim buffer As Byte() = New Byte(1024) {}
-            Dim len As Integer = input.Read(buffer, 0, 1024)
-            Dim startPos As Integer = -1
-
-            '// Find start boundary
-            While True
-
-                If len = 0 Then Throw New Exception("Start Boundaray Not Found")
-
-                startPos = IndexOf(buffer, len, boundaryBytes)
-                If startPos >= 0 Then
-                    Exit While
-                Else
-                    Array.Copy(buffer, len - boundaryLen, buffer, 0, boundaryLen)
-                    len = input.Read(buffer, boundaryLen, 1024 - boundaryLen)
-                End If
-            End While
-
-            '// Skip four lines (Boundary, Content-Disposition, Content-Type, And a blank)
-            For i As Integer = 0 To 3
-                While True
-
-                    If len = 0 Then Throw New Exception("Preamble not Found.")
-
-                    startPos = Array.IndexOf(buffer, enc.GetBytes("\n")(0), startPos)
-                    If startPos >= 0 Then
-                        startPos += 1
-                        Exit While
-                    End If
-                    len = input.Read(buffer, 0, 1024)
-                End While
-            Next
-
-            Array.Copy(buffer, startPos, buffer, 0, len - startPos)
-            len -= startPos
-
-            While (True)
-                Dim endPos As Int32 = IndexOf(buffer, len, boundaryBytes)
-                If endPos >= 0 Then
-
-                    If endPos > 0 Then output.Write(buffer, 0, endPos - 2)
-                    Exit While
-                ElseIf len <= boundaryLen Then
-                    Throw New Exception("End Boundaray Not Found")
-                Else
-                    output.Write(buffer, 0, len - boundaryLen)
-                    Array.Copy(buffer, len - boundaryLen, buffer, 0, boundaryLen)
-                    len = input.Read(buffer, boundaryLen, 1024 - boundaryLen) + boundaryLen
-                End If
-            End While
-        End Using
-
-
-        Return "OK"
-
-    End Function
-#End If
 
     ''' <summary>
     ''' nie tylko znalezienie Login, ale tak¿e kontrola security.
@@ -450,6 +419,7 @@ Public Class ServerWrapper
         Return "[" & ret & "]"
 
     End Function
+#End Region
 
     Public Function GetPic(loginGuid As Guid, picId As String) As Byte()
 

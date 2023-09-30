@@ -2,10 +2,26 @@
 Imports vb14 = Vblib.pkarlibmodule14
 
 Class ProcessPic
-    Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+
+    ' rozmiar okna - zob. AktualizujGuzikiSharingu
+    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Vblib.DumpCurrMethod()
+    End Sub
+
+    Private Async Sub Window_Activated(sender As Object, e As EventArgs)
+        Vblib.DumpCurrMethod()
+        Vblib.DumpCurrMethod()
         AktualizujGuziki()
 
         Await MozeClearPustyBufor()
+    End Sub
+
+    Private Async Sub Window_GotFocus(sender As Object, e As RoutedEventArgs)
+        Vblib.DumpCurrMethod()
+        AktualizujGuziki()
+
+        Await MozeClearPustyBufor()
+
     End Sub
 
     Private Async Function MozeClearPustyBufor() As Task
@@ -90,13 +106,18 @@ Class ProcessPic
     End Function
 
 
+    ''' <summary>
+    ''' Aktualizuje liczbę zdjęć w guzikach, zmienia też guziki Sharingu
+    ''' </summary>
+    ''' <returns></returns>
     Private Sub AktualizujGuziki()
+
+        AktualizujGuzikiSharingu()
 
         ' z licznika z bufora
         Dim counter As Integer = Application.GetBuffer.Count
         uiBrowse.Content = $"Buffer ({counter})"
         uiAutotag.Content = $"Try autotag ({counter})"
-
 
         uiAutotag.IsEnabled = (counter > 0)
         uiBatchEdit.IsEnabled = (counter > 0)
@@ -118,6 +139,29 @@ Class ProcessPic
 
     End Sub
 
+    ''' <summary>
+    ''' włącza/wyłącza guziki sharingu, odpowiednio zmieniając rozmiar okna
+    ''' </summary>
+    Private Sub AktualizujGuzikiSharingu()
+        Dim wysok As Integer = 460
+
+        uiSharingRetrieve.Visibility = Visibility.Collapsed
+        uiSharingDescrips.Visibility = Visibility.Collapsed
+
+        If Application.GetShareServers.Count > 0 Then
+            uiSharingRetrieve.Visibility = Visibility.Visible
+            wysok += 40
+        End If
+
+        If Application.GetShareDescriptionsIn.Count > 0 Then
+            uiSharingDescrips.Content = $"Peers' descs ({Application.GetShareDescriptionsIn.Count})"
+            uiSharingDescrips.Visibility = Visibility.Visible
+            wysok += 40
+        End If
+
+        Me.Height = wysok
+
+    End Sub
 
     Private Sub uiBrowse_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New ProcessBrowse(Application.GetBuffer, False, "Buffer")
@@ -154,4 +198,19 @@ Class ProcessPic
         Dim oWnd As New Sequence
         oWnd.Show()
     End Sub
+
+    Private Sub uiRetrieve_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New ProcessDownload
+        oWnd.Show()
+    End Sub
+
+    Private Sub uiSharingDescrips_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New ReviewPeersDescrs
+        oWnd.Show()
+    End Sub
+
+    Private Sub uiSharingRetrieve_Click(sender As Object, e As RoutedEventArgs)
+
+    End Sub
+
 End Class

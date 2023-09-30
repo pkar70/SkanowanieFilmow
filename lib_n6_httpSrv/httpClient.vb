@@ -1,6 +1,8 @@
 ﻿
 
 
+Imports System.ComponentModel
+Imports System.Data.SqlTypes
 Imports System.IO
 Imports System.Net.Http
 Imports System.Net.Http.Json
@@ -175,7 +177,7 @@ Public Class httpKlient
     ''' <summary>
     ''' wyślij wszystkie komentarze z kolejki do podanego serwera (dla loginu nie da się wysłać :), guid ma być prefiksowany jak w liscie
     ''' </summary>
-    Public Shared Async Function UploadPicDescription(lista As BaseList(Of Vblib.ShareDescription), serverGuid As String, peer As ShareServer) As Task(Of Boolean)
+    Public Shared Async Function UploadPicDescriptions(lista As BaseList(Of Vblib.ShareDescription), serverGuid As String, peer As ShareServer) As Task(Of Boolean)
         If lista Is Nothing Then Return True    ' nie ma nic do wysłania
 
         Do
@@ -227,13 +229,47 @@ Public Class httpKlient
 
 #End Region
 
+    ''' <summary>
+    ''' pobiera Descriptions z serwera i wkleja je do własnej kolejki
+    ''' </summary>
+    ''' <param name="oServer">z jakiego serwera wczytać dane</param>
+    ''' <param name="descrIn">gdzie wrzucić komentarze</param>
+    ''' <returns>-1: error, 0..: liczba wczytanych komentarzy</returns>
+    Public Shared Async Function GetDescripts(oServer As Vblib.ShareServer, descrIn As BaseList(Of Vblib.ShareDescription)) As Task(Of Integer)
+        Dim JsonList As String = Await _clientSlow.GetStringAsync(GetUri(oServer, "querypicdescqueue"))
+        If JsonList Is Nothing Then Return -1
+        If JsonList = "[]" Then Return 0
+
+        Dim listaTemp As New pkar.BaseList(Of Vblib.ShareDescription)("dummyfolder")
+        If Not listaTemp.Import(JsonList) Then Return -2    ' nie da się zdeserializować
+
+        Dim iCnt As Integer = 0
+        Dim sLastId As String = ""
+        For Each oItem As Vblib.ShareDescription In listaTemp.GetList
+            If oItem Is Nothing Then Continue For
+            sLastId = oItem.picid   ' dokąd serwer będzie mógł skasować z kolejki
+
+            ' przetworzenie na 'tutejsze' metadata (wskazanie serwera skąd przyszło) - na wejściu to identyfikator loginu (klienta) do którego ma być wysłany
+            oItem.descr.PeerGuid = "S:" & oServer.login.ToString
+
+            descrIn.Add(oItem)
+            iCnt += 1
+        Next
+        descrIn.Save(True)
+
+        Dim retval As String = Await _clientQuick.GetStringAsync(GetUri(oServer, "confirmpicdescqueue", $"lastpicid={sLastId}"))
+        ' powinno być OK, ale i tak nie mamy co zrobić z błędem, bo już dodaliśmy do własnej listy :)
+
+        Return iCnt
+    End Function
+
     'Case "trylogin"
     'Return "OK"
     'Case "getnewpicslist"
     'Return GetNewPicsList(oLogin, queryString.Item("sinceId"))
     'Case "GetPic"
     'Return "Not yet"
-    'Case "UploadPicDescription"
+    'Case "UploadPicDescriptions"
     'Return "Not yet"
     'Case "CanUpload"
     'Return If(CanUpload(oLogin), "YES", "NO")

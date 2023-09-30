@@ -38,10 +38,10 @@ Public Class SimpleDescribe
                 If peer.GetType Is GetType(ShareServer) Then
                     ' zdjęcie jest z serwera, więc jest mu jak wysłać komentarz
                     If Vblib.GetSettingsBool("uiSharingAutoUploadComment") OrElse Await Vblib.DialogBoxYNAsync("Zdjęcie przysłane - spróbować odesłać komentarz?") Then
-                        Await httpKlient.UploadPicDescription(Application.GetShareDescriptionsOut, oNew.descr.PeerGuid, peer)
+                        Await httpKlient.UploadPicDescriptions(Application.GetShareDescriptionsOut, oNew.descr.PeerGuid, peer)
                     End If
                 Else
-                    ' *TODO* mamy do czynienia z loginem, czyli ktoś nam wrzucił - nie mamy jak mu wysłać komentarza, on sobie musi odebrać
+                    ' mamy do czynienia z loginem, czyli ktoś nam wrzucił - nie mamy jak mu wysłać komentarza, on sobie musi odebrać
                 End If
             End If
         End If

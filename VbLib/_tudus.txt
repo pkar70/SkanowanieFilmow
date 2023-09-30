@@ -147,7 +147,7 @@ SEARCH: sekcja OPAD
 SEARCH: wirtualne katalogi z query można robić
 SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
 SEARCH: poza tagiem również tagi nadrzędne (-ROK dla -DW)
-SEARCH: combo z listą pól pogodowych? pól Azure, i tak dalej?
+SEARCH: combo z listą pól pogodowych? pól Azure, i tak dalej? - byłoby przekazywanie z ControlSearch do ControlTxtNum parametru wskazującego na typ (Azure, Opad, itp.), i potem w PolaNum0123/PolaTxt0123 pokazywanie listy. Np. z typu Exif_Azure jako static list(string)
 SEARCH: case sensitive jest teraz, i "kur" nie znajduje autor "Kurcz"
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?

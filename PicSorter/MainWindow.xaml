@@ -5,11 +5,34 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         mc:Ignorable="d"
-        Title="PicSorter" Height="500" Width="250" Loaded="Window_Loaded" Closing="Window_Closing" StateChanged="Window_StateChanged">
-    <Grid>
-        
+        Title="PicSorter" Height="350" Width="200" Loaded="Window_Loaded" Closing="Window_Closing" StateChanged="Window_StateChanged">
+        <Grid Margin="5,5,5,5" Width="140" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="1">
+            <TextBlock Text="PicSort" FontSize="18" HorizontalAlignment="Center" />
+            <TextBlock FontSize="10" HorizontalAlignment="Center" Name="uiVers" Margin="5,1,5,5"/> 
 
-    <!--<tb:TaskbarIcon x:Name="myNotifyIcon"
+                <Button Name="uiProcess" Content="Buffer (xx)" Margin="5,15,5,5" FontSize="18" Click="uiProcess_Click"/>
+                <Button Name="uiBrowseArch" Content="Browse" Margin="5,15,5,5" FontSize="18" Click="uiBrowseArch_Click"/>
+                <Button Name="uiSearch" Content="Search" Margin="5,15,5,5" FontSize="18" Click="uiSearch_Click"/>
+                <Button Name="uiSlideshow" Content="Slideshow" IsEnabled="false" Margin="5,15,5,5" FontSize="18"/>
+                <Button Name="uiSettings" Content="Settings" Margin="5,15,5,5" FontSize="18" Click="uiSettings_Click"/>
+
+
+                <!--get/process (xx)] -> kolejne etapy procesu, xx: buffer.count+delayedcopy.count(any)
+ rozdzielic to na get i na process?
+ [browse] -> po dirtree, podawanie count() - jesli zaznaczono checkbox liczenia, na koniec contactsheet i open z localstorage
+ [search] -> trzy kolummny, tags tak, tagtree, tags nie, moze tez jakos folderami ograniczac (autor, skan/costam)
+ [slideshow] -> albo to dopiero z search
+        <empty>
+            [settings]-->
+            </StackPanel>
+
+        <!--<tb:TaskbarIcon x:Name="myNotifyIcon"
                     Visibility="Collapsed"
                     ToolTipText="PicSorter"
                     IconSource="/icons/trayIcon1.gif"
