@@ -1,6 +1,7 @@
 ﻿
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 Class SettingsCloudPublisher
 
@@ -182,7 +183,7 @@ Class SettingsCloudPublisher
         ' nazwa nie moze sie pokryć
         If uiSrcName.Text <> _item.nazwa Then
             For Each oItem In Application.GetCloudPublishers.GetList
-                If oItem.konfiguracja.nazwa.ToLowerInvariant = uiSrcName.Text.ToLowerInvariant Then
+                If oItem.konfiguracja.nazwa.EqualsCIAI(uiSrcName.Text) Then
                     vb14.DialogBox("Już istnieje miejsce publikowania z taką nazwą")
                     Return
                 End If

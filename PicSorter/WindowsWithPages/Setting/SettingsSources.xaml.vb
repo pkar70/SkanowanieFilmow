@@ -130,7 +130,7 @@ Class SettingsSources
             Else
                 For Each sDevice As String In lLista
                     iInd = uiSrcVolume.Items.Add(sDevice)
-                    If sDevice.ToLowerInvariant.StartsWithOrdinal(sCurrentVolLabel & " (") Then
+                    If sDevice.StartsWithCIAI(sCurrentVolLabel & " (") Then
                         uiSrcVolume.SelectedIndex = iInd
                     End If
                 Next
@@ -141,7 +141,7 @@ Class SettingsSources
             For Each oDrive As IO.DriveInfo In oDrives
                 If oDrive.IsReady Then
                     iInd = uiSrcVolume.Items.Add(oDrive.VolumeLabel & " (" & oDrive.Name & ")")
-                    If oDrive.VolumeLabel.ToLowerInvariant = sCurrentVolLabel Then
+                    If oDrive.VolumeLabel.EqualsCIAI(sCurrentVolLabel) Then
                         uiSrcVolume.SelectedIndex = iInd
                     End If
                 End If
@@ -232,7 +232,7 @@ Class SettingsSources
         ' nazwa nie moze sie pokryć
         If uiSrcName.Text <> _item.SourceName Then
             For Each oItem In Application.GetSourcesList().GetList
-                If oItem.SourceName.ToLowerInvariant = uiSrcName.Text.ToLowerInvariant Then
+                If oItem.SourceName.EqualsCIAI(uiSrcName.Text) Then
                     vb14.DialogBox("Źródło o takiej nazwie już istnieje")
                     Return
                 End If

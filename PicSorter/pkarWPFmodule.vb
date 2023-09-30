@@ -4,6 +4,7 @@ Imports Vblib
 Imports Microsoft.Extensions.Configuration
 Imports System.Reflection
 Imports pkar.WPF.Configs
+Imports pkar.DotNetExtensions
 
 Partial Public Class App
     Inherits Application
@@ -991,7 +992,7 @@ Public Class KonwersjaVisibility
         Dim bTemp As Boolean = CType(value, Boolean)
         If parameter IsNot Nothing Then
             Dim sParam As String = CType(parameter, String)
-            If sParam.ToUpperInvariant = "NEG" Then bTemp = Not bTemp
+            If sParam.EqualsCI("NEG") Then bTemp = Not bTemp
         End If
         If bTemp Then Return Visibility.Visible
 

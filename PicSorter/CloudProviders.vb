@@ -37,7 +37,7 @@ Public Class CloudPublishersList
             Dim oNew As Vblib.CloudPublish = GetCloudPublishInstantion(oItem, _DataDir)
             If oNew IsNot Nothing Then
                 gCloudPublishers.Add(oNew)
-                If oNew.konfiguracja.sProvider.ToLowerInvariant.Contains("adhoc") Then bMamAdHoc = True
+                If oNew.konfiguracja.sProvider.ContainsCI("adhoc") Then bMamAdHoc = True
             End If
         Next
 

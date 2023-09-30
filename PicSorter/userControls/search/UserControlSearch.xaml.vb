@@ -4,6 +4,8 @@ Imports pkar
 Imports Vblib
 Imports Windows.UI.Core
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
+
 
 Public Class UserControlSearch
 

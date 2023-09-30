@@ -453,7 +453,7 @@ Public Class TargetDir
         For Each oCBItem As ComboBoxItem In uiComboExisting.Items
             oCBItem.Visibility = Visibility.Collapsed
             Dim oDir As OneDir = oCBItem.DataContext
-            If oDir.sId.ToLowerInvariant.Contains(sQuery) Then oCBItem.Visibility = Visibility.Visible
+            If oDir.sId.ContainsCIAI(sQuery) Then oCBItem.Visibility = Visibility.Visible
         Next
 
     End Sub

@@ -1342,8 +1342,8 @@ Public Class ProcessBrowse
         Dim oMI As MenuItem = sender
         uiFilters.Content = oMI.Header
 
-        Dim bNot As Boolean = oMI.Header.ToString.ToLowerInvariant.StartsWith("no")
-        Dim bPerson As Boolean = oMI.Header.ToString.ToLowerInvariant.Contains("person") ' false: faces
+        Dim bNot As Boolean = oMI.Header.ToString.StartsWithCI("no")
+        Dim bPerson As Boolean = oMI.Header.ToString.ContainsCI("person") ' false: faces
 
         Dim bMamy As Boolean = False
 
@@ -1354,7 +1354,7 @@ Public Class ProcessBrowse
                 If bPerson Then
                     ' czy są osoby
                     ' w tags, oraz w objects, albo po prostu w UserComment (gdzie jest dump)
-                    If oAzure.UserComment.ToLowerInvariant.Contains("person") Then
+                    If oAzure.UserComment.ContainsCI("person") Then
                         If bNot Then oItem.opacity = _OpacityWygas
                     Else
                         If Not bNot Then oItem.opacity = _OpacityWygas
@@ -2012,7 +2012,7 @@ Public Class KonwersjaPasekVisibility
 
         If parameter IsNot Nothing Then
             Dim sParam As String = CType(parameter, String)
-            If sParam.ToUpperInvariant = "NEG" Then bTemp = Not bTemp
+            If sParam.EqualsCI("NEG") Then bTemp = Not bTemp
         End If
         If bTemp Then Return Visibility.Visible
 

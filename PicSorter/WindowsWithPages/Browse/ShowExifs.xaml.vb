@@ -1,6 +1,7 @@
 ﻿
 Imports Newtonsoft.Json
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 
 Public Class ShowExifs
@@ -60,7 +61,7 @@ Public Class ShowExifs
         Dim sMaska As String = uiMask.Text.ToLowerInvariant
 
         For Each linia As String In aLines
-            If linia.ToLowerInvariant.Contains(uiMask.Text) Then sTxt = sTxt & vbCrLf & linia
+            If linia.ContainsCI(uiMask.Text) Then sTxt = sTxt & vbCrLf & linia
         Next
 
         uiDump.Text = sTxt.Trim

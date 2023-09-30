@@ -5,6 +5,8 @@ Imports Windows.Media.Ocr
 Imports Windows.Graphics.Imaging
 Imports System.IO
 Imports Vblib
+Imports pkar.DotNetExtensions
+
 
 Public Class AutoTag_WinOCR
     Inherits Vblib.AutotaggerBase
@@ -46,7 +48,7 @@ Public Class AutoTag_WinOCR
         If oFile.MatchesMasks("*.nar") Then
             oArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
             For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
 
                 ' mamy JPGa (a nie XML na przyk³ad)
                 oStream = New MemoryStream

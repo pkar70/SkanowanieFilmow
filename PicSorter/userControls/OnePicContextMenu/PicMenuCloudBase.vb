@@ -73,7 +73,7 @@ Public MustInherit Class PicMenuCloudBase
         Select Case oFE.Header.ToString.ToLowerInvariant
             Case "open"
                 Dim sLink As String = Await engine.GetShareLink(_picek)
-                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
+                If sLink.StartsWithCI("http") Then
                     pkar.OpenBrowser(sLink)
                 Else
                     If sLink = "" Then sLink = "ERROR getting sharing link"
@@ -92,7 +92,7 @@ Public MustInherit Class PicMenuCloudBase
 
             Case "share link"
                 Dim sLink As String = Await engine.GetShareLink(_picek)
-                If sLink.ToLowerInvariant.StartsWithOrdinal("http") Then
+                If sLink.StartsWithCI("http") Then
                     Vblib.ClipPut(sLink)
                     Vblib.DialogBox("Link in ClipBoard")
                 Else

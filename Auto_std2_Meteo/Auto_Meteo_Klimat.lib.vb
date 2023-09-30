@@ -4,6 +4,7 @@ Imports System.Globalization
 Imports System.IO
 Imports System.Net
 Imports System.Linq
+Imports pkar.DotNetExtensions
 
 Partial Public Class Auto_Meteo_Klimat
     Inherits Auto_Meteo_Base
@@ -91,7 +92,7 @@ Partial Public Class Auto_Meteo_Klimat
         Dim oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(sCachedFile)
 
         For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-            If Not oInArch.Name.ToLowerInvariant.EndsWith("csv") Then Continue For
+            If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".csv") Then Continue For
 
             Using oStreamTemp As Stream = oInArch.Open
                 Using txtRdr As New StreamReader(oStreamTemp)
@@ -100,10 +101,10 @@ Partial Public Class Auto_Meteo_Klimat
                     csvConfig.HasHeaderRecord = False
 
                     Using csvRdr As New CsvHelper.CsvReader(txtRdr, csvConfig)
-                        If oInArch.Name.ToLowerInvariant.Contains("k_d_t") Then
+                        If oInArch.Name.ContainsCI("k_d_t") Then
                             ' plik z T
                             _dataMonth_KT = csvRdr.GetRecords(Of Meteo_KlimatT_Cache).ToList
-                        ElseIf oInArch.Name.ToLowerInvariant.Contains("k_d") Then
+                        ElseIf oInArch.Name.ContainsCI("k_d") Then
                             ' plik bez T
                             _dataMonth_K = csvRdr.GetRecords(Of Meteo_Klimat_Cache).ToList
                         End If

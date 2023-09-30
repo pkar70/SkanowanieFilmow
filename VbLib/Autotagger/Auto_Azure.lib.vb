@@ -99,7 +99,8 @@ Public Class Auto_AzureTest
         Using oArchive = IO.Compression.ZipFile.OpenRead(sNarFileName)
 
             For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                If Not IO.Path.GetExtension(oInArch.Name).Equals(".jpg", StringComparison.CurrentCultureIgnoreCase) Then Continue For
+
                 ' mamy JPGa (a nie XML na przykład)
 
                 If String.IsNullOrWhiteSpace(sJpgFileName) Then

@@ -4,8 +4,7 @@
 'Imports Newtonsoft.Json
 
 Imports System.Linq.Expressions
-'Imports Newtonsoft.Json
-'Imports Newtonsoft.Json.Schema
+Imports pkar.DotNetExtensions
 
 Public Class OneDir
     Inherits pkar.BaseStruct
@@ -318,10 +317,9 @@ Public Class DirsList
     End Sub
 
     Public Function IdExists(sId As String) As Boolean
-        sId = sId.ToLowerInvariant
         For Each oDir As OneDir In ToFlatList()
             If oDir.sId Is Nothing Then Continue For
-            If oDir.sId.ToLowerInvariant = sId Then Return True
+            If oDir.sId.EqualsCI(sId) Then Return True
         Next
 
         Return False

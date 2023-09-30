@@ -4,6 +4,7 @@ Imports System.Globalization
 Imports System.IO
 Imports System.Net
 Imports System.Linq
+Imports pkar.DotNetExtensions
 
 Partial Public Class Auto_Meteo_Opad
     Inherits Auto_Meteo_Base
@@ -90,7 +91,7 @@ Partial Public Class Auto_Meteo_Opad
         ' mamy plik ZIP, to wypakowujemy
         Dim oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(sCachedFile)
         For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-            If Not oInArch.Name.ToLowerInvariant.EndsWith("csv") Then Continue For
+            If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".csv") Then Continue For
 
             ' mamy CSV (właściwie mogłoby być bez testowania, bo tam nic innego być nie powinno)
             Using oStreamTemp As Stream = oInArch.Open

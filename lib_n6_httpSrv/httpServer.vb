@@ -1,6 +1,7 @@
 Imports System.Collections.Specialized
 Imports System.IO
 Imports System.Net
+Imports pkar.DotNetExtensions
 
 Imports Vblib
 
@@ -224,7 +225,7 @@ Public Class ServerWrapper
         ' szukamy tych dla podanego GUID (obojêtnie czy login czy server)
         Dim peerGuid As String = oLogin.login.ToString
         Dim ret As String = ""
-        For Each oDesc As Vblib.ShareDescription In _shareDescOut.GetList.Where(Function(x) x.descr.PeerGuid.EndsWith(peerGuid))
+        For Each oDesc As Vblib.ShareDescription In _shareDescOut.GetList.Where(Function(x) x.descr.PeerGuid.EndsWithCI(peerGuid))
             If ret <> "" Then ret &= ","
             ret &= oDesc.DumpAsJSON(True)
         Next
@@ -241,7 +242,7 @@ Public Class ServerWrapper
 
         Dim iCnt As Integer = 0
         Do
-            Dim oItem As Vblib.ShareDescription = _shareDescOut.Find(Function(x) x.descr.PeerGuid.EndsWith(peerGuid))
+            Dim oItem As Vblib.ShareDescription = _shareDescOut.Find(Function(x) x.descr.PeerGuid.EndsWithCI(peerGuid))
             If oItem Is Nothing Then Exit Do
             iCnt += 1
             _shareDescOut.Remove(oItem)
@@ -385,7 +386,7 @@ Public Class ServerWrapper
                 If Not oLogin.enabled Then Return Nothing
 
                 If Not String.IsNullOrEmpty(oLogin.allowedLogin.remoteHostName) Then
-                    If oLogin.allowedLogin.remoteHostName.ToLowerInvariant <> clntName.ToLowerInvariant Then Return Nothing
+                    If Not oLogin.allowedLogin.remoteHostName.EqualsCI(clntName) Then Return Nothing
                 End If
                 ' *TODO* sprawdzenie adresu
 

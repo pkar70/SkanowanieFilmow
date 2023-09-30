@@ -21,7 +21,7 @@ Public Class ProcessDownload
 
             Dim oDrives = IO.DriveInfo.GetDrives()
             For Each oDrive As IO.DriveInfo In oDrives
-                If buffer.ToLowerInvariant.StartsWith(oDrive.Name.ToLowerInvariant) Then
+                If buffer.StartsWithCIAI(oDrive.Name) Then
                     ' limit: 100 MB
                     If oDrive.AvailableFreeSpace > 100 * 1000 * 1000 Then Return True
                     Exit For
@@ -149,7 +149,7 @@ Public Class ProcessDownload
         Do
             ' obsługa WP_20221119_10_39_05_Rich.jpg.thumb
             ' raczej nie będzie wtedy JPGa pełnego, więc ignorujemy dokładniejsze testowanie
-            If oSrcFile.sSuggestedFilename.EndsWithOrdinal(".thumb") Then
+            If IO.Path.GetExtension(oSrcFile.sSuggestedFilename).EqualsCI(".thumb") Then
                 oSrcFile.sSuggestedFilename = oSrcFile.sSuggestedFilename.Replace(".thumb", "")
             End If
 

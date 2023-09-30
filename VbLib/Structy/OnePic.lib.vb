@@ -94,7 +94,7 @@ Public Class OnePic
 
     Public Function IsArchivedIn(sArchName As String) As Boolean
         If Archived Is Nothing Then Return False
-        If Archived.ToLowerInvariant.Contains(sArchName.ToLowerInvariant & ";") Then Return True
+        If Archived.ContainsCI(sArchName & ";") Then Return True
         Return False
     End Function
 
@@ -712,7 +712,7 @@ Public Class OnePic
             End If
 
             For Each oEngine As Vblib.PostProcBase In aPostProcesory
-                If oEngine.Nazwa.ToLowerInvariant = sKrok Then
+                If oEngine.Nazwa.EqualsCI(sKrok) Then
                     If Not Await oEngine.Apply(Me, True, sParams) Then Return "ERROR in step " & sStep
                     ' Exit For
                 End If
@@ -741,7 +741,7 @@ Public Class OnePic
         Dim aSteps As String() = sProcessingSteps.Split(";")
         For Each sStep As String In aSteps
             For Each oEngine As Vblib.PostProcBase In aPostProcesory
-                If oEngine.Nazwa.ToLowerInvariant = sStep.ToLowerInvariant Then
+                If oEngine.Nazwa.EqualsCI(sStep) Then
                     If Not oEngine.CanRun(Me) Then sErrors &= oEngine.Nazwa & ";"
                 End If
             Next
@@ -1437,7 +1437,7 @@ Public Class OnePic
             Dim iInd As Integer = sDumpLine.IndexOf(":")
             If iInd < 1 Then Continue For
 
-            If Not sDumpLine.Substring(0, iInd).Contains(field.Name.ToLowerInvariant) Then Continue For
+            If Not sDumpLine.Substring(0, iInd).ContainsCI(field.Name) Then Continue For
 
             Return CheckStringMasks(sDumpLine.Substring(iInd + 1), field.Value)
         Next

@@ -256,8 +256,7 @@ Public Class SettingsDirTree
         ' mamy jakieś query wpisane, to szukamy wedle niego
         Dim lista As New List(Of Vblib.OneDir)
         For Each oFold In Application.GetDirTree.ToFlatList
-            If oFold.notes.ToLowerInvariant.Contains(query) OrElse
-                    oFold.sId.ToLowerInvariant.Contains(query) Then
+            If oFold.notes.ContainsCIAI(query) OrElse oFold.sId.ContainsCIAI(query) Then
                 lista.Add(oFold)
             End If
         Next

@@ -2,6 +2,7 @@
 ' Ewentualnie: JSON config, moze %computername%.picsource.json jako konfiguracja (kopia) w miejscu, przy podłączaniu source szuka takich i pyta czy zaimportować (defaulttags), ale też może byc dla roznych instacji - roznie
 
 Imports System.Text.RegularExpressions
+Imports pkar.DotNetExtensions
 
 Public MustInherit Class PicSourceBase
 	Inherits pkar.BaseStruct
@@ -254,7 +255,7 @@ Public MustInherit Class PicSourceBase
 	Public Function GetFirst(Optional sinceDate As DateTime = Nothing) As OnePic
 		If _listaPlikow Is Nothing Then Return Nothing
 
-		If Not SourceName.ToLowerInvariant.Contains("adhoc") Then
+		If Not SourceName.ContainsCI("adhoc") Then
 			If Not sinceDate.IsDateValid Then sinceDate = lastDownload
 		End If
 

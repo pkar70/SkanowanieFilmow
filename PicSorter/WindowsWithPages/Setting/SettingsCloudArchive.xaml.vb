@@ -1,6 +1,7 @@
 ﻿
 Imports vb14 = Vblib.pkarlibmodule14
 Imports Vblib.Extensions
+Imports pkar.DotNetExtensions
 
 Class SettingsCloudArchive
 
@@ -133,7 +134,7 @@ Class SettingsCloudArchive
         ' nazwa nie moze sie pokryć
         If uiSrcName.Text <> _item.nazwa Then
             For Each oItem In Application.GetCloudArchives.GetList
-                If oItem.konfiguracja.nazwa.ToLowerInvariant = uiSrcName.Text.ToLowerInvariant Then
+                If oItem.konfiguracja.nazwa.EqualsCIAI(uiSrcName.Text) Then
                     vb14.DialogBox("Już istnieje miejsce archiwizacji z taką nazwą")
                     Return
                 End If

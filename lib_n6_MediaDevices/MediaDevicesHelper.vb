@@ -5,6 +5,7 @@ Imports System.IO
 Imports System.Reflection.Metadata
 Imports MediaDevices
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 Public Class Helper
 
@@ -12,7 +13,7 @@ Public Class Helper
         Dim lRet As New List(Of String)
 
         For Each oMD As MediaDevices.MediaDevice In MediaDevices.MediaDevice.GetDevices
-            If oMD.DeviceId.ToLower.StartsWith("\\?\usb#") Then
+            If oMD.DeviceId.StartsWithCI("\\?\usb#") Then
                 lRet.Add(oMD.FriendlyName & " (" & oMD.Description & ")")
             End If  ' if(po USB)
         Next
@@ -78,7 +79,7 @@ Public Class Helper
 
         For Each oMD As MediaDevices.MediaDevice In MediaDevices.MediaDevice.GetDevices
             vb14.DumpMessage($"device: {oMD.FriendlyName.ToLowerInvariant}")
-            If oMD.FriendlyName.ToLowerInvariant = sVolLabel Then Return oMD
+            If oMD.FriendlyName.EqualsCI(sVolLabel) Then Return oMD
         Next
 
         vb14.DumpMessage("nie znalaz³em!")

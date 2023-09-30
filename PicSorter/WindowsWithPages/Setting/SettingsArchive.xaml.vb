@@ -2,6 +2,7 @@
 
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 ' pierwszy był Sources, to jest jego przeróbka
 
@@ -67,7 +68,7 @@ Class SettingsArchive
         For Each oDrive As IO.DriveInfo In oDrives
             If oDrive.IsReady Then
                 iInd = uiSrcVolume.Items.Add(oDrive.VolumeLabel & " (" & oDrive.Name & ")")
-                If oDrive.VolumeLabel.ToLowerInvariant = sCurrentVolLabel Then
+                If oDrive.VolumeLabel.EqualsCI(sCurrentVolLabel) Then
                     uiSrcVolume.SelectedIndex = iInd
                 End If
             End If
@@ -126,7 +127,7 @@ Class SettingsArchive
         ' nazwa nie moze sie pokryć
         If uiSrcName.Text <> _item.StorageName Then
             For Each oItem In Application.GetSourcesList().GetList
-                If oItem.SourceName.ToLowerInvariant = uiSrcName.Text.ToLowerInvariant Then
+                If oItem.SourceName.EqualsCIAI(uiSrcName.Text) Then
                     vb14.DialogBox("Archiwum o takiej nazwie już istnieje")
                     Return
                 End If

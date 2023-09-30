@@ -1,6 +1,6 @@
-﻿
+﻿Imports Vblib
+Imports pkar.DotNetExtensions
 
-Imports Vblib
 
 Public Class UserControlOgolneAdvanced
     Private Sub StackPanel_Loaded(sender As Object, e As RoutedEventArgs)
@@ -25,7 +25,7 @@ Public Class UserControlOgolneAdvanced
         If String.IsNullOrWhiteSpace(query.Source) Then Return
 
         For Each oItem As ComboBoxItem In uiComboSource.Items
-            If TryCast(oItem.Content, String)?.ToLowerInvariant = query.Source Then uiComboSource.SelectedItem = oItem
+            If TryCast(oItem.Content, String)?.EqualsCI(query.Source) Then uiComboSource.SelectedItem = oItem
         Next
 
     End Sub

@@ -165,7 +165,7 @@ Public Class AutoTag_EXIF
             Using oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
 
                 For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                    If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                    If Not IO.Path.GetExtension(oInArch.Name).Equals(".jpg", StringComparison.CurrentCultureIgnoreCase) Then Continue For
 
                     ' mamy JPGa, to z niego czytamy EXIFa
                     Using oStream As Stream = oInArch.Open

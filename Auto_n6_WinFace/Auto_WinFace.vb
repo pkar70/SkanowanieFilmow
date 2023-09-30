@@ -1,6 +1,7 @@
 
 Imports System.IO   ' for MemoryStream itp.
 Imports Vblib
+Imports pkar.DotNetExtensions
 
 Imports Windows.Graphics.Imaging
 Imports Windows.Media
@@ -46,7 +47,7 @@ Public Class Auto_WinFace
         If oFile.MatchesMasks("*.nar") Then
             oArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
             For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
 
                 ' mamy JPGa (a nie XML na przyk³ad)
                 oStream = New MemoryStream

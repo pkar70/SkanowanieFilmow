@@ -13,7 +13,9 @@ Imports Vblib
 Imports pkar
 'Imports Windows.UI.Xaml.Controls
 Imports MediaDevices
-Imports Org.BouncyCastle.Asn1.X509
+'Imports Org.BouncyCastle.Asn1.X509
+Imports pkar.DotNetExtensions
+
 
 Public Class ShowBig
 
@@ -118,7 +120,7 @@ Public Class ShowBig
         UpdateClipRegion() ' tym razem, gdyż editmode=none, likwidacja crop
 
         ' tylko JPG może być edytowany
-        uiEditModes.IsEnabled = _picek.oPic.InBufferPathName.ToLowerInvariant.EndsWith("jpg")
+        uiEditModes.IsEnabled = IO.Path.GetExtension(_picek.oPic.InBufferPathName).EqualsCI(".jpg")
 
         uiSave.IsEnabled = False
         uiRevert.IsEnabled = False
@@ -818,7 +820,7 @@ Public Class ShowBig
                 Using oArchive = IO.Compression.ZipFile.OpenRead(_picek.oPic.InBufferPathName)
 
                     For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                        If Not oInArch.Name.ToLowerInvariant.EndsWith("jpg") Then Continue For
+                        If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
                         ' mamy JPGa (a nie XML na przykład)
 
                         Dim sJpgFileName As String = IO.Path.Combine(IO.Path.GetTempPath, oInArch.Name)

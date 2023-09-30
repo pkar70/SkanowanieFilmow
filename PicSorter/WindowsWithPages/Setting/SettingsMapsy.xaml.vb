@@ -3,6 +3,7 @@ Imports System.Text.RegularExpressions
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar
+Imports pkar.DotNetExtensions
 
 Class SettingsMapsy
 
@@ -95,7 +96,7 @@ Class SettingsMapsy
         Dim sPrefix As String = sLink.Substring(0, iInd).ToLowerInvariant
 
         For Each oMapService As Vblib.JednaMapa In _lista.GetList
-            If Not oMapService.link.ToLowerInvariant.StartsWithOrdinal(sPrefix) Then Continue For
+            If Not oMapService.link.StartsWithCIAI(sPrefix) Then Continue For
 
 #If NOT_GEONUGET_121 Then
             Dim iLat As Integer = oMapService.link.IndexOf("%lat")

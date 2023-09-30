@@ -1,5 +1,6 @@
 ﻿Imports Vblib
 Imports pkar
+Imports pkar.DotNetExtensions
 
 Public Class EnterGeoTag
     Private Sub uiLatLon_TextChanged(sender As Object, e As TextChangedEventArgs)
@@ -16,7 +17,7 @@ Public Class EnterGeoTag
     End Sub
 
     Private Function TryFromLink(sLink As String) As Boolean
-        If Not sLink.ToLowerInvariant.StartsWithOrdinal("http") Then Return False
+        If Not sLink.StartsWithCI("http") Then Return False
 
         Dim oPos As BasicGeopos = SettingsMapsy.Link2Geo(sLink)
         If oPos.IsEmpty Then Return False
