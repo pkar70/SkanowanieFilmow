@@ -1555,6 +1555,7 @@ Public Class OnePic
     ''' true/false, jeśli jest contains, lub sMask empty. Case independent
     ''' </summary>
     Private Shared Function CheckStringContains(sFromPicture As String, sMaska As String) As Boolean
+        If String.IsNullOrWhiteSpace(sFromPicture) Then Return True
         Return sFromPicture.ContainsCI(sMaska)
     End Function
 
