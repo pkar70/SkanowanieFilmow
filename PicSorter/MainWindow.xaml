@@ -16,9 +16,9 @@
             <TextBlock Text="PicSort" FontSize="18" HorizontalAlignment="Center" />
             <TextBlock FontSize="10" HorizontalAlignment="Center" Name="uiVers" Margin="5,1,5,5"/> 
 
-                <Button Name="uiProcess" Content="Buffer (xx)" Margin="5,15,5,5" FontSize="18" Click="uiProcess_Click"/>
-                <Button Name="uiBrowseArch" Content="Browse" Margin="5,15,5,5" FontSize="18" Click="uiBrowseArch_Click"/>
-                <Button Name="uiSearch" Content="Search" Margin="5,15,5,5" FontSize="18" Click="uiSearch_Click"/>
+                <Button Name="uiProcess" Content="Process (xx)" Margin="5,15,5,5" FontSize="18" Click="uiProcess_Click"/>
+                <Button Name="uiBrowseArch" Content="Browse arch" Margin="5,15,5,5" FontSize="18" Click="uiBrowseArch_Click"/>
+                <Button Name="uiSearch" Content="Search arch" Margin="5,15,5,5" FontSize="18" Click="uiSearch_Click"/>
                 <Button Name="uiSlideshow" Content="Slideshow" IsEnabled="false" Margin="5,15,5,5" FontSize="18"/>
                 <Button Name="uiSettings" Content="Settings" Margin="5,15,5,5" FontSize="18" Click="uiSettings_Click"/>
 
