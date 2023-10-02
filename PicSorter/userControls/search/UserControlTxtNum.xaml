@@ -8,7 +8,7 @@
              d:DesignHeight="450" d:DesignWidth="800" Loaded="UserControl_Loaded">
         <StackPanel>
             <CheckBox IsChecked="{Binding AlsoEmpty, Mode=TwoWay}" x:Name="uiCheckBox" />
-        <local:UserControlPolaTxt0123 DataContext="{Binding FldTxt, Mode=TwoWay}" />
+        <local:UserControlPolaTxt0123 DataContext="{Binding FldTxt, Mode=TwoWay}" x:Name="uiFldTxt"/>
             <local:UserControlPolaNum0123 DataContext="{Binding FldNum, Mode=TwoWay}" x:Name="uiNumFlds"/>
         </StackPanel>
 </UserControl>

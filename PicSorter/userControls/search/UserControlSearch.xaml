@@ -64,21 +64,21 @@
             </Expander>
 
             <Expander Header="Azure" ToolTip="Dane Azure, ignorowane dla zdjęć bez AzureAnalysis" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                <local:UserControlTxtNum DataContext="{Binding Azure}" HasNumFld="False" DataDisplayName="danych Azure"/>
+                    <local:UserControlTxtNum DataContext="{Binding Azure}" HasNumFld="False" DataDisplayName="danych Azure" FieldsList="azure"/>
             </Expander>
 
             <Expander Header="Pogoda" ToolTip="Różne dane pogodowe" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
                 <StackPanel>
                     <Expander Header="VisualCross" ToolTip="Dane pogodowe" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                        <local:UserControlTxtNum DataContext="{Binding VCross}" DataDisplayName="przypisanej pogody"/>
+                            <local:UserControlTxtNum DataContext="{Binding VCross}" DataDisplayName="przypisanej pogody" FieldsList="viscros"/>
                     </Expander>
 
                     <Expander Header="IMGW Opad" ToolTip="Dane o opadach" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                        <local:UserControlTxtNum DataContext="{Binding ImgwOpad}" DataDisplayName="danych o opadzie"/>
+                            <local:UserControlTxtNum DataContext="{Binding ImgwOpad}" DataDisplayName="danych o opadzie" FieldsList="opad"/>
                     </Expander>
 
                     <Expander Header="IMGW Klimat" ToolTip="Dane Klimat" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
-                        <local:UserControlTxtNum DataContext="{Binding ImgwKlimat}" DataDisplayName="danych o klimacie"/>
+                            <local:UserControlTxtNum DataContext="{Binding ImgwKlimat}" DataDisplayName="danych o klimacie" FieldsList="klimat"/>
                     </Expander>
                 </StackPanel>
             </Expander>

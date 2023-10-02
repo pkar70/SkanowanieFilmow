@@ -3,6 +3,7 @@
 Public Class UserControlTxtNum
 
     Public Property HasNumFld As Boolean = True
+    Public Property FieldsList As String
 
     Public Property DataDisplayName As String
 
@@ -12,6 +13,8 @@ Public Class UserControlTxtNum
         If query Is Nothing Then Return
 
         uiNumFlds.Visibility = If(HasNumFld, Visibility.Visible, Visibility.Collapsed)
+        uiFldTxt.FieldsList = FieldsList
+        uiNumFlds.FieldsList = FieldsList
         uiCheckBox.Content = "Dołącz zdjęcia bez " & DataDisplayName
         uiCheckBox.ToolTip = "Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają " & DataDisplayName
     End Sub
