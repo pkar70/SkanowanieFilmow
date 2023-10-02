@@ -1512,22 +1512,32 @@ Public Class ProcessBrowse
         End If
     End Sub
 
-    Private Shared _searchWnd As Window
+    'Private Shared _searchWnd As Window
     Private Sub uiFilterSearch_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "query"
 
+        ' nic nie daje pamiętanie tego okna, bo i tak po zamknięciu do niego nie wraca
+        'If _searchWnd IsNot Nothing Then
+        '    Try
+        '        _searchWnd.Show()
+        '        _searchWnd.Activate()
+        '        Return
+        '    Catch ex As Exception
+        '        _searchWnd = Nothing
+        '    End Try
+        'End If
 
-        If _searchWnd IsNot Nothing Then
-            Try
-                _searchWnd.Activate()
+        ' jeśli takie mamy, to go aktywujemy
+        For Each oWnd As Window In Me.OwnedWindows
+            If oWnd.GetType = GetType(BrowseFullSearch) Then
+                oWnd.Activate()
                 Return
-            Catch ex As Exception
-                _searchWnd = Nothing
-            End Try
-        End If
+            End If
+        Next
 
-        _searchWnd = New BrowseFullSearch
+        ' a jak nie mamy, to tworzymy
+        Dim _searchWnd As Window = New BrowseFullSearch
         _searchWnd.Owner = Me
         _searchWnd.Show()
     End Sub
