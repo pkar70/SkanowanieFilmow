@@ -1615,7 +1615,23 @@ Public Class ProcessBrowse
 
     End Sub
 
-    '
+    Private Sub uiFilterRemoteDesc_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "remdesc"
+
+        Dim bWas As Boolean = False
+        For Each thumb As ThumbPicek In _thumbsy
+            If Application.GetShareDescriptionsIn.FindForPic(thumb.oPic) Is Nothing Then
+                thumb.opacity = _OpacityWygas
+            Else
+                thumb.opacity = 1
+                bWas = True
+            End If
+        Next
+
+        KoniecFiltrowania(bWas)
+
+    End Sub
     Private Sub FilterSharingLogin(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "login"

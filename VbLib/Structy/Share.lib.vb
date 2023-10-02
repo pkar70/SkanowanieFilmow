@@ -112,10 +112,6 @@ Public Class ShareServer
 End Class
 
 
-
-
-#End Region
-
 Public Class ShareDescription
     Inherits BaseStruct
 
@@ -141,6 +137,8 @@ Public Class ShareDescription
     End Function
 End Class
 
+
+#End Region
 
 
 
@@ -249,6 +247,33 @@ Public Class ShareServerList
     Public Function FindByGuid(loginGuid As String) As ShareServer
         Return MyBase.Find(Function(x) x.login.ToString = loginGuid)
     End Function
+
+End Class
+
+Public Class ShareDescInList
+    Inherits BaseList(Of ShareDescription)
+
+    Public Sub New(folder As String)
+        MyBase.New(folder, "shareIncoming.json")
+    End Sub
+
+    Public Function FindForPic(picek As Vblib.OnePic) As List(Of ShareDescription)
+        Dim ret As List(Of ShareDescription)
+
+        ' jeśli picek ma guid, to z niego skorzystamy najpierw
+        If Not String.IsNullOrWhiteSpace(picek.PicGuid) Then
+            ret = MyBase.GetList.Where(Function(x) x.picid = picek.PicGuid)
+            If ret IsNot Nothing AndAlso ret.Count > 0 Then Return ret
+        End If
+
+        ' próbujemy z dwukropkiem - nazwą pliku
+        Dim temp As String = ":" & IO.Path.GetFileName(picek.InBufferPathName)
+        ret = MyBase.GetList.Where(Function(x) x.picid = temp)
+        If ret IsNot Nothing AndAlso ret.Count > 0 Then Return ret
+
+        Return Nothing
+    End Function
+
 
 End Class
 

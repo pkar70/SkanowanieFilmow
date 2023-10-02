@@ -64,6 +64,7 @@
                             <MenuItem Header="For Channel" Name="uiFilterChannels" />
                             <MenuItem Header="For Login" Name="uiFilterLogins"/>
                             <MenuItem Header="Cudze" Click="uiFilterCudze_Click" />
+                            <MenuItem Header="remote desc" Click="uiFilterRemoteDesc_Click" />
                         </MenuItem>
                         <MenuItem Header="Full search" Click="uiFilterSearch_Click" />
                         <MenuItem Header="none" Click="uiFilterNone_Click" />

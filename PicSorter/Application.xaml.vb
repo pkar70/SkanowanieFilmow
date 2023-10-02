@@ -220,12 +220,12 @@ Partial Class Application
         Return gShareServers
     End Function
 
-    Private Shared gShareDescriptionsIn As BaseList(Of Vblib.ShareDescription)
+    Private Shared gShareDescriptionsIn As ShareDescInList
 
-    Public Shared Function GetShareDescriptionsIn() As BaseList(Of ShareDescription)
+    Public Shared Function GetShareDescriptionsIn() As ShareDescInList
         If gShareDescriptionsIn IsNot Nothing Then Return gShareDescriptionsIn
 
-        gShareDescriptionsIn = New BaseList(Of ShareDescription)(Application.GetDataFolder, "shareIncoming.json")
+        gShareDescriptionsIn = New ShareDescInList(Application.GetDataFolder)
         gShareDescriptionsIn.Load()
         Return gShareDescriptionsIn
     End Function
