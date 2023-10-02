@@ -56,7 +56,7 @@
             </Expander>
 
             <Expander Header="Astronomia" ToolTip="Dane astronomiczne (ASTRO, MOON, POGODA)" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                <local:UserControlAstro DataContext="{Binding Astro, Mode=TwoWay}" />
+                <local:UserControlAstro DataContext="{Binding astro, Mode=TwoWay}" />
             </Expander>
 
             <Expander Header="Faces" ToolTip="Rozpoznawanie twarzy (WINFACE/AZURE)" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
