@@ -1890,6 +1890,10 @@ Public Class ProcessBrowse
         OpenSubWindow(New SimpleOCR(_inArchive))
     End Sub
 
+    Private Sub uiOknaRemoteDesc_Click(sender As Object, e As RoutedEventArgs)
+        OpenSubWindow(New RemoteDescr(_inArchive))
+    End Sub
+
     Private Sub uiOknaTargetDir_Click(sender As Object, e As RoutedEventArgs)
         OpenSubWindow(New SimpleTargetDir)
     End Sub

@@ -121,6 +121,7 @@
                         <MenuItem Header="Manual Exif" Click="uiOknaManualExif_Click" />
                         <MenuItem Header="Azure Exif" Click="uiOknaManualAzureExif_Click" />
                         <MenuItem Header="Target dir" Click="uiOknaTargetDir_Click" Name="uiOknaTargetDir" />
+                        <MenuItem Header="Remote desc" Click="uiOknaRemoteDesc_Click" Name="uiOknaRemoteDesc" />
                     </Menu>
                 </Popup>
                 <Button Name="uiAction" Content=" Action " Height="Auto" Width="Auto" Click="uiActionOpen_Click" />
