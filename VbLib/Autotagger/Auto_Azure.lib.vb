@@ -12,7 +12,7 @@ Imports System.IO
 Imports MetadataExtractor.Formats.Jpeg
 Imports Microsoft.Azure.CognitiveServices.Vision
 Imports Microsoft.Azure.CognitiveServices.Vision.ComputerVision.ComputerVisionClientExtensions
-
+Imports pkar.DotNetExtensions
 
 Public Class Auto_AzureTest
     Inherits Vblib.AutotaggerBase
@@ -99,7 +99,7 @@ Public Class Auto_AzureTest
         Using oArchive = IO.Compression.ZipFile.OpenRead(sNarFileName)
 
             For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not IO.Path.GetExtension(oInArch.Name).Equals(".jpg", StringComparison.CurrentCultureIgnoreCase) Then Continue For
+                If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
 
                 ' mamy JPGa (a nie XML na przykład)
 

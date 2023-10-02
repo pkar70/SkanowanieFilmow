@@ -1512,7 +1512,7 @@ Public Class OnePic
 
 
     ''' <summary>
-    ''' true/false, jeśli spełnione są "fragments, prefixed with ! for negate"; TRUE gdy maski są empty
+    ''' true/false, jeśli spełnione są "fragments, prefixed with ! for negate"; TRUE gdy maski są empty; Case insensitive
     ''' </summary>
     Private Shared Function CheckStringMasks(sFromPicture As String, sMaskiWord As String) As Boolean
         If String.IsNullOrWhiteSpace(sMaskiWord) Then Return True
@@ -1532,7 +1532,7 @@ Public Class OnePic
     End Function
 
     ''' <summary>
-    ''' false gdy picture zawiera "fragments prefixed with !", wszędzie indziej TRUE
+    ''' false gdy picture zawiera "fragments prefixed with !", wszędzie indziej TRUE, case insensitive
     ''' </summary>
     Private Shared Function CheckStringMasksNegative(sFromPicture As String, sMaskiWord As String) As Boolean
         If String.IsNullOrWhiteSpace(sMaskiWord) Then Return True
@@ -1552,14 +1552,10 @@ Public Class OnePic
 
 
     ''' <summary>
-    ''' true/false, jeśli jest contains
+    ''' true/false, jeśli jest contains, lub sMask empty. Case independent
     ''' </summary>
     Private Shared Function CheckStringContains(sFromPicture As String, sMaska As String) As Boolean
-        If String.IsNullOrWhiteSpace(sMaska) Then Return True
-
-        sFromPicture = If(sFromPicture?.ToLowerInvariant, "")
-
-        Return sFromPicture.Contains(sMaska)
+        Return sFromPicture.ContainsCI(sMaska)
     End Function
 
 
