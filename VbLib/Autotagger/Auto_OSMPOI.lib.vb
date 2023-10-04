@@ -149,7 +149,7 @@ Public Class Auto_OSM_POI
 
         ' jeśli czegoś nie ma w _CacheLista, to dodaj - i zapisz
         Dim bNieZnam As Boolean = True
-        For Each oItem As CacheOSMPOI_Item In _CacheLista.GetList
+        For Each oItem As CacheOSMPOI_Item In _CacheLista
             If oItem.place_id = nowyItem.place_id AndAlso oItem.osm_id = nowyItem.osm_id Then
                 bNieZnam = False
                 Exit For
@@ -165,7 +165,7 @@ Public Class Auto_OSM_POI
 
     Private Function TryFromCache(oPos As pkar.BasicGeopos) As String
 
-        Dim oBliskie As CacheOSMPOI_Item = FindNearestPoint(_CacheLista.GetList, oPos)
+        Dim oBliskie As CacheOSMPOI_Item = FindNearestPoint(_CacheLista, oPos)
         If oBliskie Is Nothing Then Return ""
 
         If oPos.DistanceTo(oBliskie.lat, oBliskie.lon) < 500 Then Return oBliskie.display_name

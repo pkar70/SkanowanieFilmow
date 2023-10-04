@@ -90,9 +90,7 @@ Public Class LocalArchive
     Public Shared Function CountDoArchiwizacji() As Integer
 
         Dim currentArchs As New List(Of String)
-        For Each oArch As Vblib.LocalStorage In Application.GetArchivesList.GetList
-            If oArch.enabled Then currentArchs.Add(oArch.StorageName.ToLowerInvariant)
-        Next
+        Application.GetArchivesList.ForEach(Sub(x) If x.enabled Then currentArchs.Add(x.StorageName.ToLowerInvariant))
 
         If currentArchs.Count < 1 Then Return 0
 
@@ -133,7 +131,7 @@ Public Class LocalArchive
 
         _lista = New List(Of DisplayArchive)
 
-        For Each oArch As Vblib.LocalStorage In Application.GetArchivesList.GetList
+        For Each oArch As Vblib.LocalStorage In Application.GetArchivesList
             Dim oNew As New DisplayArchive
             oNew.engine = oArch
             oNew.enabled = oArch.enabled

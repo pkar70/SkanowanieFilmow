@@ -38,8 +38,4 @@ Public Class ArchiveIndex
 
     End Sub
 
-    Public Function GetBufferFromFolder(sFolder As String) As IBufor
-
-    End Function
-
 End Class

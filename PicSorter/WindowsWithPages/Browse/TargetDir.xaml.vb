@@ -363,7 +363,7 @@ Public Class TargetDir
 
         Dim sRet As String = oCBI.Content
 
-        If sRet.StartsWith(".\") Then
+        If sRet.StartsWithCS(".\") Then
             ' jakiś z poprzednich, to może być pełny katalog
 
             ' .\basedir\datesplit\geosplit

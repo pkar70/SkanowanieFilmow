@@ -7,11 +7,7 @@ Public Class UserControlOgolneAdvanced
         uiComboSource.Items.Clear()
 
         uiComboSource.Items.Add("")
-
-        For Each oSource In Application.GetSourcesList.GetList
-            uiComboSource.Items.Add(oSource.SourceName)
-        Next
-
+        Application.GetSourcesList.ForEach(Sub(x) uiComboSource.Items.Add(x.SourceName))
     End Sub
 
     Private Sub uiComboSource_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)

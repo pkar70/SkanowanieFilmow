@@ -39,6 +39,7 @@ Public Enum PicSourceType
     FOLDER = 1
     MTP = 2
     AdHOC = 3
+    PeerSrv = 10
 End Enum
 
 Public Class ExifSource

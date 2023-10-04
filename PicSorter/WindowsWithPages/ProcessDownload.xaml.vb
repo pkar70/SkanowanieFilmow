@@ -4,13 +4,32 @@
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
+Imports lib_sharingNetwork
+Imports pkar
+Imports System.Drawing
 'Imports Org.BouncyCastle.Crypto
 'Imports Org.BouncyCastle.Crypto
 
 Public Class ProcessDownload
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
-        uiLista.ItemsSource = Application.GetSourcesList.GetList
+
+        Dim listka As New List(Of lib_PicSource.PicSourceImplement)
+        Application.GetSourcesList.ForEach(Sub(x) listka.Add(x))
+
+        If Application.GetShareServers.Count > 0 Then
+            ' dodajemy do tego jeszcze peer-serwery
+            For Each oSrv As Vblib.ShareServer In Application.GetShareServers
+                Dim oNew As New lib_PicSource.PicSourceImplement(PicSourceType.PeerSrv, Nothing)
+                oNew.SourceName = oSrv.displayName
+                oNew.Path = oSrv.login.ToString
+                oNew.enabled = False
+                listka.Add(oNew)
+            Next
+        End If
+
+
+        uiLista.ItemsSource = listka
 
         CheckDiskFree()
     End Sub
@@ -53,9 +72,12 @@ Public Class ProcessDownload
 
         End If
 
-        If oSrc.currentExif Is Nothing Then oSrc.currentExif = oSrc.defaultExif.Clone
-        Dim oWnd As New EditExifTag(oSrc.currentExif, oSrc.SourceName & " (chwilowe)", EditExifTagScope.LimitedToSourceDir, False)
-        oWnd.ShowDialog()
+        If oSrc.Typ <> Vblib.PicSourceType.PeerSrv Then
+            If oSrc.currentExif Is Nothing Then oSrc.currentExif = oSrc.defaultExif.Clone
+            Dim oWnd As New EditExifTag(oSrc.currentExif, oSrc.SourceName & " (chwilowe)", EditExifTagScope.LimitedToSourceDir, False)
+            oWnd.ShowDialog()
+        End If
+
 
         Dim iCount As Integer
         Application.ShowWait(True)
@@ -66,8 +88,8 @@ Public Class ProcessDownload
             Return
         End If
 
-
-        Dim iToPurge As Integer = oSrc.Purge(False)
+        Dim iToPurge As Integer = 0
+        If oSrc.Typ <> Vblib.PicSourceType.PeerSrv Then iToPurge = oSrc.Purge(False)
 
         If iToPurge > 0 Then
             If Await vb14.DialogBoxYNAsync($"Wczytałem {iCount} nowości; czy mam zrobić purge? ({iToPurge} plików)") Then
@@ -75,13 +97,12 @@ Public Class ProcessDownload
                 vb14.DialogBox($"Done ({iCount} new files).")
             End If
         Else
-                If iCount > 0 Then
+            If iCount > 0 Then
                 vb14.DialogBox($"Done ({iCount} new files).")
             Else
                 vb14.DialogBox($"Done - no new files.")
             End If
         End If
-
 
     End Sub
 
@@ -104,7 +125,7 @@ Public Class ProcessDownload
         vb14.DumpCurrMethod()
 
         ' sprawdzam czy cokolwiek jest zaznaczone
-        If Not Application.GetSourcesList.GetList.Any(Function(x) x.enabled) Then
+        If Not Application.GetSourcesList.Any(Function(x) x.enabled) Then
             Await vb14.DialogBoxAsync("Ale nic nie zaznaczyłeś...")
             Return
         End If
@@ -115,9 +136,7 @@ Public Class ProcessDownload
 
         If Not Await vb14.DialogBoxYNAsync("Ściągnąć ze wszystkich zaznaczonych źródeł?") Then Return
 
-        For Each oSrc As Vblib.PicSourceBase In Application.GetSourcesList.GetList
-            If Not oSrc.enabled Then Continue For
-
+        For Each oSrc As Vblib.PicSourceBase In Application.GetSourcesList.Where(Function(x) x.enabled)
             Application.ShowWait(True)
             Await RetrieveFilesFromSource(oSrc)
             Application.ShowWait(False)
@@ -130,6 +149,8 @@ Public Class ProcessDownload
 
     Private Async Function RetrieveFilesFromSource(oSrc As Vblib.PicSourceBase) As Task(Of Integer)
         vb14.DumpCurrMethod(oSrc.VolLabel)
+
+        If oSrc.Typ = PicSourceType.PeerSrv Then Return Await RetrieveFromPeer(oSrc)
 
         Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
         'Await vb14.DialogBoxAsync($"read {iCount} files")
@@ -173,4 +194,49 @@ Public Class ProcessDownload
         Return iCount
     End Function
 
+    Private Async Function RetrieveFromPeer(oSrc As PicSourceBase) As Task(Of Integer)
+        ' ściągnij przez sieć
+
+        Dim oPeer As Vblib.ShareServer = Application.GetShareServers.FindByGuid(oSrc.Path)
+
+        Dim ret As String = Await httpKlient.TryConnect(oPeer)
+        If Not ret.StartsWith("OK") Then
+            Vblib.DialogBox($"Cannot connect to {oSrc.SourceName}" & vbCrLf & ret)
+            Return -1
+        End If
+
+        Dim lista As BaseList(Of Vblib.OnePic) = Await httpKlient.GetPicListBuffer(oPeer)
+        If lista Is Nothing Then Return -2
+        If lista.Count < 1 Then Return 0
+
+        uiProgBar.Maximum = lista.Count
+        uiProgBar.Value = 0
+        uiProgBar.Visibility = Visibility.Visible
+
+        Dim iCount As Integer = 1
+
+        For Each oPicek As Vblib.OnePic In lista
+            ' kontrola czy pliku już przypadkiem nie ma (wedle suggested filename) - wtedy go pomijamy
+            If Application.GetBuffer.GetList.First(Function(x) x.sSuggestedFilename = oPicek.sSuggestedFilename) IsNot Nothing Then Continue For
+
+            oPicek.oContent = Await httpKlient.GetPicDataFromBuff(oPeer, oPicek.InBufferPathName)
+            If oPicek.oContent IsNot Nothing Then
+                Await Application.GetBuffer.AddFile(oPicek)
+                uiProgBar.Value += 1
+                iCount += 1
+                ' co 10 plików zapisuje dane, na wypadek awarii/zamknięcia app żeby coś było
+                If iCount Mod 10 = 0 Then Application.GetBuffer.SaveData()
+            End If
+        Next
+
+        Sequence.ResetPoRetrieve()
+
+        uiProgBar.Value = 0
+        uiProgBar.Visibility = Visibility.Collapsed
+
+        Application.GetBuffer.SaveData()
+
+        Return iCount
+
+    End Function
 End Class

@@ -1,6 +1,8 @@
 ﻿
 
 
+Imports Vblib
+
 Public NotInheritable Class PicMenuShareUpload
     Inherits PicMenuBase
 
@@ -11,18 +13,35 @@ Public NotInheritable Class PicMenuShareUpload
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Share upload", True) Then Return
+        If Not InitEnableDisable("Share peers", True) Then Return
 
-        WypelnMenu(Me, AddressOf ActionSharingUpload)
+        If Application.GetShareLogins.Count > 0 Then
+            Dim oNew As New MenuItem With {.Header = "Mark for Login"}
+            Me.Items.Add(oNew)
+            WypelnMenuLogins(oNew, AddressOf ActionSharingLogin)
 
+            oNew = New MenuItem With {.Header = "UnMark for Login"}
+            Me.Items.Add(oNew)
+            WypelnMenuLogins(oNew, AddressOf ActionSharingLoginUnMark)
+
+        End If
+
+        If Application.GetShareServers.Count > 0 Then
+            Dim oNew As New MenuItem With {.Header = "Send to Server"}
+            Me.Items.Add(oNew)
+            WypelnMenuServers(oNew, AddressOf ActionSharingServer)
+        End If
         _wasApplied = True
     End Sub
 
-    Public Shared Sub WypelnMenu(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
-        oMenuItem.Items.Clear()
-        ' _UImenuOnClick = oEventHandler
+#Region "submenu logins"
 
-        For Each oLogin As Vblib.ShareServer In Application.GetShareServers.GetList
+    Private _ShareLogin As Vblib.ShareLogin
+
+    Private Sub WypelnMenuLogins(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
+        oMenuItem.Items.Clear()
+
+        For Each oLogin As Vblib.ShareLogin In Application.GetShareLogins
 
             Dim oNew As New MenuItem
             oNew.Header = oLogin.displayName
@@ -33,24 +52,71 @@ Public NotInheritable Class PicMenuShareUpload
             oMenuItem.Items.Add(oNew)
         Next
 
-        ' w odróżnieniu od innych - tu mamy wygaszanie
-        oMenuItem.Visibility = If(oMenuItem.Items.Count > 0, Visibility.Visible, Visibility.Collapsed)
+    End Sub
+
+    Private Async Sub ActionSharingLogin(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        _ShareLogin = oFE?.DataContext
+        If _ShareLogin Is Nothing Then Return
+
+        Await OneOrManyAsync(AddressOf MarkOnePicForLogin)
+
+    End Sub
+
+    Private Async Sub ActionSharingLoginUnMark(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        _ShareLogin = oFE?.DataContext
+        If _ShareLogin Is Nothing Then Return
+
+        Await OneOrManyAsync(AddressOf UnMarkOnePicForLogin)
+
+    End Sub
+
+    Private Async Function MarkOnePicForLogin(oPic As OnePic) As Task
+        oPic.AddCloudPublished("L:" & _ShareLogin.login.ToString, "")
+    End Function
+
+    Private Async Function UnMarkOnePicForLogin(oPic As OnePic) As Task
+        oPic.RemoveCloudPublished("L:" & _ShareLogin.login.ToString)
+    End Function
+
+#End Region
+
+#Region "submenu servers"
+
+    Public Shared Sub WypelnMenuServers(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
+        oMenuItem.Items.Clear()
+
+        For Each oLogin As Vblib.ShareServer In Application.GetShareServers
+
+            Dim oNew As New MenuItem
+            oNew.Header = oLogin.displayName
+            oNew.DataContext = oLogin
+
+            AddHandler oNew.Click, oEventHandler
+
+            oMenuItem.Items.Add(oNew)
+        Next
 
     End Sub
 
     Private _allErrs As String = ""
     Private _ShareSrvr As Vblib.ShareServer
 
-    Private Async Sub ActionSharingUpload(sender As Object, e As RoutedEventArgs)
+    Private Async Sub ActionSharingServer(sender As Object, e As RoutedEventArgs)
 
         Dim oFE As FrameworkElement = sender
         _ShareSrvr = oFE?.DataContext
         If _ShareSrvr Is Nothing Then Return
 
+        Dim bOnlyMark As Boolean = Not Await Vblib.DialogBoxYNAsync("Wysłać od razu? (mogę tylko zaznaczyć)")
+
         Dim sRet As String = Await lib_sharingNetwork.httpKlient.TryConnect(_ShareSrvr)
         If Not sRet.StartsWith("OK") Then
-            Vblib.DialogBox("Błąd podłączenia do serwera: " & sRet)
-            Return
+            If Await Vblib.DialogBoxYNAsync("Błąd podłączenia do serwera: " & sRet & vbCrLf & "Zaznaczyć na później? (NIE=cancel") Then
+                Return
+            End If
+            bOnlyMark = True
         End If
 
         sRet = Await lib_sharingNetwork.httpKlient.CanUpload(_ShareSrvr)
@@ -59,7 +125,12 @@ Public NotInheritable Class PicMenuShareUpload
             Return
         End If
 
-        Await OneOrManyAsync(AddressOf UploadOnePic)
+        If bOnlyMark Then
+            Await OneOrManyAsync(AddressOf UploadOnePic)
+        Else
+            Await OneOrManyAsync(AddressOf MarkOnePic)
+        End If
+
 
         If _allErrs <> "" Then
             Vblib.ClipPut(_allErrs)
@@ -67,6 +138,11 @@ Public NotInheritable Class PicMenuShareUpload
         End If
 
     End Sub
+
+
+    Private Async Function MarkOnePic(oPic As OnePic) As Task
+        oPic.AddCloudPublished("S:" & _ShareSrvr.login.ToString, "")
+    End Function
 
     Public Async Function UploadOnePic(oPic As Vblib.OnePic) As Task
 
@@ -89,6 +165,6 @@ Public NotInheritable Class PicMenuShareUpload
 
         oPic.ResetPipeline() ' zwolnienie streamów, readerów, i tak dalej
     End Function
-
+#End Region
 
 End Class

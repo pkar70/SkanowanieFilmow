@@ -16,17 +16,11 @@ Public Class PicSourceList
     ''' używa katalogu który był parametrem dla New
     ''' </summary>
     Public Sub InitDataDirectory()
-        For Each oSrc As PicSourceImplement In _list
-            oSrc.InitDataDirectory(_dataFolder)
-        Next
+        Me.ForEach(Sub(x) x.InitDataDirectory(_dataFolder))
     End Sub
 
     Public Sub AddToPurgeList(sSource As String, sId As String)
-        For Each oSrc As PicSourceImplement In _list
-            If oSrc.SourceName = sSource Then
-                oSrc.AddToPurgeList(sId)
-            End If
-        Next
+        Find(Function(x) x.SourceName = sSource)?.AddToPurgeList(sId)
     End Sub
 
     Protected Overrides Sub InsertDefaultContent()
@@ -38,7 +32,7 @@ Public Class PicSourceList
         oNewSrc.enabled = False
         oNewSrc.defaultExif = New Vblib.ExifTag(Vblib.ExifSource.SourceDefault)
 
-        _list.Add(oNewSrc)
+        Add(oNewSrc)
 
     End Sub
 

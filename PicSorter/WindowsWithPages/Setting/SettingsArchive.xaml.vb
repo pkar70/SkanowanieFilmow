@@ -15,7 +15,7 @@ Class SettingsArchive
     End Sub
     Private Sub ShowSourcesList()
         uiLista.ItemsSource = Nothing
-        uiLista.ItemsSource = Application.GetArchivesList().GetList
+        uiLista.ItemsSource = Application.GetArchivesList()
     End Sub
 
     Private Sub uiAddSource_Click(sender As Object, e As RoutedEventArgs)
@@ -56,7 +56,7 @@ Class SettingsArchive
 
         If String.IsNullOrWhiteSpace(sCurrentVolLabel) Then sCurrentVolLabel = "#####"  ' taka nie wystąpi
 
-        Dim iInd As Integer = sCurrentVolLabel.IndexOf("(")
+        Dim iInd As Integer = sCurrentVolLabel.IndexOfOrdinal("(")
         If iInd > 1 Then sCurrentVolLabel = sCurrentVolLabel.Substring(0, iInd - 1)
         sCurrentVolLabel = sCurrentVolLabel.ToLowerInvariant
 
@@ -109,7 +109,7 @@ Class SettingsArchive
 
         Dim sVolLabel As String = uiSrcVolume.SelectedValue
         If String.IsNullOrWhiteSpace(sVolLabel) Then Return
-        Dim iInd As Integer = sVolLabel.IndexOf("(")
+        Dim iInd As Integer = sVolLabel.IndexOfOrdinal("(")
         If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd - 1).Trim
 
         Dim sPath As String = uiSrcPath.Text
@@ -126,7 +126,7 @@ Class SettingsArchive
 
         ' nazwa nie moze sie pokryć
         If uiSrcName.Text <> _item.StorageName Then
-            For Each oItem In Application.GetSourcesList().GetList
+            For Each oItem In Application.GetSourcesList()
                 If oItem.SourceName.EqualsCIAI(uiSrcName.Text) Then
                     vb14.DialogBox("Archiwum o takiej nazwie już istnieje")
                     Return

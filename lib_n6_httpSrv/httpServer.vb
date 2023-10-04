@@ -14,14 +14,16 @@ Public Class ServerWrapper
     Private Shared _buffer As Vblib.IBufor
     Private Shared _shareDescIn As pkar.BaseList(Of Vblib.ShareDescription)
     Private Shared _shareDescOut As pkar.BaseList(Of Vblib.ShareDescription)
+    Private Shared _postProcs As Vblib.PostProcBase()
 
-    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDescIn As pkar.BaseList(Of Vblib.ShareDescription), shareDescOut As pkar.BaseList(Of Vblib.ShareDescription))
+    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDescIn As pkar.BaseList(Of Vblib.ShareDescription), shareDescOut As pkar.BaseList(Of Vblib.ShareDescription), postProcs As Vblib.PostProcBase())
         _loginy = loginy
         _databases = databases
         _lastAccess = lastAccess
         _buffer = buffer
         _shareDescIn = shareDescIn
         _shareDescOut = shareDescOut
+        _postProcs = postProcs
     End Sub
 
     Public Sub StartSvc()
@@ -88,15 +90,18 @@ Public Class ServerWrapper
 
                 Vblib.DumpMessage("Mam request: " & request.RawUrl) ' on jest typu: /canupload?guid=xxx&clientHost=Hxxxx
 
-                Dim responseString As String = Await MainWork(request)
-
                 Dim response As HttpListenerResponse = context.Response
-                Dim buffer As Byte() = System.Text.Encoding.UTF8.GetBytes(responseString)
-                response.ContentLength64 = buffer.Length
-                Dim output As System.IO.Stream = response.OutputStream
-                output.Write(buffer, 0, buffer.Length)
-                'You must close the output stream.
-                output.Close()
+                Dim responseString As String = Await MainWork(request, response)
+
+                If responseString <> "NOTXTRESPONSE" Then
+                    Dim buffer As Byte() = System.Text.Encoding.UTF8.GetBytes(responseString)
+                    response.ContentLength64 = buffer.Length
+                    Dim output As System.IO.Stream = response.OutputStream
+                    output.Write(buffer, 0, buffer.Length)
+                    'You must close the output stream.
+                    output.Close()
+                End If
+
             Catch ex As Exception
 
             End Try
@@ -117,7 +122,7 @@ Public Class ServerWrapper
 
     Private Const PROTO_VERS As String = "1.0"
 
-    Private Async Function MainWork(request As HttpListenerRequest) As Task(Of String)
+    Private Async Function MainWork(request As HttpListenerRequest, response As HttpListenerResponse) As Task(Of String)
 
         Dim command As String = request.Url.AbsolutePath
         Dim clientAddress As IPAddress = request.LocalEndPoint.Address
@@ -199,7 +204,14 @@ Public Class ServerWrapper
                 ' return: JSON z dumpem wszystkich z kolejki
                 Return ConfirmDescriptionQueue(oLogin, queryString.Item("lastpicid"))
 
-
+            Case "currentpiclistforme"
+                ' input: guid, clientHost
+                ' return: JSON z dumpem wszystkich z kolejki
+                Return SendMarkedPicsListFromBuff(oLogin)
+            Case "currentpicdata"
+                ' input: guid, clientHost, fname = InBuffer
+                ' return: JSON z dumpem wszystkich z kolejki
+                Return Await SendMarkedPicDataFromBuff(oLogin, queryString.Item("fname"), response)
 
             Case "getnewpicslist"
                 Return GetNewPicsList(oLogin, queryString.Item("sinceId"))
@@ -213,6 +225,48 @@ Public Class ServerWrapper
 
     End Function
 
+#Region "odsy³anie zdjêæ z bufora"
+    Private Function SendMarkedPicsListFromBuff(oLogin As ShareLogin) As String
+
+        Dim sRet As String = ""
+        For Each oPic As Vblib.OnePic In _buffer.GetList.Where(Function(x) Not x.sharingLockSharing AndAlso x.IsCloudPublishMentioned("L:" & oLogin.login.ToString))
+            If sRet <> "" Then sRet &= ","
+            sRet &= oPic.DumpAsJSON
+        Next
+
+        ' If sRet = "" Then Return "No pics marked for your login"
+        Return "[" & sRet & "]"
+
+    End Function
+
+    Private Async Function SendMarkedPicDataFromBuff(oLogin As ShareLogin, fname As String, response As HttpListenerResponse) As Task(Of String)
+
+        Dim oPic As Vblib.OnePic = _buffer.GetList.Find(Function(x) x.InBufferPathName = fname)
+        If oPic Is Nothing Then Return "ERROR: no such pic"
+        If oPic.sharingLockSharing Then Return "ERROR: file is excluded from sharing"
+        If Not oPic.IsCloudPublishMentioned("L:" & oLogin.login.ToString) Then Return "ERROR: pic not marked"
+
+        oPic.ResetPipeline()
+        Dim ret As String = Await oPic.RunPipeline(oLogin.processing, _postProcs)
+        If ret <> "" Then Return "ERROR: " & ret
+
+        response.ContentLength64 = oPic.oContent.Length
+        response.ContentType = "image/jpeg"
+        oPic.oContent.Seek(0, SeekOrigin.Begin)
+        response.OutputStream.Seek(0, SeekOrigin.Begin)
+        oPic.oContent.CopyTo(response.OutputStream)
+        'You must close the output stream.
+        response.OutputStream.Close()
+
+        oPic.ResetPipeline() ' zwolnienie streamów, readerów, i tak dalej
+
+        ' ¿e response ju¿ jest, binarny, wiêc nie wysy³amy tekstu
+        Return "NOTXTRESPONSE"
+    End Function
+
+#End Region
+
+
 #Region "odsy³anie skolejkowanych komentarzy"
 
     ' obs³uga kolejki ShareDescOut
@@ -225,7 +279,7 @@ Public Class ServerWrapper
         ' szukamy tych dla podanego GUID (obojêtnie czy login czy server)
         Dim peerGuid As String = oLogin.login.ToString
         Dim ret As String = ""
-        For Each oDesc As Vblib.ShareDescription In _shareDescOut.GetList.Where(Function(x) x.descr.PeerGuid.EndsWithCI(peerGuid))
+        For Each oDesc As Vblib.ShareDescription In _shareDescOut.Where(Function(x) x.descr.PeerGuid.EndsWithCI(peerGuid))
             If ret <> "" Then ret &= ","
             ret &= oDesc.DumpAsJSON(True)
         Next
@@ -380,7 +434,7 @@ Public Class ServerWrapper
     ''' </summary>
     ''' <returns>NULL gdy nie ma usera, zablokowany, z³y adres...</returns>
     Private Function ResolveLogin(loginGuid As Guid, IPaddr As IPAddress, clntName As String) As Vblib.ShareLogin
-        For Each oLogin As Vblib.ShareLogin In _loginy.GetList
+        For Each oLogin As Vblib.ShareLogin In _loginy
             If oLogin.login = loginGuid Then
 
                 If Not oLogin.enabled Then Return Nothing

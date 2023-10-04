@@ -112,22 +112,14 @@ Class SettingsKeywords
     End Sub
 
     Public Shared Sub FillDirCombo(uiCombo As ComboBox, currDir As String, bNoDates As Boolean)
-
-
-        For Each oItem As Vblib.OneDir In Application.GetDirTree.GetList
-            'If oItem.SubItems Is Nothing Then Continue For
-            'If oItem.SubItems.Count < 1 Then Continue For
-            ' zostaje własna rekurencja, bo chodzi o indent w hierarchii
-            WypelnComboRecursive(uiCombo, oItem, "", currDir, bNoDates)
-        Next
-
+        Application.GetDirTree.ForEach(Sub(x) WypelnComboRecursive(uiCombo, x, "", currDir, bNoDates))
     End Sub
 
 
     Private Async Sub uiAddEditDone_Click(sender As Object, e As RoutedEventArgs)
 
         If _addMode Then
-            For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+            For Each oItem As Vblib.OneKeyword In Application.GetKeywords
                 If oItem.sId = uiDisplayName.Text Then
                     vb14.DialogBox("Taka nazwa już istnieje, wybierz inną")
                     Return
@@ -179,7 +171,7 @@ Class SettingsKeywords
     Private Sub PrzeliczIpokaz(bPrzelicz As Boolean)
         If bPrzelicz Then Application.GetKeywords.CalculateMinMaxDateTree()
         uiTreeView.ItemsSource = Nothing
-        uiTreeView.ItemsSource = Application.GetKeywords.GetList()
+        uiTreeView.ItemsSource = Application.GetKeywords
     End Sub
 
     Private Sub uiExportItem_Click(sender As Object, e As RoutedEventArgs)

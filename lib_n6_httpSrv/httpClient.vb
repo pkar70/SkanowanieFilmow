@@ -6,6 +6,8 @@ Imports System.Data.SqlTypes
 Imports System.IO
 Imports System.Net.Http
 Imports System.Net.Http.Json
+Imports System.Runtime.Serialization
+Imports System.Runtime.Versioning
 Imports Microsoft
 Imports Microsoft.Rest
 Imports Microsoft.SqlServer
@@ -16,6 +18,10 @@ Public Class httpKlient
 
 #Region "handshaking"
 
+    ''' <summary>
+    ''' próba podłączenia
+    ''' </summary>
+    ''' <returns>FAIL, ERROR..., OK...</returns>
     Public Shared Async Function TryConnect(oServer As Vblib.ShareServer) As Task(Of String)
         ' połączenie Version oraz CanUpload
         If Not EnsureClient() Then Return "FAIL"
@@ -28,7 +34,7 @@ Public Class httpKlient
             ret = $"OK, server version {retVer}, CanUpload={retAllow}"
 
         Catch ex As Exception
-            ret = "ERROR"
+            ret = "ERROR " & ex.Message
         End Try
 
         _inuse = False  ' =true jest w EnsureClient
@@ -181,7 +187,7 @@ Public Class httpKlient
         If lista Is Nothing Then Return True    ' nie ma nic do wysłania
 
         Do
-            Dim jeden As ShareDescription = lista.GetList.First(Function(x) x.descr.PeerGuid = serverGuid)
+            Dim jeden As ShareDescription = lista.First(Function(x) x.descr.PeerGuid = serverGuid)
             If jeden Is Nothing Then Exit Do
 
             Dim ret As String = Await UploadDesc(peer, jeden.picid, jeden.descr)
@@ -245,7 +251,7 @@ Public Class httpKlient
 
         Dim iCnt As Integer = 0
         Dim sLastId As String = ""
-        For Each oItem As Vblib.ShareDescription In listaTemp.GetList
+        For Each oItem As Vblib.ShareDescription In listaTemp
             If oItem Is Nothing Then Continue For
             sLastId = oItem.picid   ' dokąd serwer będzie mógł skasować z kolejki
 
@@ -263,19 +269,30 @@ Public Class httpKlient
         Return iCnt
     End Function
 
-    'Case "trylogin"
-    'Return "OK"
-    'Case "getnewpicslist"
-    'Return GetNewPicsList(oLogin, queryString.Item("sinceId"))
-    'Case "GetPic"
-    'Return "Not yet"
-    'Case "UploadPicDescriptions"
-    'Return "Not yet"
-    'Case "CanUpload"
-    'Return If(CanUpload(oLogin), "YES", "NO")
-    'Case "PutPic"
-    'Return "Not yet"
-    'Case "ver" ' wersja protokół
-    'Return PROTO_VERS
+
+
+#Region "ściąganie plików z bufora serwera"
+    Public Shared Async Function GetPicListBuffer(oServer As ShareServer) As Task(Of BaseList(Of Vblib.OnePic))
+        Dim listaTemp As New pkar.BaseList(Of Vblib.OnePic)("dummyfolder")
+
+
+        Dim JsonList As String = Await _clientSlow.GetStringAsync(GetUri(oServer, "currentpiclistforme"))
+        If JsonList Is Nothing Then Return Nothing
+        If JsonList = "[]" Then Return listaTemp
+
+        If Not listaTemp.Import(JsonList) Then Return Nothing    ' nie da się zdeserializować
+
+        Return listaTemp
+
+    End Function
+
+    ''' <summary>
+    ''' wczytaj plik z serwera, używając InBufferPathName, daje stream
+    ''' </summary>
+    Public Shared Async Function GetPicDataFromBuff(oServer As ShareServer, fname As String) As Task(Of IO.Stream)
+        Return Await _clientSlow.GetStreamAsync(GetUri(oServer, "currentpicdata", "fname=" & fname))
+    End Function
+
+#End Region
 
 End Class

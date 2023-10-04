@@ -128,7 +128,7 @@ Public Class OnePic
 
 #Region "operacje na Cloud Publish"
     Public Sub AddCloudPublished(sPublName As String, sRemoteId As String)
-        If IsCloudPublishedIn(sPublName) Then Return
+        If IsCloudPublishMentioned(sPublName) Then Return
         If Published Is Nothing Then Published = New Dictionary(Of String, String)
         Published.Add(sPublName, sRemoteId)
     End Sub
@@ -145,6 +145,9 @@ Public Class OnePic
         Return sRet
     End Function
 
+    ''' <summary>
+    ''' sprawdza czy jest taki key w słowniku publishingów
+    ''' </summary>
     Public Function IsCloudPublishMentioned(sPublName As String) As Boolean
         If Published Is Nothing Then Return False
         If Not Published.ContainsKey(sPublName) Then Return False

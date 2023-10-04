@@ -145,13 +145,13 @@ Class ProcessPic
     Private Sub AktualizujGuzikiSharingu()
         Dim wysok As Integer = 460
 
-        uiSharingRetrieve.Visibility = Visibility.Collapsed
+        'uiSharingRetrieve.Visibility = Visibility.Collapsed
         uiSharingDescrips.Visibility = Visibility.Collapsed
 
-        If Application.GetShareServers.Count > 0 Then
-            uiSharingRetrieve.Visibility = Visibility.Visible
-            wysok += 40
-        End If
+        'If Application.GetShareServers.Count > 0 Then
+        '    uiSharingRetrieve.Visibility = Visibility.Visible
+        '    wysok += 40
+        'End If
 
         If Application.GetShareDescriptionsIn.Count > 0 Then
             uiSharingDescrips.Content = $"Peers' descs ({Application.GetShareDescriptionsIn.Count})"
@@ -169,7 +169,7 @@ Class ProcessPic
         AktualizujGuziki()
     End Sub
 
-    Private Sub uiAutotag_Click(sender As Object, e As RoutedEventArgs) Handles uiAutotag.Click
+    Private Sub uiAutotag_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AutoTags
         oWnd.Show()
     End Sub

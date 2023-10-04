@@ -105,7 +105,7 @@ Public Class DatabaseJSON
         If Not IsLoaded Then Return Nothing
 
         ' dziwne, ale 5 razy takie wyszło (null) - dwa przecinki pod rząd, pewnie przy dodawaniu do archiwumm
-        Return _allItems.GetList.Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
+        Return _allItems.Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
 
     End Function
 
@@ -121,7 +121,7 @@ Public Class DatabaseJSON
         Dim bCopy As Boolean = False
         If String.IsNullOrWhiteSpace(sinceId) Then bCopy = True
 
-        For Each oItem As OnePic In _allItems.GetList
+        For Each oItem As OnePic In _allItems
             If oItem Is Nothing Then Continue For ' pomijamy ewentualne puste
 
             ' pomijamy przed identyfikatorem
@@ -243,7 +243,7 @@ Public Class DatabaseJSON
 
     Public Function GetAll() As IEnumerable(Of OnePic) Implements DatabaseInterface.GetAll
         If Not IsLoaded Then Return Nothing
-        Return _allItems.GetList
+        Return _allItems
     End Function
 End Class
 

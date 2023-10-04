@@ -144,7 +144,7 @@ Public Class SearchWindow
         query.ogolne.AllSubTags.Clear()
         If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
             For Each sKwd As String In query.ogolne.Tags.Split(" ")
-                If Not sKwd.StartsWith("!") Then
+                If Not sKwd.StartsWithCS("!") Then
                     query.ogolne.AllSubTags.Add(Application.GetKeywords.GetAllChilds(sKwd))
                 End If
             Next
@@ -696,13 +696,13 @@ Public Class SearchWindow
 
     Private Sub uiGoMiniaturki_Click(sender As Object, e As RoutedEventArgs)
 
-        If _queryResults.Count < 1 Then Return
+        If Not _queryResults.Any Then Return
 
         Dim lista As New Vblib.BufferFromQuery()
 
         For Each oPic As Vblib.OnePic In _queryResults
 
-            For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.GetList
+            For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
                 'vb14.DumpMessage($"trying archive {oArch.StorageName}")
                 Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
                 vb14.DumpMessage($"real path of index file: {sRealPath}")
@@ -729,7 +729,7 @@ Public Class SearchWindow
 
         If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Return
 
-        For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.GetList
+        For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
             'vb14.DumpMessage($"trying archive {oArch.StorageName}")
             Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
             vb14.DumpMessage($"real path of index file: {sRealPath}")

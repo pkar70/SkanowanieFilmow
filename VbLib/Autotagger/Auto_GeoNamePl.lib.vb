@@ -124,7 +124,7 @@ Public Class Auto_GeoNamePl
         ' jeśli czegoś nie ma w _CacheLista, to dodaj - i zapisz
         For Each oNew As CacheImgw_Item In nowaLista
             Dim bNieZnam As Boolean = True
-            For Each oItem As CacheImgw_Item In _CacheLista.GetList
+            For Each oItem As CacheImgw_Item In _CacheLista
                 If oItem.teryt = oNew.teryt AndAlso oItem.name = oNew.name Then
                     bNieZnam = False
                     Exit For
@@ -142,7 +142,7 @@ Public Class Auto_GeoNamePl
 
     Private Function TryFromCache(oPos As pkar.BasicGeopos, bZgrubne As Boolean) As String
 
-        Dim oBliskie As CacheImgw_Item = FindNearestPoint(_CacheLista.GetList, oPos)
+        Dim oBliskie As CacheImgw_Item = FindNearestPoint(_CacheLista, oPos)
         If oBliskie Is Nothing Then Return ""
 
         If oPos.DistanceTo(oBliskie.lat, oBliskie.lon) < 500 Then Return oBliskie.DisplayName(bZgrubne)

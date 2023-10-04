@@ -21,9 +21,8 @@ Public Class UserControlSearch
     Private Sub FillQueriesCombo()
         uiComboQueries.Items.Clear()
 
-        For Each oItem As SearchQuery In Application.GetQueries.GetList.OrderBy(Function(x) x.nazwa)
-            Dim oNew As New ComboBoxItem With {.Content = oItem.nazwa}
-            uiComboQueries.Items.Add(oNew)
+        For Each oItem As SearchQuery In Application.GetQueries.OrderBy(Function(x) x.nazwa)
+            uiComboQueries.Items.Add(New ComboBoxItem With {.Content = oItem.nazwa})
         Next
     End Sub
 
@@ -39,7 +38,7 @@ Public Class UserControlSearch
         Dim nazwa As String = Await vb14.DialogBoxInputAllDirectAsync("Podaj nazwę kwerendy")
         If String.IsNullOrWhiteSpace(nazwa) Then Return
 
-        For Each oItem As SearchQuery In Application.GetQueries.GetList
+        For Each oItem As SearchQuery In Application.GetQueries
             If oItem.nazwa = nazwa Then
                 If Not Await vb14.DialogBoxYNAsync("Taka nazwa już istnieje, zamienić?") Then
                     Return
@@ -72,7 +71,7 @@ Public Class UserControlSearch
         Dim currName As String = TryCast(uiComboQueries.SelectedItem, String)
         If currName Is Nothing Then Return
 
-        For Each oItem As SearchQuery In Application.GetQueries.GetList
+        For Each oItem As SearchQuery In Application.GetQueries
             If oItem.nazwa = currName Then
                 ' klon - tak żeby grzebanie w danych nie zmieniło oryginału!
                 DataContext = oItem.Clone

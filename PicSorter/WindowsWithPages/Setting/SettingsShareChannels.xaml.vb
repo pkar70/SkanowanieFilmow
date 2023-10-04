@@ -9,10 +9,10 @@ Class SettingsShareChannels
     Private _kwerendy As List(Of String) 'ObservableList(Of SearchQuery)
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        _lista = Application.GetShareChannels.GetList '.OrderBy(Function(x) x.nazwa)
+        _lista = Application.GetShareChannels '.OrderBy(Function(x) x.nazwa)
         uiLista.ItemsSource = _lista
 
-        _kwerendy = Application.GetQueries.GetList.Select(Of String)(Function(x) x.nazwa).ToList
+        _kwerendy = Application.GetQueries.Select(Of String)(Function(x) x.nazwa).ToList
         _kwerendy.Sort()
     End Sub
 

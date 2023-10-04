@@ -338,7 +338,7 @@ Public Class ProcessBrowse
     '        oNew.Header = oLogin.displayName
     '        oNew.DataContext = oLogin
 
-    '        AddHandler oNew.Click, AddressOf ActionSharingUpload
+    '        AddHandler oNew.Click, AddressOf ActionSharingServer
 
     '        uiActionUploadMenu.Items.Add(oNew)
     '        iCnt += 1
@@ -349,7 +349,7 @@ Public Class ProcessBrowse
     '    Return iCnt
     'End Function
 
-    'Private Async Sub ActionSharingUpload(sender As Object, e As RoutedEventArgs)
+    'Private Async Sub ActionSharingServer(sender As Object, e As RoutedEventArgs)
     '    uiActionsPopup.IsOpen = False
 
     '    Dim oFE As FrameworkElement = sender
@@ -1220,6 +1220,17 @@ Public Class ProcessBrowse
         RefreshMiniaturki(False)
     End Sub
 
+    Private Sub uiFilterReverse_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        ' uiFilters.Content = "none" - nie zmieniamy typu, jest po prostu odwrotnie
+
+        For Each oItem In _thumbsy
+            oItem.opacity = If(oItem.opacity = 1, _OpacityWygas, 1)
+        Next
+
+        RefreshMiniaturki(False)
+    End Sub
+
     Private Sub uiFilterNone_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "none"
@@ -1233,6 +1244,7 @@ Public Class ProcessBrowse
 
         RefreshMiniaturki(False)
     End Sub
+
 
     Private Sub uiFilterNoGeo_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
@@ -1567,8 +1579,6 @@ Public Class ProcessBrowse
 
     Public Sub WypelnMenuFilterSharing()
 
-        uiFilterLogins.Items.Clear()
-
         Dim iCnt As Integer = WypelnMenuFilterSharingChannels()
         iCnt += WypelnMenuFilterSharingLogins()
 
@@ -1674,13 +1684,32 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Private Sub FilterSharingLoginMarked(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "marked"
+
+        Dim oFE As FrameworkElement = sender
+        Dim oLogin As Vblib.ShareLogin = oFE?.DataContext
+        If oLogin?.channels Is Nothing Then Return
+
+        Dim bWas As Boolean = False
+        For Each thumb As ThumbPicek In _thumbsy
+            thumb.opacity = _OpacityWygas
+            If thumb.oPic.IsCloudPublishMentioned("L:" & oLogin.login.ToString) Then
+                thumb.opacity = 1
+                bWas = True
+            End If
+        Next
+
+        KoniecFiltrowania(bWas)
+    End Sub
 
     Public Function WypelnMenuFilterSharingChannels() As Integer
         uiFilterChannels.Items.Clear()
 
         Dim iCnt As Integer = 0
 
-        For Each oChannel As Vblib.ShareChannel In Application.GetShareChannels.GetList
+        For Each oChannel As Vblib.ShareChannel In Application.GetShareChannels
             Dim oNew As New MenuItem
             oNew.Header = oChannel.nazwa
             oNew.DataContext = oChannel
@@ -1698,21 +1727,26 @@ Public Class ProcessBrowse
 
     Public Function WypelnMenuFilterSharingLogins() As Integer
         uiFilterLogins.Items.Clear()
+        uiFilterLoginsMarked.Items.Clear()
 
         Dim iCnt As Integer = 0
 
-        For Each oLogin As Vblib.ShareLogin In Application.GetShareLogins.GetList
-            Dim oNew As New MenuItem
-            oNew.Header = oLogin.displayName
-            oNew.DataContext = oLogin
+        For Each oLogin As Vblib.ShareLogin In Application.GetShareLogins
 
+            Dim oNew As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
             AddHandler oNew.Click, AddressOf FilterSharingLogin
-
             uiFilterLogins.Items.Add(oNew)
             iCnt += 1
+
+            Dim oNewMarked As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
+            AddHandler oNewMarked.Click, AddressOf FilterSharingLoginMarked
+            uiFilterLoginsMarked.Items.Add(oNewMarked)
+
+
         Next
 
         uiFilterLogins.IsEnabled = (iCnt > 0)
+        uiFilterLoginsMarked.IsEnabled = (iCnt > 0)
 
         Return iCnt
     End Function
@@ -1945,7 +1979,7 @@ Public Class ProcessBrowse
             If Not String.IsNullOrWhiteSpace(oPic.sharingFromGuid) Then
                 sDymek &= vbCrLf & GetLastSharePeer()?.displayName & "\" & oPic.sSourceName
             Else
-                If oPic.sSourceName.ToLower <> "adhoc" Then sDymek = sDymek & vbCrLf & "Src: " & oPic.sSourceName
+                If oPic.sSourceName.EqualsCI("adhoc") Then sDymek = sDymek & vbCrLf & "Src: " & oPic.sSourceName
             End If
 
             Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)

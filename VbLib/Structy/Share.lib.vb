@@ -162,14 +162,14 @@ Public Class ShareChannelsList
     End Function
 
     Public Sub ReResolveQueries()
-        If _list Is Nothing Then Return
-        If _list.Count < 1 Then Return
+        'If _list Is Nothing Then Return
+        If Count < 1 Then Return
 
-        For Each oItem As Vblib.ShareChannel In _list
+        For Each oItem As Vblib.ShareChannel In Me
             If oItem.queries Is Nothing Then Continue For
             For Each queryData As Vblib.ShareQueryProcess In oItem.queries
 
-                For Each query As Vblib.SearchQuery In _queries.GetList
+                For Each query As Vblib.SearchQuery In _queries
                     If query.nazwa = queryData.queryName Then
                         queryData.query = query
                         Exit For
@@ -202,10 +202,10 @@ Public Class ShareLoginsList
     End Function
 
     Public Sub ReResolveChannels()
-        If _list Is Nothing Then Return
-        If _list.Count < 1 Then Return
+        'If _list Is Nothing Then Return
+        If Count < 1 Then Return
 
-        For Each oItem As Vblib.ShareLogin In _list
+        For Each oItem As Vblib.ShareLogin In Me
             If oItem.channels Is Nothing Then Continue For
 
             For Each channelProc As ShareChannelProcess In oItem.channels
@@ -216,7 +216,7 @@ Public Class ShareLoginsList
                 'If sChanNames.Contains(sNewChanName) Then Continue For
                 'sChanNames &= sNewChanName
 
-                For Each channel As Vblib.ShareChannel In _channelsList.GetList
+                For Each channel As Vblib.ShareChannel In _channelsList
                     If channel.nazwa = channelProc.channelName Then ' channelName.Trim Then
                         'If oItem.channels Is Nothing Then oItem.channels = New List(Of ShareChannel)
                         'oItem.channels.Add(channel)
@@ -262,18 +262,17 @@ Public Class ShareDescInList
 
         ' jeśli picek ma guid, to z niego skorzystamy najpierw
         If Not String.IsNullOrWhiteSpace(picek.PicGuid) Then
-            ret = MyBase.GetList.Where(Function(x) x.picid = picek.PicGuid)
+            ret = MyBase.Where(Function(x) x.picid = picek.PicGuid)
             If ret IsNot Nothing AndAlso ret.Count > 0 Then Return ret
         End If
 
         ' próbujemy z dwukropkiem - nazwą pliku
         Dim temp As String = ":" & IO.Path.GetFileName(picek.InBufferPathName)
-        ret = MyBase.GetList.Where(Function(x) x.picid = temp)
+        ret = MyBase.Where(Function(x) x.picid = temp)
         If ret IsNot Nothing AndAlso ret.Count > 0 Then Return ret
 
         Return Nothing
     End Function
-
 
 End Class
 

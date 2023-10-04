@@ -1,7 +1,9 @@
 ﻿
 
 
-Imports Org.BouncyCastle.Utilities
+'Imports Org.BouncyCastle.Asn1
+Imports System.Net.Http.Json
+'Imports Org.BouncyCastle.Utilities
 Imports pkar
 Imports Vblib
 
@@ -79,9 +81,6 @@ Class MainWindow
 
         uiVers.ShowAppVers
 
-
-        'PoprawkiArchindex20230918()
-
         'Dim pliczek As New BaseList(Of Vblib.OnePic)("E:\Temp\picsortrecovery", "komplet.json")
         'pliczek.Load()
 
@@ -115,6 +114,20 @@ Class MainWindow
         'Application.GetBuffer.SaveData()
     End Sub
 
+    Private Sub ProbaWczytaniaJSONArch20231002()
+        Dim lista As List(Of Vblib.OnePic)
+        Dim sTxt = IO.File.ReadAllText(Application.GetDataFile("", "archIndexFull.json"))
+        Dim sErr As String = ""
+        Try
+            lista = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ObservableList(Of Vblib.OnePic)))
+        Catch ex As Exception
+            sErr = ex.Message
+        End Try
+
+        If sErr <> "" Then Vblib.DialogBox(sErr)
+        Debug.WriteLine(sErr)
+    End Sub
+
     Private Sub PoprawkiArchindex20230918()
         Dim pliczek As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json")
         pliczek.Load()
@@ -126,7 +139,7 @@ Class MainWindow
         Dim noGuidCnt As Integer = 0
         Dim noTargetDirCnt As Integer = 0
 
-        For Each oPic As Vblib.OnePic In pliczek.GetList
+        For Each oPic As Vblib.OnePic In pliczek
             ' usunac te, ktore maja targetdir null
             If oPic Is Nothing Then Continue For
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then
@@ -189,7 +202,7 @@ Class MainWindow
         Vblib.DialogBox("Zrobilem nowy indeks, ktory powinien byc juz poprawny")
     End Sub
 
-    Private Function CalculateMaxThumbCount() As Integer
+    Private Shared Function CalculateMaxThumbCount() As Integer
         ' policz ile zdjęć można mieć
         ' zakładam jeden thumb to 500 KiB (tak zapisałem kiedyś w userGuide)
 
@@ -238,11 +251,12 @@ Class MainWindow
 #End Region
 
     Private Shared Function IsAnyArchPresent() As Boolean
-        Dim anyPresent As Boolean = False
-        For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.GetList
-            If oArch.IsPresent Then Return True
-        Next
-        Return False
+        Return Application.GetArchivesList.Exists(Function(x) x.IsPresent)
+        'Dim anyPresent As Boolean = False
+        'For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.Exists
+        '    If oArch.IsPresent Then Return True
+        'Next
+        'Return False
     End Function
 
 End Class

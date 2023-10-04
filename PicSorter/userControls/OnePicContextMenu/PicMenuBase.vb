@@ -74,7 +74,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
 
     End Function
 
-    Protected Function NewMenuItem(header As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
+    Protected Shared Function NewMenuItem(header As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
         Dim oNew As New MenuItem
         oNew.Header = header
         oNew.IsEnabled = isenabled

@@ -35,12 +35,10 @@ Public MustInherit Class PicSourceBase
 	'Public Shared Property _dataFolder As String    ' dla JSON, żeby mógł wczytać
 
 	''' <summary>
-	''' datafolder potrzebny na plik PURGE
+	''' datafolder potrzebny na plik PURGE, może być NULL
 	''' </summary>
-	''' <param name="typSource"></param>
-	''' <param name="sDataFolder"></param>
 	Public Sub New(typSource As PicSourceType, sDataFolder As String)
-		If sDataFolder IsNot Nothing Then
+		If Not String.IsNullOrWhiteSpace(sDataFolder) Then
 			_purgeFile = IO.Path.Combine(sDataFolder, $"purge.{SourceName}.txt")
 		End If
 		Typ = typSource
@@ -62,8 +60,9 @@ Public MustInherit Class PicSourceBase
 
 	Protected MustOverride Function ReadDirectory_Main() As Integer
 	''' <summary>
-	''' wczytanie katalogu plików (pełny listing)
+	''' wczytanie katalogu plików (pełny listing), dodając tagi z nazw plików
 	''' </summary>
+	''' <param name="lKeywords">Lista słów kluczowych, które są wyciągane z nazwy pliku</param>
 	''' <returns>count(files), gdy = 0 wtedy nie ma sensu iterować</returns>
 	Public Function ReadDirectory(lKeywords As List(Of OneKeyword)) As Integer
 		DumpCurrMethod()

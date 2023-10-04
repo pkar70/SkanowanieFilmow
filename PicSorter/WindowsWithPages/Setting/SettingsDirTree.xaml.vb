@@ -130,7 +130,7 @@ Public Class SettingsDirTree
 
     Private Sub RefreshList()
         uiTreeView.ItemsSource = Nothing
-        uiTreeView.ItemsSource = Application.GetDirTree.GetList()
+        uiTreeView.ItemsSource = Application.GetDirTree
     End Sub
 
     Private Sub uiExportItem_Click(sender As Object, e As RoutedEventArgs)
@@ -225,7 +225,7 @@ Public Class SettingsDirTree
     Public Shared Sub OpenFolderInPicBrowser(sTargetDir As String)
         ' Dim sTargetDir As String = Application.GetDirTree.GetFullPath(sFolderId)
 
-        For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList.GetList
+        For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
             vb14.DumpMessage($"trying archive {oArch.StorageName}")
             Dim sRealPath As String = oArch.GetRealPath(sTargetDir, Vblib.ArchiveIndex.FOLDER_INDEX_FILE)
             vb14.DumpMessage($"real path of index file: {sRealPath}")

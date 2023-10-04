@@ -83,7 +83,7 @@ Public Class AddDescription
     Public Shared Function WypelnMenuKeywords(oMenu As Menu, oEventHandler As RoutedEventHandler) As Integer
         oMenu.Items.Clear()
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords
             Dim oNew As New MenuItem
             oNew.Header = oItem.sId
             'oNew.Margin = _DefMargin

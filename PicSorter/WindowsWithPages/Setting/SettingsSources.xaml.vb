@@ -44,7 +44,7 @@ Class SettingsSources
 
     Private Sub ShowSourcesList()
         uiLista.ItemsSource = Nothing
-        uiLista.ItemsSource = Application.GetSourcesList().GetList
+        uiLista.ItemsSource = Application.GetSourcesList
     End Sub
 
 
@@ -65,10 +65,7 @@ Class SettingsSources
         uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("MTP"))
 
         ' ADHOC może być dodany tylko raz
-        For Each oSource As Vblib.PicSourceBase In Application.GetSourcesList().GetList
-            If oSource.Typ = Vblib.PicSourceType.AdHOC Then Return
-        Next
-
+        If Application.GetSourcesList.Find(Function(x) x.Typ = Vblib.PicSourceType.AdHOC) IsNot Nothing Then Return
         uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("ADHOC"))
 
     End Sub
@@ -198,7 +195,7 @@ Class SettingsSources
 
         Dim sVolLabel As String = uiSrcVolume.SelectedValue
         If String.IsNullOrWhiteSpace(sVolLabel) Then Return
-        Dim iInd As Integer = sVolLabel.IndexOf("(")
+        Dim iInd As Integer = sVolLabel.IndexOfOrdinal("(")
         If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd - 1).Trim
 
         Dim sPath As String = uiSrcPath.Text
@@ -231,7 +228,7 @@ Class SettingsSources
 
         ' nazwa nie moze sie pokryć
         If uiSrcName.Text <> _item.SourceName Then
-            For Each oItem In Application.GetSourcesList().GetList
+            For Each oItem In Application.GetSourcesList
                 If oItem.SourceName.EqualsCIAI(uiSrcName.Text) Then
                     vb14.DialogBox("Źródło o takiej nazwie już istnieje")
                     Return

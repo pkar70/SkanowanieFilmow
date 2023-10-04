@@ -44,7 +44,7 @@ Public Class RemoteDescr
 
     End Sub
 
-    Private Sub Usun(oDesc As ShareDescription)
+    Private Shared Sub Usun(oDesc As ShareDescription)
         Application.GetShareDescriptionsIn.Remove(oDesc)
     End Sub
 

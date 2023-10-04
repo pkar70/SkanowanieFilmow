@@ -20,16 +20,10 @@ Public NotInheritable Class PicMenuGeotag
         Me.Items.Clear()
 
         Me.Items.Add(NewMenuItem("Create Geotag", AddressOf uiCreateGeotag_Click))
-
-        If UseSelectedItems Then
-            Me.Items.Add(NewMenuItem("Make same", AddressOf uiGeotagMakeSame_Click))
-        End If
-
+        Me.Items.Add(NewMenuItem("Make same", AddressOf uiGeotagMakeSame_Click, UseSelectedItems))
         Me.Items.Add(NewMenuItem("Copy Geotag", AddressOf uiGeotagToClip_Click, Not UseSelectedItems))
-
         _itemPaste = NewMenuItem("Paste Geotag", AddressOf uiGeotagPaste_Click, _clip IsNot Nothing)
         Me.Items.Add(_itemPaste)
-
 
         Me.Items.Add(NewMenuItem("Reset Geotag", AddressOf uiGeotagClear_Click, UseSelectedItems OrElse _picek.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing))
 

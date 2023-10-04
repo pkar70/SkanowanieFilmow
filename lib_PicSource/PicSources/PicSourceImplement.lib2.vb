@@ -12,6 +12,9 @@ Public Class PicSourceImplement
     '    MyBase.New(Vblib.PicSourceType.NONE, Vblib.PicSourceBase._dataFolder)
     'End Sub
 
+    ''' <summary>
+    ''' datafolder potrzebny na plik PURGE, może być NULL
+    ''' </summary>
     Public Sub New(typSource As Vblib.PicSourceType, sDataFolder As String)
         MyBase.New(typSource, sDataFolder)
     End Sub

@@ -99,6 +99,8 @@ BROWSER: add keywords, dodać gren('  ',' ') i spacja na koniec zawsze
 BROWSER: usunac wpelni zarchiwizowane, YES - to pytanie o backup config, ten sam co w Settings - tu dodac tez backupowanie bazy danych
 BROWSER: slideshow z zaznaczonych? w ten sposób można byłoby szukać niewidocznej selekcji (filter, action filter->select, action slideshow)
 BROWSER: blokować akcje InArchive gdy jest read-only
+BROWSER: do listy publisherów dodawać "sharin»", pod nim "logins/servers", z listami zdefiniowanych
+
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi

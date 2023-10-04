@@ -75,7 +75,7 @@ Public Class ShowExifs
         FilterText()
     End Sub
 
-    Private Function GetMetadataDump(oPic As Vblib.OnePic) As String
+    Private Shared Function GetMetadataDump(oPic As Vblib.OnePic) As String
 
         Dim oSerSet As New JsonSerializerSettings
         If vb14.GetSettingsBool("uiFullJSON") Then
@@ -99,7 +99,7 @@ Public Class ShowExifs
         Return sTxt.Replace("\r\n", vbCrLf)
     End Function
 
-    Private Function GetRealExifDump(oPic As Vblib.OnePic) As String
+    Private Shared Function GetRealExifDump(oPic As Vblib.OnePic) As String
         Dim sPathname As String = oPic.InBufferPathName
         If Not IO.File.Exists(sPathname) Then Return "Cannot find file " & sPathname
 

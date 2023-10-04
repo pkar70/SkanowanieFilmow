@@ -183,7 +183,7 @@ Public Class BrowseKeywordsWindow
         If uiGrupy.SelectedItem Is Nothing Then Return
         ' step 1: znajdź sId
         Dim sId As String = uiGrupy.SelectedItem.Trim
-        Dim iInd As Integer = sId.IndexOf(" ")
+        Dim iInd As Integer = sId.IndexOfOrdinal(" ")
         If iInd > 0 Then sId = sId.Substring(0, iInd)
 
         ' step 2: znajdź - ale hierarchicznie!
@@ -216,7 +216,7 @@ Public Class BrowseKeywordsWindow
     Private Sub WypelnCombo()
         uiGrupy.Items.Clear()
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords
             If oItem.SubItems Is Nothing Then Continue For
             If oItem.SubItems.Count < 1 Then Continue For
             ' zostaje własna rekurencja, bo chodzi o indent w hierarchii
@@ -253,7 +253,7 @@ Public Class BrowseKeywordsWindow
     ''' <summary>
     '''  zaznacza Keywords które są w exif.ManualTag.keywords, exif.FileExif.keywords, descriptions
     ''' </summary>
-    Private Sub UstalCheckboxy(sUsedTags As String)
+    Private Shared Sub UstalCheckboxy(sUsedTags As String)
         vb14.DumpCurrMethod()
 
         If String.IsNullOrWhiteSpace(sUsedTags) Then Return
@@ -312,11 +312,11 @@ Public Class BrowseKeywordsWindow
         Dim minDate As Date = Date.MaxValue
         Dim maxDate As Date = Date.MinValue
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords
             minDate = SzukajMinDatyRecursive(oItem, minDate)
         Next
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
+        For Each oItem As Vblib.OneKeyword In Application.GetKeywords
             maxDate = SzukajMaxDatyRecursive(oItem, maxDate)
         Next
         vb14.DumpMessage($"daty: {minDate} .. {maxDate}")

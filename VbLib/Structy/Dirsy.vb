@@ -154,7 +154,7 @@ Public Class DirsList
     Private Sub CalculateFullPaths()
 
         ' teoretycznie będzie tylko jeden item na tym poziomie: root
-        For Each oItem As OneDir In _list
+        For Each oItem As OneDir In Me
 
             If oItem.SubItems Is Nothing Then Return
 
@@ -200,7 +200,7 @@ Public Class DirsList
         Dim bFound As Boolean = False
 
         ' ten pierwszy to root
-        Dim oRet As OneDir = _list.ElementAt(0)
+        Dim oRet As OneDir = ElementAt(0)
         For Each sPath As String In sTargetDir.Split(IO.Path.DirectorySeparatorChar)
             If sPath.Trim.Length < 1 Then Continue For
             If oRet.SubItems Is Nothing Then
@@ -248,19 +248,13 @@ Public Class DirsList
     Public Function ToFlatList() As List(Of OneDir)
         Dim lista As New List(Of OneDir)
 
-        For Each oItem As OneDir In _list
-            lista = lista.Concat(oItem.ToFlatList).ToList
-        Next
+        ForEach(Sub(x) lista = lista.Concat(x.ToFlatList).ToList)
 
         Return lista
     End Function
 
     Public Function GetFolder(sKey As String) As OneDir
-        For Each oItem As OneDir In _list
-            If oItem.sId = sKey Then Return oItem
-        Next
-
-        Return Nothing
+        Return Find(Function(x) x.sId = sKey)
     End Function
 
     'Public Function TryAddFolder(sFolderPath As String, sOpis As String) As Boolean
@@ -334,7 +328,7 @@ Public Class DirsList
         oRoot.SubItems.Add(New OneDir With {.sId = "Rodzina", .notes = "inne"})
         oRoot.SubItems.Add(New OneDir With {.sId = "Muzeum", .notes = "na wieczną rzeczy pamiątkę"})
 
-        _list.Add(oRoot)
+        Add(oRoot)
 
     End Sub
 

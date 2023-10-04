@@ -14,7 +14,7 @@ Class SettingsMapsy
 
         oMenuItem.Items.Clear()
 
-        For Each oEngine As Vblib.JednaMapa In _lista.GetList
+        For Each oEngine As Vblib.JednaMapa In _lista
             Dim oNew As New MenuItem
             oNew.Header = oEngine.nazwa
             oNew.DataContext = oEngine
@@ -44,7 +44,7 @@ Class SettingsMapsy
         ' *TODO* wczytaj nazwę mapy
 
         Dim sNazwa As String = sLink
-        Dim iInd As Integer = sNazwa.IndexOf("://")
+        Dim iInd As Integer = sNazwa.IndexOfOrdinal("://")
         sNazwa = sNazwa.Substring(iInd + 3)
         iInd = sNazwa.IndexOf(":")
         sNazwa = sNazwa.Substring(0, iInd)
@@ -62,7 +62,7 @@ Class SettingsMapsy
         Dim sLink As String = Await vb14.DialogBoxInputAllDirectAsync("Podaj link do nowej mapy" & vbCrLf & "(użyj %lat i %lon)")
         If sLink = "" Then Return
 
-        If Not sLink.Contains("%lat") Or Not sLink.Contains("%lon") Then
+        If Not sLink.ContainsCS("%lat") Or Not sLink.ContainsCS("%lon") Then
             vb14.DialogBox("Link powinien zawierac %lat i %long")
             Return
         End If
@@ -95,7 +95,7 @@ Class SettingsMapsy
         Dim iInd As Integer = sLink.IndexOf("/", 10)
         Dim sPrefix As String = sLink.Substring(0, iInd).ToLowerInvariant
 
-        For Each oMapService As Vblib.JednaMapa In _lista.GetList
+        For Each oMapService As Vblib.JednaMapa In _lista
             If Not oMapService.link.StartsWithCIAI(sPrefix) Then Continue For
 
 #If NOT_GEONUGET_121 Then

@@ -4,7 +4,7 @@ Imports Vblib
 
 Class SettingsShareServers
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        uiLista.ItemsSource = Application.GetShareServers.GetList.OrderBy(Function(x) x.displayName)
+        uiLista.ItemsSource = Application.GetShareServers.OrderBy(Function(x) x.displayName)
     End Sub
 
     Private Async Sub uiAddSrv_Click(sender As Object, e As RoutedEventArgs)

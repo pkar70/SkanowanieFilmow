@@ -7,10 +7,10 @@ Class SettingsShareLogins
     Dim _channels As List(Of String)
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        uiLista.ItemsSource = Application.GetShareLogins.GetList '.OrderBy(Function(x) x.displayName)
+        uiLista.ItemsSource = Application.GetShareLogins '.OrderBy(Function(x) x.displayName)
         uiAdresOverride.GetSettingsString
         Dim adres As String = Await vb14_GetMyIP.GetMyIP.GetIPString
-        _channels = Application.GetShareChannels.GetList.Select(Of String)(Function(x) x.nazwa).ToList
+        _channels = Application.GetShareChannels.Select(Of String)(Function(x) x.nazwa).ToList
         _channels.Sort()
 
     End Sub
@@ -140,7 +140,7 @@ Class SettingsShareLogins
         Dim sName As String = Await Vblib.DialogBoxInputAllDirectAsync("Podaj nazwę loginu", oLogin.displayName)
         If String.IsNullOrWhiteSpace(sName) Then Return
 
-        For Each oLog As ShareLogin In Application.GetShareLogins.GetList
+        For Each oLog As ShareLogin In Application.GetShareLogins
             If oLog.displayName = sName Then
                 If Not Await Vblib.DialogBoxYNAsync($"Login '{sName}' już istnieje, zastąpić?") Then Return
                 Application.GetShareLogins.Remove(oLog)
@@ -153,7 +153,7 @@ Class SettingsShareLogins
         ' tu mamy Clone oryginału, którego nie zmieniamy
         uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
         With Application.GetShareLogins
-            .GetList.Add(oLogin)
+            .Add(oLogin)
             .ReResolveChannels()
             .Save(True)
         End With

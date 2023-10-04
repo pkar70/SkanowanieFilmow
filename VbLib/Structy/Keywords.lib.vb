@@ -81,17 +81,13 @@ Public Class KeywordsList
     End Function
 
     Protected Overrides Sub InsertDefaultContent()
-        _list.Add(New OneKeyword With {.sId = "-", .sDisplayName = "osoby"})
-        _list.Add(New OneKeyword With {.sId = "#", .sDisplayName = "miejsca"})
-        _list.Add(New OneKeyword With {.sId = "=", .sDisplayName = "inne"})
+        Add(New OneKeyword With {.sId = "-", .sDisplayName = "osoby"})
+        Add(New OneKeyword With {.sId = "#", .sDisplayName = "miejsca"})
+        Add(New OneKeyword With {.sId = "=", .sDisplayName = "inne"})
     End Sub
 
     Public Function GetKeyword(sKey As String) As OneKeyword
-        For Each oItem As OneKeyword In ToFlatList()
-            If oItem.sId = sKey Then Return oItem
-        Next
-
-        Return Nothing
+        Return Find(Function(x) x.sId = sKey)
     End Function
 
     Public Function GetKeywordsList(sKeys As String) As List(Of OneKeyword)
@@ -121,17 +117,13 @@ Public Class KeywordsList
     Public Function ToFlatList() As List(Of OneKeyword)
         Dim lista As New List(Of OneKeyword)
 
-        For Each oItem As OneKeyword In _list
-            lista = lista.Concat(oItem.ToFlatList).ToList
-        Next
+        Me.ForEach(Sub(x) lista = lista.Concat(x.ToFlatList).ToList)
 
         Return lista
     End Function
 
     Public Sub EnableDisableAll(bEnable As Boolean)
-        For Each oItem As OneKeyword In ToFlatList()
-            oItem.bEnabled = True
-        Next
+        ToFlatList.ForEach(Sub(x) x.bEnabled = True)
     End Sub
 
 
@@ -141,10 +133,7 @@ Public Class KeywordsList
     '''  w drzewku ustawian dateMin i dateMax hierarchicznie, całość, idąc od dołu (parent zależy od dat w child)
     ''' </summary>
     Public Sub CalculateMinMaxDateTree()
-
-        For Each oItem As OneKeyword In _list
-            CalculateMinMaxDateTree(oItem)
-        Next
+        ForEach(Sub(x) CalculateMinMaxDateTree(x))
     End Sub
 
     ''' <summary>

@@ -33,7 +33,7 @@ Public Class CloudPublishersList
         gCloudPublishers = New List(Of Vblib.CloudPublish)
 
         Dim bMamAdHoc As Boolean = False
-        For Each oItem As Vblib.CloudConfig In gCloudConfigs.GetList
+        For Each oItem As Vblib.CloudConfig In gCloudConfigs
             Dim oNew As Vblib.CloudPublish = GetCloudPublishInstantion(oItem, _DataDir)
             If oNew IsNot Nothing Then
                 gCloudPublishers.Add(oNew)
@@ -121,7 +121,7 @@ Public Class CloudArchivesList
 
         gCloudArchives = New List(Of Vblib.CloudArchive)
 
-        For Each oItem As Vblib.CloudConfig In gCloudConfigs.GetList
+        For Each oItem As Vblib.CloudConfig In gCloudConfigs
             Dim oNew As Vblib.CloudArchive = GetCloudInstantion(oItem)
             If oNew IsNot Nothing Then
                 gCloudArchives.Add(oNew)

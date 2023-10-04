@@ -97,7 +97,7 @@ Public Class BufferSortowania
     End Function
 
     Public Function GetList() As List(Of OnePic) Implements IBufor.GetList
-        Return _pliki.GetList
+        Return _pliki
     End Function
 
     Public Function BakDelete(iDays As Integer, bRealDelete As Boolean) As Boolean Implements IBufor.BakDelete
@@ -248,26 +248,20 @@ Public Class BufferSortowania
 
 
     Public Sub ResetPipelines() Implements IBufor.ResetPipelines
-        For Each oItem As OnePic In _pliki.GetList
-            oItem.ResetPipeline()
-        Next
+        _pliki.ForEach(Sub(x) x.ResetPipeline())
     End Sub
 
     Public Function GetMinDate() As Date Implements IBufor.GetMinDate
         Dim minPicDate As Date = New Date(2200, 1, 1)
-        For Each oPic As OnePic In _pliki.GetList
-            If oPic.GetMinDate < minPicDate Then minPicDate = oPic.GetMinDate
-        Next
+
+        _pliki.ForEach(Sub(x) If x.GetMinDate < minPicDate Then minPicDate = x.GetMinDate)
 
         Return minPicDate
     End Function
 
     Public Function GetMaxDate() As Date Implements IBufor.GetMaxDate
         Dim maxPicDate As Date = New Date(1750, 1, 1)
-        For Each oPic As OnePic In _pliki.GetList
-            If oPic.GetMaxDate > maxPicDate Then maxPicDate = oPic.GetMaxDate
-        Next
-
+        _pliki.ForEach(Sub(x) If x.GetMaxDate > maxPicDate Then maxPicDate = x.GetMaxDate)
         Return maxPicDate
     End Function
 
@@ -302,7 +296,7 @@ Public Class BufferFromQuery
         lista.Load()
         _pliki = New List(Of OnePic)
 
-        For Each oPic As OnePic In lista.GetList
+        For Each oPic As OnePic In lista
             oPic.InBufferPathName = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
             _pliki.Add(oPic)
         Next
