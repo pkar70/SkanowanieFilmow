@@ -107,22 +107,23 @@ Public Class ShowExifs
 
     End Function
 
+    Private Function GetOnePicFromDataContext()
+        ' próbujemy czy zadziała casting z ThumbPicek na OnePic - NIE
+        If Me.DataContext.GetType Is GetType(Vblib.OnePic) Then
+            Return Me.DataContext
+        ElseIf Me.DataContext.GetType Is GetType(ProcessBrowse.ThumbPicek) Then
+            Return TryCast(Me.DataContext, ProcessBrowse.ThumbPicek)?.oPic
+        Else
+            ' nieznany typ
+            Return Nothing
+        End If
+    End Function
+
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
         ' *TODO* być może jakoś trzeba wywołać też dla mybase
 
-        Dim oPic As Vblib.OnePic
-
-        If Me.DataContext.GetType Is GetType(Vblib.OnePic) Then
-            oPic = Me.DataContext
-        ElseIf Me.DataContext.GetType Is GetType(ProcessBrowse.ThumbPicek) Then
-            oPic = TryCast(Me.DataContext, ProcessBrowse.ThumbPicek)?.oPic
-        Else
-            ' nieznany typ
-            Return
-        End If
-
+        Dim oPic As Vblib.OnePic = GetOnePicFromDataContext()
         uiTitle.Text = oPic.sSuggestedFilename
-
 
         If _bRealExif Then
             _fullOpis = GetRealExifDump(oPic)
@@ -132,5 +133,11 @@ Public Class ShowExifs
         FilterText()
 
 
+    End Sub
+
+    Private Sub uiTitle_MouseDoubleClick(sender As Object, e As MouseButtonEventArgs)
+        Dim oPic As Vblib.OnePic = GetOnePicFromDataContext()
+        _fullOpis = oPic.DumpAsJSON
+        FilterText()
     End Sub
 End Class
