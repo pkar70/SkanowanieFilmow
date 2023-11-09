@@ -1,8 +1,7 @@
 ﻿
 Imports System.Reflection
 Imports pkar
-'Imports Vblib
-
+Imports Vblib
 
 Public Class CloudPublishersList
     ' Inherits Vblib.MojaLista(Of CloudConfig)
@@ -13,7 +12,10 @@ Public Class CloudPublishersList
         New CloudPubl_std14_SSC.Cloud_Skyscraper,
         New Publish_Instagram.Publish_Instagram,
         New Publish_std2_Facebook.Publish_Facebook_Post,
-        New Publish_std2_Facebook.Publish_Facebook_Album
+        New Publish_std2_Facebook.Publish_Facebook_Album,
+        New Publish_ZIP,
+        New Publish_CBZ,
+        New lib_n6_PowerPoint.Publish_PowerPoint
         }
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)
@@ -45,9 +47,15 @@ Public Class CloudPublishersList
         If bMamAdHoc Then Return True
 
         ' ale ono zawsze powinno być, więc dodajemy
-        Dim oNewAdHoc As New Vblib.Publish_AdHoc
-        oNewAdHoc.konfiguracja = Vblib.Publish_AdHoc.DefaultConfig
-        gCloudPublishers.Add(oNewAdHoc)
+        Dim oNewPubl As Vblib.CloudPublish = New Vblib.Publish_AdHoc
+        oNewPubl.konfiguracja = Vblib.Publish_AdHoc.DefaultConfig
+        gCloudPublishers.Add(oNewPubl)
+        oNewPubl = New Vblib.Publish_ZIP
+        oNewPubl.konfiguracja = Vblib.Publish_ZIP.DefaultConfig
+        gCloudPublishers.Add(oNewPubl)
+        oNewPubl = New Vblib.Publish_CBZ
+        oNewPubl.konfiguracja = Vblib.Publish_CBZ.DefaultConfig
+        gCloudPublishers.Add(oNewPubl)
 
         Return True
     End Function
