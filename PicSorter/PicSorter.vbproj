@@ -34,6 +34,7 @@
     <ProjectReference Include="..\HiddenWatermark\AsNuget-HiddenWatermark.csproj" />
     <ProjectReference Include="..\lib_n6_httpSrv\lib_n6_httpSrv.vbproj" />
     <ProjectReference Include="..\lib_n6_MediaDevices\lib_n6_MediaDevices.vbproj" />
+    <ProjectReference Include="..\lib_n6_PowerPoint\lib_n6_PowerPoint.vbproj" />
     <ProjectReference Include="..\lib_n6_UseMapi\lib_n6_UseMapi.vbproj" />
     <ProjectReference Include="..\lib_PicSource\lib_n6_PicSource.vbproj" />
     <ProjectReference Include="..\Process_n6_SigAndFace\Process_n6_SigAndFace.vbproj" />
@@ -52,17 +53,30 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="BuildTimeTemplate.vb">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BuildTimeTemplate.tt</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
     <PackageReference Include="IPUserControls.Wpf" Version="1.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="pkar.DotNetExts" Version="2.2.3" />
+    <PackageReference Include="pkar.DotNetExts" Version="2.2.4" />
     <PackageReference Include="pkar.WPF.Configs" Version="1.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="BuildTimeTemplate.vb">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>BuildTimeTemplate.tt</DependentUpon>
+    </Compile>
     <Compile Update="My Project\Resources.Designer.vb">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -79,6 +93,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="BuildTimeTemplate.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>BuildTimeTemplate.vb</LastGenOutput>
+    </None>
     <None Update="icons\trayIcon1.gif">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -87,4 +105,12 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+	<PropertyGroup>
+		<!-- https://learn.microsoft.com/en-us/visualstudio/modeling/design-time-code-generation-by-using-t4-text-templates?view=vs-2022&tabs=csharp-->
+		<TransformOnBuild>true</TransformOnBuild>
+	</PropertyGroup>
 </Project>

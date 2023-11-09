@@ -118,9 +118,9 @@ Public NotInheritable Class PicMenuGeotag
             If oPic.GetGeoTag IsNot Nothing Then Return
         End If
 
-        _picek.ReplaceOrAddExif(_exifGeoToPaste)
-        _picek.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
-        _picek.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
+        oPic.ReplaceOrAddExif(_exifGeoToPaste)
+        oPic.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
+        oPic.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
     End Sub
 
     ' dla Paste oraz Create, żeby wyliczać go tylko raz

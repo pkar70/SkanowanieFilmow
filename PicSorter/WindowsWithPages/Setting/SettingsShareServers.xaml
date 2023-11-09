@@ -42,8 +42,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <TextBlock Text="{Binding displayName, Mode=OneTime}"  Grid.Column="0"/>
-                        <TextBlock Text="{Binding lastCheck, Mode=OneTime, Converter={StaticResource KonwersjaDaty}}"  Grid.Column="1"/>
+                        <TextBlock Text="{Binding displayName, Mode=OneTime}"  Grid.Column="0" ToolTip="{Binding login}"/>
+                        <TextBlock Text="{Binding lastCheck, Mode=OneTime, Converter={StaticResource KonwersjaDaty}}" ToolTip="{Binding serverAddress}"  Grid.Column="1"/>
                         <Button Content=" Edit " Grid.Column="2" Click="uiEdit_Click" Margin="5,0,5,0" />
                         <Button Content=" Try " Grid.Column="3" Click="uiTry_Click" Margin="5,0,5,0" />
                         <Button Content=" Del " Grid.Column="4" Click="uiDel_Click" />

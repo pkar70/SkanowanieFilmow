@@ -14,7 +14,7 @@ GetType(UserControlPostProcessPipeline), New FrameworkPropertyMetadata(String.Em
 
     Public Property Pipeline As String
         Get
-            Return GetValue(PipelineProperty).ToString()
+            Return GetValue(PipelineProperty)?.ToString()
         End Get
         Set
             SetValue(PipelineProperty, Value)

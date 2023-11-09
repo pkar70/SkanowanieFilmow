@@ -72,6 +72,7 @@ Public Class ShareLogin
 
     Public Property allowedLogin As New ShareLoginData
     Public Property lastLogin As New ShareLoginData
+    Public Property maintainPurge As Boolean
 
 End Class
 

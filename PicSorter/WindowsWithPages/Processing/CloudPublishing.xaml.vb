@@ -1,4 +1,5 @@
 ﻿Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 Public Class CloudPublishing
 
@@ -77,6 +78,8 @@ Public Class CloudPublishing
         _lista = New List(Of DisplayPublish)
 
         For Each oArch As Vblib.CloudPublish In Application.GetCloudPublishers.GetList
+            If oArch.sProvider.EqualsCI("DragOut") Then Continue For
+
             Dim oNew As New DisplayPublish
             oNew.engine = oArch
             oNew.enabled = oArch.konfiguracja.enabled

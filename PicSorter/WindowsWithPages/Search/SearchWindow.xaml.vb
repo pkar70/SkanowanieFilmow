@@ -141,14 +141,14 @@ Public Class SearchWindow
         'Next
 
         ' konwersja subtagów - ale to jest skomplikowane, i niekoniecznie tak zadziała, odkładam na później do przemyślenia
-        query.ogolne.AllSubTags.Clear()
-        If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
-            For Each sKwd As String In query.ogolne.Tags.Split(" ")
-                If Not sKwd.StartsWithCS("!") Then
-                    query.ogolne.AllSubTags.Add(Application.GetKeywords.GetAllChilds(sKwd))
-                End If
-            Next
-        End If
+        'query.ogolne.AllSubTags = new ....Clear()
+        'If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
+        '    For Each sKwd As String In query.ogolne.Tags.Split(" ")
+        '        If Not sKwd.StartsWithCS("!") Then
+        '            query.ogolne.AllSubTags.Add(Application.GetKeywords.GetAllChilds(sKwd))
+        '        End If
+        '    Next
+        'End If
 
         If lista Is Nothing Then
             ' po pełnym

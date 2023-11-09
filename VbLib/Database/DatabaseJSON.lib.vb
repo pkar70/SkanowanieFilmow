@@ -60,6 +60,9 @@ Public Class DatabaseJSON
     End Function
 
     Public Function AddFiles(nowe As IEnumerable(Of OnePic)) As Boolean Implements DatabaseInterface.AddFiles
+        If nowe Is Nothing Then Return True
+        If nowe.Count < 1 Then Return True
+
         If Not IsEnabled Then Return False
 
         Dim sIndexLongJson As String = ""
@@ -74,6 +77,9 @@ Public Class DatabaseJSON
             ' jeśli mamy wczytany index do pamięci, to trzeba go zaktualizować
             If IsLoaded Then _allItems.Add(oPic)
         Next
+
+        ' ale jeśli lista była pusta, to nic nie dopisujemy, żadnego przecinka :)
+        If sIndexLongJson = "" Then Return True
 
         If Not IO.File.Exists(_dataFilenameFull) Then
             IO.File.WriteAllText(_dataFilenameFull, "[")
@@ -231,7 +237,7 @@ Public Class DatabaseJSON
 
         ' wczytaj ostatnie 10 bajtów
         Using sr As StreamReader = IO.File.OpenText(_dataFilenameFull)
-            sr.BaseStream.Seek(10, SeekOrigin.End)
+            sr.BaseStream.Seek(-10, SeekOrigin.End)
             Dim lastchars As String = sr.ReadToEnd
             If Not lastchars.Trim.EndsWith("]") Then Return
 

@@ -149,7 +149,7 @@
                         <!--<MenuItem Header="Publish  »" Name="uiMenuPublish"  />-->
                         <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
                         <!--<MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>-->
-                        <local:PicMenuTargetDir MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
+                        <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
                     
                         <Separator/>
                         <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />

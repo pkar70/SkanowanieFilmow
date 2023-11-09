@@ -134,7 +134,9 @@ Public MustInherit Class PicSourceBase
 
 
 			' Motorola Aśki, IMG_20230128_111119345
+			' to pierwsze jest błędne, ale nie wiem czemu
 			If Regex.IsMatch(sFilename, "^IMG_2[0-1][0-9][0-9]_[0-2][0-9][0-5][0-9][0-5][0-9]") Then sFilename = sFilename.Substring(22)
+			If Regex.IsMatch(sFilename, "^IMG_2[0-1][0-9][0-9][0-2][0-9][0-3][0-9]_[0-2][0-9][0-5][0-9]") Then sFilename = sFilename.Substring(22)
 
 			' iPhone	IMG_E5513.JPG
 			'		0123456789012345

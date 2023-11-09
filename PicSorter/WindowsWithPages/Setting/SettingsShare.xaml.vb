@@ -47,7 +47,8 @@ Class SettingsShare
                 Application.GetShareLogins, Application.gDbase,
                 Application.gLastLoginSharing, Application.GetBuffer,
                 Application.GetShareDescriptionsIn, Application.GetShareDescriptionsOut,
-                Application.gPostProcesory)
+                Application.gPostProcesory,
+                Application.GetDataFolder)
         Application.gWcfServer.StartSvc()
 
     End Sub

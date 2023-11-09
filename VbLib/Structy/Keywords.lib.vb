@@ -74,7 +74,7 @@ Public Class KeywordsList
         MyBase.New(sFolder, "keywords.json")
     End Sub
 
-    Protected Overloads Function Load() As Boolean
+    Public Overloads Function Load() As Boolean
         If Not MyBase.Load() Then Return False
         CalculateMinMaxDateTree()
         Return True
@@ -87,7 +87,7 @@ Public Class KeywordsList
     End Sub
 
     Public Function GetKeyword(sKey As String) As OneKeyword
-        Return Find(Function(x) x.sId = sKey)
+        Return ToFlatList.Find(Function(x) x.sId = sKey)
     End Function
 
     Public Function GetKeywordsList(sKeys As String) As List(Of OneKeyword)

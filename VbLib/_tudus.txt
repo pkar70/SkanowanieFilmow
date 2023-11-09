@@ -5,6 +5,23 @@
 ' https://github.com/xceedsoftware/wpftoolkit/wiki/DateTimePicker
 ' https://github.com/xceedsoftware/wpftoolkit/wiki/Zoombox
 
+sprawdzic czy da sie wrzucic UWPapp na Lumia 950 (nowszy OS!)
+- byłoby do wrzucania zdjęć z telefonu 'fotograficznego'
+app do androida?
+wrzucona jakos na iOS app analogiczna
+- do ustalenia Source (author, narzucenie camera, itp.), z linku picsort: tworzenie server, i do niego upload
+tylko jak wtedy purge robic?
+
+cos wyslac do instagrama? nie działa!
+
+picsort, info z serwera o nowych pickach - np. po kazdym picku, reset scheduled toast, na za 15 minut
+thumb.allcomment pole, aktualizowane przy zmianach, i pokazywane na ekranie?
+
+
+a moze nie App.GetSources..., tylko vblib.App.GetSources? wtedy by mozna bylo troche rzeczy zalatwiac prosciej... (bez przekazywania do vlib w ctor list procesorow itp.)
+
+
+
 5) pytania via search do bazy
 
 GetFolderList -> list(of oneFolder)
@@ -47,10 +64,9 @@ Google Photos:
 
 vimeo: 25 video total, 2 miesiecznie, darmowe;
 
-PicSorter, milestones:
-*) tagownik, sprawdzic w WinPhotoGall jak oni to zrobili - może podkraść pomysły na UI
-*) moze import tagów z WPhGal?
-*) FB do folderu
+sklejacz kont: np. MultCloud
+https://www.multcloud.com/tutorials/merge-onedrive-accounts-1234.html
+
 
 NUGET prywatny, wersja "jak było", choc problem z Resw by był (bo jak przekazać?); kolejna wersja z uzyciem NetConfigs, kolejna z DataLog, i tak dalej.
 
@@ -61,6 +77,14 @@ WPF i WinUI2? (progressring)
 
 * jak GUID dla nowo otrzymanych zdjec od Anki jak wlasne juz zGUIDowalem i wyslalem do archiwum?
 * zastanowic sie gdzie zbierac zdjecia dla udostepnien? bo moze zrezygnowac z Degoo, Shutterfly (jak juz nie ma sharesites) - moze w efekcie sprobowac ten facebook/albums?
+
+Stereoskopowe:
+* czy mozna nuget stereoskopowego podlgadu?
+* oznakowywanie zdjec jako "stereoscopic pair"? - nie da się
+* JPS: "sklejone" ze sobą dwa zdjęcia, więc dekodować tylko połowę, a
+	w ShowBig mozliwosc pokazania anaglyph (oba na czarno-białe, na kolorek, i pokazać)
+* MPO: poniekąd sklejone ze sobą kolejne JPGi, z nagłówkiem=indeksem wszystkich
+* ⧉ U+29C9	TWO JOINED SQUARES
 
 == SORTED:
 
@@ -74,6 +98,8 @@ ARCHIVE/PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
 
 AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
+AUTOEXIF: full file Exif dump
+
 
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
@@ -123,6 +149,8 @@ MAIN:BROWSE: ewentualnie "recursive"?
 MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
 MAIN:BROWSE: zdjęcia na dzisiaj w historii (znajdywanie wszystkich) (ale dokładnie dzisiaj raczej niż tydzień/miesiąc)
 
+PEERS: Client na naszym telefonie, dla niego utrzymywać Purge
+
 POSTPROCESS: jeśli któryś etap nie da rady, to pytanie (DialogBoxYN) co zrobić
 
 PUBLISH jednego - może być pytanie, np. o opis.
@@ -133,6 +161,8 @@ PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwlek
 PUBLISH: Amazon Photos
 PUBLISH/ARCH: do katalogu VPN, z filtrowaniem (nie =X, nie Nudne, nie -?U - do taty)
 PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
+PUBLISH copy out - bez processing, Drag&Drop - processing, email - processing, wybór z różnych o nazwie "email" itp
+PUBLISH zip, cbz - do ZIP może nawet z pełnym dump JSON.OnePic
 
 PUBLISH: jakiś letsupload.io, i tym podobne; pojedyncze lub do ZIPa - do dzielenia się
 https://nugetmusthaves.com/Package/CloudRail.SDK
@@ -149,17 +179,18 @@ SEARCH: wirtualne katalogi z query można robić
 SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
 SEARCH: poza tagiem również tagi nadrzędne (-ROK dla -DW)
 
-STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
-STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
-
-SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
-
 SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku skopiowanym do bufora, nie wcześniej
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 SETTINGS: keywords: statystyka
+SETTINGS: cloudpubl, exif - nie pokazuje aktualnego stanu (C)
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
+
+SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
+
+STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
+STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
 
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
 

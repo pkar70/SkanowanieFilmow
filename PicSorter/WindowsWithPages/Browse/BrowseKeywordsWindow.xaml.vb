@@ -40,6 +40,9 @@ Public Class BrowseKeywordsWindow
 
         _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
 
+        ' bo jak nie ma żadnych tagów, to nie kasował oznaczeń
+        Application.GetKeywords.ToFlatList.ForEach(Sub(x) x.bChecked = False)
+
         UstalCheckboxy(_oPic?.oPic.GetAllKeywords)    ' 50 ms
         ZablokujNiezgodne() ' 200 ms
         RefreshLista()      ' 60 ms
@@ -189,7 +192,7 @@ Public Class BrowseKeywordsWindow
         ' step 2: znajdź - ale hierarchicznie!
 
         If vb14.GetSettingsBool("uiHideKeywords") Then
-            uiLista.ItemsSource = From c In Application.GetKeywords.GetKeyword(sId).ToFlatList Where c.bEnabled = True
+            uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList.Where(Function(x) x.bEnabled)
         Else
             uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList
         End If

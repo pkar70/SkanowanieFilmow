@@ -24,6 +24,7 @@ Imports pkar
 Imports pkar.DotNetExtensions
 Imports System.Runtime.InteropServices.WindowsRuntime
 Imports Org.BouncyCastle.Math.EC
+Imports System.IO
 
 Public Class ProcessBrowse
 
@@ -79,7 +80,10 @@ Public Class ProcessBrowse
 
         Application.ShowWait(True)
 
-        Await Bufor2Thumbsy()
+        ' przenoszę na początek, żeby nie wczytywać tysiąca obrazków które już są do usunięcia
+        Await EwentualneKasowanieArchived()
+
+        Await Bufor2Thumbsy()   ' w tym obsługa znikniętych
         SizeMe()
         RefreshMiniaturki(True)
 
@@ -110,7 +114,7 @@ Public Class ProcessBrowse
             MenuActionReadOnly()
 
             Await EwentualneKasowanieBak()
-            Await EwentualneKasowanieArchived()
+            'Await EwentualneKasowanieArchived()
         End If
 
         Application.ShowWait(False)
@@ -146,21 +150,20 @@ Public Class ProcessBrowse
 
         If iArchCount + iCloudArchCount < 1 Then Return ' jeśli nie mamy żadnego zdefiniowanego, to nie kasujemy i tak
 
-        Dim lista As New List(Of ThumbPicek)
-        For Each oThumb As ThumbPicek In _thumbsy
-            If oThumb.oPic.NoPendingAction(iArchCount, iCloudArchCount) Then lista.Add(oThumb)
+        Dim lista As New List(Of Vblib.OnePic)
+        For Each oPic As Vblib.OnePic In _oBufor.GetList
+            If oPic.NoPendingAction(iArchCount, iCloudArchCount) Then lista.Add(oPic)
         Next
 
         If lista.Count < 1 Then Return
 
         If Not Await vb14.DialogBoxYNAsync($"Skasować pliki już w pełni zarchiwizowane? ({lista.Count})") Then Return
 
-        For Each oThumb As ThumbPicek In lista
-            DeletePicture(oThumb)
+        For Each oPic As Vblib.OnePic In lista
+            DeletePicture(oPic)
         Next
 
         SaveMetaData()
-        RefreshMiniaturki(True)
 
     End Function
 
@@ -470,6 +473,7 @@ Public Class ProcessBrowse
 
     Private Sub uiTargetMetadataChanged(sender As Object, e As EventArgs)
         uiActionsPopup.IsOpen = False
+        ReDymkuj()
         SaveMetaData()
         ' tu trzeba wraz z reapply filter
         If _isTargetFilterApplied Then uiFilterNoTarget_Click(Nothing, Nothing)
@@ -533,26 +537,130 @@ Public Class ProcessBrowse
 
     'End Sub
 
+    Private _lastMouseDownTime As Integer
+    Private _lastMouseMovePosition As Point
+    Private _dragDropCreated As Boolean
+
+    Private Sub uiPicList_MouseDown(sender As Object, e As MouseButtonEventArgs) Handles uiPicList.MouseDown
+        ' nie wchodzi tu?
+        MyBase.OnMouseDown(e)
+
+        vb14.DumpCurrMethod()
+
+        If Not e.LeftButton = MouseButtonState.Pressed Then Return
+        _lastMouseDownTime = e.Timestamp
+        DumpMessage($"lastMouseDownTime = {_lastMouseDownTime}")
+    End Sub
+
     Private Sub uiPicList_MouseMove(sender As Object, e As MouseEventArgs) Handles uiPicList.MouseMove
         MyBase.OnMouseMove(e)
-        If e.LeftButton = MouseButtonState.Pressed Then
 
-            Dim lista As New List(Of String)
+        If Not e.LeftButton = MouseButtonState.Pressed Then Return
+
+        'If _dragDropCreated Then Return
+        '_dragDropCreated = True
+
+        'Dim diff As Integer = Math.Abs(e.Timestamp - _lastMouseDownTime)
+        'If diff < 200 Then Return
+        'If diff > 5000 Then
+        '    ' reset danych
+        '    _lastMouseDownTime = e.Timestamp
+        '    _lastMouseMovePosition = e.GetPosition(uiPicList)
+        '    Return
+        'End If
+
+        'Dim currPos As Point = e.GetPosition(uiPicList)
+        'Dim odl As Integer = Math.Abs(currPos.X - _lastMouseMovePosition.X) + Math.Abs(currPos.Y - _lastMouseMovePosition.Y)
+
+        'DumpMessage($"mouse time diff {diff} msec, odl {odl}")
+
+        'If odl < 20 Then Return
+
+        StartDragOut()
+    End Sub
+
+    Private Async Function StartDragOut() As Task
+        vb14.DumpCurrMethod()
+
+        '' sprawdzamy czy mamy odpowiedni Publisher do tego
+        'Dim validPubl As New List(Of CloudPublish)
+        'For Each oPubl As CloudPublish In Application.GetCloudPublishers.GetList
+        '    If oPubl.sProvider.EqualsCI("DragOutNIEMA") Then
+        '        validPubl.Add(oPubl)
+        '    End If
+        'Next
+
+        ' tu przygotujemy listę plików do wysłania
+        Dim lista As New List(Of String)
+
+        'If validPubl.Count < 1 Then
+        '    DumpMessage($"Nie ma żadnego publishera dla Drag&Drop - zwykłe pliki z bufora")
+        '    ' jeśli nie mamy żadnego publishera, to najprościej - bez przetwarzania
+
+        Dim useThumbs As Boolean = vb14.GetSettingsBool("uiDragOutThumbs")
 
             For Each oTB As ThumbPicek In uiPicList.SelectedItems
-                lista.Add(oTB.oPic.InBufferPathName)
+                If useThumbs AndAlso IO.File.Exists(oTB.oPic.InBufferPathName & THUMB_SUFIX) Then
+                    lista.Add(oTB.oPic.InBufferPathName & THUMB_SUFIX)
+                Else
+                    lista.Add(oTB.oPic.InBufferPathName)
+                End If
             Next
+        'Else
+        '    DumpMessage($"Znamy {validPubl.Count} publisherów dla Drag&Drop")
 
-            If lista.Count < 1 Then Return
+        '    If validPubl.Count > 1 Then
+        '        ' *TODO* teraz do wyboru jakiś drag&drop
+        '        Await vb14.DialogBoxAsync($"Widzę {validPubl.Count} publisherów, nie umiem jeszcze wyboru - użyję pierwszego")
+        '    End If
 
-            Dim data As New DataObject
-            data.SetData(DataFormats.FileDrop, lista.ToArray)
+        '    Dim processor As CloudPublish = validPubl.ElementAt(0)
 
-            ' Inititate the drag-and-drop operation.
-            DragDrop.DoDragDrop(Me, data, DragDropEffects.Copy)
+        '    Application.TempDirPrepare(2)
 
-        End If
-    End Sub
+        '    'Dim picki As List(Of ThumbPicek) = uiPicList.SelectedItems
+
+        '    For Each oTB As ThumbPicek In uiPicList.SelectedItems
+        '        Dim oPic As OnePic = oTB.oPic
+        '        oPic.ResetPipeline()
+
+        '        Dim sRet As String = oPic.CanRunPipeline(processor.konfiguracja.defaultPostprocess, Application.gPostProcesory)
+        '        If sRet <> "" Then
+        '            DumpMessage($"Nie da się pipeline dla pliku {oPic.sSuggestedFilename}")
+        '            ' gdy nie można przetworzyć, to użyj pliku oryginalnego
+        '            lista.Add(oTB.oPic.InBufferPathName)
+        '        Else
+        '            oPic.oOstatniExif = processor.konfiguracja.defaultExif
+        '            sRet = Await oPic.RunPipeline(processor.konfiguracja.defaultPostprocess, Application.gPostProcesory)
+        '            If sRet <> "" Then
+        '                ' był błąd - użyj pliku oryginalnego
+        '                DumpMessage($"Był błąd w pipeline dla pliku {oPic.sSuggestedFilename}")
+        '                lista.Add(oTB.oPic.InBufferPathName)
+        '            Else
+        '                ' użyj pliku tymczasowego
+        '                Dim tempfile As String = Application.TempDirCreateTempFilename
+        '                Using writer As FileStream = IO.File.OpenWrite(tempfile)
+        '                    oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
+        '                    oPic._PipelineOutput.CopyTo(writer)
+        '                End Using
+        '                lista.Add(tempfile)
+        '                DumpMessage($"Plik {oPic.sSuggestedFilename} przekonwertowany do {tempfile}")
+        '            End If
+        '        End If
+        '    Next
+
+        'End If
+
+        DumpMessage($"mam liste {lista.Count} plików")
+        If lista.Count < 1 Then Return
+
+        Dim data As New DataObject
+        data.SetData(DataFormats.FileDrop, lista.ToArray)
+
+        ' Inititate the drag-and-drop operation.
+        DragDrop.DoDragDrop(Me, data, DragDropEffects.Copy)
+
+    End Function
 
     Private Sub uiGetFileSize_Click(sender As Object, e As System.Windows.RoutedEventArgs)
         uiActionsPopup.IsOpen = False
@@ -667,16 +775,19 @@ Public Class ProcessBrowse
 
         Dim sOutfilename As String = sPathName & THUMB_SUFIX
         ' *TODO* skalowanie tego?
+
+        If OnePic.ExtsMovie.ContainsCI(sExt) Then
+            Dim sOutFile As String = sOutfilename & ".png"
+            If Not Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(sPathName, sOutFile) Then Return ""
+            FileAttrHidden(sOutFile, True)
+            Return sOutfilename & ".png"
+        End If
+
         Select Case sExt
             Case ".nar"
                 'Dim sTempFile As String = IO.Path.GetTempFileName
                 Await Vblib.Auto_AzureTest.Nar2Jpg(sPathName, sOutfilename)
                 Return sOutfilename
-            Case OnePic.ExtsMovie
-                Dim sOutFile As String = sOutfilename & ".png"
-                If Not Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(sPathName, sOutFile) Then Return ""
-                FileAttrHidden(sOutFile, True)
-                Return sOutfilename & ".png"
             Case Else
                 Return ""    ' nie umiem zrobić - nie wiem co to za plik
         End Select
@@ -796,6 +907,10 @@ Public Class ProcessBrowse
                         End If
                     Else
                         Dim oPicRet As ThumbPicek = lista.Item(iLP + 1)
+                        If oPicRet.oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
+                            Vblib.DialogBox($"Sprawdź, bo są dwa pliki z nazwą '{oPicRet.oPic.sSuggestedFilename}'")
+                            oPicRet = lista.Item(iLP + 2)
+                        End If
                         'ShowKwdForPic(oPicRet)
                         RefreshOwnedWindows(oPicRet)
                         Return oPicRet
@@ -808,7 +923,7 @@ Public Class ProcessBrowse
     End Function
 
     ''' <summary>
-    ''' shortcut do zapisania JSON indeksu 
+    ''' shortcut do zapisania JSON indeksu (buffer.json)
     ''' </summary>
     Public Sub SaveMetaData()
         _oBufor.SaveData()
@@ -825,30 +940,54 @@ Public Class ProcessBrowse
     ''' <summary>
     ''' usuń plik "ze wszystkąd"
     ''' </summary>
-    ''' <param name="oPicek"></param>
-    ''' <returns></returns>
-    Private Sub DeletePicture(oPicek As ThumbPicek)
-        If oPicek Is Nothing Then Return
+    Private Sub DeletePicture(oThumb As ThumbPicek)
+        If oThumb Is Nothing Then Return
+
+        oThumb.oImageSrc = Nothing  ' bez tego plik był zajęty, nie mógł go skasować
+
+        If Not DeletePicture(oThumb.oPic) Then Return
+
+        ' przesunięcie "dzielnika" *TODO* bezpośrednio na liscie
+        If oThumb.splitBefore Then _ReapplyAutoSplit = True
+
+        ' skasuj z tutejszej listy
+        _thumbsy.Remove(oThumb)
+
+    End Sub
+
+    ''' <summary>
+    ''' usuń plik "ze wszystkąd"
+    ''' </summary>
+    ''' <returns>FALSE gdy nieudane i proces kasowania trzeba przerwać</returns>
+    Private Function DeletePicture(oPic As Vblib.OnePic) As Boolean
+        If oPic Is Nothing Then Return False
 
         GC.Collect()    ' zabezpieczenie jakby tu był jeszcze otwarty plik jakiś
 
         ' usuń z bufora (z listy i z katalogu), ale nie zapisuj indeksu (jakby to była seria kasowania)
-        If Not _oBufor.DeleteFile(oPicek.oPic) Then Return   ' nieudane skasowanie
+        If Not _oBufor.DeleteFile(oPic) Then Return False  ' nieudane skasowanie
 
         ' kasujemy różne miniaturki i tak dalej. Delete nie robi Exception jak pliku nie ma.
-        IO.File.Delete(oPicek.oPic.InBufferPathName & THUMB_SUFIX)
-        IO.File.Delete(oPicek.oPic.InBufferPathName & THUMB_SUFIX & ".png")
+        IO.File.Delete(oPic.InBufferPathName & THUMB_SUFIX)
+        IO.File.Delete(oPic.InBufferPathName & THUMB_SUFIX & ".png")
 
-        ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
-        Application.GetSourcesList.AddToPurgeList(oPicek.oPic.sSourceName, oPicek.oPic.sInSourceID)
+        ' zapisz jako plik do kiedyś-tam usunięcia ze źródła - ale tylko jeśli to nasze źródło
+        If String.IsNullOrWhiteSpace(oPic.sharingFromGuid) Then
+            Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
+        Else
+            ' możemy mieć Client ktory jest naszym telefonem, więc do niego trzeba byłoby mieć Purge
+            Dim oLogin As Vblib.ShareLogin = TryCast(oPic.GetLastSharePeer(Nothing, Application.GetShareLogins), Vblib.ShareLogin)
+            If oLogin IsNot Nothing AndAlso oLogin.maintainPurge Then
+                Dim _purgeFile As String = IO.Path.Combine(Application.GetDataFolder, $"purge.{oLogin.login.ToString}.txt")
+                IO.File.AppendAllText(_purgeFile, Date.Now.ToString("yyyyMMdd.HHmm") & vbTab & oPic.sInSourceID & vbCrLf)
+            End If
 
-        ' przesunięcie "dzielnika" *TODO* bezpośrednio na liscie
-        If oPicek.splitBefore Then _ReapplyAutoSplit = True
+        End If
 
-        ' skasuj z tutejszej listy
-        _thumbsy.Remove(oPicek)
+        Return True
+    End Function
 
-    End Sub
+
 
     Public Sub DeleteByFilename(filepathname As String)
         For Each oPicek As ThumbPicek In _thumbsy
@@ -1764,6 +1903,8 @@ Public Class ProcessBrowse
 
 
     Private Sub uiPicList_SelChanged(sender As Object, e As SelectionChangedEventArgs)
+        DumpCurrMethod()
+
         Dim ile As Integer = uiPicList.SelectedItems.Count
         If ile < 1 Then
             uiAction.IsEnabled = False
@@ -1781,6 +1922,7 @@ Public Class ProcessBrowse
             'ShowExifForPic(oItem)
         End If
 
+        _dragDropCreated = False
     End Sub
 
 

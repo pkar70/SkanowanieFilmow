@@ -15,7 +15,7 @@ Public Class AutoTag_EXIF
     Public Overrides ReadOnly Property Nazwa As String = "AUTO_EXIF"
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Wczytuje znaczniki EXIF z pliku zdjęcia"
-    Public Shared ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.mov;*.mp4;*.avi;*.nar"
+    Public Shared ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.jpeg;*.mov;*.mp4;*.avi;*.nar"
 
     ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
 

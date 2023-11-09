@@ -7,6 +7,7 @@ Imports System.Net.Http.Json
 Imports pkar
 Imports Vblib
 
+
 Class MainWindow
     Inherits Window
 
@@ -19,9 +20,15 @@ Class MainWindow
 #Region "zamykanie i ikonka"
     Private Async Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
 
-        If Vblib.GetSettingsBool("uiServerEnabled") Then
+        If Vblib.GetSettingsBool("uiServerEnabled") AndAlso Application.gWcfServer IsNot Nothing Then
             ' *TODO* YNCancel, zamknąć, zikonizować, cancel
-            If Not Await Vblib.DialogBoxYNAsync("Program działa jako serwer, zamknąć go?") Then
+            Dim msg As String = "Program działa jako serwer"
+            Dim datediff As TimeSpan = Date.Now - Application.gWcfServer._lastNetAccess
+            If datediff.TotalDays < 0 Then
+                msg += " (last request " & datediff.ToStringDHMS & " seconds ago)"
+            End If
+
+            If Not Await Vblib.DialogBoxYNAsync(msg & ", zamknąć go?") Then
                 e.Cancel = True
                 Return
             End If
@@ -38,13 +45,18 @@ Class MainWindow
 
     Private Async Sub Window_StateChanged(sender As Object, e As EventArgs)
         ' https://www.codeproject.com/Articles/36468/WPF-NotifyIcon-2
-        If Me.WindowState = WindowState.Minimized Then
-            If Await Vblib.pkarlibmodule14.DialogBoxYNAsync("Zamknąć do SysTray?") Then
-                myNotifyIcon.Visibility = Visibility.Visible
-                myNotifyIcon.Icon = New System.Drawing.Icon("icons/trayIcon1.ico")
-                Me.Hide()
+
+        ' podmieniamy na ikonke tylko gdy jest jedno okno - inaczej zwykła miniaturyzacja
+        If Application.Current.Windows.Count < 2 Then
+            If Me.WindowState = WindowState.Minimized Then
+                If Await Vblib.pkarlibmodule14.DialogBoxYNAsync("Zamknąć do SysTray?") Then
+                    myNotifyIcon.Visibility = Visibility.Visible
+                    myNotifyIcon.Icon = New System.Drawing.Icon("icons/trayIcon1.ico")
+                    Me.Hide()
+                End If
             End If
         End If
+
     End Sub
 
     Private Sub uiTrayIcon_DoubleClick(sender As Object, e As RoutedEventArgs)
@@ -79,7 +91,9 @@ Class MainWindow
         ' na tej linii ERROR że nie może znaleźć System.ServiceModel v4.0.0, debugger nie widzi wejścia do StartSvc
         'Application.gWcfServer.StartSvc()
 
-        uiVers.ShowAppVers
+        uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
+
+        'PoprawkiArchUniq()
 
         'Dim pliczek As New BaseList(Of Vblib.OnePic)("E:\Temp\picsortrecovery", "komplet.json")
         'pliczek.Load()
@@ -117,6 +131,7 @@ Class MainWindow
     Private Sub ProbaWczytaniaJSONArch20231002()
         Dim lista As List(Of Vblib.OnePic)
         Dim sTxt = IO.File.ReadAllText(Application.GetDataFile("", "archIndexFull.json"))
+        sTxt &= "]"
         Dim sErr As String = ""
         Try
             lista = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ObservableList(Of Vblib.OnePic)))
@@ -126,6 +141,61 @@ Class MainWindow
 
         If sErr <> "" Then Vblib.DialogBox(sErr)
         Debug.WriteLine(sErr)
+    End Sub
+
+    Private Sub PoprawkiArchUniq()
+        ' zrobienie pliku archiwum uniq (bo są w nim powtórki?)
+        Dim lista As List(Of Vblib.OnePic)
+        Dim sTxt = IO.File.ReadAllText(Application.GetDataFile("", "archIndexFull.json"))
+        sTxt &= "]"
+        Dim sErr As String = ""
+        Try
+            lista = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ObservableList(Of Vblib.OnePic)))
+        Catch ex As Exception
+            sErr = ex.Message
+        End Try
+
+        If sErr <> "" Then
+            Vblib.DialogBox(sErr)
+            Return
+        End If
+
+        Dim listaNew As New List(Of Vblib.OnePic)
+        Dim cntDublet As Integer = 0
+        Dim cntUniq As Integer = 0
+        Dim cntNull As Integer = 0
+
+        For Each oPic As Vblib.OnePic In lista
+            If oPic Is Nothing Then
+                cntNull += 1
+                Continue For
+            End If
+            Dim bJuzMam As Boolean = False
+            For Each oPicNew As Vblib.OnePic In listaNew
+                If oPic.sSuggestedFilename = oPicNew.sSuggestedFilename AndAlso
+                oPic.TargetDir = oPicNew.TargetDir Then
+                    bJuzMam = True
+                    Exit For
+                End If
+            Next
+
+            If bJuzMam Then
+                Debug.WriteLine($"DUBLET {oPic.sSuggestedFilename} in {oPic.TargetDir}")
+                cntDublet += 1
+            Else
+                Debug.WriteLine($"NEW {oPic.sSuggestedFilename} in {oPic.TargetDir}")
+                listaNew.Add(oPic)
+                cntUniq += 1
+            End If
+
+        Next
+
+        Dim oSerSet As New Newtonsoft.Json.JsonSerializerSettings With {.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore, .DefaultValueHandling = Newtonsoft.Json.DefaultValueHandling.Ignore}
+        Dim sTxtNew As String = Newtonsoft.Json.JsonConvert.SerializeObject(listaNew, Newtonsoft.Json.Formatting.Indented, oSerSet)
+        IO.File.WriteAllText(Application.GetDataFile("", "archIndexFullNew.json"), sTxtNew)
+
+        Debug.WriteLine($"SUMMARY: uniq {cntUniq}, dublets {cntDublet}, nulls {cntNull}")
+
     End Sub
 
     Private Sub PoprawkiArchindex20230918()

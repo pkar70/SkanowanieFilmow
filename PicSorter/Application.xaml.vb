@@ -82,6 +82,49 @@ Partial Class Application
 
     End Function
 
+    ''' <summary>
+    ''' Usuwa pliki z katalogu tymczasowego, które są starsze niż maxHours
+    ''' </summary>
+    ''' <returns>Liczba usuniętych plików</returns>
+    Public Shared Function TempDirPrepare(maxHours As Integer) As Integer
+        DumpCurrMethod()
+
+        Dim limitDate As Date = Date.Now.AddHours(-maxHours)
+        Dim path As String = TempDirGetPath()
+        Dim iCnt As Integer = 0
+        For Each sFile As String In IO.Directory.GetFiles(path)
+            If IO.File.GetCreationTime(sFile) < limitDate Then
+                IO.File.Delete(sFile)
+                iCnt += 1
+            End If
+        Next
+
+        DumpMessage($"Usunąłem {iCnt} plików")
+        Return iCnt
+    End Function
+
+    Public Shared Function TempDirGetPath() As String
+        Dim katalog As String = IO.Path.Combine(IO.Path.GetTempPath, GetAppName)
+        IO.Directory.CreateDirectory(katalog)
+        Return katalog
+    End Function
+
+    ''' <summary>
+    ''' zwraca pathname pliku tymczasowego, dokładność jedna setna sekundy
+    ''' </summary>
+    Public Shared Function TempDirCreateTempFilename() As String
+        Dim basename As String = Date.Now.ToString("dd-HH-mm-ss")
+        Dim filename As String = IO.Path.Combine(TempDirGetPath, basename & ".tmp")
+        If Not IO.File.Exists(filename) Then Return filename
+        basename = Date.Now.ToString("dd-HH-mm-ss-f")
+        filename = IO.Path.Combine(TempDirGetPath, basename & "tmp")
+        If Not IO.File.Exists(filename) Then Return filename
+        basename = Date.Now.ToString("dd-HH-mm-ss-ff")
+        filename = IO.Path.Combine(TempDirGetPath, basename & "tmp")
+        If Not IO.File.Exists(filename) Then Return filename
+        Return ""
+    End Function
+
     ' przeniesione do ArchiveQuerender
     'Public Shared Sub AddToGlobalJsonIndex(sIndexShortJson As String, sIndexLongJson As String)
 
@@ -245,6 +288,7 @@ Partial Class Application
 
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
         New Vblib.AutoTag_EXIF,
+        New Vblib.AutoTag_FullEXIF,
         New Auto_std2_Astro.Auto_MoonPhase,
         New Auto_std2_Astro.Auto_Astro,
         New Auto_std2_Astro.Auto_Pogoda,

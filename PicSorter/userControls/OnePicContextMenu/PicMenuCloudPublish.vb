@@ -5,6 +5,8 @@ Imports pkar.DotNetExtensions
 Public NotInheritable Class PicMenuCloudPublish
     Inherits PicMenuCloudBase
 
+    Protected Overrides Property IsForCloudArchive As Boolean = False
+
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
@@ -24,6 +26,7 @@ Public NotInheritable Class PicMenuCloudPublish
     Private _engine As Vblib.CloudPublish
 
     Private _retMsg As String = ""
+
     Private Async Function ApplyOnSingle(oPic As Vblib.OnePic) As Task
         If UseSelectedItems Then
             If oPic.IsCloudPublishedIn(_engine.konfiguracja.nazwa) Then Return
@@ -36,12 +39,21 @@ Public NotInheritable Class PicMenuCloudPublish
         ' test na adultpice
         Dim iCnt As Integer = 0
         Dim sNames As String = ""
-        For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-            If oItem.oPic.IsAdultInExifs OrElse Application.GetKeywords.IsAdultInAnyKeyword(oItem.oPic.GetAllKeywords) Then
-                iCnt += 1
-                sNames = sNames & vbCrLf & oItem.oPic.sSuggestedFilename
+
+        If UseSelectedItems Then
+            For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                If oItem.oPic.IsAdultInExifs OrElse Application.GetKeywords.IsAdultInAnyKeyword(oItem.oPic.GetAllKeywords) Then
+                    iCnt += 1
+                    sNames = sNames & vbCrLf & oItem.oPic.sSuggestedFilename
+                End If
+            Next
+        Else
+            If _picek.IsAdultInExifs OrElse Application.GetKeywords.IsAdultInAnyKeyword(_picek.GetAllKeywords) Then
+                iCnt = 1
+                sNames = _picek.sSuggestedFilename
             End If
-        Next
+        End If
+
         If iCnt > 0 Then
             Dim sMsg As String = "plików zawiera"
             If iCnt = 1 Then sMsg = "plik zawiera"
@@ -67,14 +79,26 @@ Public NotInheritable Class PicMenuCloudPublish
 
         Dim bSendNow As Boolean = True
 
-        If _engine.sProvider = Vblib.Publish_AdHoc.PROVIDERNAME Then
-            Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
-            If sFolder = "" Then Return
-            _engine.sZmienneZnaczenie = sFolder
-        Else
-            bSendNow = Await Vblib.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
-        End If
-
+        Select Case _engine.sProvider
+            Case Vblib.Publish_AdHoc.PROVIDERNAME
+                Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie wysłać pliki?")
+                If sFolder = "" Then Return
+                _engine.sZmienneZnaczenie = sFolder
+            Case Vblib.Publish_ZIP.PROVIDERNAME
+                Dim archiveName As String = SettingsGlobal.FileBrowser("", "Podaj nazwę pliku docelowego", "plik.zip")
+                If archiveName = "" Then Return
+                _engine.sZmienneZnaczenie = archiveName
+            Case Vblib.Publish_CBZ.PROVIDERNAME
+                Dim archiveName As String = SettingsGlobal.FileBrowser("", "Podaj nazwę pliku docelowego", "plik.cbz")
+                If archiveName = "" Then Return
+                _engine.sZmienneZnaczenie = archiveName
+            Case lib_n6_PowerPoint.Publish_PowerPoint.PROVIDERNAME
+                Dim archiveName As String = SettingsGlobal.FileBrowser("", "Podaj nazwę pliku docelowego", "plik.pps")
+                If archiveName = "" Then Return
+                _engine.sZmienneZnaczenie = archiveName
+            Case Else
+                bSendNow = Await Vblib.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
+        End Select
 
         If bSendNow Then
             Application.ShowWait(True)
@@ -90,19 +114,20 @@ Public NotInheritable Class PicMenuCloudPublish
             ' to pozwala robić dwie publikacje po kolei
             OneOrMany(Sub(x) x.ResetPipeline())
 
-            sErr = Await _engine.SendFiles(GetSelectedItems, AddressOf ProgBarInc)
+            If UseSelectedItems Then
+                _retMsg = Await _engine.SendFiles(GetSelectedItemsAsPics, AddressOf ProgBarInc)
+            Else
+                _retMsg = Await _engine.SendFile(_picek)
+            End If
 
             If Not String.IsNullOrWhiteSpace(_retMsg) Then Vblib.DialogBox(_retMsg)
-
             WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
-
             EventRaise(Me)
         Else
             OneOrMany(Sub(x) x.AddCloudPublished(_engine.konfiguracja.nazwa, ""))
             EventRaise(Me)
         End If
+        Application.ShowWait(False)
     End Sub
-
-
 
 End Class

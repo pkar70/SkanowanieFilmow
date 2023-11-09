@@ -6,7 +6,7 @@ Imports pkar.DotNetExtensions
 Public MustInherit Class PicMenuCloudBase
     Inherits PicMenuBase
 
-    Public Property IsForCloudArchive As Boolean
+    Protected MustOverride Property IsForCloudArchive As Boolean
 
     ''' <summary>
     ''' HandlerSingle - operacje na remote; HandlerMulti - wysyłanie
@@ -20,12 +20,16 @@ Public MustInherit Class PicMenuCloudBase
         Dim lista As IEnumerable(Of Vblib.AnyStorage)
 
         If IsForCloudArchive Then
-            lista = Application.GetCloudPublishers.GetList
-        Else
             lista = Application.GetCloudArchives.GetList
+        Else
+            lista = Application.GetCloudPublishers.GetList
         End If
 
         For Each oEngine As Vblib.CloudArchPublBase In lista
+
+            ' nie wolno pokazywać wewnętrznego (DragOut)
+            If oEngine.sProvider.StartsWithCI("DragOut") Then Continue For
+
             Dim oNew As MenuItem = NewMenuCloudOperation(oEngine)
             oNew.IsCheckable = False    ' aczkolwiek to jest default, więc pewnie nie będzie więcej miejsca od tego
 

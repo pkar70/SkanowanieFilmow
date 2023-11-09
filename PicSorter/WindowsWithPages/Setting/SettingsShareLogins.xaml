@@ -83,6 +83,7 @@
                 <TextBlock HorizontalAlignment="Center" FontWeight="Bold" Text="{Binding displayName, Mode=OneTime}" />
 
                 <CheckBox Content="Allow upload" Grid.Row="1" IsChecked="{Binding allowUpload}" />
+                <CheckBox Content="Maintain purge" Grid.Row="1" IsChecked="{Binding maintainPurge}" HorizontalAlignment="Right"/>
 
                 <TextBlock Text="Kanały:" Grid.Row="2"/>
                 <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddChannel_Click" Grid.Row="2"/>

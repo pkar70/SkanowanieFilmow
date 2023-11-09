@@ -107,6 +107,8 @@ Public Class ShowBig
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.Title = _picek.oPic.InBufferPathName
 
+        uiEditCrop.IsEnabled = True ' po zmianie zdjęcia włącza Crop (bywa zablokowany po FullSize)
+
         Dim iObrot As Rotation = DetermineOrientation(_picek.oPic)
 
         ' *TODO* reakcja jakaś na inne typy niż JPG

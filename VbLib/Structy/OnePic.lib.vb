@@ -65,7 +65,7 @@ Public Class OnePic
     ''' <summary>
     ''' "*.jpg;*.tif;*.gif;*.png"
     ''' </summary>
-    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png"
+    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png;*.jpeg"
     ''' <summary>
     ''' "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
     ''' </summary>
@@ -692,7 +692,7 @@ Public Class OnePic
     End Sub
 
     Public Async Function RunPipeline(sProcessingSteps As String, aPostProcesory As Vblib.PostProcBase()) As Task(Of String)
-        DumpCurrMethod()
+        DumpCurrMethod($"plik: {sSuggestedFilename}, steps: {sProcessingSteps}")
 
         If String.IsNullOrEmpty(sProcessingSteps) Then
             ' zrób tak, by w oPic.outputStream było to co do wysłania
@@ -717,7 +717,7 @@ Public Class OnePic
             For Each oEngine As Vblib.PostProcBase In aPostProcesory
                 If oEngine.Nazwa.EqualsCI(sKrok) Then
                     If Not Await oEngine.Apply(Me, True, sParams) Then Return "ERROR in step " & sStep
-                    ' Exit For
+                    Exit For
                 End If
             Next
 
