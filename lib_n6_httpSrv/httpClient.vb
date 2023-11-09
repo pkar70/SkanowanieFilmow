@@ -295,4 +295,68 @@ Public Class httpKlient
 
 #End Region
 
+#Region "plik purge"
+
+    ''' <summary>
+    ''' check if server maintains purge file for this client
+    ''' </summary>
+    ''' <returns>YES... NO... FAIL ERROR</returns>
+    Public Shared Async Function PurgeIsMaintained(oServer As Vblib.ShareServer) As Task(Of String)
+        If Not EnsureClient() Then Return "FAIL"
+
+        Dim ret As String = ""
+        Try
+            ret = Await _clientQuick.GetStringAsync(GetUri(oServer, "purgegetstatus"))
+        Catch ex As Exception
+            ret = "ERROR"
+        End Try
+
+        _inuse = False  ' =true jest w EnsureClient
+        Return ret
+
+    End Function
+
+    ''' <summary>
+    ''' gets contens of purge file from server
+    ''' </summary>
+    ''' <returns>FAIL ERROR filecontens</returns>
+    Public Shared Async Function PurgeGetList(oServer As Vblib.ShareServer) As Task(Of String)
+        If Not EnsureClient() Then Return "FAIL"
+
+        Dim ret As String = ""
+        Try
+            ret = Await _clientSlow.GetStringAsync(GetUri(oServer, "purgegetlist"))
+        Catch ex As Exception
+            ret = "ERROR"
+        End Try
+
+        _inuse = False  ' =true jest w EnsureClient
+        Return ret
+
+    End Function
+
+    ''' <summary>
+    ''' wysłanie do serwera komendy usuwania z pliku purge tego co już tutaj usuwaliśmy
+    ''' </summary>
+    ''' <param name="oTillDate">do tej daty włącznie jest do usunięcia</param>
+    ''' <returns>OK, purged {iPurged} entries out of {purgeEntries.Count}</returns>
+    Public Shared Async Function PurgeIsMaintained(oServer As Vblib.ShareServer, oTillDate As Date) As Task(Of String)
+        ' $"OK, purged {iPurged} entries out of {purgeEntries.Count}"
+        If Not EnsureClient() Then Return "FAIL"
+
+        Dim ret As String = ""
+        Try
+            Dim limitDate As String = oTillDate.ToString("yyyyMMdd.HHmm")
+            ret = Await _clientQuick.GetStringAsync(GetUri(oServer, "purgeresetlist", limitDate))
+        Catch ex As Exception
+            ret = "ERROR"
+        End Try
+
+        _inuse = False  ' =true jest w EnsureClient
+        Return ret
+
+    End Function
+
+#End Region
+
 End Class

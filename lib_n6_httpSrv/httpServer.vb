@@ -1,6 +1,7 @@
 Imports System.Collections.Specialized
 Imports System.IO
 Imports System.Net
+Imports System.Runtime.CompilerServices
 Imports pkar.DotNetExtensions
 
 Imports Vblib
@@ -15,8 +16,14 @@ Public Class ServerWrapper
     Private Shared _shareDescIn As pkar.BaseList(Of Vblib.ShareDescription)
     Private Shared _shareDescOut As pkar.BaseList(Of Vblib.ShareDescription)
     Private Shared _postProcs As Vblib.PostProcBase()
+    Private Shared _dataFolder As String
 
-    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDescIn As pkar.BaseList(Of Vblib.ShareDescription), shareDescOut As pkar.BaseList(Of Vblib.ShareDescription), postProcs As Vblib.PostProcBase())
+    ''' <summary>
+    ''' Kiedy ostatnio coœ siê komunikowa³o
+    ''' </summary>
+    Public Shared _lastNetAccess As Date
+
+    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDescIn As pkar.BaseList(Of Vblib.ShareDescription), shareDescOut As pkar.BaseList(Of Vblib.ShareDescription), postProcs As Vblib.PostProcBase(), dataFolder As String)
         _loginy = loginy
         _databases = databases
         _lastAccess = lastAccess
@@ -24,9 +31,12 @@ Public Class ServerWrapper
         _shareDescIn = shareDescIn
         _shareDescOut = shareDescOut
         _postProcs = postProcs
+        _dataFolder = dataFolder
     End Sub
 
     Public Sub StartSvc()
+        DumpCurrMethod()
+
         If _host Is Nothing Then Task.Run(Sub() InitService())
     End Sub
 
@@ -71,12 +81,17 @@ Public Class ServerWrapper
 
     End Function
 
+    Private _stopping As Boolean = False
+
     Private Async Sub InitService()
+        DumpCurrMethod()
 
         If Not TryStart() Then Return
         ' netsh http add urlacl url=http://+:20563/ user=
 
-        Do
+        _stopping = False
+
+        Do Until _stopping
             Try
                 If _host Is Nothing Then Exit Do
 
@@ -88,6 +103,8 @@ Public Class ServerWrapper
                 Dim request As HttpListenerRequest = context?.Request
                 If request Is Nothing Then Exit Do   ' takie zabezpieczenie to tylko u³atwienie gdy jest pod debuggerem podczas wy³¹czania programu
 
+
+                _lastNetAccess = Date.Now
                 Vblib.DumpMessage("Mam request: " & request.RawUrl) ' on jest typu: /canupload?guid=xxx&clientHost=Hxxxx
 
                 Dim response As HttpListenerResponse = context.Response
@@ -112,7 +129,10 @@ Public Class ServerWrapper
 
 
     Public Sub StopSvc()
+        DumpCurrMethod()
+
         If _host Is Nothing Then Return
+        _stopping = True
         _host.Stop()
         _host.Close()
         _host = Nothing
@@ -122,6 +142,9 @@ Public Class ServerWrapper
 
     Private Const PROTO_VERS As String = "1.0"
 
+    ''' <summary>
+    ''' returns string = response for remote command
+    ''' </summary>
     Private Async Function MainWork(request As HttpListenerRequest, response As HttpListenerResponse) As Task(Of String)
 
         Dim command As String = request.Url.AbsolutePath
@@ -219,6 +242,34 @@ Public Class ServerWrapper
                 Return "Not yet"
                 'Case "putpic"
                 '    Return PrzyjmijPlik(oLogin, request)
+
+            Case "purgegetstatus"
+                Return If(oLogin.maintainPurge, "YES maintains purge file", "NOT using purge file")
+            Case "purgegetlist"
+                Dim purgeFile As String = IO.Path.Combine(_dataFolder, $"purge.{oLogin.login.ToString}.txt")
+                If Not IO.File.Exists(purgeFile) Then Return ""
+                Dim purgeEntries As String = IO.File.ReadAllText(purgeFile)
+                Return purgeEntries
+            Case "purgeresetlist"
+                Dim purgeFile As String = IO.Path.Combine(_dataFolder, $"purge.{oLogin.login.ToString}.txt")
+                If Not IO.File.Exists(purgeFile) Then Return "OK"
+
+                Dim clearToDate As String = queryString.Item("ackTill")
+                Dim purgeEntries As String() = IO.File.ReadAllLines(purgeFile)
+                Dim iPurged As Integer = 0
+
+                ' Date.Now.ToString("yyyyMMdd.HHmm")
+                IO.File.Delete(purgeFile & ".bak")
+                IO.File.Move(purgeFile, purgeFile & ".bak")
+                For Each linia As String In purgeEntries
+                    If linia > clearToDate Then
+                        IO.File.AppendAllText(purgeFile, linia & vbCrLf)
+                    Else
+                        iPurged += 1
+                    End If
+                Next
+                Return $"OK, purged {iPurged} entries out of {purgeEntries.Count}"
+
             Case Else
                 Return "PROTOERROR, here is " & PROTO_VERS
         End Select
