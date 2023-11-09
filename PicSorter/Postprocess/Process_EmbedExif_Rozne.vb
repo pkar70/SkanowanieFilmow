@@ -161,6 +161,7 @@ Public Class Process_EmbedBasicExif
             Process_AutoRotate.SaveSoftBitmap(oStream, oPic)
         End Using
 
+        oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
         Dim oExifLib As New CompactExifLib.ExifData(oPic._PipelineInput)
         oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
 
@@ -181,6 +182,8 @@ Public Class Process_EmbedBasicExif
 
         'Using oFileStream As Stream = IO.File.Open(oPic.sFilenameEditDst, IO.FileMode.Create)
         ' oExifLib.Save(oStream.AsStream, oFileStream, 0) ' (orgFileName)
+        oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
+        oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
         oExifLib.Save(oPic._PipelineInput, oPic._PipelineOutput) ' (orgFileName)
         'End Using
 
