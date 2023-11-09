@@ -1,4 +1,4 @@
-﻿
+﻿Imports System.Linq
 
 ''' <summary>
 ''' klasa załatwiająca wspólną strukturę dla wszystkich PicMenu*
@@ -87,13 +87,46 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         RaiseEvent MetadataChanged(sender, data)
     End Sub
 
-    Protected Function GetSelectedItems() As IList
+    Protected Function GetSelectedItems() As List(Of ProcessBrowse.ThumbPicek)
         Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
-        Return fe?.SelectedItems
+
+        If fe?.SelectedItems Is Nothing Then Return Nothing
+
+        Dim ret As New List(Of ProcessBrowse.ThumbPicek)
+        For Each oThumb As ProcessBrowse.ThumbPicek In fe.SelectedItems
+            ret.Add(oThumb)
+        Next
+
+        Return ret
     End Function
-    Protected Function GetFullLista() As IList
+    Protected Function GetSelectedItemsAsPics() As List(Of Vblib.OnePic)
         Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
-        Return fe?.Items
+        If fe?.SelectedItems Is Nothing Then Return Nothing
+
+        Dim ret As New List(Of Vblib.OnePic)
+
+        For Each oThumb As ProcessBrowse.ThumbPicek In fe.SelectedItems
+            ret.Add(oThumb.oPic)
+        Next
+
+        Return ret
+
+    End Function
+
+    Protected Function GetFullLista() As List(Of ProcessBrowse.ThumbPicek)
+        Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
+
+        If fe?.ItemsSource Is Nothing Then Return Nothing
+
+        Dim ret As New List(Of ProcessBrowse.ThumbPicek)
+        For Each oThumb As ProcessBrowse.ThumbPicek In fe.ItemsSource
+            ret.Add(oThumb)
+        Next
+
+        Return ret
+
+        'Return TryCast(fe?.ItemsSource, List(Of ProcessBrowse.ThumbPicek))
+        'Return fe?.Items
     End Function
 
     Protected Function FindUiElement(name As String) As FrameworkElement
