@@ -1,0 +1,57 @@
+﻿<Window x:Class="MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PrzegladarkaPickow"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid Margin="2,2,2,2">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Orientation="Horizontal">
+            <Button Content=" ... " Click="uiBrowse_Click" />
+            <TextBox Name="uiFolderPath" Width="300"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <TextBlock Text="Filter words " />
+            <TextBox Name="uiFilter" TextChanged="uiFilter_TextChanged" Width="300"/>
+        </StackPanel>
+
+            <ListView Name="uiPicList" Grid.Row="2" Margin="5,5,5,5"
+                      ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
+                      ScrollViewer.VerticalScrollBarVisibility="Auto" >
+
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Margin" Value="-6 0 0 0" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal"></WrapPanel>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ListView.ItemTemplate>
+                    <DataTemplate>
+                    <Grid >
+                    <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="300" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" >
+                        <Image.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Info" Click="uiShowPicInfo_Click"/>
+                                <MenuItem Header="Shellexec" Click="uiShellExec_Click"/>
+                            </ContextMenu>
+                        </Image.ContextMenu>
+                    </Image>
+                    </Grid>
+                </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        
+    </Grid>
+</Window>
