@@ -50,6 +50,9 @@ Public Class EnterGeoTag
         uiLatitude.Text = oPOI.lat
         uiLongitude.Text = oPOI.lon
 
+        uiOK.IsDefault = True
+        uiSearch.IsDefault = False
+
     End Sub
 
     Private Async Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
@@ -126,4 +129,17 @@ Public Class EnterGeoTag
         Public Property display_name As String
     End Class
 
+    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        uiLatitude.Focus()
+    End Sub
+
+    Private Sub uiPOIname_TextChanged(sender As Object, e As TextChangedEventArgs) Handles uiPOIname.TextChanged
+        If uiPOIname.Text.Length < 1 Then
+            uiOK.IsDefault = True
+            uiSearch.IsDefault = False
+        Else
+            uiOK.IsDefault = False
+            uiSearch.IsDefault = True
+        End If
+    End Sub
 End Class
