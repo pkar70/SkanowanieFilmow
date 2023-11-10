@@ -232,7 +232,7 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\lib14_httpSrv\lib14_httpClnt.vbproj">
+    <ProjectReference Include="..\lib14_httpClnt\lib14_httpClnt.vbproj">
       <Project>{0ab7b4de-8118-465f-a18e-e40b1b96e3d0}</Project>
       <Name>lib14_httpClnt</Name>
     </ProjectReference>

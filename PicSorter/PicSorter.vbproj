@@ -32,6 +32,7 @@
     <ProjectReference Include="..\CloudPubl_std14_SSC\CloudPubl_std2_SSC.vbproj" />
     <ProjectReference Include="..\Database_SQL\Database_SQL.vbproj" />
     <ProjectReference Include="..\HiddenWatermark\AsNuget-HiddenWatermark.csproj" />
+    <ProjectReference Include="..\lib14_httpClnt\lib14_httpClnt.vbproj" />
     <ProjectReference Include="..\lib_n6_httpSrv\lib_n6_httpSrv.vbproj" />
     <ProjectReference Include="..\lib_n6_MediaDevices\lib_n6_MediaDevices.vbproj" />
     <ProjectReference Include="..\lib_n6_PowerPoint\lib_n6_PowerPoint.vbproj" />

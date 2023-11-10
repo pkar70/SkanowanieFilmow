@@ -1,20 +1,12 @@
-﻿#If False Then
-
-
-Imports System.ComponentModel
-Imports System.Data.SqlTypes
+﻿
 Imports System.IO
 Imports System.Net.Http
-Imports System.Net.Http.Json
-Imports System.Runtime.Serialization
-Imports System.Runtime.Versioning
-Imports Microsoft
-Imports Microsoft.Rest
-Imports Microsoft.SqlServer
 Imports pkar
 Imports Vblib
 
 Public Class httpKlient
+
+    Public Shared _machineName As String
 
 #Region "handshaking"
 
@@ -85,7 +77,7 @@ Public Class httpKlient
         ' reszta ma dodatkowe parametry
         ' http://server:20563/cmd?guid=xxxx&clientHost=xxx
 
-        Dim sUri As String = $"http://{oServer.serverAddress}:20563/{command}?guid={oServer.login}&clientHost={Environment.MachineName}"
+        Dim sUri As String = $"http://{oServer.serverAddress}:20563/{command}?guid={oServer.login}&clientHost={_machineName}"
         If addit <> "" Then
             If Not addit.StartsWith("&") Then sUri &= "&"
             sUri &= addit
@@ -360,4 +352,3 @@ Public Class httpKlient
 #End Region
 
 End Class
-#end if
