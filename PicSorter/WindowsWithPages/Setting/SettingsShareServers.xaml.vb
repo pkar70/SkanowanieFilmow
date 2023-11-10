@@ -12,27 +12,12 @@ Class SettingsShareServers
         If String.IsNullOrWhiteSpace(token) Then Return
 
         ' PicSort://89.78.232.50/a0371bf6-c16e-42e6-b87b-0ea0788e921f
-        If Not token.StartsWith("PicSort://") Then
-            Vblib.DialogBox("Ale ten link jest niepoprawny...")
+
+        Dim oNew As ShareServer = ShareServer.CreateFromLink(token)
+        If oNew.login = Guid.Empty Then
+            Vblib.DialogBox(oNew.serverAddress)
             Return
         End If
-
-        token = token.Substring("PicSort://".Length)    ' ucinamy początek
-        Dim aToken As String() = token.Split("/")
-        If aToken.Length <> 2 Then
-            Vblib.DialogBox("Ale ten link jest jednak niepoprawny...")
-            Return
-        End If
-
-        Dim oNew As New ShareServer
-        Try
-            oNew.login = New Guid(aToken(1))
-        Catch ex As Exception
-            Vblib.DialogBox("Ale GUID jest zły")
-            Return
-        End Try
-
-        oNew.serverAddress = aToken(0)
 
         oNew.displayName = Await Vblib.DialogBoxInputAllDirectAsync("Pod jaką nazwą zapamiętać go?")
         If oNew.displayName = "" Then Return
@@ -47,7 +32,7 @@ Class SettingsShareServers
         Dim oItem As ShareServer = oFE?.DataContext
         If oItem Is Nothing Then Return
 
-        Dim sRet As String = Await lib_sharingNetwork.httpKlient.TryConnect(oItem)
+        Dim sRet As String = Await lib14_httpClnt.httpKlient.TryConnect(oItem)
 
         Vblib.DialogBox(sRet)
     End Sub

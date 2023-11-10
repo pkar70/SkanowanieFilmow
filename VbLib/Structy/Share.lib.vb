@@ -4,6 +4,7 @@
 
 Imports System.Net
 Imports Newtonsoft.Json
+Imports Newtonsoft.Json.Linq
 Imports pkar
 
 #Region "struktury"
@@ -109,6 +110,39 @@ Public Class ShareServer
 
     Public Property lastCheck As Date ' kiedy ostatnio sprawdzałem
     Public Property lastId As Integer ' jaki ID ostatnio widziałem (serno)
+
+    ''' <summary>
+    ''' z podanego linku robi obiekt, gdy błąd: onew.login = NULL, serveradd = komunikat błędu (od ERROR)
+    ''' </summary>
+    ''' <returns>NULL jeśli błąd</returns>
+    Public Shared Function CreateFromLink(link As String) As ShareServer
+
+        Dim oNew As New ShareServer
+        oNew.login = Guid.Empty
+
+        If Not link.StartsWithCI("PicSort://") Then
+            oNew.serverAddress = "ERROR link jest niepoprawny..."
+            Return oNew
+        End If
+
+        link = link.Substring("PicSort://".Length)    ' ucinamy początek
+        Dim aToken As String() = link.Split("/")
+        If aToken.Length <> 2 Then
+            oNew.serverAddress = "ERROR link jest jednak niepoprawny..."
+            Return oNew
+        End If
+
+        Try
+            oNew.login = New Guid(aToken(1))
+        Catch ex As Exception
+            oNew.serverAddress = "ERROR GUID jest zły"
+            oNew.login = Guid.Empty
+        End Try
+
+        oNew.serverAddress = aToken(0)
+
+        Return oNew
+    End Function
 
 End Class
 
