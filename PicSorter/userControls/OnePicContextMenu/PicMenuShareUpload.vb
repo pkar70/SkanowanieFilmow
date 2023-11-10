@@ -111,7 +111,7 @@ Public NotInheritable Class PicMenuShareUpload
 
         Dim bOnlyMark As Boolean = Not Await Vblib.DialogBoxYNAsync("Wysłać od razu? (mogę tylko zaznaczyć)")
 
-        Dim sRet As String = Await lib_sharingNetwork.httpKlient.TryConnect(_ShareSrvr)
+        Dim sRet As String = Await lib14_httpClnt.httpKlient.TryConnect(_ShareSrvr)
         If Not sRet.StartsWith("OK") Then
             If Await Vblib.DialogBoxYNAsync("Błąd podłączenia do serwera: " & sRet & vbCrLf & "Zaznaczyć na później? (NIE=cancel") Then
                 Return
@@ -119,7 +119,7 @@ Public NotInheritable Class PicMenuShareUpload
             bOnlyMark = True
         End If
 
-        sRet = Await lib_sharingNetwork.httpKlient.CanUpload(_ShareSrvr)
+        sRet = Await lib14_httpClnt.httpKlient.CanUpload(_ShareSrvr)
         If Not sRet.StartsWith("YES") Then
             Vblib.DialogBox("Upload jest niedostępny: " & sRet)
             Return
@@ -157,7 +157,7 @@ Public NotInheritable Class PicMenuShareUpload
                 _allErrs &= ret & vbCrLf
             Else
                 ' pipeline OK
-                ret = Await lib_sharingNetwork.httpKlient.UploadPic(_ShareSrvr, oPic)
+                ret = Await lib14_httpClnt.httpKlient.UploadPic(_ShareSrvr, oPic)
                 _allErrs &= ret & vbCrLf
             End If
 

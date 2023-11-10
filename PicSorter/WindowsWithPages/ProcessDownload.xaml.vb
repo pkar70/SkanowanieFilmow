@@ -199,13 +199,13 @@ Public Class ProcessDownload
 
         Dim oPeer As Vblib.ShareServer = Application.GetShareServers.FindByGuid(oSrc.Path)
 
-        Dim ret As String = Await httpKlient.TryConnect(oPeer)
+        Dim ret As String = Await lib14_httpClnt.httpKlient.TryConnect(oPeer)
         If Not ret.StartsWith("OK") Then
             Vblib.DialogBox($"Cannot connect to {oSrc.SourceName}" & vbCrLf & ret)
             Return -1
         End If
 
-        Dim lista As BaseList(Of Vblib.OnePic) = Await httpKlient.GetPicListBuffer(oPeer)
+        Dim lista As BaseList(Of Vblib.OnePic) = Await lib14_httpClnt.httpKlient.GetPicListBuffer(oPeer)
         If lista Is Nothing Then Return -2
         If lista.Count < 1 Then Return 0
 
@@ -219,7 +219,7 @@ Public Class ProcessDownload
             ' kontrola czy pliku już przypadkiem nie ma (wedle suggested filename) - wtedy go pomijamy
             If Application.GetBuffer.GetList.First(Function(x) x.sSuggestedFilename = oPicek.sSuggestedFilename) IsNot Nothing Then Continue For
 
-            oPicek.oContent = Await httpKlient.GetPicDataFromBuff(oPeer, oPicek.InBufferPathName)
+            oPicek.oContent = Await lib14_httpClnt.httpKlient.GetPicDataFromBuff(oPeer, oPicek.InBufferPathName)
             If oPicek.oContent IsNot Nothing Then
                 Await Application.GetBuffer.AddFile(oPicek)
                 uiProgBar.Value += 1
