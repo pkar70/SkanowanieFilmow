@@ -14,7 +14,7 @@ Public NotInheritable Class PicMenuCloudPublish
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Cloud publish", True) Then Return
+        If Not InitEnableDisable("Publish", True) Then Return
 
         WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
 
