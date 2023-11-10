@@ -1,0 +1,42 @@
+﻿<Page
+    x:Class="PicSorter_upl.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:PicSorter_upl"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Loaded="Page_Loaded">
+
+    <Grid Margin="2,2,2,2">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="PicSort uploader" HorizontalAlignment="Center" FontSize="18" />
+
+        <Grid Grid.Row="1" Visibility="Collapsed" Margin="0,10,0,10" Name="uiUploadGrid">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Last upload" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Name="uiLastUploadTime" />
+
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="New pics" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Name="uiNewPics" />
+
+            <Button Content="Upload" Name="uiUpload" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="5,5,5,0" Click="uiUpload_Click"/>
+        </Grid>
+
+        <Button Grid.Row="2" Content="Settings" HorizontalAlignment="Center" Click="uiSettings_Click" Margin="5,20,5,5"/>
+
+
+    </Grid>
+</Page>
