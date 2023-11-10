@@ -847,14 +847,18 @@ Public Class OnePic
             ' (różnią się od real o sekundę, ale być może nie zawsze)
             ' a do szukania "spoza" PicSort lepiej żeby ID był w takich wypadkach taki jak filename
 
-            ' wersja WP_
             Dim sRealDate As String = realData.ToString("yyyyMMdd")
+            ' wersja WP_
             If sSuggestedFilename.StartsWith($"WP_{sRealDate}_{realData.ToString("HH")}_") Then
                 ' telefon		WP_20221117_11_32_45_Pro
                 '			0123
                 '			...12345678901234567890123456
                 '			WP_20221117_11_45_21_Rich
                 Return GuidPrefix.DateTaken & sSuggestedFilename.Substring(3, 17).Replace("_", "")
+            End If
+            ' wersja WIN_
+            If sSuggestedFilename.StartsWith($"WIN_{sRealDate}_{realData.ToString("HH")}_") Then
+                Return GuidPrefix.DateTaken & sSuggestedFilename.Substring(4, 17).Replace("_", "")
             End If
 
             ' telefon Marcina, 20220723_170151

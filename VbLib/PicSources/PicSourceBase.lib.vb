@@ -154,6 +154,16 @@ Public MustInherit Class PicSourceBase
 				sFilename = sFilename.Replace("_Rich", "")
 			End If
 
+			' desktop WIN_20220609_09_51_08_Pro
+			'		 012345678901234567890123456
+			If Regex.IsMatch(sFilename, "^WIN_20[0-9][0-9][0-1][0-9][0-3][0-9]_[0-2][0-9]_[0-5][0-9]") Then
+				sFilename = sFilename.Substring(21)
+				sFilename = sFilename.Replace("_Pro", "")
+				sFilename = sFilename.Replace("_Rich", "")
+			End If
+
+
+
 			sFilename = sFilename.Substring(0, sFilename.Length - 4)
 			If sFilename.Length > 2 Then
 				oExif.UserComment = sFilename & " | " & oExif.UserComment
