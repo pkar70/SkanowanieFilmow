@@ -3,6 +3,10 @@ Imports System.IO
 Imports Spire.Presentation
 Imports Spire.Presentation.Drawing
 
+' freespire ma tylko 10 slides! a wersja p³atna to $800...
+' https://www.e-iceblue.com/Introduce/presentation-for-net-introduce.html
+
+
 Public Class Publish_PowerPoint
     Inherits Vblib.CloudPublish
 
@@ -30,10 +34,15 @@ Public Class Publish_PowerPoint
         ' https://www.e-iceblue.com/Tutorials/NET/Spire.Presentation/Program-Guide/Conversion/C-/VB.NET-Convert-Images-PNG-JPG-BMP-etc.-to-PowerPoint.html
 
         Dim oPPS As New Spire.Presentation.Presentation
-        oPPS.SlideSize.Type = Spire.Presentation.SlideSizeType.Screen4x3
-        oPPS.Slides.RemoveAt(0) ' Remove the default slide
+        Dim iPicCnt As Integer = 0
 
         For Each oPic As Vblib.OnePic In oPicki
+
+            If iPicCnt = 0 Then
+                oPPS.SlideSize.Type = Spire.Presentation.SlideSizeType.Screen4x3
+                oPPS.Slides.RemoveAt(0) ' Remove the default slide
+            End If
+
             Dim slide As Spire.Presentation.ISlide = oPPS.Slides.Append
 
             oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
@@ -84,9 +93,17 @@ Public Class Publish_PowerPoint
             slide.SlideShowTransition.Type = Transition.TransitionType.Random
 
             If oNextPic IsNot Nothing Then oNextPic()   ' zmiana progressBara
-        Next
 
-        oPPS.SaveToFile(sZmienneZnaczenie, Spire.Presentation.FileFormat.PPS)
+            iPicCnt += 1
+            If iPicCnt > 9 Then
+                ' bo ograniczenie jest do 10 slajdów - rozdzielamy na kolejne pliki
+                oPPS.SaveToFile(sZmienneZnaczenie, Spire.Presentation.FileFormat.PPS)
+                ' *TODO* bardziej inteligentne nazewnictwo plików
+                sZmienneZnaczenie = sZmienneZnaczenie.Replace(".pps", ".1.pps")
+                iPicCnt = 0
+            End If
+
+        Next
 
         ' oraz resetujemy pointery
         For Each oPic As Vblib.OnePic In oPicki
