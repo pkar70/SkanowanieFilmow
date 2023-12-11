@@ -23,7 +23,7 @@
         </Grid>
         <CheckBox Name="uiUsePurge" Content="use Purge" />
         <TextBlock Name="uiLastUploadTime" DoubleTapped="uiLastUploadTime_DoubleTapped"/>
-
+        <CalendarDatePicker Name="uiCalPick" Visibility="Collapsed" DateChanged="uiCalPick_DateChanged" />
         <TextBlock Text="Source data:" Margin="0,10,0,3" FontWeight="Bold" />
         <Grid>
             <Grid.ColumnDefinitions>

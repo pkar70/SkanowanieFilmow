@@ -21,7 +21,7 @@ Public NotInheritable Class Settings
         uiCamera.GetSettingsString
         uiServer.GetSettingsString
         uiUsePurge.GetSettingsBool
-        uiLastUploadTime.Text = "Last upload: " & Vblib.GetSettingsDate("uiLastUploadTime", "1970.01.01 00:00:00").ToString("ddd, dd-MM-yyyy HH:mm")
+        uiLastUploadTime.Text = "Last upload: " & Vblib.GetSettingsDate("uiLastUploadTime", New Date(1970, 1, 1)).ToString("ddd, dd-MM-yyyy HH:mm")
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
@@ -56,8 +56,17 @@ Public NotInheritable Class Settings
     End Sub
 
     Private Sub uiLastUploadTime_DoubleTapped(sender As Object, e As DoubleTappedRoutedEventArgs)
-        Vblib.SetSettingsDate("uiLastUploadTime", New DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero))
+        uiCalPick.Date = Vblib.GetSettingsDate("uiLastUploadTime", New DateTimeOffset(1970, 1, 1, 0, 0, 0, TimeSpan.Zero))
+        uiCalPick.Visibility = Visibility.Visible
+    End Sub
+
+    Private Sub uiCalPick_DateChanged(sender As CalendarDatePicker, args As CalendarDatePickerDateChangedEventArgs)
+
+        If uiCalPick.Date.HasValue Then
+            Vblib.SetSettingsDate("uiLastUploadTime", uiCalPick.Date.Value)
+        End If
         Page_Loaded(Nothing, Nothing)
+
     End Sub
 End Class
 
