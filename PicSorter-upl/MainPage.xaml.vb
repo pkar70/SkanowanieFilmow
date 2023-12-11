@@ -24,7 +24,7 @@ Public NotInheritable Class MainPage
             uiUploadGrid.Visibility = Visibility.Collapsed
         Else
             uiUploadGrid.Visibility = Visibility.Visible
-            Dim lastupload As DateTimeOffset = Vblib.GetSettingsDate("uiLastUploadTime", "1970.01.01 00:00:00")
+            Dim lastupload As DateTimeOffset = Vblib.GetSettingsDate("uiLastUploadTime", New Date(1970, 1, 1))
             uiLastUploadTime.Text = lastupload.ToString("ddd, dd-MM-yyyy HH:mm")
 
             AktualizujCounter(lastupload) ' może sobie aktualizować w tle przecież
@@ -103,7 +103,7 @@ Public NotInheritable Class MainPage
             Return False
         End If
 
-        Dim lastupload As DateTimeOffset = Vblib.GetSettingsDate("uiLastUploadTime", "1970.01.01 00:00:00")
+        Dim lastupload As DateTimeOffset = Vblib.GetSettingsDate("uiLastUploadTime", New Date(1970, 1, 1))
         Dim oFold As StorageFolder = GetPhotoDir()
         Dim iCnt As Integer = 0
 
@@ -128,6 +128,7 @@ Public NotInheritable Class MainPage
 
             Me.ProgRingInc
         Next
+        Vblib.SetSettingsDate("uiLastUploadTime", Date.Now)
 
         Return True
 
@@ -185,12 +186,16 @@ Public NotInheritable Class MainPage
 
         Dim oFold As StorageFolder = GetPhotoDir()
         Dim iCnt As Integer = 0
+        Dim iSize As Integer = 0
 
         For Each oFile As StorageFile In Await oFold.GetFilesAsync
-            If oFile.DateCreated > lastupload Then iCnt += 1
+            If oFile.DateCreated > lastupload Then
+                iCnt += 1
+                iSize += (Await oFile.GetBasicPropertiesAsync).Size / 1024 + 1
+            End If
         Next
 
-        uiNewPics.Text = iCnt
+        uiNewPics.Text = $"{iCnt} ({iSize} KiB)"
         _countNew = iCnt
     End Function
 
