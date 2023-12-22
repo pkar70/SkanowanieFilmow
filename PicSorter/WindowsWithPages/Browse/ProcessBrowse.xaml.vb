@@ -599,13 +599,13 @@ Public Class ProcessBrowse
 
         Dim useThumbs As Boolean = vb14.GetSettingsBool("uiDragOutThumbs")
 
-            For Each oTB As ThumbPicek In uiPicList.SelectedItems
-                If useThumbs AndAlso IO.File.Exists(oTB.oPic.InBufferPathName & THUMB_SUFIX) Then
-                    lista.Add(oTB.oPic.InBufferPathName & THUMB_SUFIX)
-                Else
-                    lista.Add(oTB.oPic.InBufferPathName)
-                End If
-            Next
+        For Each oTB As ThumbPicek In uiPicList.SelectedItems
+            If useThumbs AndAlso IO.File.Exists(oTB.oPic.InBufferPathName & THUMB_SUFIX) Then
+                lista.Add(oTB.oPic.InBufferPathName & THUMB_SUFIX)
+            Else
+                lista.Add(oTB.oPic.InBufferPathName)
+            End If
+        Next
         'Else
         '    DumpMessage($"Znamy {validPubl.Count} publisherów dla Drag&Drop")
 
@@ -732,7 +732,34 @@ Public Class ProcessBrowse
             bitmap.EndInit()
             Await Task.Delay(1) ' na potrzeby ProgressBara
 
-            Return bitmap
+            If sExt <> ".jps" Then Return bitmap
+
+
+            Dim croping As New Int32Rect(0, 0, bitmap.Width / 2, bitmap.Height)
+            Dim cropped As New CroppedBitmap(bitmap, croping)
+
+            Dim encoder As New JpegBitmapEncoder()
+            encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
+
+            Dim newBitmap As New BitmapImage()
+
+            Using memStream As New MemoryStream()
+                encoder.Frames.Add(BitmapFrame.Create(cropped))
+                encoder.Save(memStream)
+
+                memStream.Position = 0
+                newBitmap.BeginInit()
+                newBitmap.StreamSource = memStream
+                newBitmap.EndInit()
+
+                memStream.Close()
+            End Using
+
+            Return newBitmap
+
+            'Return New CroppedBitmap()
+            ' dla JPS: tylko połówka do wczytywania
+
         Catch ex As Exception
             ' nieudane wczytanie miniaturki - to zapewne błąd tworzenia miniaturki, można spróbować ją utworzyć jeszcze raz
             If sPathName.Contains(THUMB_SUFIX) Then IO.File.Delete(sPathName)

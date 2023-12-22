@@ -11,6 +11,17 @@
         <TextBlock Text="Limit liczby miniaturek" Margin="0,10,0,0"/>
         <TextBox Name="uiMaxThumbs" InputScope="Digits" Width="50" HorizontalAlignment="Left" />
         <CheckBox Name="uiCacheThumbs" Content="Twórz pliki thumbs"  />
+        <!--<Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Stereo thumb" />
+            <ComboBox Name="uiStereoThumb" Grid.Column="1" Margin="5,0,0,0">
+                <ComboBoxItem Content="lewa" />
+                <ComboBoxItem Content="anagif" />
+            </ComboBox>
+        </Grid>-->
         <CheckBox Name="uiHideThumbs" Content="Hide auxiliary files" ToolTip="Czy pliki .bak, .thumbpic, etc. mają być Hidden" />
         <CheckBox Name="uiHideKeywords" Content="Hide inactive keywords" Margin="0,5,0,0"/>
         <CheckBox Name="uiFullJSON" Content="Pokaż pełne metadane (z NULLami)" Margin="0,10,0,10" />

@@ -15,6 +15,7 @@ Class SettingsMisc
         uiHideThumbs.GetSettingsBool
         uiBigPicSize.GetSettingsInt()
         uiDragOutThumbs.GetSettingsBool
+        'uiStereoThumb.GetSettingsInt()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -34,6 +35,7 @@ Class SettingsMisc
         uiHideThumbs.SetSettingsBool
         uiBigPicSize.SetSettingsInt
         uiDragOutThumbs.SetSettingsBool
+        'uiStereoThumb.SetSettingsInt
 
         Me.NavigationService.GoBack()
     End Sub
