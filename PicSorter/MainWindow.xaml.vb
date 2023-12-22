@@ -16,6 +16,13 @@ Class MainWindow
         InitLib(Nothing)
         Page_Loaded(Nothing, Nothing)    ' tak prościej, bo wklejam tu zawartość dawnego Page
         lib14_httpClnt.httpKlient._machineName = Environment.MachineName    ' musi być tak, bo lib jest też używana w std 1.4, a tam nie ma machinename
+
+        ' narzucona nazwa instancji (warning)
+        Dim appname As String = GetSettingsString("name")
+        If Not String.IsNullOrEmpty(appname) Then
+            Vblib.DialogBox("Narzucona nazwa instancji:" & vbCrLf & appname)
+        End If
+
     End Sub
 
 #Region "zamykanie i ikonka"
