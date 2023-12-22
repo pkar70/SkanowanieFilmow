@@ -79,13 +79,36 @@ WPF i WinUI2? (progressring)
 * zastanowic sie gdzie zbierac zdjecia dla udostepnien? bo moze zrezygnowac z Degoo, Shutterfly (jak juz nie ma sharesites) - moze w efekcie sprobowac ten facebook/albums?
 
 Stereoskopowe:
-* czy mozna nuget stereoskopowego podlgadu?
 * oznakowywanie zdjec jako "stereoscopic pair"? - nie da się
 * JPS: "sklejone" ze sobą dwa zdjęcia, więc dekodować tylko połowę, a
 	w ShowBig mozliwosc pokazania anaglyph (oba na czarno-białe, na kolorek, i pokazać)
 * MPO: poniekąd sklejone ze sobą kolejne JPGi, z nagłówkiem=indeksem wszystkich
 * ⧉ U+29C9	TWO JOINED SQUARES
-
+* zajmujemy się wewnątrz JPS tylko - pokazywanie tylko połówki zdjęcia jako miniaturka, dopiero kliknięcie na ikonce ⧉ daje operacje stereoskopowe (anaglyph)
+* menu thumb: dwa zaznaczone zdjęcia jako jeden JPS - rescale, dodanie pliku JPS (jako niezależnego od oryginałów)
+* menu big dla JPS: pokaż jako anaglif, zamień prawo/lewo (x)
+* teoretycznie: jest pokazywanie ⧉ przy plikach stereoskopowych
+* teoretycznie: tworzenie Thumb z pliku JPS (pierwsze pół zdjęcia)
+* źródła stereoskopowych:
+	* klatka z przystawki do Practica, left=right=jps, => ana
+	* belplasca: left+rigt = jps, => ana
+	* anaglyph z sieci, left=right=jps BRAK, =ana
+	* jps z sieci, left=right BRAK, =jps, => ana
+	* telefony rowne, left+right = jps, => ana
+	* telefony różne, left+right (dwie możliwości), => jps (przykrojenie któregoś), => ana
+MenuItem.SubmenuOpened Event
+* klasa leftFrame, rightFrame, jpsFrame, anaFrame, align data
+* dodatkowe pliki:
+	* jps
+	* mpo
+	* jpg
+	* stj	STLabs Video Data
+	* pns
+	* j2k
+	* jp2
+	* jpt	JPEG 2000 Code Stream Image
+	* das
+* JPS: tworzenie thumb, blokada crop, do Azure/Face/OCR tylko połowę odsyła
 == SORTED:
 
 ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
@@ -127,6 +150,12 @@ BROWSER: slideshow z zaznaczonych? w ten sposób można byłoby szukać niewidoc
 BROWSER: blokować akcje InArchive gdy jest read-only
 BROWSER: do listy publisherów dodawać "sharin»", pod nim "logins/servers", z listami zdefiniowanych
 
+CMDLINE: expl|cd data|buff
+CMDLINE: ntp buffer (dowolny .json z data)
+CMDLINE: retrieve SOURCE
+CMDLINE: autotag TAGGER
+CMDLINE: tool weather|moon|astro DATA (z tego potem pogoda BN/Wlknoc do sprawdzenia ;) ) dane dla Krakowa
+CMDLINE: tool ocr|face|azure|exif|fullExif FILE
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi
@@ -156,13 +185,13 @@ POSTPROCESS: jeśli któryś etap nie da rady, to pytanie (DialogBoxYN) co zrobi
 PUBLISH jednego - może być pytanie, np. o opis.
 PUBLISH, default mask, i to przekopiowywane, albo includeMask nieruszalne, albo dwa poziomy (includemask - supported by service, includemask publikatora - co chcemy wysyłać)
 PUBLISH progressbar niezbyt dobrze sie zachowuje
-PUBLISH: SendFiles(.., delegate ProgbarInc)
 PUBLISH ADHOC zamykanie (file.flush/close) po eksporcie, bo na razie dlugo zwleka zanim zamknie pliki i sa widoczne
 PUBLISH: Amazon Photos
 PUBLISH/ARCH: do katalogu VPN, z filtrowaniem (nie =X, nie Nudne, nie -?U - do taty)
 PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
 PUBLISH copy out - bez processing, Drag&Drop - processing, email - processing, wybór z różnych o nazwie "email" itp
-PUBLISH zip, cbz - do ZIP może nawet z pełnym dump JSON.OnePic
+PUBLISH: copy to... z browserem, oraz clip copy - do clipboard, content konkretnego, albo liste; moze copy pic do clip tylko z browse (gdzie jest caly wczytany)
+PUBLISH: przez DLNA?
 
 PUBLISH: jakiś letsupload.io, i tym podobne; pojedyncze lub do ZIPa - do dzielenia się
 https://nugetmusthaves.com/Package/CloudRail.SDK
@@ -184,10 +213,31 @@ SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.js
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 SETTINGS: keywords: statystyka
 SETTINGS: cloudpubl, exif - nie pokazuje aktualnego stanu (C)
+SETTINGS: cmdline -name xxx : zmiana nazwy folderu z settingsami, by mogło być kilka instancji
+SETTINGS: umożliwienie kilku instancji jednocześsnie
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
 SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
+
+STEREO: a) save stereoimage, korzystając z clipboard (nazwa anaglyph, wraz ze ścieżką)
+STEREO: b) autoalign
+STEREO: c) save ponownie
+STEREO: - moze da sie wyslac kbd do procesu? zeby wiecej sam robił :)
+STEREO: *.st.cbz
+STEREO: pliki bez zmian nazw
+STEREO: anaglypg.jpg
+STEREO: alignment\*
+STEREO: pliki.json
+STEREO: moze tak:
+STEREO: wypakowanie do podkatalogu w TEMP
+STEREO: uruchomienie SPM
+STEREO: proba wyslania do niego saveas
+STEREO: poczekanie na zamkniecie SPM
+STEREO: spakowanie na nowo
+STEREO: podczas jpg+jpg->.st.cbz:
+STEREO: porownanie istniejacych ExifTag, by stworzyc jeden wspolny - zapytac gdy sie różnią
+STEREO: do .st.cbz: pliki.json (oryginalne, bo przeciez ExifSource sie różnią na pewno)
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
 STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)

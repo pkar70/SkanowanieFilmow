@@ -65,7 +65,7 @@ Public Class OnePic
     ''' <summary>
     ''' "*.jpg;*.tif;*.gif;*.png"
     ''' </summary>
-    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png;*.jpeg"
+    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png;*.jpeg;*.jps"
     ''' <summary>
     ''' "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
     ''' </summary>
@@ -436,6 +436,20 @@ Public Class OnePic
     End Function
 
 #End Region
+
+    Public Function GetFileTypeIcon() As String
+        If MatchesMasks("*.nar") Then Return "*"
+        If MatchesMasks("*.avi") Then Return "►"
+        If MatchesMasks("*.mov") Then Return "►"
+        If MatchesMasks("*.mp4") Then Return "►"
+        If MatchesMasks("*.jps") Then Return "⧉"
+        Return ""
+    End Function
+
+    Public Sub SetDefaultFileTypeDiscriminator()
+        fileTypeDiscriminator = GetFileTypeIcon()
+    End Sub
+
 
 #Region "descriptionsy"
 

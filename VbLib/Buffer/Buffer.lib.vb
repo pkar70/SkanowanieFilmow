@@ -224,21 +224,7 @@ Public Class BufferSortowania
         oPic.InBufferPathName = sDstPathName
         ' oPic.sortOrder = oExif.DateMax.ToExifString 'ToString("yyyy.MM.dd HH.mm.ss")
 
-
-        If oPic.MatchesMasks("*.nar") Then
-            oPic.fileTypeDiscriminator = "*"
-        End If
-
-        If oPic.MatchesMasks("*.avi") Then
-            oPic.fileTypeDiscriminator = "►"
-        End If
-        If oPic.MatchesMasks("*.mov") Then
-            oPic.fileTypeDiscriminator = "►"
-        End If
-        If oPic.MatchesMasks("*.mp4") Then
-            oPic.fileTypeDiscriminator = "►"
-        End If
-
+        oPic.SetDefaultFileTypeDiscriminator()
 
         _pliki.Add(oPic)
 
