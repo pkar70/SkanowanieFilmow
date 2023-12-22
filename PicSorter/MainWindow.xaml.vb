@@ -2,7 +2,10 @@
 
 
 'Imports Org.BouncyCastle.Asn1
+Imports System.Globalization
 Imports System.Net.Http.Json
+Imports CsvHelper
+Imports FacebookApiSharp.Classes.Responses
 'Imports Org.BouncyCastle.Utilities
 Imports pkar
 Imports Vblib
@@ -12,7 +15,7 @@ Class MainWindow
     Inherits Window
 
 
-    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+    Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         InitLib(Nothing)
         Page_Loaded(Nothing, Nothing)    ' tak prościej, bo wklejam tu zawartość dawnego Page
         lib14_httpClnt.httpKlient._machineName = Environment.MachineName    ' musi być tak, bo lib jest też używana w std 1.4, a tam nie ma machinename
@@ -23,7 +26,169 @@ Class MainWindow
             Vblib.DialogBox("Narzucona nazwa instancji:" & vbCrLf & appname)
         End If
 
+
+        ' gdy nie ma cmd line, kończymy
+        If String.IsNullOrEmpty(Environment.CommandLine) Then Return
+
+        ' specjalne uruchomienia
+        Dim argsy As String() = Environment.CommandLine.Split(" ")
+        If argsy.Count < 2 Then Return
+
+
+        Select Case argsy(1).ToLowerInvariant
+            Case "expl"
+                If argsy.Count <> 3 Then
+                    Console.WriteLine("No param for 'expl'")
+                    Return
+                End If
+
+                Dim folder As String = CmdLineGetFolder(argsy(2))
+                Dim apka As New Process()
+                apka.StartInfo.UseShellExecute = True
+                apka.StartInfo.FileName = folder
+                apka.Start()
+                Window_Closing(Nothing, Nothing)
+            'Case "cd"
+            '    If argsy.Count <> 3 Then
+            '        Console.WriteLine("No param for 'cd'")
+            '        Return
+            '    End If
+
+            '    Dim folder As String = CmdLineGetFolder(argsy(2))
+            '    If String.IsNullOrEmpty(folder) Then Return
+
+            '    Environment.CurrentDirectory = folder
+            '    Window_Closing(Nothing, Nothing)
+            Case "ntp"
+                If argsy.Count <> 3 Then
+                    Console.WriteLine("No param for 'ntp'")
+                    Return
+                End If
+
+                Dim plik As String = Application.GetDataFile("", argsy(2) & ".json")
+
+                If IO.File.Exists(plik) Then
+                    Process.Start("notepad", plik)
+                    Window_Closing(Nothing, Nothing)
+                Else
+                    Console.WriteLine("Nonexistent file for notepad")
+                End If
+
+
+            Case "tool"
+                If argsy.Count <> 4 Then
+                    Console.WriteLine("No params for 'tools'")
+                    Return
+                End If
+
+                If Await CmdLineRunTool(argsy(2), argsy(3)) Then Window_Closing(Nothing, Nothing)
+
+                ' case "retrieve" SOURCE
+                ' case "autotag" TAGGER
+                ' case tool weather|moon|astro DATA (z tego potem pogoda BN/Wlknoc do sprawdzenia ;) ) dane dla Krakowa
+                ' case tool ocr|face|azure|exif|fullExif FILE
+        End Select
+
+
     End Sub
+
+    Private Function CmdLineGetFolder(param As String) As String
+        Select Case param.ToLowerInvariant
+            Case "data"
+                Return Application.GetDataFolder(False)
+            Case "buff"
+                Return Vblib.GetSettingsString("uiFolderBuffer")
+        End Select
+        Return ""
+    End Function
+
+    ''' <summary>
+    ''' uruchom TOOL toolName z toolParam, zwróć FALSE gdy nieudane (i normalny start app) lub TRUE gdy ma być app zamykana
+    ''' </summary>
+    ''' <param name="toolName">nazwa toola</param>
+    ''' <param name="toolParam">parametr dla toola</param>
+    ''' <returns></returns>
+    Private Async Function CmdLineRunTool(toolName As String, toolParam As String) As Task(Of Boolean)
+
+        Dim retVal As String = ""
+
+        Select Case toolName.ToLowerInvariant
+            Case "weather", "moon", "astro"
+                retVal = "For " & toolParam & vbCrLf & Await CmdLineRunToolData("AUTO_" & toolName, toolParam)
+            Case "winocr", "winface", "azure", "exif", "fullExif"
+                retVal = "For " & toolParam & vbCrLf & Await CmdLineRunToolFile("AUTO_" & toolName, toolParam)
+        End Select
+
+        If String.IsNullOrEmpty(retVal) Then Return False
+
+        Dim tempfile As String = IO.Path.GetTempFileName
+        IO.File.WriteAllText(tempfile, retVal)
+        Process.Start("notepad", tempfile)
+
+        Return True
+    End Function
+
+    Private Async Function CmdLineRunToolFile(toolName As String, toolParam As String) As Task(Of String)
+
+        If Not IO.File.Exists(toolParam) Then
+            Console.WriteLine("Non existent file (for tool)")
+            Return ""
+        End If
+
+        For Each tool In Application.gAutoTagery
+            If tool.Nazwa.EqualsCIAI(toolName) Then
+                Dim picek As New Vblib.OnePic
+                picek.InBufferPathName = toolParam
+
+                Dim exiftag As Vblib.ExifTag = Await tool.GetForFile(picek)
+                If exiftag Is Nothing Then
+                    Console.WriteLine("Tool returns NULL")
+                    Return ""
+                Else
+                    Return exiftag.DumpAsJSON(True)
+                End If
+            End If
+        Next
+
+        Console.WriteLine("Nie znam takiego toola")
+        Return ""
+    End Function
+
+    Private Async Function CmdLineRunToolData(toolName As String, toolParam As String) As Task(Of String)
+
+        Dim data As Date
+        If Not Date.TryParseExact(toolParam, "yyyy.MM.dd", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, data) Then
+            Console.WriteLine("Chyba zły format daty - ma być yyyy.MM.dd")
+            Return ""
+        End If
+
+        For Each tool In Application.gAutoTagery
+            If tool.Nazwa.EqualsCIAI(toolName) Then
+                Dim picek As New Vblib.OnePic
+
+                ' date z parametru, oraz dla Krakowa
+                Dim exif As New Vblib.ExifTag(Vblib.ExifSource.FileExif)
+                exif.DateTimeOriginal = data.ToExifString
+                exif.GeoTag = BasicGeopos.GetKrakowCenter
+                picek.ReplaceOrAddExif(exif)
+
+                Dim exiftag As Vblib.ExifTag = Await tool.GetForFile(picek)
+                If exiftag Is Nothing Then
+                    Console.WriteLine("Tool returns NULL")
+                    Return ""
+                Else
+                    Return exiftag.DumpAsJSON(True)
+                End If
+            End If
+        Next
+
+        Console.WriteLine("Nie znam takiego toola")
+        Return ""
+
+        ' case tool weather|moon|astro DATA (z tego potem pogoda BN/Wlknoc do sprawdzenia ;) ) dane dla Krakowa
+        ' case tool ocr|face|azure|exif|fullExif FILE
+    End Function
+
 
 #Region "zamykanie i ikonka"
     Private Async Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
@@ -37,7 +202,7 @@ Class MainWindow
             End If
 
             If Not Await Vblib.DialogBoxYNAsync(msg & ", zamknąć go?") Then
-                e.Cancel = True
+                If e IsNot Nothing Then e.Cancel = True
                 Return
             End If
             Application.gWcfServer?.StopSvc()

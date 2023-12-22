@@ -150,12 +150,8 @@ BROWSER: slideshow z zaznaczonych? w ten sposób można byłoby szukać niewidoc
 BROWSER: blokować akcje InArchive gdy jest read-only
 BROWSER: do listy publisherów dodawać "sharin»", pod nim "logins/servers", z listami zdefiniowanych
 
-CMDLINE: expl|cd data|buff
-CMDLINE: ntp buffer (dowolny .json z data)
 CMDLINE: retrieve SOURCE
 CMDLINE: autotag TAGGER
-CMDLINE: tool weather|moon|astro DATA (z tego potem pogoda BN/Wlknoc do sprawdzenia ;) ) dane dla Krakowa
-CMDLINE: tool ocr|face|azure|exif|fullExif FILE
 
 CHOMIK: katalogi robić hidden
 CHOMIK: importer, między ludźmi
