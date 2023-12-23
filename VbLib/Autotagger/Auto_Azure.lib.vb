@@ -93,44 +93,23 @@ Public Class Auto_AzureTest
         IO.File.SetAttributes(filename, attrs)
     End Sub
 
-    Public Shared Async Function Nar2Jpg(sNarFileName As String, Optional sJpgFileName As String = "") As Task(Of String)
-        Vblib.DumpCurrMethod(sNarFileName)
+    Public Shared Async Function Nar2Jpg(picek As OnePic) As Task(Of String)
+        Vblib.DumpCurrMethod(picek.InBufferPathName)
 
-        Using oArchive = IO.Compression.ZipFile.OpenRead(sNarFileName)
+        Dim sJpgFileName As String = IO.Path.GetTempFileName
 
-            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
+        Using memStream As Stream = picek.SinglePicFromMulti
+            If memStream Is Nothing Then Return ""
 
-                ' mamy JPGa (a nie XML na przykład)
-
-                If String.IsNullOrWhiteSpace(sJpgFileName) Then
-                    sJpgFileName = IO.Path.Combine(IO.Path.GetTempPath, oInArch.Name)
-                    If IO.File.Exists(sJpgFileName) Then
-                        Vblib.DumpMessage($"Dest (temp) file {sJpgFileName} already exist, deleting")
-                        IO.File.Delete(sJpgFileName)
-                    End If
-                Else
-                    If IO.File.Exists(sJpgFileName) Then
-                        Vblib.DumpMessage($"Dest file {sJpgFileName} already exist, using it")
-                        Return sJpgFileName
-                    End If
-                End If
-
-                'If IO.File.GetAttributes(sJpgFileName) And FileAttributes.Hidden Then
-                '    IO.File.Delete()
-                'End If
-
-                Using oWrite As Stream = IO.File.Create(sJpgFileName)
-                    Await oInArch.Open.CopyToAsync(oWrite)
-                    Await oWrite.FlushAsync()
-                    'oWrite.Dispose()
-                End Using
-                Return sJpgFileName
-
-            Next
+            Using oWrite As Stream = IO.File.Create(sJpgFileName)
+                Await memStream.CopyToAsync(oWrite)
+                Await oWrite.FlushAsync()
+                'oWrite.Dispose()
+            End Using
         End Using
 
-        Return ""
+        Return sJpgFileName
+
     End Function
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
@@ -138,7 +117,7 @@ Public Class Auto_AzureTest
         If Not oFile.MatchesMasks(includeMask) Then Return Nothing
 
         If oFile.MatchesMasks("*.nar") Then
-            Dim sTempfilename As String = Await Nar2Jpg(oFile.InBufferPathName)
+            Dim sTempfilename As String = Await Nar2Jpg(oFile)
 
             ' tworzymy nowy oPic, dla wypakowanego pliku
             Dim oPic As New OnePic("TempForAzure", "", sTempfilename)

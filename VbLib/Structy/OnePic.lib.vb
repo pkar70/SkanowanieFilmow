@@ -1046,6 +1046,8 @@ Public Class OnePic
 
     End Function
 
+#Region "sharing"
+
     ''' <summary>
     ''' zwraca ostatni zapis ze ścieżki sharing, czyli GUID poprzedzony L: / S:, lub ""
     ''' </summary>
@@ -1098,6 +1100,7 @@ Public Class OnePic
             Return Nothing
         End If
     End Function
+#End Region
 
 
 #Region "searching by query"
@@ -1582,6 +1585,86 @@ Public Class OnePic
 
 
 #End Region
+
+#Region "operacje na pliku"
+    Public Sub FileCopyTo(newPathname As String)
+        IO.File.Copy(InBufferPathName, newPathname)
+    End Sub
+
+    Public Sub FileCopyTo(targetDir As String, newname As String)
+        FileCopyTo(IO.Path.Combine(targetDir, newname))
+    End Sub
+
+    ''' <summary>
+    ''' usuwa wszystkie pliki tymczasowe i utworzone przez program (thumb, bak, firstFrame...), NIE kasuje samego zdjęcia!
+    ''' </summary>
+    Public Sub DeleteAllTempFiles()
+
+        Dim folder As String = IO.Path.GetDirectoryName(InBufferPathName)
+        Dim mask As String = InBufferPathName & ".*"    ' musi być coś po nazwie pliku - więc samego zdjęcia NIE skasuje
+
+        For Each plik In IO.Directory.GetFiles(folder, mask)
+            IO.File.Delete(plik)
+        Next
+    End Sub
+
+
+    ''' <summary>
+    ''' daje stream albo bezpośrednio z pliku, albo po wyborze z paczki (NAR/ZIP)
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function SinglePicFromMulti() As Stream
+        If IO.Path.GetExtension(InBufferPathName).EqualsCI(".nar") Then
+            Return SinglePicFromNar()
+        ElseIf InBufferPathName.EndsWithCI(".stereo.zip") Then
+            Return SinglePicFromZip()
+        Else
+            Return IO.File.OpenRead(InBufferPathName)
+        End If
+    End Function
+
+    Private Function SinglePicFromNar() As Stream
+        Vblib.DumpCurrMethod()
+        If Not IO.Path.GetExtension(InBufferPathName).EqualsCI(".nar") Then Return Nothing
+
+        Using oArchive = IO.Compression.ZipFile.OpenRead(InBufferPathName)
+            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
+                Return SingePicFromZipEntry(oInArch)
+            Next
+        End Using
+
+        Return Nothing
+    End Function
+
+    Private Function SinglePicFromZip() As Stream
+        ' od SinglePicFromNar odróżnia się pomijaniem plików anaglyph*, ale może kiedyś NAR by wybierał zdefiniowany plik a nie pierwszy lepszy
+        Vblib.DumpCurrMethod()
+        If Not InBufferPathName.EndsWithCI(".stereo.zip") Then Return Nothing
+
+        Using oArchive = IO.Compression.ZipFile.OpenRead(InBufferPathName)
+            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
+                If oInArch.Name.ContainsCI("anaglyph") Then Continue For
+                Return SingePicFromZipEntry(oInArch)
+            Next
+        End Using
+
+        Return Nothing
+    End Function
+
+    Private Function SingePicFromZipEntry(oInArch As IO.Compression.ZipArchiveEntry) As Stream
+        Dim memStream As New MemoryStream
+        oInArch.Open.CopyTo(memStream)
+        memStream.Flush()
+        memStream.Seek(0, SeekOrigin.Begin)
+
+        Return memStream
+    End Function
+
+#End Region
+
+
 
 
 End Class

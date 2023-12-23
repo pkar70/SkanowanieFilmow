@@ -114,7 +114,8 @@ Public Class ShowBig
         ' *TODO* reakcja jakaś na inne typy niż JPG
         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
 
-        _bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
+        '_bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
+        _bitmap = Await _picek.PicForBig(iObrot)
         If _bitmap Is Nothing Then Return
 
         Me.Title = _picek.oPic.InBufferPathName & $" ({_bitmap.Width.ToString("F0")}×{_bitmap.Height.ToString("F0")})"
@@ -665,9 +666,10 @@ Public Class ShowBig
 
         End Using
 
-        IO.File.Delete(_picek.oPic.InBufferPathName & ProcessBrowse.THUMB_SUFIX) ' no exception if not found
+        IO.File.Delete(_picek.ThumbGetFilename) ' no exception if not found
 
-        _picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
+        '_picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
+        Await _picek.ThumbWczytajLubStworz(_inArchive)
 
         Return True
     End Function
@@ -875,9 +877,9 @@ Public Class ShowBig
                     File.Delete(targetJPG)
                 End If
 
-                If File.Exists(targetJPG & ProcessBrowse.THUMB_SUFIX) Then
+                If File.Exists(ProcessBrowse.ThumbPicek.ThumbGetFilename(targetJPG)) Then
                     Vblib.DumpMessage($"usuwam stary thumb")
-                    File.Delete(targetJPG & ProcessBrowse.THUMB_SUFIX)
+                    File.Delete(ProcessBrowse.ThumbPicek.ThumbGetFilename(targetJPG))
                 End If
 
                 File.Move(sourceJPG, targetJPG)

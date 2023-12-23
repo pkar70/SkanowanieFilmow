@@ -304,7 +304,8 @@ Public MustInherit Class LocalStorage
 		Dim sTargetFile As String = IO.Path.Combine(sFolder, oPic.sSuggestedFilename)
 		If IO.File.Exists(sTargetFile) Then Return $"ERROR: file {sTargetFile} already exist!"
 
-		IO.File.Copy(oPic.InBufferPathName, sTargetFile)
+		oPic.FileCopyTo(sTargetFile)
+		' IO.File.Copy(oPic.InBufferPathName, sTargetFile)
 
 		Try
 			IO.File.SetCreationTime(sTargetFile, IO.File.GetCreationTime(oPic.InBufferPathName))

@@ -50,14 +50,14 @@ Public NotInheritable Class PicMenuCopyOut
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
                 Try
-                    IO.File.Copy(oItem.oPic.InBufferPathName, IO.Path.Combine(sFolder, oItem.oPic.sSuggestedFilename))
+                    oItem.oPic.FileCopyTo(sFolder, oItem.oPic.sSuggestedFilename)
                 Catch ex As Exception
                     iErrCount += 1
                 End Try
             Next
         Else
             Try
-                IO.File.Copy(_picek.InBufferPathName, IO.Path.Combine(sFolder, _picek.sSuggestedFilename))
+                _picek.FileCopyTo(sFolder, _picek.sSuggestedFilename)
             Catch ex As Exception
                 iErrCount += 1
             End Try

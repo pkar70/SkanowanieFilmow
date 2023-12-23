@@ -25,6 +25,9 @@ Imports pkar.DotNetExtensions
 Imports System.Runtime.InteropServices.WindowsRuntime
 Imports Org.BouncyCastle.Math.EC
 Imports System.IO
+'Imports FFMpegCore
+'Imports System.Drawing
+'Imports Windows.Perception.Spatial
 
 Public Class ProcessBrowse
 
@@ -38,8 +41,6 @@ Public Class ProcessBrowse
     Private _title As String
 
     ' Private _MetadataWindow As ShowExifs
-
-    Public Const THUMB_SUFIX As String = ".PicSortThumb.jpg"
 
 #Region "called on init"
 
@@ -231,39 +232,37 @@ Public Class ProcessBrowse
         uiProgBar.Value = 0
         uiProgBar.Visibility = Visibility.Visible
 
-        Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
-        If _inArchive Then bCacheThumbs = False    ' w archiwum nie robimy tego!
-
         For Each oItem As ThumbPicek In _thumbsy
-            Await DoczytajMiniaturke(bCacheThumbs, oItem)
+            Await oItem.ThumbWczytajLubStworz(_inArchive) 'DoczytajMiniaturke(bCacheThumbs, oItem)
+            Await Task.Delay(1) ' na potrzeby ProgressBara
             uiProgBar.Value += 1
         Next
 
     End Function
 
-    Public Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oItem As ThumbPicek, Optional bRecreate As Boolean = False) As Task
+    'Public Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oItem As ThumbPicek, Optional bRecreate As Boolean = False) As Task
 
-        Dim miniaturkaPathname As String = oItem.oPic.InBufferPathName & THUMB_SUFIX
+    '    Dim miniaturkaPathname As String = oItem.ThumbGetFilename
 
-        ' wymuszone odtworzenie miniaturki
-        If bRecreate Then IO.File.Delete(miniaturkaPathname)
+    '    ' wymuszone odtworzenie miniaturki
+    '    If bRecreate Then IO.File.Delete(miniaturkaPathname)
 
-        Dim bitmapa As BitmapImage = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
-        oItem.oImageSrc = bitmapa
+    '    Dim bitmapa As BitmapImage = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
+    '    oItem.oImageSrc = bitmapa
 
-        If bCacheThumbs AndAlso Not IO.File.Exists(miniaturkaPathname) Then
-            Dim encoder As New JpegBitmapEncoder()
-            encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
-            encoder.Frames.Add(BitmapFrame.Create(bitmapa))
+    '    If bCacheThumbs AndAlso Not IO.File.Exists(miniaturkaPathname) Then
+    '        Dim encoder As New JpegBitmapEncoder()
+    '        encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
+    '        encoder.Frames.Add(BitmapFrame.Create(bitmapa))
 
-            Using fileStream = IO.File.Create(miniaturkaPathname)
-                encoder.Save(fileStream)
-            End Using
+    '        Using fileStream = IO.File.Create(miniaturkaPathname)
+    '            encoder.Save(fileStream)
+    '        End Using
 
-            FileAttrHidden(miniaturkaPathname, True)
-        End If
+    '        FileAttrHidden(miniaturkaPathname, True)
+    '    End If
 
-    End Function
+    'End Function
 
     ''' <summary>
     ''' przetworzenie danych Bufor na własną listę (thumbsów)
@@ -600,8 +599,8 @@ Public Class ProcessBrowse
         Dim useThumbs As Boolean = vb14.GetSettingsBool("uiDragOutThumbs")
 
         For Each oTB As ThumbPicek In uiPicList.SelectedItems
-            If useThumbs AndAlso IO.File.Exists(oTB.oPic.InBufferPathName & THUMB_SUFIX) Then
-                lista.Add(oTB.oPic.InBufferPathName & THUMB_SUFIX)
+            If useThumbs AndAlso IO.File.Exists(oTB.ThumbGetFilename) Then
+                lista.Add(oTB.ThumbGetFilename)
             Else
                 lista.Add(oTB.oPic.InBufferPathName)
             End If
@@ -695,7 +694,7 @@ Public Class ProcessBrowse
 
     End Sub
 
-
+#If POPRZ_WCZYTAJOBRAZEK Then
     ''' <summary>
     ''' wczytaj ze skalowaniem do 400 na wiekszym boku
     ''' (SzukajPicka tu ma błąd, olbrzymie ilości pamięci zjada - bo nie ma skalowania)
@@ -714,14 +713,14 @@ Public Class ProcessBrowse
 
         Dim sExt As String = IO.Path.GetExtension(sPathName).ToLowerInvariant
 
-        If iMaxSize <> 0 AndAlso IO.File.Exists(sPathName & THUMB_SUFIX) Then
+        If iMaxSize <> 0 AndAlso IO.File.Exists(ProcessBrowse.ThumbPicek.ThumbGetFilename(sPathName)) Then
             ' jak mamy Thumb, i chcemy thumba, to wczytaj thumb
-            sPathName = sPathName & THUMB_SUFIX
+            sPathName = ProcessBrowse.ThumbPicek.ThumbGetFilename(sPathName)
         ElseIf IO.File.Exists(sPathName & THUMB_SUFIX & ".png") Then
             ' jeśli mamy PNG, to zapewne chodzi o kadr z filmu - bierzemy niezależnie od skalowania
-            sPathName = sPathName & THUMB_SUFIX & ".png"
+            sPathName = ProcessBrowse.ThumbPicek.ThumbGetFilename(sPathName) & ".png"
         Else
-            If sExt = ".nar" Or OnePic.ExtsMovie.Contains(sExt) Then
+            If sExt = ".nar" Or OnePic.ExtsMovie.Contains(sExt) Or sPathName.Contains("stereo.zip") Then
                 Dim sRet As String = Await MakeThumbFromFile(sPathName)
                 If sRet <> "" Then sPathName = sRet
             End If
@@ -790,6 +789,10 @@ Public Class ProcessBrowse
 
     End Function
 
+#End If
+
+#If POPRZ_THUMB Then
+
     ''' <summary>
     ''' stwórz coś do pokazywania (dla nieJPG), 
     ''' </summary>
@@ -812,9 +815,21 @@ Public Class ProcessBrowse
 
         Select Case sExt
             Case ".nar"
-                'Dim sTempFile As String = IO.Path.GetTempFileName
-                Await Vblib.Auto_AzureTest.Nar2Jpg(sPathName, sOutfilename)
+                If IO.File.Exists(sOutfilename) Then
+                    Vblib.DumpMessage($"Dest file {sOutfilename} already exist, using it")
+                    Return sOutfilename
+                End If
+
+                Dim memStream As Stream = picek.SinglePicFromMulti
+                Using oWrite As Stream = IO.File.Create(sOutfilename)
+                    Await memStream.CopyToAsync(oWrite)
+                    Await oWrite.FlushAsync()
+                    'oWrite.Dispose()
+                End Using
                 Return sOutfilename
+            Case ".zip"
+                ' wcześniej jest że wejdzie tylko dla "stereo.zip", więc nie trzeba tu drugi raz testować
+
             Case Else
                 Return ""    ' nie umiem zrobić - nie wiem co to za plik
         End Select
@@ -823,7 +838,7 @@ Public Class ProcessBrowse
 
     End Function
 
-
+#End If
 
 #Region "ShowBig i callbacki z niego"
 
@@ -994,9 +1009,8 @@ Public Class ProcessBrowse
         ' usuń z bufora (z listy i z katalogu), ale nie zapisuj indeksu (jakby to była seria kasowania)
         If Not _oBufor.DeleteFile(oPic) Then Return False  ' nieudane skasowanie
 
-        ' kasujemy różne miniaturki i tak dalej. Delete nie robi Exception jak pliku nie ma.
-        IO.File.Delete(oPic.InBufferPathName & THUMB_SUFIX)
-        IO.File.Delete(oPic.InBufferPathName & THUMB_SUFIX & ".png")
+        ' kasujemy różne miniaturki i tak dalej. 
+        oPic.DeleteAllTempFiles()
 
         ' zapisz jako plik do kiedyś-tam usunięcia ze źródła - ale tylko jeśli to nasze źródło
         If String.IsNullOrWhiteSpace(oPic.sharingFromGuid) Then
@@ -1077,10 +1091,11 @@ Public Class ProcessBrowse
         uiActionsPopup.IsOpen = False
         If uiPicList.SelectedItems Is Nothing Then Return
 
-        Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
+        'Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
 
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Await DoczytajMiniaturke(bCacheThumbs, oItem, True)
+            Await oItem.ThumbWczytajLubStworz(_inArchive, True)
+            'Await DoczytajMiniaturke(bCacheThumbs, oItem, True)
         Next
 
     End Sub
@@ -2116,6 +2131,8 @@ Public Class ProcessBrowse
 
 
     Public Class ThumbPicek
+        Private Const THUMB_SUFIX As String = ".PicSortThumb.jpg"
+
         Public Property oPic As Vblib.OnePic
         Public Property sDymek As String 'XAML dymekCount
         Public Property oImageSrc As BitmapImage = Nothing ' XAML image
@@ -2188,6 +2205,241 @@ Public Class ProcessBrowse
         Public Shared Widening Operator CType(ByVal thumb As ThumbPicek) As Vblib.OnePic
             Return thumb.oPic
         End Operator
+
+#Region "Thumb bitmapowy"
+
+        Public Function ThumbGetFilename() As String
+            Return oPic.InBufferPathName & THUMB_SUFIX
+        End Function
+
+        Public Shared Function ThumbGetFilename(pathname As String) As String
+            Return pathname & THUMB_SUFIX
+        End Function
+
+        Public Sub ThumbDelete()
+            IO.File.Delete(ThumbGetFilename)
+            IO.File.Delete(ThumbGetFilename() & ".png")   ' pierwsza klatka filmu (pełny rozmiar)
+        End Sub
+
+        Private Async Function ThumbCreate(bCacheThumbs As Boolean) As Task(Of BitmapImage)
+            ' async, bo robienie np. z filmu może potrwać
+
+            Dim sExt As String = IO.Path.GetExtension(oPic.InBufferPathName).ToLowerInvariant
+
+            If OnePic.ExtsMovie.ContainsCI(sExt) Then
+                Return Await ThumbCreateFromMovie(bCacheThumbs)
+            End If
+
+            Select Case sExt
+                Case ".nar", ".zip"
+                    Using strumyk As Stream = oPic.SinglePicFromMulti()
+                        Dim bitmapa As New BitmapImage()
+                        bitmapa.BeginInit()
+                        bitmapa.DecodePixelHeight = 400
+                        bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                        bitmapa.StreamSource = strumyk
+                        bitmapa.EndInit()
+
+                        Return bitmapa
+                    End Using
+                Case ".jps"
+                    Return ThumbCreateFromJPS(oPic.InBufferPathName)
+                Case Else
+                    Return ThumbCreateFromNormal(oPic.InBufferPathName)
+            End Select
+
+        End Function
+
+
+        Private Function ThumbCreateFromJPS(sInputFile As String) As BitmapSource
+
+            ' z temp (.png) należy stworzyć THUMB
+            Dim bitmapa As New BitmapImage()
+            bitmapa.BeginInit()
+            bitmapa.DecodePixelHeight = 400
+            bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+            bitmapa.UriSource = New Uri(sInputFile)
+            bitmapa.EndInit()
+
+            Dim croping As New Int32Rect(0, 0, bitmapa.Width / 2, bitmapa.Height)
+            Dim cropped As New CroppedBitmap(bitmapa, croping)
+
+            Return cropped
+
+        End Function
+
+        Private Function ThumbCreateFromNormal(sInputFile As String) As BitmapImage
+
+            ' z temp (.png) należy stworzyć THUMB
+            Dim bitmapa As New BitmapImage()
+            bitmapa.BeginInit()
+            bitmapa.DecodePixelHeight = 400
+            bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+            bitmapa.UriSource = New Uri(sInputFile)
+            bitmapa.EndInit()
+
+            Return bitmapa
+        End Function
+
+        Private Async Function ThumbCreateFromMovie(bCacheThumbs As Boolean) As Task(Of BitmapImage)
+
+            Dim firstFrame As String = ThumbGetFilename() & ".png"
+
+            If IO.File.Exists(firstFrame) Then
+                Return ThumbCreateFromNormal(firstFrame)
+            End If
+
+            If bCacheThumbs Then
+                ' możemy stworzyć plik pierwszej klatki
+                If Not Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(oPic.InBufferPathName, firstFrame) Then
+                    Return Nothing
+                Else
+                    Return ThumbCreateFromNormal(firstFrame)
+                End If
+            End If
+
+            ' nie możemy tworzyć pliku - więc robimy to przez plik tymczasowy
+
+            Dim tempFrame As String = Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrameToTemp(oPic.InBufferPathName)
+            If String.IsNullOrEmpty(tempFrame) Then Return Nothing ' nieudane stworzenie ramki
+            ' z temp (.png) należy stworzyć THUMB
+            Dim bitmapa As BitmapImage = ThumbCreateFromNormal(tempFrame)
+            IO.File.Delete(tempFrame)
+            Return bitmapa
+
+        End Function
+
+        Public Async Function ThumbWczytajLubStworz(_inArchive As Boolean, Optional bRecreate As Boolean = False) As Task
+            If bRecreate Then ThumbDelete()
+
+            Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
+            If _inArchive Then bCacheThumbs = False    ' w archiwum nie robimy tego!
+
+            Dim bitmapa As BitmapImage = Await ThumbGet(bCacheThumbs)
+            oImageSrc = bitmapa
+
+        End Function
+
+        Private Async Function ThumbGet(bCacheThumbs As Boolean) As Task(Of BitmapImage)
+
+            Dim bitmapa As BitmapImage
+
+            ' jeśli mamy zapisany THUMB, to go otwieramy i już
+            If IO.File.Exists(ThumbGetFilename) Then
+                bitmapa = New BitmapImage()
+                bitmapa.BeginInit()
+                bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+
+                bitmapa.UriSource = New Uri(ThumbGetFilename)
+                Try
+                    bitmapa.EndInit()
+                    Return bitmapa
+                Catch
+                    Return Nothing
+                End Try
+            End If
+
+            bitmapa = Await ThumbCreate(bCacheThumbs)
+            If bitmapa Is Nothing Then Return ThumbPlaceholder()
+
+            If Not bCacheThumbs Then Return bitmapa
+
+            ' zapisujemy
+            Dim encoder As New JpegBitmapEncoder()
+            'encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
+            encoder.Frames.Add(BitmapFrame.Create(bitmapa))
+
+            Using fileStream = IO.File.Create(ThumbGetFilename())
+                encoder.Save(fileStream)
+            End Using
+
+            FileAttrHidden(ThumbGetFilename(), True)
+
+            Return bitmapa
+
+        End Function
+
+        Private Function ThumbPlaceholder() As BitmapImage
+
+            Dim sExt As String = IO.Path.GetExtension(oPic.InBufferPathName).ToLowerInvariant
+            Dim placeholderThumb As String = Application.GetDataFile("", $"placeholder{sExt}.jpg")
+            If Not IO.File.Exists(placeholderThumb) Then
+                Process_Signature.WatermarkCreate.StworzWatermarkFile(placeholderThumb, sExt, sExt)
+                FileAttrHidden(placeholderThumb, True)
+            End If
+
+            Dim bitmapa As New BitmapImage()
+            bitmapa.BeginInit()
+            bitmapa.DecodePixelHeight = 400
+            bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+            bitmapa.UriSource = New Uri(placeholderThumb)
+            bitmapa.EndInit()
+
+            Return bitmapa
+        End Function
+
+        '       PicToPublish(OnePic) As Stream - Do publikacji, wyciaganie zdjecia z nar itp.
+        'PicToThumb(OnePic) as stream - dla thumba, wyciąganie klatki dla filmu...
+        'PicToBig(OnePic) do pokazywania na ekranie w ShowBig (podstawowa wersja, bez 3 okien NARa itp)
+
+        'OnePic.PicForBig As stream
+        'OnePic.PicForThumb as stream
+        'OnePic.PicForPublish(extsmask) as stream
+        'OnePic.PicForArchive(extsmask) as strem 
+
+        'OnePic.DelTemps
+        'OnePic.DelThumb
+#End Region
+        Public Async Function PicForBig(Optional iRotation As Rotation = Rotation.Rotate0) As Task(Of BitmapImage)
+
+            If Not IO.File.Exists(oPic.InBufferPathName) Then Return Nothing
+
+            Dim sExt As String = IO.Path.GetExtension(oPic.InBufferPathName).ToLowerInvariant
+
+
+            If OnePic.ExtsMovie.ContainsCI(sExt) Then
+                ' mamy filmik
+                Dim firstFrame As String = ThumbGetFilename() & ".png"
+
+                If IO.File.Exists(firstFrame) Then
+                    Dim bitmapa As New BitmapImage()
+                    bitmapa.BeginInit()
+                    bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                    bitmapa.UriSource = New Uri(firstFrame)
+                    bitmapa.EndInit()
+
+                    Return bitmapa
+                End If
+                ' jeśli nie mamy firstframe, to znaczy że nie wolno jej tworzyć - byłaby stworzona przez ProcessBrowse
+                Return Await ThumbCreateFromMovie(False)
+            End If
+
+            Select Case sExt
+                Case ".nar", ".zip"
+                    Using strumyk As Stream = oPic.SinglePicFromMulti()
+                        Dim bitmapa As New BitmapImage()
+                        bitmapa.BeginInit()
+                        bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                        bitmapa.StreamSource = strumyk
+                        bitmapa.EndInit()
+
+                        Return bitmapa
+                    End Using
+
+                    'Case ".jps"
+                Case Else
+                    Dim bitmapa As New BitmapImage()
+                    bitmapa.BeginInit()
+                    bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                    bitmapa.UriSource = New Uri(oPic.InBufferPathName)
+                    bitmapa.EndInit()
+
+                    Return bitmapa
+
+            End Select
+
+        End Function
+
 
     End Class
 
