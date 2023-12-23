@@ -158,6 +158,7 @@
                         <Separator/>
                         <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
                         <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
+                        <local:PicMenuDeleteTemps UseSelectedItems="True"/>
                     </Menu>
             </Popup>
             </StackPanel>
@@ -228,6 +229,8 @@
                                             <!-- readonly metadata 2 -->
                                             <local:PicMenuShowWiki />
                                             <local:PicMenuCopyOut  />
+                                            <Separator/>
+                                            <local:PicMenuDeleteTemps />
                                         </MenuItem>
                                         <!-- delete -->
                                         <Separator/>

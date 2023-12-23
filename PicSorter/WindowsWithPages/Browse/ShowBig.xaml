@@ -107,6 +107,8 @@
                                 <local:PicMenuShowWiki  />
                                 <local:PicMenuCopyOut  />
                                 <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
+                                <Separator/>
+                                <local:PicMenuDeleteTemps />
                             </MenuItem>
                             <Separator/>
                             <!-- delete -->
