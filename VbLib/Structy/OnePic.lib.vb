@@ -443,6 +443,7 @@ Public Class OnePic
         If MatchesMasks("*.mov") Then Return "►"
         If MatchesMasks("*.mp4") Then Return "►"
         If MatchesMasks("*.jps") Then Return "⧉"
+        If InBufferPathName.ContainsCI("stereo.zip") Then Return "⧉"
         Return ""
     End Function
 
@@ -1613,11 +1614,11 @@ Public Class OnePic
     ''' daje stream albo bezpośrednio z pliku, albo po wyborze z paczki (NAR/ZIP)
     ''' </summary>
     ''' <returns></returns>
-    Public Function SinglePicFromMulti() As Stream
+    Public Function SinglePicFromMulti(Optional bForBig As Boolean = False) As Stream
         If IO.Path.GetExtension(InBufferPathName).EqualsCI(".nar") Then
             Return SinglePicFromNar()
         ElseIf InBufferPathName.EndsWithCI(".stereo.zip") Then
-            Return SinglePicFromZip()
+            Return SinglePicFromZip(bForBig)
         Else
             Return IO.File.OpenRead(InBufferPathName)
         End If
@@ -1637,10 +1638,25 @@ Public Class OnePic
         Return Nothing
     End Function
 
-    Private Function SinglePicFromZip() As Stream
+    ''' <summary>
+    ''' Daje MemoryStream z kopią wybranego pliku ze środka (zwykle: pierwszy JPG)
+    ''' </summary>
+    ''' <param name="bForBig">Gdy TRUE, i uiStereoBigAnaglyph, to daje ze środka (jeśli istnieje) anaglyph* </param>
+    ''' <returns></returns>
+    Private Function SinglePicFromZip(bForBig As Boolean) As Stream
         ' od SinglePicFromNar odróżnia się pomijaniem plików anaglyph*, ale może kiedyś NAR by wybierał zdefiniowany plik a nie pierwszy lepszy
         Vblib.DumpCurrMethod()
         If Not InBufferPathName.EndsWithCI(".stereo.zip") Then Return Nothing
+
+        If bForBig AndAlso Vblib.GetSettingsBool("uiStereoBigAnaglyph") Then
+            Using oArchive = IO.Compression.ZipFile.OpenRead(InBufferPathName)
+                For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                    If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
+                    If Not oInArch.Name.ContainsCI("anaglyph") Then Continue For
+                    Return SingePicFromZipEntry(oInArch)
+                Next
+            End Using
+        End If
 
         Using oArchive = IO.Compression.ZipFile.OpenRead(InBufferPathName)
             For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries

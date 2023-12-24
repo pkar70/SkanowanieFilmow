@@ -162,6 +162,8 @@ Class SettingsCloudPublisher
         uiSrcInclude.Text = _item.includeMask
         uiSrcExclude.Text = _item.excludeMask
 
+
+        uiStereoAnaglyph.IsChecked = _item.stereoAnaglyph
         uiProcessLikes.IsChecked = _item.processLikes
 
         uiSrcLastSave.Text = "-"
@@ -217,7 +219,7 @@ Class SettingsCloudPublisher
 
         _item.includeMask = uiSrcInclude.Text
         _item.excludeMask = uiSrcExclude.Text
-
+        _item.stereoAnaglyph = uiStereoAnaglyph.IsChecked
 
         ShowSourcesList()
     End Sub

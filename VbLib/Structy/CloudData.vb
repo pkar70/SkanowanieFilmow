@@ -24,6 +24,8 @@ Public Class CloudConfig
     Public Property includeMask As String = "*.jpg;*.tif;*.png" ' maski regexp
     Public Property excludeMask As String  ' maski regexp
 
+    Public Property stereoAnaglyph As Boolean
+
     Public Property additInfo As String
 
     Public Property processLikes As Boolean

@@ -5,7 +5,7 @@ Imports pkar.WPF.Configs.Extensions
 
 Class SettingsGlobal
 
-    Public Shared Function FileBrowser(sDefaultDir As String, sTitle As String, defaultFile As String) As String
+    Public Shared Function FileSaveBrowser(sDefaultDir As String, sTitle As String, defaultFile As String) As String
         Dim oPicker As New Microsoft.Win32.SaveFileDialog
         oPicker.FileName = defaultFile ' Default file name
         oPicker.Title = sTitle
@@ -23,9 +23,25 @@ Class SettingsGlobal
 
     Public Shared Function FolderBrowser(sDefaultDir As String, sTitle As String) As String
 
-        Dim filename As String = FileBrowser(sDefaultDir, sTitle, "none")
+        Dim filename As String = FileSaveBrowser(sDefaultDir, sTitle, "none")
         If String.IsNullOrWhiteSpace(filename) Then Return ""
         Return IO.Path.GetDirectoryName(filename)
+    End Function
+
+    Public Shared Function FileOpenBrowser(sDefaultDir As String, sTitle As String, defaultFile As String) As String
+        Dim oPicker As New Microsoft.Win32.OpenFileDialog
+        oPicker.FileName = defaultFile ' Default file name
+        oPicker.Title = sTitle
+        oPicker.CheckPathExists = True
+        oPicker.InitialDirectory = sDefaultDir
+
+        ' Show open file dialog box
+        Dim result? As Boolean = oPicker.ShowDialog()
+
+        ' Process open file dialog box results
+        If result <> True Then Return ""
+
+        Return oPicker.FileName
     End Function
 
 

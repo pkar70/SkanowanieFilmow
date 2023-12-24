@@ -40,6 +40,11 @@ Class SettingsMisc
         Me.NavigationService.GoBack()
     End Sub
 
+    Private Sub uiSettStereo_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsStereo)
+    End Sub
+
+
     Private Sub uiSettMaps_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsMapsy)
     End Sub

@@ -85,15 +85,15 @@ Public NotInheritable Class PicMenuCloudPublish
                 If sFolder = "" Then Return
                 _engine.sZmienneZnaczenie = sFolder
             Case Vblib.Publish_ZIP.PROVIDERNAME
-                Dim archiveName As String = SettingsGlobal.FileBrowser("", "Podaj nazwę pliku docelowego", "plik.zip")
+                Dim archiveName As String = SettingsGlobal.FileSaveBrowser("", "Podaj nazwę pliku docelowego", "plik.zip")
                 If archiveName = "" Then Return
                 _engine.sZmienneZnaczenie = archiveName
             Case Vblib.Publish_CBZ.PROVIDERNAME
-                Dim archiveName As String = SettingsGlobal.FileBrowser("", "Podaj nazwę pliku docelowego", "plik.cbz")
+                Dim archiveName As String = SettingsGlobal.FileSaveBrowser("", "Podaj nazwę pliku docelowego", "plik.cbz")
                 If archiveName = "" Then Return
                 _engine.sZmienneZnaczenie = archiveName
             Case lib_n6_PowerPoint.Publish_PowerPoint.PROVIDERNAME
-                Dim archiveName As String = SettingsGlobal.FileBrowser("", "Podaj nazwę pliku docelowego", "plik.pps")
+                Dim archiveName As String = SettingsGlobal.FileSaveBrowser("", "Podaj nazwę pliku docelowego", "plik.pps")
                 If archiveName = "" Then Return
                 _engine.sZmienneZnaczenie = archiveName
             Case Else

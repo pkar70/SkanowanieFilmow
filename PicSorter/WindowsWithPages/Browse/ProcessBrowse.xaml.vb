@@ -2416,7 +2416,7 @@ Public Class ProcessBrowse
 
             Select Case sExt
                 Case ".nar", ".zip"
-                    Using strumyk As Stream = oPic.SinglePicFromMulti()
+                    Using strumyk As Stream = oPic.SinglePicFromMulti(True)
                         Dim bitmapa As New BitmapImage()
                         bitmapa.BeginInit()
                         bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
