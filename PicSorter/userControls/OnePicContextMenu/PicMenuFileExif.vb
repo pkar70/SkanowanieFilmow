@@ -19,7 +19,7 @@ Public NotInheritable Class PicMenuFileExif
     Private Sub ActionClick(sender As Object, e As RoutedEventArgs)
 
         Dim oWnd As New ShowExifs(True) '(_picek.oPic)
-        oWnd.DataContext = _picek
+        oWnd.DataContext = GetFromDataContext()
         If UseOwner Then oWnd.Owner = Window.GetWindow(Me)
         oWnd.Show()
 

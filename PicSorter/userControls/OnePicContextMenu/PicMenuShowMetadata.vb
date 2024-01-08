@@ -21,7 +21,7 @@ Public NotInheritable Class PicMenuShowMetadata
 
         Dim oWnd As New ShowExifs(False) '(oPicek.oPic)
         If UseOwner Then oWnd.Owner = Window.GetWindow(Me)
-        oWnd.DataContext = _picek
+        oWnd.DataContext = GetFromDataContext()
         oWnd.Show()
 
     End Sub

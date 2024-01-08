@@ -55,7 +55,7 @@ Public NotInheritable Class PicMenuSetDate
                 oItem.dateMin = oItem.oPic.GetMinDate
             Next
         Else
-            AdjustOffsetInPic(offset, _picek)
+            AdjustOffsetInPic(offset, GetFromDataContext)
         End If
 
         EventRaise(Me)
@@ -105,15 +105,15 @@ Public NotInheritable Class PicMenuSetDate
                 oItem.dateMin = oItem.oPic.GetMinDate
             Next
         Else
-            ForceInPic(_picek, _clipMin, _clipMax)
+            ForceInPic(GetFromDataContext, _clipMin, _clipMax)
         End If
 
         EventRaise(Me)
     End Sub
 
     Private Sub uiDatesToClip_Click(sender As Object, e As RoutedEventArgs)
-        _clipMin = _picek.GetMinDate
-        _clipMax = _picek.GetMaxDate
+        _clipMin = GetFromDataContext.GetMinDate
+        _clipMax = GetFromDataContext.GetMaxDate
     End Sub
 #End Region
 
@@ -213,7 +213,7 @@ Public NotInheritable Class PicMenuSetDate
 
     Private Sub StworzOkienko()
         _picker = New DatePicker
-        _picker.SelectedDate = _picek.GetMostProbablyDate
+        _picker.SelectedDate = GetFromDataContext.GetMostProbablyDate
         _picker.DisplayDateStart = New Date(1800, 1, 1)
         _picker.DisplayDateEnd = Date.Now.AddHours(5)
 
@@ -244,10 +244,10 @@ Public NotInheritable Class PicMenuSetDate
         Dim maxDays As Integer = 0
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                maxDays = Math.Max(maxDays, Math.Abs((_picek.GetMostProbablyDate - dateMin).TotalDays))
+                maxDays = Math.Max(maxDays, Math.Abs((GetFromDataContext.GetMostProbablyDate - dateMin).TotalDays))
             Next
         Else
-            maxDays = Math.Max(maxDays, Math.Abs((_picek.GetMostProbablyDate - dateMin).TotalDays))
+            maxDays = Math.Max(maxDays, Math.Abs((GetFromDataContext.GetMostProbablyDate - dateMin).TotalDays))
         End If
 
         If Not Await Vblib.DialogBoxYNAsync($"Przestawić datę o maksymalnie {maxDays} dni?") Then Return
@@ -261,7 +261,7 @@ Public NotInheritable Class PicMenuSetDate
                 oItem.dateMin = oItem.oPic.GetMostProbablyDate
             Next
         Else
-            ForceInPic(_picek, dateMin, dateMax)
+            ForceInPic(GetFromDataContext, dateMin, dateMax)
         End If
 
         EventRaise(Me)

@@ -25,7 +25,7 @@ Public NotInheritable Class PicMenuGeotag
         _itemPaste = NewMenuItem("Paste Geotag", AddressOf uiGeotagPaste_Click, _clip IsNot Nothing)
         Me.Items.Add(_itemPaste)
 
-        Me.Items.Add(NewMenuItem("Reset Geotag", AddressOf uiGeotagClear_Click, UseSelectedItems OrElse _picek.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing))
+        Me.Items.Add(NewMenuItem("Reset Geotag", AddressOf uiGeotagClear_Click, UseSelectedItems OrElse GetFromDataContext.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing))
 
         _wasApplied = True
     End Sub
@@ -102,7 +102,7 @@ Public NotInheritable Class PicMenuGeotag
 
     Private Sub uiGeotagToClip_Click(sender As Object, e As RoutedEventArgs)
 
-        Dim oGeo As BasicGeoposWithRadius = _picek.GetGeoTag
+        Dim oGeo As BasicGeoposWithRadius = GetFromDataContext.GetGeoTag
         If oGeo Is Nothing Then
             Vblib.DialogBox("Zaznaczone zdjęcie nie ma GeoTag")
             Return

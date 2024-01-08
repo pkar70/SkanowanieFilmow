@@ -30,7 +30,7 @@ Public NotInheritable Class PicMenuOnMap
     End Sub
 
     Private Sub uiOnMap_Click(sender As Object, e As RoutedEventArgs)
-        Dim oGps As BasicGeopos = _picek.GetGeoTag
+        Dim oGps As BasicGeopos = GetFromDataContext.GetGeoTag
         If oGps Is Nothing Then Return
 
         Dim oFE As FrameworkElement = sender
@@ -79,25 +79,25 @@ Public NotInheritable Class PicMenuOnMap
 
     Private Sub oFlickerFotoTime(sender As Object, e As RoutedEventArgs)
 
-        Dim minDate As String = _picek.GetMinDate.ToString("yyyy-MM-dd")
-        Dim maxDate As String = _picek.GetMaxDate.ToString("yyyy-MM-dd")
+        Dim minDate As String = GetFromDataContext.GetMinDate.ToString("yyyy-MM-dd")
+        Dim maxDate As String = GetFromDataContext.GetMaxDate.ToString("yyyy-MM-dd")
         UseFlickerLink(minDate, maxDate)
     End Sub
 
     Private Sub oFlickerSameDay(sender As Object, e As RoutedEventArgs)
-        Dim minDate As String = _picek.GetMostProbablyDate.ToString("yyyy-MM-dd")
+        Dim minDate As String = GetFromDataContext.GetMostProbablyDate.ToString("yyyy-MM-dd")
         UseFlickerLink(minDate, minDate)
     End Sub
 
     Private Sub oFlickerSameMonth(sender As Object, e As RoutedEventArgs)
-        Dim minDate As Date = _picek.GetMostProbablyDate
+        Dim minDate As Date = GetFromDataContext.GetMostProbablyDate
         minDate = minDate.AddDays(-minDate.Day + 1)
         Dim maxDate As Date = minDate.AddMonths(1).AddDays(-1)
         UseFlickerLink(minDate.ToString("yyyy-MM-dd"), maxDate.ToString("yyyy-MM-dd"))
     End Sub
 
     Private Sub oFlickerSameYear(sender As Object, e As RoutedEventArgs)
-        Dim minDate As Integer = _picek.GetMostProbablyDate.Year
+        Dim minDate As Integer = GetFromDataContext.GetMostProbablyDate.Year
         UseFlickerLink(minDate.ToString & "-01-01", minDate.ToString & "-12-31")
     End Sub
 
@@ -106,7 +106,7 @@ Public NotInheritable Class PicMenuOnMap
     End Sub
 
     Private Sub UseFlickerLink(dateMin As String, dateMax As String)
-        Dim oGps As BasicGeopos = _picek.GetGeoTag
+        Dim oGps As BasicGeopos = GetFromDataContext.GetGeoTag
         If oGps Is Nothing Then Return
 
         Dim sUri As String = oGps.FormatLink("https://www.flickr.com/map?&fLat=%lat&fLon=%lon&zl=14&")

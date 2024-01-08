@@ -21,7 +21,7 @@ Public NotInheritable Class PicMenuShowWiki
 
 
     Private Sub ShowWikiMonth(sender As Object, e As RoutedEventArgs)
-        Dim data As Date = _picek.GetMostProbablyDate
+        Dim data As Date = GetFromDataContext.GetMostProbablyDate
 
         ' https://en.wikipedia.org/wiki/January_1970
         Dim sLink As String = data.ToString("MMMM_yyyy", System.Globalization.CultureInfo.InvariantCulture)
@@ -31,7 +31,7 @@ Public NotInheritable Class PicMenuShowWiki
     End Sub
 
     Private Sub ShowWikiDay(sender As Object, e As RoutedEventArgs)
-        Dim data As Date = _picek.GetMostProbablyDate
+        Dim data As Date = GetFromDataContext.GetMostProbablyDate
 
         ' https://en.wikipedia.org/wiki/January_1970
         Dim sLink As String = data.ToString("d_MMMM", System.Globalization.CultureInfo.InvariantCulture)

@@ -22,7 +22,7 @@ Public NotInheritable Class PicMenuShellExec
 
         Dim proc As New Process()
         proc.StartInfo.UseShellExecute = True
-        proc.StartInfo.FileName = _picek.InBufferPathName
+        proc.StartInfo.FileName = GetFromDataContext.InBufferPathName
         proc.Start()
     End Sub
 

@@ -19,7 +19,7 @@ Public NotInheritable Class PicMenuCopyPath
     End Sub
 
     Private Sub ActionClick(sender As Object, e As RoutedEventArgs)
-        Vblib.ClipPut(_picek.InBufferPathName)
+        Vblib.ClipPut(GetFromDataContext.InBufferPathName)
     End Sub
 
 

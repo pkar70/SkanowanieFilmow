@@ -30,14 +30,14 @@ Public NotInheritable Class PicMenuTargetDir
         End If
 
         If Not UseSelectedItems Then
-            Me.Items.Add(NewMenuItem("Copy TargetDir", AddressOf uiTargetToClip_Click, String.IsNullOrWhiteSpace(_picek.TargetDir)))
+            Me.Items.Add(NewMenuItem("Copy TargetDir", AddressOf uiTargetToClip_Click, String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)))
         End If
 
         'oNew = New MenuItem
         _itemPaste = NewMenuItem("Paste TargetDir", AddressOf uiTargetPaste_Click, Not String.IsNullOrWhiteSpace(_clipForTargetDir))
         Me.Items.Add(_itemPaste)
 
-        Me.Items.Add(NewMenuItem("Clear TargetDir", AddressOf uiTargetClear_Click, UseSelectedItems OrElse String.IsNullOrWhiteSpace(_picek.TargetDir)))
+        Me.Items.Add(NewMenuItem("Clear TargetDir", AddressOf uiTargetClear_Click, UseSelectedItems OrElse String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)))
 
         _wasApplied = True
     End Sub
@@ -88,7 +88,7 @@ Public NotInheritable Class PicMenuTargetDir
 
 
     Private Sub uiTargetToClip_Click(sender As Object, e As RoutedEventArgs)
-        _clipForTargetDir = _picek.TargetDir
+        _clipForTargetDir = GetFromDataContext.TargetDir
     End Sub
 
     Private Sub uiTargetPaste_Click(sender As Object, e As RoutedEventArgs)

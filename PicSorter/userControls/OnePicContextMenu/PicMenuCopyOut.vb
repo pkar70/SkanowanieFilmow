@@ -31,7 +31,7 @@ Public NotInheritable Class PicMenuCopyOut
                 lista.Add(oTB.oPic.InBufferPathName)
             Next
         Else
-            lista.Add(_picek.InBufferPathName)
+            lista.Add(GetFromDataContext.InBufferPathName)
         End If
 
         Clipboard.SetFileDropList(lista)
@@ -57,7 +57,7 @@ Public NotInheritable Class PicMenuCopyOut
             Next
         Else
             Try
-                _picek.FileCopyTo(sFolder, _picek.sSuggestedFilename)
+                GetFromDataContext.FileCopyTo(sFolder, _picek.sSuggestedFilename)
             Catch ex As Exception
                 iErrCount += 1
             End Try

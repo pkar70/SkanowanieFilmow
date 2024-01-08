@@ -59,19 +59,24 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         If UseSelectedItems Then
             _picek = Nothing
         Else
-            _picek = TryCast(DataContext, Vblib.OnePic)
+            _picek = GetFromDataContext()
             If _picek Is Nothing Then
-                _picek = TryCast(DataContext, ProcessBrowse.ThumbPicek)?.oPic
-                If _picek Is Nothing Then
-                    Me.IsEnabled = False
-                    Return False
-                End If
+                Me.IsEnabled = False
+                Return False
             End If
         End If
 
         Me.IsEnabled = True
         Return True
 
+    End Function
+
+    Protected Function GetFromDataContext() As Vblib.OnePic
+        Dim picek As Vblib.OnePic = TryCast(DataContext, Vblib.OnePic)
+        If picek Is Nothing Then
+            picek = TryCast(DataContext, ProcessBrowse.ThumbPicek)?.oPic
+        End If
+        Return picek
     End Function
 
     Protected Shared Function NewMenuItem(header As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
@@ -155,7 +160,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
                 akcja(oItem.oPic)
             Next
         Else
-            akcja(_picek)
+            akcja(GetFromDataContext)
         End If
     End Sub
 
@@ -183,7 +188,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
 
             _progBar.Visibility = Visibility.Collapsed
         Else
-            Await akcja(_picek)
+            Await akcja(GetFromDataContext)
         End If
 
         Application.ShowWait(False)
