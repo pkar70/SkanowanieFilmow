@@ -1,4 +1,5 @@
 ﻿Imports pkar.WPF.Configs
+Imports pkar.DotNetExtensions
 
 Public Class SliderWithHdr
 
@@ -14,11 +15,13 @@ Public Class SliderWithHdr
     End Sub
 
     Public Sub SetSettingsInt()
-        uiSlajder.SetSettingsInt
+        Vblib.SetSettingsInt(Name, Value)
+        Value = uiSlajder.Value
     End Sub
 
     Public Sub GetSettingsInt()
-        uiSlajder.GetSettingsInt
+        Value = Vblib.GetSettingsInt(Name).Between(Minimum, Maximum)
+        uiSlajder.Value = Value
         uiSlajder_ValueChanged(Nothing, Nothing)
     End Sub
 
@@ -27,7 +30,7 @@ Public Class SliderWithHdr
         uiHeader.Text = Header
         uiSlajder.Minimum = Minimum
         uiSlajder.Maximum = Maximum
-        uiSlajder.Value = Value
+        uiSlajder.Value = Value.Between(Minimum, Maximum)
     End Sub
 
     Private Sub uiSlajder_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double))

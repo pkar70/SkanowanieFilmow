@@ -20,34 +20,37 @@ Public Class SimpleDescribe
     Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
 
         ' bez zmian
-        If _orgDescribe = uiAllDescribe.Text Then Return
+        If _orgDescribe <> uiAllDescribe.Text Then
 
-        Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
-        Dim descr As String = uiAllDescribe.Text
-        AddToMenu(descr)
-        oPicek.oPic.ReplaceAllDescriptions(descr)
+            Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
+            Dim descr As String = uiAllDescribe.Text.Trim
+            AddToMenu(descr)
+            oPicek.oPic.ReplaceAllDescriptions(descr)
 
-        If Not String.IsNullOrWhiteSpace(oPicek.oPic.sharingFromGuid) Then
-            ' to jest 'obce' zdjęcie, i description można temu loginowi wysłać
+            If Not String.IsNullOrWhiteSpace(oPicek.oPic.sharingFromGuid) Then
+                ' to jest 'obce' zdjęcie, i description można temu loginowi wysłać
 
-            Dim oNew As Vblib.ShareDescription = ShareDescription.GetForPic(oPicek, descr)
-            Application.GetShareDescriptionsOut.Add(oNew)
+                Dim oNew As Vblib.ShareDescription = ShareDescription.GetForPic(oPicek, descr)
+                Application.GetShareDescriptionsOut.Add(oNew)
 
-            Dim peer = oPicek.GetLastSharePeer
-            If peer IsNot Nothing Then
-                If peer.GetType Is GetType(ShareServer) Then
-                    ' zdjęcie jest z serwera, więc jest mu jak wysłać komentarz
-                    If Vblib.GetSettingsBool("uiSharingAutoUploadComment") OrElse Await Vblib.DialogBoxYNAsync("Zdjęcie przysłane - spróbować odesłać komentarz?") Then
-                        Await lib14_httpClnt.httpKlient.UploadPicDescriptions(Application.GetShareDescriptionsOut, oNew.descr.PeerGuid, peer)
+                Dim peer = oPicek.GetLastSharePeer
+                If peer IsNot Nothing Then
+                    If peer.GetType Is GetType(ShareServer) Then
+                        ' zdjęcie jest z serwera, więc jest mu jak wysłać komentarz
+                        If Vblib.GetSettingsBool("uiSharingAutoUploadComment") OrElse Await Vblib.DialogBoxYNAsync("Zdjęcie przysłane - spróbować odesłać komentarz?") Then
+                            Await lib14_httpClnt.httpKlient.UploadPicDescriptions(Application.GetShareDescriptionsOut, oNew.descr.PeerGuid, peer)
+                        End If
+                    Else
+                        ' mamy do czynienia z loginem, czyli ktoś nam wrzucił - nie mamy jak mu wysłać komentarza, on sobie musi odebrać
                     End If
-                Else
-                    ' mamy do czynienia z loginem, czyli ktoś nam wrzucił - nie mamy jak mu wysłać komentarza, on sobie musi odebrać
                 End If
             End If
+
         End If
 
         If uiDescribeSetAndNext.IsChecked Then GoNextPic()
 
+        uiAllDescribe.Focus()
     End Sub
 
     Private Sub AddToMenu(descr As String)
@@ -106,4 +109,7 @@ Public Class SimpleDescribe
 
     End Sub
 
+    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        uiAllDescribe.Focus()
+    End Sub
 End Class

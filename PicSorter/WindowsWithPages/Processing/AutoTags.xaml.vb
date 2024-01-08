@@ -117,6 +117,20 @@ Public Class AutoTags
             uiProgBarInEngine.Value += 1
         Next
 
+        ' 2024.02.03, jakby nie było GUID w OnePic a był w OnePic.Exif(AutoGuid), to go przekopiuj
+        If oSrc.engine.Nazwa = "AUTO_GUID" Then
+            For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
+                If String.IsNullOrWhiteSpace(oItem.PicGuid) Then
+                    Dim oExif As Vblib.ExifTag = oItem.GetExifOfType(Vblib.ExifSource.AutoGuid)
+                    If oExif IsNot Nothing Then
+                        oItem.PicGuid = oExif.PicGuid
+                        oItem.TagsChanged = True
+                    End If
+                End If
+            Next
+        End If
+
+
         uiProgBarInEngine.Visibility = Visibility.Collapsed
 
         Application.ShowWait(False)

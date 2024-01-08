@@ -149,6 +149,8 @@ BROWSER: usunac wpelni zarchiwizowane, YES - to pytanie o backup config, ten sam
 BROWSER: slideshow z zaznaczonych? w ten sposób można byłoby szukać niewidocznej selekcji (filter, action filter->select, action slideshow)
 BROWSER: blokować akcje InArchive gdy jest read-only
 BROWSER: do listy publisherów dodawać "sharin»", pod nim "logins/servers", z listami zdefiniowanych
+BROWSER: droptarget, zassanie pliku; a jak shellobject, to razem z metadanymi?
+BROWSER: dodawanie pliku jak z FB, z podaniem linku, informacji, itp.
 
 CMDLINE: retrieve SOURCE
 CMDLINE: autotag TAGGER
@@ -198,11 +200,13 @@ RETRIEVE: dla Purge, progressbar od nowa
 RETRIEVE: reakcja na disk full (sprawdzenie przed próbą ściągania)
 RETRIEVE Jako reakcja na drag&DROP
 RETROEVE run AUTOEXIF gdy settings tak mówi
+RETRIEVE: bez sensu mozliwosc maxymalizacji okna
 
 SEARCH: sekcja OPAD
 SEARCH: wirtualne katalogi z query można robić
 SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
 SEARCH: poza tagiem również tagi nadrzędne (-ROK dla -DW)
+SEARCH: czemu nie robi wait?
 
 SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku skopiowanym do bufora, nie wcześniej
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
@@ -215,25 +219,26 @@ SETTINGS: umożliwienie kilku instancji jednocześsnie
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
 SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
+SHOWBIG: drag source (duży plik, nie ikonka jak z Browse)
 
+
+STEREO:BUG: podczas pakowania do stereo.zip, zapisuje sobie jedną ramkę jako "purge", a to jeszcze nieprawda
 STEREO: a) save stereoimage, korzystając z clipboard (nazwa anaglyph, wraz ze ścieżką)
 STEREO: b) autoalign
 STEREO: c) save ponownie
 STEREO: - moze da sie wyslac kbd do procesu? zeby wiecej sam robił :)
-STEREO: *.st.cbz
-STEREO: pliki bez zmian nazw
-STEREO: anaglypg.jpg
-STEREO: alignment\*
-STEREO: pliki.json
-STEREO: moze tak:
-STEREO: wypakowanie do podkatalogu w TEMP
-STEREO: uruchomienie SPM
-STEREO: proba wyslania do niego saveas
-STEREO: poczekanie na zamkniecie SPM
-STEREO: spakowanie na nowo
-STEREO: podczas jpg+jpg->.st.cbz:
-STEREO: porownanie istniejacych ExifTag, by stworzyc jeden wspolny - zapytac gdy sie różnią
-STEREO: do .st.cbz: pliki.json (oryginalne, bo przeciez ExifSource sie różnią na pewno)
+STEREO: dla Publish, jeśli są Processing, to wyciąga z wnętrza JPGa (nar, zip); oLogin.processing
+STEREO: * klatka z przystawki, left=right=jps
+STEREO: * belplasca: left+rigt = jps ## DONE
+STEREO: * anaglyph z sieci
+STEREO: * jps z sieci
+STEREO: * telefony rowne  ## DONE
+STEREO: * telefony różne
+
+TARGETDIR: brak podzialu date niech robi brak podzialu geo
+
+sharesrv.uploadprocessing
+archive.processing
 
 STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
 STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)

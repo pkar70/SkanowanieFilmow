@@ -33,8 +33,8 @@ Public MustInherit Class PostProcBase
     ''' <param name="sNewName"></param>
     ''' <returns></returns>
     Public Async Function Apply(oPic As OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
-        ' If Not OnePic.MatchesMasks(oPic.GetSourceFilename, include, "") Then Return False
-        If Not OnePic.MatchesMasks(oPic.InBufferPathName, include, "") Then Return False
+        'If Not OnePic.MatchesMasks(currPathName.GetSourceFilename, include, "") Then Return False
+        'If Not OnePic.MatchesMasks(oPic.InBufferPathName, include, "") Then Return False
 
         Return Await ApplyMain(oPic, bPipeline, params)
     End Function
@@ -42,11 +42,11 @@ Public MustInherit Class PostProcBase
     ''' <summary>
     ''' sprawdza czy filename spełnia maski
     ''' </summary>
-    ''' <param name="oPic"></param>
+    ''' <param name="currPathName"></param>
     ''' <param name="sNewName"></param>
     ''' <returns></returns>
-    Public Function CanRun(oPic As OnePic) As Boolean
-        Return OnePic.MatchesMasks(oPic.InBufferPathName, include, "")
+    Public Function CanRun(currPathName As String) As Boolean
+        Return OnePic.MatchesMasks(currPathName, include, "")
     End Function
 
 #If SUPPORT_CALL_WITH_EXIF Then

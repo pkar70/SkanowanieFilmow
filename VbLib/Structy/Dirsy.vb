@@ -101,6 +101,10 @@ Public Class OneDir
         If rok > Date.Now.Year Then Return invalidDate ' zdjęć z przyszlosci nie uznajemy
 
         Dim month As Integer
+        If Not Integer.TryParse(sId.Substring(5, 2), month) Then
+            Return New Date(rok, 1, 1)
+        End If
+
         Try
             month = Integer.Parse(sId.Substring(5, 2))
         Catch ex As Exception
@@ -111,11 +115,10 @@ Public Class OneDir
         If month > 12 Then Return invalidDate
 
         Dim day As Integer
-        Try
-            day = Integer.Parse(sId.Substring(8, 2))
-        Catch ex As Exception
+        ' żeby nie było CATCH
+        If Not Integer.TryParse(sId.Substring(8, 2), day) Then
             Return New Date(rok, month, 1)
-        End Try
+        End If
 
         If day < 1 Then Return invalidDate
         If day > 31 Then Return invalidDate

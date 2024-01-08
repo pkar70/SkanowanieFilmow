@@ -296,7 +296,7 @@ Public Module pkar
     '            Dim oRadios As IReadOnlyList(Of Windows.Devices.Radios.Radio) = Await Windows.Devices.Radios.Radio.GetRadiosAsync()
 
     '#If DEBUG Then
-    '        VBlib.DumpCurrMethod(", count=" & oRadios.Count)
+    '        VBlib.DumpCurrMethod(", licznik=" & oRadios.Count)
     '        For Each oRadio As Windows.Devices.Radios.Radio In oRadios
     '            VBlib.DumpMessage("NEXT RADIO")
     '            VBlib.DumpMessage("name=" & oRadio.SourceName)

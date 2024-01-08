@@ -12,7 +12,7 @@ Public Class AutoTag_FullEXIF
     Inherits AutotaggerBase
 
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
-    Public Overrides ReadOnly Property Nazwa As String = "AUTO_FULLEXIF"
+    Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.FullExif
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Wczytuje pełny dump EXIF z pliku zdjęcia (~ 10 KiB na zdjęcie)"
     Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.jpeg;"

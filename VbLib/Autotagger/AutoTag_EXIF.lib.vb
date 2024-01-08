@@ -15,7 +15,7 @@ Public Class AutoTag_EXIF
     Public Overrides ReadOnly Property Nazwa As String = "AUTO_EXIF"
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Wczytuje znaczniki EXIF z pliku zdjęcia"
-    Public Shared ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.jpeg;*.mov;*.mp4;*.avi;*.nar"
+    Public Shared ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.jpeg;*.mov;*.mp4;*.avi;*.nar;*.raf"
 
     ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
 
@@ -25,18 +25,23 @@ Public Class AutoTag_EXIF
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         If Not oFile.MatchesMasks(includeMask) Then Return Nothing
 
-        ' najpierw to, co umie CompactExif
-        If oFile.MatchesMasks("*.jpg;*.jpg.thumb;*.tif;*.tiff;*.png") Then Return GetForFileCompact(oFile)
+        Try
 
-        ' teraz NAR - wyciągnięcie pliku ze środka
-        If oFile.MatchesMasks("*.nar") Then Return GetForNARCompact(oFile)
+            ' najpierw to, co umie CompactExif
+            If oFile.MatchesMasks("*.jpg;*.jpg.thumb;*.tif;*.tiff;*.png;*.raf") Then Return GetForFileCompact(oFile)
 
-        ' filmy: mov, mp4
-        If oFile.MatchesMasks("*.mp4;*.mov;*.avi") Then Return GetForMovieFile(oFile)
+            ' teraz NAR - wyciągnięcie pliku ze środka
+            If oFile.MatchesMasks("*.nar") Then Return GetForNARCompact(oFile)
 
-        ' filmy: avi
-        'If oFile.MatchesMasks("*.avi", "") Then Return GetForAviFile(oFile)
-        ' AVI title, subtitle, contributing artist, year, media created, copyright, parenting rating
+            ' filmy: mov, mp4
+            If oFile.MatchesMasks("*.mp4;*.mov;*.avi") Then Return GetForMovieFile(oFile)
+
+            ' filmy: avi
+            'If oFile.MatchesMasks("*.avi", "") Then Return GetForAviFile(oFile)
+            ' AVI title, subtitle, contributing artist, year, media created, copyright, parenting rating
+        Catch ex As Exception
+            Return Nothing  ' błąd wczytywania danych (np. MOV Ani)
+        End Try
 
         Return Nothing  ' nie umiemy jeszcze, ale chcemy umieć (bo w includeMask jest że umiemy)
     End Function
@@ -52,7 +57,13 @@ Public Class AutoTag_EXIF
 
         Dim oNewExif As New Vblib.ExifTag(Nazwa)
 
-        Dim oCos = MetadataExtractor.ImageMetadataReader.ReadMetadata(oFile.InBufferPathName)
+        Dim oCos As IReadOnlyList(Of MetadataExtractor.Directory)
+        Try
+            ' *TODO* tu sie na Debug zapętla (nie idzie dalej)
+            oCos = MetadataExtractor.ImageMetadataReader.ReadMetadata(oFile.InBufferPathName)
+        Catch ex As Exception
+            Return Nothing
+        End Try
 
         For Each oDir As MetadataExtractor.Directory In MetadataExtractor.ImageMetadataReader.ReadMetadata(oFile.InBufferPathName)
             ' MP4 title, subtitle, tags, comments, contributing artist, year, producers, publisher, media created, copyright, parenting rating

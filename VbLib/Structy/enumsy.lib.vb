@@ -47,6 +47,7 @@ Public Class ExifSource
     Public Const SourceFile As String = "SOURCE_FILEATTR"
     Public Const SourceDescriptIon As String = "SOURCE_DESCRIPT.ION"
     Public Const FileExif As String = "AUTO_EXIF"
+    Public Const FullExif As String = "AUTO_FULLEXIF"
     Public Const AutoWinFace As String = "AUTO_WINFACE"
     Public Const AutoOSM As String = "AUTO_OSM_POI"
     Public Const AutoImgw As String = "AUTO_GEONAME_PL"

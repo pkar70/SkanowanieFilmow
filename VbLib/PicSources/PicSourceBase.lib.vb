@@ -101,8 +101,9 @@ Public MustInherit Class PicSourceBase
 			' można się zabezpieczyć i dawać nowy, ale ten i tak zawsze będzie
 			If oExif Is Nothing Then Continue For
 
-			Dim sFilename As String = oPic.sSuggestedFilename
+			Dim sFilename As String = IO.Path.GetFileNameWithoutExtension(oPic.sSuggestedFilename)
 
+			' etap 1: przepisanie TAGów z filename do Keywords
 			' for each kwd, use it
 			For Each oKey As OneKeyword In lKeys
 				If oKey.IsRoot Then Continue For
@@ -134,9 +135,14 @@ Public MustInherit Class PicSourceBase
 
 
 			' Motorola Aśki, IMG_20230128_111119345
+			'			   012345678901234567
 			' to pierwsze jest błędne, ale nie wiem czemu
-			If Regex.IsMatch(sFilename, "^IMG_2[0-1][0-9][0-9]_[0-2][0-9][0-5][0-9][0-5][0-9]") Then sFilename = sFilename.Substring(22)
-			If Regex.IsMatch(sFilename, "^IMG_2[0-1][0-9][0-9][0-2][0-9][0-3][0-9]_[0-2][0-9][0-5][0-9]") Then sFilename = sFilename.Substring(22)
+			' pierwsze IMG_2yyymmdd_hhmmss
+			'		  0123456789012345678
+			' drugie:  IMG_2yyymmdd_hhmm
+			'		  01234567890123456
+			If Regex.IsMatch(sFilename, "^IMG_2[0-1][0-9][0-9][0-2][0-9][0-3][0-9]_[0-2][0-9][0-5][0-9][0-5][0-9]") Then sFilename = sFilename.Substring(19)
+			' If Regex.IsMatch(sFilename, "^IMG_2[0-1][0-9][0-9][0-2][0-9][0-3][0-9]_[0-2][0-9][0-5][0-9]") Then sFilename = sFilename.Substring(17)
 
 			' iPhone	IMG_E5513.JPG
 			'		0123456789012345
@@ -162,9 +168,10 @@ Public MustInherit Class PicSourceBase
 				sFilename = sFilename.Replace("_Rich", "")
 			End If
 
+			' 2024.01.02: jak zostaną same cyfry, to je usuwamy
+			If Regex.IsMatch(sFilename, "^[0-9]+$") Then sFilename = ""
 
-
-			sFilename = sFilename.Substring(0, sFilename.Length - 4)
+			'If sFilename.Length > 4 Then sFilename = sFilename.Substring(0, sFilename.Length - 4)
 			If sFilename.Length > 2 Then
 				oExif.UserComment = sFilename & " | " & oExif.UserComment
 			End If
@@ -248,6 +255,7 @@ Public MustInherit Class PicSourceBase
 				Dim oNew As New ExifTag(ExifSource.SourceDescriptIon)
 				oNew.UserComment = sComment
 				oFile.Exifs.Add(oNew)
+				oFile.AddDescription(New OneDescription(sComment, ""))
 			End If
 		Next
 
