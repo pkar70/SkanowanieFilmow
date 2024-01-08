@@ -3,6 +3,7 @@
 
 
 Imports Vblib
+Imports pkar.DotNetExtensions
 
 Public Class EditExifTag
 
@@ -59,7 +60,7 @@ Public Class EditExifTag
         If IO.File.Exists(sFileName) Then
             Dim fileContent As List(Of String) = IO.File.ReadAllLines(sFileName).ToList
             fileContent.Sort()
-            For Each entry In fileContent
+            For Each entry As String In fileContent
                 oCombo.Items.Add(entry)
             Next
         End If
@@ -179,6 +180,17 @@ Public Class EditExifTag
         _exifTag.FileSourceDeviceType = sDevType.Substring(0, 1)
 
         Me.Close()
+    End Sub
+
+    Private Sub uiAuthor_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles uiAuthor.SelectionChanged
+        Dim autor As String = uiAuthor.SelectedValue
+
+        For Each copyr As String In uiCopyright.Items
+            If copyr.ContainsCIAI(autor) Then
+                uiCopyright.SelectedItem = copyr
+            End If
+        Next
+
     End Sub
 End Class
 

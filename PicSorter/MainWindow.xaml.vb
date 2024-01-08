@@ -92,6 +92,8 @@ Class MainWindow
 
     End Sub
 
+    #Region "commandline"
+
     Private Function CmdLineGetFolder(param As String) As String
         Select Case param.ToLowerInvariant
             Case "data"
@@ -188,6 +190,7 @@ Class MainWindow
         ' case tool weather|moon|astro DATA (z tego potem pogoda BN/Wlknoc do sprawdzenia ;) ) dane dla Krakowa
         ' case tool ocr|face|azure|exif|fullExif FILE
     End Function
+#End Region
 
 
 #Region "zamykanie i ikonka"
@@ -301,20 +304,6 @@ Class MainWindow
         'Application.GetBuffer.SaveData()
     End Sub
 
-    Private Sub ProbaWczytaniaJSONArch20231002()
-        Dim lista As List(Of Vblib.OnePic)
-        Dim sTxt = IO.File.ReadAllText(Application.GetDataFile("", "archIndexFull.json"))
-        sTxt &= "]"
-        Dim sErr As String = ""
-        Try
-            lista = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ObservableList(Of Vblib.OnePic)))
-        Catch ex As Exception
-            sErr = ex.Message
-        End Try
-
-        If sErr <> "" Then Vblib.DialogBox(sErr)
-        Debug.WriteLine(sErr)
-    End Sub
 
     Private Sub PoprawkiArchUniq()
         ' zrobienie pliku archiwum uniq (bo są w nim powtórki?)
@@ -491,6 +480,13 @@ Class MainWindow
         oWnd.Show()
     End Sub
 
+    Private Sub uiStats_Click(sender As Object, e As RoutedEventArgs)
+        'Dim oWnd As New StatystykiWindow
+        'oWnd.Show()
+        Dim oWnd As New PokazStatystyke("",Nothing)
+        oWnd.Show
+    End Sub
+
 #End Region
 
     Private Shared Function IsAnyArchPresent() As Boolean
@@ -501,6 +497,7 @@ Class MainWindow
         'Next
         'Return False
     End Function
+
 
 End Class
 

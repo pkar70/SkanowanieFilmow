@@ -1,0 +1,77 @@
+﻿<Window x:Class="PokazStatystyke"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="Statystyka" Height="400" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock Name="uiStatTitle" />
+
+        <ListView Name="uiLista" Grid.Row="1">
+            <ListView.ItemContainerStyle>
+                <Style TargetType="ListViewItem">
+                    <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
+                </Style>
+            </ListView.ItemContainerStyle>
+
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0"  >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="80" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{Binding label}" />
+                        <TextBlock Grid.Column="1" Text="{Binding licznik}" Margin="2,0,0,0"/>
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="date related">
+                                    <MenuItem Header="by Rok" Click="uiPicByRok_Click"/>
+                                    <MenuItem Header="by Month" Click="uiPicByMonth_Click" />
+                                    <MenuItem Header="by Hour" Click="uiPicByHour_Click" />
+                                    <MenuItem Header="by sun Hour" Click="uiPicBySunHour_Click" />
+                                    <MenuItem Header="by day/night" Click="uiPicByDayNight_Click" />
+                                    <MenuItem Header="by DayOfWeek" Click="uiPicByDOW_Click" />
+                                </MenuItem>
+                                <MenuItem  Header="by keyword" Click="uiPicByKeyword_Click" IsEnabled="False"/>
+                                <MenuItem  Header="by Camera" Click="uiPicByCamera_Click"/>
+                                <MenuItem  Header="by Author" Click="uiPicByAutor_Click"/>
+                                <MenuItem Header="weather" >
+                                    <MenuItem Header="by PogodaIcon" Click="uiPicByPogodaIcon_Click"/>
+                                    <MenuItem Header="by Temp" Click="uiPicByTemp_Click" />
+                                    <MenuItem Header="by Temp odcz" Click="uiPicByTempOdcz_Click" />
+                                    <MenuItem Header="by day avg Temp" Click="uiPicByDayAvgTemp_Click" />
+                                    <MenuItem Header="by day main precip typ" Click="uiPicByDayPrecipType_Click" />
+                                </MenuItem>
+                                <MenuItem Header="geography">
+                                    <MenuItem Header="by Country" Click="uiPicByKraj_Click" />
+                                    <MenuItem Header="by PL woj" Click="uiPicByPLwoj_Click" />
+                                    <MenuItem Header="by od domu" Click="uiPicByDistance_Click" />
+                                </MenuItem>
+                                <MenuItem Header="Azure">
+                                    <MenuItem Header="by faces count" Click="uiPicByFaces_Click" />
+                                    <MenuItem Header="by dominantFgcolor" Click="uiPicByDomFgColor_Click"  />
+                                    <MenuItem Header="by dominantBgcolor" Click="uiPicByDomBgColor_Click"  />
+                                    <MenuItem Header="by tags" Click="uiPicByAzureTag_Click" IsEnabled="False" />
+                                    <MenuItem Header="by objects" Click="uiPicByAzureObjects_Click" IsEnabled="False" />
+                                </MenuItem>
+                                <Separator/>
+                                <MenuItem Header="Miniaturki" Click="uiShowThumbs_Click" />
+                            </ContextMenu>
+                        </Grid.ContextMenu>
+                    </Grid>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <Button Grid.Row="2" Content="Stat to Clip" HorizontalAlignment="Left" Margin="10,5,10,5" Click="uiStatToClip_Click" />
+
+    </Grid>
+</Window>

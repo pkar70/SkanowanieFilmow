@@ -139,12 +139,12 @@ Public Class Databases
     End Function
 
     Public Function Connect() As Boolean Implements DatabaseInterface.Connect
-        Vblib.pkarlibmodule14.DialogBox("na poziomie Databases nie powinno być GetAll")
+        Vblib.pkarlibmodule14.DialogBox("na poziomie Databases nie powinno być Connect")
         Return Nothing
     End Function
 
     Public Function Init() As Boolean Implements DatabaseInterface.Init
-        Vblib.pkarlibmodule14.DialogBox("na poziomie Databases nie powinno być GetAll")
+        Vblib.pkarlibmodule14.DialogBox("na poziomie Databases nie powinno być Init")
         Return Nothing
     End Function
 
@@ -166,6 +166,13 @@ Public Class Databases
 
     Public Function GetAll() As IEnumerable(Of OnePic) Implements DatabaseInterface.GetAll
         Vblib.pkarlibmodule14.DialogBox("na poziomie Databases nie powinno być GetAll")
+        Return Nothing
+    End Function
+
+    Public Function GetFirstLoaded() As DatabaseInterface
+        For Each dbase As Vblib.DatabaseInterface In _bazyDanych
+            If dbase.IsLoaded Then Return dbase
+        Next
         Return Nothing
     End Function
 

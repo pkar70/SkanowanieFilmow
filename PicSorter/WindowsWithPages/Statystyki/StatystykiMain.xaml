@@ -1,0 +1,43 @@
+﻿<Window x:Class="StatystykiWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="Statystyki" Height="450" Width="800" Loaded="Window_Loaded">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Grid Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="Statystki" HorizontalAlignment="Center" FontSize="18" />
+
+            <StackPanel ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.Row="1" >
+                <Button Content="pic by Rok" Click="uiPicByRok_Click" HorizontalAlignment="Left" Margin="1,1,1,1"/>
+                <Button Content="pic by Month" Click="uiPicByMonth_Click" HorizontalAlignment="Left"  Margin="1,1,1,1"/>
+                <Button Content="pic by Hour" Click="uiPicByHour_Click" HorizontalAlignment="Left"  Margin="1,1,1,1"/>
+                <Button Content="pic by DayOfWeek" Click="uiPicByDOW_Click" HorizontalAlignment="Left"  Margin="1,1,1,1"/>
+                <Button Content="pic by Camera" Click="uiPicByCamera_Click" HorizontalAlignment="Left"  Margin="1,1,1,1"/>
+                <Button Content="pic by PogodaIcon" Click="uiPicByPogodaIcon_Click" HorizontalAlignment="Left"  Margin="1,1,1,1"/>
+                <Button Content="pic by Temperat" Click="uiPicByTemp_Click" HorizontalAlignment="Left" Margin="1,1,1,1" />
+                <Button Content="pic by Country" Click="uiPicByKraj_Click" HorizontalAlignment="Left" Margin="1,1,1,1" />
+                <Button Content="pic by faces count" Click="uiPicByFaces_Click" HorizontalAlignment="Left" Margin="1,1,1,1" />
+                <Button Content="pic by dominantcolor" Click="uiPicByDomColor_Click" HorizontalAlignment="Left" Margin="1,1,1,1" />
+            </StackPanel>
+            <Button Content=" Zrób! " HorizontalAlignment="Center" Grid.Row="2" Margin="2,10,2,5" />
+        </Grid>
+
+        <!--<Grid Grid.Column="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Name="uiWykres" />-->
+
+        <TextBox Grid.Column="1" AcceptsReturn="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Name="uiDump" IsReadOnly="true" />
+
+    </Grid>
+</Window>
