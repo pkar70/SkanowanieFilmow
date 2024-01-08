@@ -50,7 +50,7 @@ Public MustInherit Class CloudPublish
             ' If sRet <> "" Then Return sRet
 
             oPic.oOstatniExif = konfiguracja.defaultExif
-            sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+            sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs, konfiguracja.stereoAnaglyph)
             If sRet <> "" Then Await DialogBoxAsync($"ERROR pipeline for file {oPic.sSuggestedFilename}: {sRet}")
 
             lista.Add(oPic)
@@ -73,7 +73,7 @@ Public MustInherit Class CloudPublish
 
         ' przeslij plik przez pipeline
         oPic.oOstatniExif = konfiguracja.defaultExif
-        sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+        sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs, konfiguracja.stereoAnaglyph)
         If sRet <> "" Then Return sRet
 
         Return Await SendFileMain(oPic)

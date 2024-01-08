@@ -151,7 +151,7 @@ Public NotInheritable Class PicMenuShareUpload
         Else
 
             oPic.ResetPipeline()
-            Dim ret As String = Await oPic.RunPipeline(_ShareSrvr.uploadProcessing, Application.gPostProcesory)
+            Dim ret As String = Await oPic.RunPipeline(_ShareSrvr.uploadProcessing, Application.gPostProcesory, False)
             If ret <> "" Then
                 ' jakiś błąd
                 _allErrs &= ret & vbCrLf

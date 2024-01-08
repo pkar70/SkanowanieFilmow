@@ -5,6 +5,7 @@ Imports System.IO
 Imports System.Text.RegularExpressions
 Imports System.Threading
 Imports CompactExifLib
+'Imports MetadataExtractor
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
 Imports pkar
@@ -65,11 +66,12 @@ Public Class OnePic
     ''' <summary>
     ''' "*.jpg;*.tif;*.gif;*.png"
     ''' </summary>
-    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png;*.jpeg;*.jps"
+    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png;*.jpeg;*.nar;*.raf"
     ''' <summary>
     ''' "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
     ''' </summary>
     Public Shared ReadOnly ExtsMovie As String = "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
+    Public Shared ReadOnly ExtsStereo As String = "*.jps;*.stereo.zip"
 
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()
@@ -494,7 +496,7 @@ Public Class OnePic
             sRet &= oDesc.comment.Trim & " "
         Next
 
-        Return sRet
+        Return sRet.Trim
     End Function
 
     Public Function GetSumOfCommentText() As String
@@ -623,7 +625,7 @@ Public Class OnePic
 
         If _EditPipeline Then
             If _PipelineOutput IsNot Nothing AndAlso _PipelineOutput.Length > 0 Then
-                _PipelineInput.Dispose()
+                _PipelineInput?.Dispose()
                 _PipelineInput = _PipelineOutput
                 _PipelineOutput = New MemoryStream
             Else
@@ -706,16 +708,20 @@ Public Class OnePic
 
     End Sub
 
-    Public Async Function RunPipeline(sProcessingSteps As String, aPostProcesory As Vblib.PostProcBase()) As Task(Of String)
+    Public Async Function RunPipeline(sProcessingSteps As String, aPostProcesory As Vblib.PostProcBase(), bPreferAnaglyph As Boolean) As Task(Of String)
         DumpCurrMethod($"plik: {sSuggestedFilename}, steps: {sProcessingSteps}")
 
+        ' gdy nie ma processingu, wyślij plik źródłowy (nar, zip, i tak dalej)
         If String.IsNullOrEmpty(sProcessingSteps) Then
-            ' zrób tak, by w oPic.outputStream było to co do wysłania
-            Dim oNewFileStream As FileStream = IO.File.OpenRead(InBufferPathName)
+            Dim oNewFileStream As FileStream = IO.File.OpenRead(InBufferPathName) ' SinglePicFromMulti(bPreferAnaglyph) 'IO.File.OpenRead(InBufferPathName)
             _PipelineOutput = oNewFileStream
             Return ""
         End If
 
+        ' jak jest processing, to zrób tak by w oPic.outputStream było to co na początek
+        _PipelineOutput = SinglePicFromMulti(bPreferAnaglyph) ' SinglePicFromMulti(bPreferAnaglyph) 'IO.File.OpenRead(InBufferPathName)
+
+        ' i kolejne kroki
         Dim aSteps As String() = sProcessingSteps.Split(";")
         For Each sStep As String In aSteps
             ' wykonaj krok
@@ -757,14 +763,24 @@ Public Class OnePic
         End If
 
         Dim aSteps As String() = sProcessingSteps.Split(";")
-        For Each sStep As String In aSteps
-            For Each oEngine As Vblib.PostProcBase In aPostProcesory
-                If oEngine.Nazwa.EqualsCI(sStep) Then
-                    If Not oEngine.CanRun(Me) Then sErrors &= oEngine.Nazwa & ";"
-                End If
-            Next
 
+        ' 2024.01.02: przecież tylko pierwszy jest ważny, potem idzie w bitmapie :)
+        Dim sStep As String = aSteps(0)
+        'For Each sStep As String In aSteps
+        For Each oEngine As Vblib.PostProcBase In aPostProcesory
+            If Not oEngine.Nazwa.EqualsCI(sStep) Then Continue For
+
+            If Me.InBufferPathName.ContainsCI("stereo.zip") Then
+                ' dla stereo.zip będziemy sie posługiwać JPGami
+                If Not oEngine.CanRun("dummpy.jpg") Then sErrors &= oEngine.Nazwa & ";"
+            Else
+                If Not oEngine.CanRun(Me.InBufferPathName) Then sErrors &= oEngine.Nazwa & ";"
+            End If
+
+            ' już wiemy - bo tylko jeden krok sprawdzamy
+            Return sErrors
         Next
+        'Next
 
         Return sErrors
     End Function
@@ -1190,6 +1206,11 @@ Public Class OnePic
         If Not query.ogolne.adv.TypeMovie Then
             If MatchesMasks(OnePic.ExtsMovie) Then Return False
         End If
+        If Not query.ogolne.adv.TypeStereo Then
+            If MatchesMasks(OnePic.ExtsStereo) Then Return False
+        End If
+
+
         ' If Not uiTypeOth.IsChecked Then
 
         If query.ogolne.adv.CloudArchived = "!" Then If Not String.IsNullOrWhiteSpace(CloudArchived) Then Return False
@@ -1596,15 +1617,25 @@ Public Class OnePic
         FileCopyTo(IO.Path.Combine(targetDir, newname))
     End Sub
 
+    Public Sub FileCopyToDir(newDirname As String)
+        FileCopyTo(newDirname, sSuggestedFilename)
+    End Sub
+
+
     ''' <summary>
     ''' usuwa wszystkie pliki tymczasowe i utworzone przez program (thumb, bak, firstFrame...), NIE kasuje samego zdjęcia!
     ''' </summary>
     Public Sub DeleteAllTempFiles()
 
         Dim folder As String = IO.Path.GetDirectoryName(InBufferPathName)
-        Dim mask As String = InBufferPathName & ".*"    ' musi być coś po nazwie pliku - więc samego zdjęcia NIE skasuje
+        Dim mask As String = IO.Path.GetFileName(InBufferPathName) & ".*"    ' musi być coś po nazwie pliku - więc samego zdjęcia NIE skasuje
 
-        For Each plik In IO.Directory.GetFiles(folder, mask)
+        ' bez tego crash? może że zmieniona collection w trakcie
+        Dim doUsuniecia As String() = IO.Directory.GetFiles(folder, mask)
+
+        For Each plik As String In doUsuniecia
+            ' niestety, MASK.* daje też MASK
+            If plik = InBufferPathName Then Continue For
             IO.File.Delete(plik)
         Next
     End Sub
@@ -1614,11 +1645,11 @@ Public Class OnePic
     ''' daje stream albo bezpośrednio z pliku, albo po wyborze z paczki (NAR/ZIP)
     ''' </summary>
     ''' <returns></returns>
-    Public Function SinglePicFromMulti(Optional bForBig As Boolean = False) As Stream
+    Public Function SinglePicFromMulti(Optional bPreferAnaglyph As Boolean = False) As Stream
         If IO.Path.GetExtension(InBufferPathName).EqualsCI(".nar") Then
             Return SinglePicFromNar()
         ElseIf InBufferPathName.EndsWithCI(".stereo.zip") Then
-            Return SinglePicFromZip(bForBig)
+            Return SinglePicFromZip(bPreferAnaglyph)
         Else
             Return IO.File.OpenRead(InBufferPathName)
         End If
@@ -1641,18 +1672,18 @@ Public Class OnePic
     ''' <summary>
     ''' Daje MemoryStream z kopią wybranego pliku ze środka (zwykle: pierwszy JPG)
     ''' </summary>
-    ''' <param name="bForBig">Gdy TRUE, i uiStereoBigAnaglyph, to daje ze środka (jeśli istnieje) anaglyph* </param>
+    ''' <param name="bPreferAnaglyph">Gdy TRUE, i uiStereoBigAnaglyph, to daje ze środka (jeśli istnieje) anaglyph* </param>
     ''' <returns></returns>
-    Private Function SinglePicFromZip(bForBig As Boolean) As Stream
+    Private Function SinglePicFromZip(bPreferAnaglyph As Boolean) As Stream
         ' od SinglePicFromNar odróżnia się pomijaniem plików anaglyph*, ale może kiedyś NAR by wybierał zdefiniowany plik a nie pierwszy lepszy
         Vblib.DumpCurrMethod()
         If Not InBufferPathName.EndsWithCI(".stereo.zip") Then Return Nothing
 
-        If bForBig AndAlso Vblib.GetSettingsBool("uiStereoBigAnaglyph") Then
+        If bPreferAnaglyph Then
             Using oArchive = IO.Compression.ZipFile.OpenRead(InBufferPathName)
                 For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
                     If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
-                    If Not oInArch.Name.ContainsCI("anaglyph") Then Continue For
+                    If Not oInArch.Name.ContainsCI("stereo.jpg") Then Continue For
                     Return SingePicFromZipEntry(oInArch)
                 Next
             End Using
@@ -1661,7 +1692,7 @@ Public Class OnePic
         Using oArchive = IO.Compression.ZipFile.OpenRead(InBufferPathName)
             For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
                 If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
-                If oInArch.Name.ContainsCI("anaglyph") Then Continue For
+                If oInArch.Name.ContainsCI("stereo.jpg") Then Continue For
                 Return SingePicFromZipEntry(oInArch)
             Next
         End Using

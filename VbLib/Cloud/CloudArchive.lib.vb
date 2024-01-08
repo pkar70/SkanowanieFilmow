@@ -40,10 +40,10 @@ Public MustInherit Class CloudArchive
         If sRet = "" Then
             ' przeslij plik przez pipeline
             oPic.oOstatniExif = konfiguracja.defaultExif
-            sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs)
+            sRet = Await oPic.RunPipeline(konfiguracja.defaultPostprocess, _PostProcs, False)
         Else
             ' wypełnienie _PipelineOutput; tak jest prościej niż wklejać tu wczytywanie zdjęcia
-            sRet = Await oPic.RunPipeline("", _PostProcs)
+            sRet = Await oPic.RunPipeline("", _PostProcs, False)
         End If
         If sRet <> "" Then Return sRet
 

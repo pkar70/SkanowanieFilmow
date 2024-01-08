@@ -25,6 +25,7 @@
         <TextBlock Text="Type of file" Margin="0,5,0,0"/>
         <CheckBox Content="Photo" IsChecked="{Binding TypePic, Mode=TwoWay}"/>
         <CheckBox Content="Movie" IsChecked="{Binding TypeMovie, Mode=TwoWay}"/>
+        <CheckBox Content="Stereo" IsChecked="{Binding TypeStereo, Mode=TwoWay}"/>
         <!--<CheckBox Name="uiTypeOth" Content="Other" IsChecked="True"/>-->
 
     </StackPanel>

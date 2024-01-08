@@ -369,6 +369,13 @@ Public Class ShowBig
             '    ' full screen / mały screen
             Case Key.Escape
                 Me.Close()
+            Case Key.D
+                If Not Keyboard.IsKeyDown(Key.LeftAlt) Then Return
+                ' nie ma bezpośrednio Describe tu uruchamianego, jakoś przez userControl to zrobić
+                Dim oWnd As New AddDescription(_picek.oPic)
+                If Not oWnd.ShowDialog Then Return
+                Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
+                _picek.oPic.AddDescription(oDesc)
             Case Else
                 System.Media.SystemSounds.Beep.Play()
         End Select
@@ -537,8 +544,6 @@ Public Class ShowBig
 
         End If
 
-
-
         _editMode = EditModeEnum.none
         ShowHideEditControls(EditModeEnum.none)
     End Function
@@ -660,7 +665,7 @@ Public Class ShowBig
                 _picek.oPic.EndEdit(True, True)
 
             Catch ex As Exception
-                vb14.DialogBox("Błąd zapisu zmian")
+                vb14.DialogBox("Błąd zapisu zmian:" & vbCrLf & ex.Message)
             End Try
 
 
@@ -891,6 +896,43 @@ Public Class ShowBig
                 End If
 
                 Me.Close()
+            Case "⧉"
+                Dim zipname As String = IO.Path.GetFileNameWithoutExtension(_picek.oPic.InBufferPathName)
+                zipname = zipname.Replace(".stereo", "") ' usuwamy .stereo.jpg
+
+                Dim stereopackfolder As String = IO.Path.Combine(IO.Path.GetTempPath, zipname)
+
+                ' rozpakuj do TEMPa
+                If IO.Directory.Exists(stereopackfolder) Then
+                    If Not Await vb14.DialogBoxYNAsync($"Katalog '{stereopackfolder}' istnieje ({IO.Directory.GetLastWriteTime(stereopackfolder).ToExifString}), skasować?") Then Return
+                    IO.Directory.Delete(stereopackfolder, True)
+                End If
+
+                IO.Directory.CreateDirectory(stereopackfolder)
+                IO.Compression.ZipFile.ExtractToDirectory(_picek.oPic.InBufferPathName, stereopackfolder)
+
+                ' rename anaglyph na stereo.jpg
+                Dim poprzedniAnaglyph As String = IO.Path.Combine(stereopackfolder, "anaglyph.jpg")
+                If IO.File.Exists(poprzedniAnaglyph) Then
+                    IO.File.Move(poprzedniAnaglyph, IO.Path.Combine(stereopackfolder, zipname) & ".stereo.jpg")
+                End If
+
+                ' explorer (ewentualnie)
+                'Dim cmdline As String = $"explorer.exe /select ""{stereopackfolder}"""
+                Process.Start("explorer.exe", stereopackfolder)
+
+                ' runSPM
+                If Not Await ProcessBrowse.StereoRunSpmOnPack(stereopackfolder, True) Then
+                    ProcessBrowse.StereoRemoveFolder(stereopackfolder)
+                    Return
+                End If
+
+                ' *TODO* sprawdz daty, czy sie zmienily - NIE: koniec (ewentualnie)
+
+                ' spakuj na nowo
+                Dim packZipName As String = _picek.oPic.InBufferPathName
+                ProcessBrowse.StereoFolderToZip(packZipName, stereopackfolder)
+                ProcessBrowse.StereoRemoveFolder(stereopackfolder)
 
         End Select
 

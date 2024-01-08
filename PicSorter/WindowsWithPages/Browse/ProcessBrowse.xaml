@@ -150,7 +150,7 @@
                         <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
                         <!--<MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>-->
                         <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
-                    
+                        <MenuItem Header="Pack as stereo" Name="uiStereoPack" Click="uiStereoPack_Click" />
                         <Separator/>
                         <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
                         <local:PicMenuCopyOut  UseSelectedItems="True"/>

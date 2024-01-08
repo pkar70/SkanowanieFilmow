@@ -298,7 +298,7 @@ Public Class ServerWrapper
         If Not oPic.IsCloudPublishMentioned("L:" & oLogin.login.ToString) Then Return "ERROR: pic not marked"
 
         oPic.ResetPipeline()
-        Dim ret As String = Await oPic.RunPipeline(oLogin.processing, _postProcs)
+        Dim ret As String = Await oPic.RunPipeline(oLogin.processing, _postProcs, False)
         If ret <> "" Then Return "ERROR: " & ret
 
         response.ContentLength64 = oPic.oContent.Length

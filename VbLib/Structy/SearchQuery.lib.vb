@@ -63,6 +63,7 @@ Public Class QueryOgolneAdvanced
     Public Property CloudArchived As String = ""
     Public Property TypePic As Boolean = True
     Public Property TypeMovie As Boolean = True
+    Public Property TypeStereo As Boolean = True
 End Class
 
 Public Class QueryGeo

@@ -25,6 +25,7 @@ Imports pkar.DotNetExtensions
 Imports System.Runtime.InteropServices.WindowsRuntime
 Imports Org.BouncyCastle.Math.EC
 Imports System.IO
+'Imports MetadataExtractor
 'Imports FFMpegCore
 'Imports System.Drawing
 'Imports Windows.Perception.Spatial
@@ -91,6 +92,9 @@ Public Class ProcessBrowse
         WypelnMenuFilterSharing()
         'WypelnMenuActionSharing()
 
+        ' zaczynamy od wygaszonego stereopack - dla archiwum, oraz gdy nie znamy SPM
+        uiStereoPack.Visibility = Visibility.Collapsed
+
         If _inArchive Then
             ' działamy na archiwum
 
@@ -114,11 +118,38 @@ Public Class ProcessBrowse
             uiFilterNoTarget.Visibility = Visibility.Visible
             MenuActionReadOnly()
 
+            ' to ma sens tylko wtedy gdy wiadomo jak wywołać SPM
+            If Not String.IsNullOrEmpty(vb14.GetSettingsString("uiStereoSPMPath")) Then
+                uiStereoPack.Visibility = Visibility.Visible
+            End If
+
             Await EwentualneKasowanieBak()
             'Await EwentualneKasowanieArchived()
         End If
 
+
         Application.ShowWait(False)
+
+        'DescriptionToDescription
+    End Sub
+
+    ''' <summary>
+    ''' przepisanie DESCRIPT.ION:UserComment do Pic.Descriptions
+    ''' </summary>
+    Private Sub DescriptionToDescription()
+        For Each picek In _oBufor.GetList
+            Debug.WriteLine("Picek " & picek.sSuggestedFilename)
+            Dim oExif As Vblib.ExifTag = picek.GetExifOfType(Vblib.ExifSource.SourceDescriptIon)
+            If oExif Is Nothing Then Continue For
+
+            If String.IsNullOrEmpty(oExif.UserComment) Then Continue For
+
+            If picek.GetSumOfDescriptionsText.ContainsCI(oExif.UserComment) Then Continue For
+
+            picek.AddDescription(New OneDescription(oExif.UserComment, ""))
+        Next
+
+        _oBufor.SaveData()
     End Sub
 
 
@@ -204,25 +235,24 @@ Public Class ProcessBrowse
 
         Next
 
-        If lDeleted.Count > 0 Then
+        If lDeleted.Count < 1 Then Return lista
 
-            If Await Vblib.DialogBoxYNAsync($"Niektóre pliki są zniknięte ({lDeleted.Count}), usunąć je z indeksu?") Then
+        If Await Vblib.DialogBoxYNAsync($"Skopiować do clipboard ich listę??") Then
+            Dim sNames As String = ""
+            For Each oItem As Vblib.OnePic In lDeleted
+                sNames = sNames & vbCrLf & oItem.sSuggestedFilename
+            Next
 
-                For Each oItem As Vblib.OnePic In lDeleted
-                    _oBufor.GetList.Remove(oItem)
-                Next
-                SaveMetaData()
-            Else
-                If Await Vblib.DialogBoxYNAsync($"Skopiować do clipboard ich listę??") Then
-                    Dim sNames As String = ""
-                    For Each oItem As Vblib.OnePic In lDeleted
-                        sNames = sNames & vbCrLf & oItem.sSuggestedFilename
-                    Next
-
-                    vb14.ClipPut(sNames)
-                End If
-            End If
+            vb14.ClipPut(sNames)
         End If
+
+        If Await Vblib.DialogBoxYNAsync($"Niektóre pliki są zniknięte ({lDeleted.Count}), usunąć je z indeksu?") Then
+            For Each oItem As Vblib.OnePic In lDeleted
+                _oBufor.GetList.Remove(oItem)
+            Next
+            SaveMetaData()
+        End If
+
         Return lista
     End Function
 
@@ -694,6 +724,224 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Private Async Sub uiStereoPack_Click(sender As Object, e As RoutedEventArgs)
+
+        If uiPicList.SelectedItems.Count <> 2 Then
+            vb14.DialogBox($"Umiem zrobić stereoskopię tylko z dwu zdjęć, a zaznaczyłeś {uiPicList.SelectedItems.Count}")
+            Return
+        End If
+
+        Dim pic0 As ThumbPicek = uiPicList.SelectedItems(0)
+        Dim pic1 As ThumbPicek = uiPicList.SelectedItems(1)
+
+        If Not Await StereoTestDaty(pic0, pic1) Then Return ' Δtime
+        If Not Await StereoTestGeo(pic0, pic1) Then Return ' Δgeo 
+
+        If Not Await StereoTestExify(pic0, pic1) Then Return ' Δexifs (choć niektóre pomija)
+
+
+        'proba stworzenia nowej nazwy - automat, a jak nie umie (nie WP_..) to zapytac
+        Dim newName As String = Await StereoCreatePackName(pic0, pic1)
+        If String.IsNullOrEmpty(newName) Then Return
+
+        Dim stereopackfolder As String = IO.Path.Combine(IO.Path.GetTempPath, newName)
+
+        ' false gdy katalog juz istnieje i brak zgody na skasowanie
+        If Not Await StereoKopiujDoTemp(pic0, pic1, stereopackfolder) Then Return
+
+        If Not Await StereoRunSpmOnPack(stereopackfolder, True) Then
+            StereoRemoveFolder(stereopackfolder)
+            Return
+        End If
+
+        ' nazwa pliku ZIP wewnątrz Buffer
+        Dim packZipName As String = IO.Path.GetDirectoryName(pic0.oPic.InBufferPathName)
+        packZipName = IO.Path.Combine(packZipName, newName) & ".stereo.zip"
+
+        StereoFolderToZip(packZipName, stereopackfolder)
+        StereoRemoveFolder(stereopackfolder)
+
+        ' buffer.json.pic1 - skasowanie pliku, w JSON zmiana nazwy (InBuffer, sSuggested i chyba tyle), zmiana ikonki typu w thumbs
+        pic0.oPic.DeleteAllTempFiles()
+        IO.File.Delete(pic0.oPic.InBufferPathName)
+        pic0.oPic.InBufferPathName = packZipName
+        pic0.oPic.sSuggestedFilename = IO.Path.GetFileName(packZipName)
+        pic0.oPic.SetDefaultFileTypeDiscriminator() ' ikonka przy picku
+
+        DeletePicekMain(pic1)   ' zmieni _Reapply, jeśli picek miał splita; ze wszystkąd usuwa
+
+        ' *TODO* ewentualnie stereoautoalign, własny anagl z *aligned*, ustalenie R/L, i zrobienie pliku JPS - tak by do StereoViewer wysłac pliki aligned
+    End Sub
+
+    Public Shared Sub StereoRemoveFolder(stereopackfolder As String)
+        Try
+            IO.Directory.Delete(stereopackfolder, True)
+        Catch ex As Exception
+            ' katalog in use i inne tym podobne
+        End Try
+    End Sub
+
+#Region "StereoSubki"
+    Private Async Function StereoTestDaty(pic0 As ThumbPicek, pic1 As ThumbPicek) As Task(Of Boolean)
+
+        ' Δtime 
+        Dim time0 As Date = pic0.oPic.GetMostProbablyDate(True)
+        Dim time1 As Date = pic1.oPic.GetMostProbablyDate(True)
+
+        If Not time0.IsDateValid OrElse Not time1.IsDateValid Then Return True
+
+        Dim timeDiff As TimeSpan = time1 - time0
+        If Math.Abs((time1 - time0).TotalSeconds) <= vb14.GetSettingsInt("uiStereoMaxDiffSecs") Then
+            Return True
+        End If
+
+        Return Await vb14.DialogBoxYNAsync($"Zdjęcia zbyt odległe w czasie ({timeDiff.ToStringDHMS} sec), kontynuować?")
+
+    End Function
+
+    Private Async Function StereoTestGeo(pic0 As ThumbPicek, pic1 As ThumbPicek) As Task(Of Boolean)
+        Dim geo0 As BasicGeopos = pic0.oPic.GetGeoTag
+        Dim geo1 As BasicGeopos = pic1.oPic.GetGeoTag
+
+        If geo0 Is Nothing OrElse geo1 Is Nothing Then Return True
+
+        Dim meters As Integer = geo1.DistanceTo(geo0)
+        If meters <= vb14.GetSettingsInt("uiStereoMaxDiffMeteres") Then Return True
+
+        Return Await vb14.DialogBoxYNAsync($"Zdjęcia zbyt odległe w przestrzeni ({meters} m), kontynuować?")
+
+    End Function
+
+    Private Async Function StereoTestExify(pic0 As ThumbPicek, pic1 As ThumbPicek) As Task(Of Boolean)
+        ' sprawdzenie różnic w EXIFach
+        Dim roznice As String = ""
+
+        For Each oExif0 As ExifTag In pic0.oPic.Exifs
+            ' SOURCE_DEFAULT: autor, copyright
+            ' SOURCE_FILEATTR: daty
+            ' AUTO_EXIF: CameraModel, daty, geotag
+            ' AUTO_GUID: oczywiste :)
+            ' AUTO_FULLEXIF: jak EXIF, plus daty, obiektyw, naswietlanie i cała seria
+            If "SOURCE_DEFAULT|SOURCE_FILEATTR|AUTO_EXIF|AUTO_FULLEXIF|AUTO_GUID".Contains(oExif0.ExifSource) Then Continue For
+            Dim oExif1 As ExifTag = pic1.oPic.GetExifOfType(oExif0.ExifSource)
+            If oExif1 Is Nothing Then Continue For
+
+            If oExif0.DumpAsJSON.EqualsCIAI(oExif1.DumpAsJSON) Then Continue For
+
+            roznice &= ", " & oExif0.ExifSource
+        Next
+
+        For Each oExif1 As ExifTag In pic1.oPic.Exifs
+            If "SOURCE_DEFAULT|SOURCE_FILEATTR|AUTO_EXIF|AUTO_FULLEXIF|AUTO_GUID".Contains(oExif1.ExifSource) Then Continue For
+            If roznice.ContainsCI(oExif1.ExifSource) Then Continue For
+
+            Dim oExif0 As ExifTag = pic0.oPic.GetExifOfType(oExif1.ExifSource)
+            If oExif0 Is Nothing Then Continue For
+
+            If oExif0.DumpAsJSON.EqualsCIAI(oExif1.DumpAsJSON) Then Continue For
+
+            roznice &= ", " & oExif0.ExifSource
+        Next
+
+        If roznice = "" Then Return True
+
+        Return Await vb14.DialogBoxYNAsync($"Metadane różnią się w {roznice.Substring(2)}, kontynuować?")
+
+    End Function
+
+    ''' <summary>
+    ''' zwraca utworzoną nazwę - ale bez extension
+    ''' </summary>
+    Private Async Function StereoCreatePackName(pic0 As ThumbPicek, pic1 As ThumbPicek) As Task(Of String)
+        'proba stworzenia nowej nazwy - automat, a jak nie umie (nie WP_..) to zapytac
+        If pic0.oPic.sSuggestedFilename.StartsWith("WP_") AndAlso pic1.oPic.sSuggestedFilename.StartsWith("WP_") Then
+            Return pic0.oPic.sSuggestedFilename.Substring(0, "wp_yyyymmdd_hh_mm_ss".Length)
+        End If
+
+        Return Await vb14.DialogBoxInputAllDirectAsync("Podaj nazwę paczki stereo", IO.Path.GetFileNameWithoutExtension(pic0.oPic.sSuggestedFilename))
+    End Function
+
+    ''' <summary>
+    ''' utwórz TEMP folder i wkopiuj tam pliki z ThumbPicek oraz stwórz picsort.json
+    ''' </summary>
+    ''' <returns>FALSE gdy katalog już istnieje i nie ma zgody na skasowanie</returns>
+    Private Async Function StereoKopiujDoTemp(pic0 As ThumbPicek, pic1 As ThumbPicek, stereopackfolder As String) As Task(Of Boolean)
+        If IO.Directory.Exists(stereopackfolder) Then
+            If Not Await vb14.DialogBoxYNAsync($"Katalog '{stereopackfolder}' istnieje ({IO.Directory.GetLastWriteTime(stereopackfolder).ToExifString}), skasować?") Then Return False
+            IO.Directory.Delete(stereopackfolder, True)
+        End If
+
+        IO.Directory.CreateDirectory(stereopackfolder)
+        pic0.oPic.FileCopyToDir(stereopackfolder)
+        pic1.oPic.FileCopyToDir(stereopackfolder)
+
+        Dim json As String = "[" & vbCrLf & pic0.oPic.DumpAsJSON & "," & vbCrLf & pic1.oPic.DumpAsJSON & vbCrLf & "]"
+        IO.File.WriteAllText(IO.Path.Combine(stereopackfolder, "picsort.json"), json)
+
+        Return True
+    End Function
+
+    ''' <summary>
+    '''  uruchom SPM na stereopackfolder, poczekaj na koniec, zapytaj o poprawność
+    ''' </summary>
+    ''' <param name="stereopackfolder">folder TEMP z plikami</param>
+    ''' <param name="askIfOk">FALSE: zawsze zwróci FALSE, TRUE: po SPM zapyta o poprawność, i wtedy ret=False to error </param>
+    ''' <returns>TRUE: wszystko OK, pliki do przepakowania</returns>
+    Public Shared Async Function StereoRunSpmOnPack(stereopackfolder As String, askIfOk As Boolean) As Task(Of Boolean)
+
+        Dim twoPics As String() = StereoGetTwoPics(stereopackfolder)
+        If twoPics.Count <> 2 Then Return False
+
+        Dim spmpathname As String = vb14.GetSettingsString("uiStereoSPMPath")
+
+        Dim anaglPathname As String = IO.Path.GetFileName(stereopackfolder) & ".stereo.jpg"
+        anaglPathname = IO.Path.Combine(stereopackfolder, anaglPathname)
+        vb14.ClipPut(anaglPathname)
+
+        ' nie ma sensu ustalać StartFolder, bo SPM i tak to ignoruje
+        Dim spmProcess = Process.Start(spmpathname, twoPics)
+        If spmProcess Is Nothing Then Return False
+
+        Await spmProcess.WaitForExitAsync()
+        If Not askIfOk Then Return False
+
+        If Not IO.File.Exists(anaglPathname) Then
+            If Not Await vb14.DialogBoxYNAsync("Nie ma anaglifu, kontynuować?") Then Return False
+        Else
+            If Not Await vb14.DialogBoxYNAsync("Wszystko w porządku? kontynuować?") Then Return False
+        End If
+
+        Return True
+    End Function
+
+    Private Shared Function StereoGetTwoPics(stereopackfolder As String) As String()
+
+        Dim retVal As New List(Of String)
+
+        Dim metadane As New BaseList(Of OnePic)(stereopackfolder, "picsort.json")
+        If Not metadane.Load Then Return retVal.ToArray
+
+        If metadane.Count < 2 Then Return retVal.ToArray
+
+        retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(0).sSuggestedFilename))
+        retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(1).sSuggestedFilename))
+        Return retVal.ToArray
+
+    End Function
+
+    Public Shared Sub StereoFolderToZip(packZipName As String, stereopackfolder As String)
+        ' ZIP(stereopackfolder\*) => buffer\newName & "stereo.zip"
+        IO.File.Delete(packZipName)
+        IO.Compression.ZipFile.CreateFromDirectory(stereopackfolder, packZipName)
+    End Sub
+
+
+#End Region
+
+
+
+
+
 #If POPRZ_WCZYTAJOBRAZEK Then
     ''' <summary>
     ''' wczytaj ze skalowaniem do 400 na wiekszym boku
@@ -790,7 +1038,6 @@ Public Class ProcessBrowse
     End Function
 
 #End If
-
 #If POPRZ_THUMB Then
 
     ''' <summary>
@@ -839,9 +1086,7 @@ Public Class ProcessBrowse
     End Function
 
 #End If
-
 #Region "ShowBig i callbacki z niego"
-
 #Region "double click dla ShowBig"
 
     Private _DblClickLastPicek As String
@@ -1050,6 +1295,9 @@ Public Class ProcessBrowse
         DeletePicekMain(oPicek)
     End Sub
 
+    ''' <summary>
+    ''' usuwa plik "ze wszystkąd", zapisuje metadane oraz odnawia miniaturki
+    ''' </summary>
     Private Sub DeletePicekMain(oPicek As ThumbPicek)
         _ReapplyAutoSplit = False
         DeletePicture(oPicek)   ' zmieni _Reapply, jeśli picek miał splita
@@ -2416,7 +2664,7 @@ Public Class ProcessBrowse
 
             Select Case sExt
                 Case ".nar", ".zip"
-                    Using strumyk As Stream = oPic.SinglePicFromMulti(True)
+                    Using strumyk As Stream = oPic.SinglePicFromMulti(Vblib.GetSettingsBool("uiStereoBigAnaglyph"))
                         Dim bitmapa As New BitmapImage()
                         bitmapa.BeginInit()
                         bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
@@ -2431,6 +2679,7 @@ Public Class ProcessBrowse
                     Dim bitmapa As New BitmapImage()
                     bitmapa.BeginInit()
                     bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                    bitmapa.Rotation = iRotation
                     bitmapa.UriSource = New Uri(oPic.InBufferPathName)
                     bitmapa.EndInit()
 
