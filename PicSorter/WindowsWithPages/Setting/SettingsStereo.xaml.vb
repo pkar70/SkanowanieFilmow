@@ -1,6 +1,6 @@
-﻿Imports pkar.WPF.Configs
+﻿Imports pkar.UI.Configs
 Imports pkar
-
+Imports pkar.UI.Extensions
 Class SettingsStereo
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiStereoSPMPath.GetSettingsString

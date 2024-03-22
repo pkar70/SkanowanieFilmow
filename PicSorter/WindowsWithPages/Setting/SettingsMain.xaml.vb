@@ -1,12 +1,13 @@
 ﻿Imports System.IO.Compression
+Imports System.Reflection
 Imports vb14 = Vblib.pkarlibmodule14
-
+Imports pkar.UI.Extensions
 
 ' 2023.09.18, 663 px ma ekran settingsów
 Class SettingsMain
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        uiVersion.ShowAppVers
+        uiVersion.ShowAppVers(True)
         If vb14.GetSettingsString("uiFolderBuffer") = "" Then
             uiGlobalSett_Click(Nothing, Nothing)
         End If

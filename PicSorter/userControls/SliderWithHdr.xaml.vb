@@ -1,4 +1,4 @@
-﻿Imports pkar.WPF.Configs
+﻿Imports pkar.UI.Configs
 Imports pkar.DotNetExtensions
 
 Public Class SliderWithHdr

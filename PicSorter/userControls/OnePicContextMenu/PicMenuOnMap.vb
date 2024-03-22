@@ -1,5 +1,6 @@
 ﻿
 Imports pkar
+Imports pkar.UI.Extensions
 
 Public NotInheritable Class PicMenuOnMap
     Inherits PicMenuBase

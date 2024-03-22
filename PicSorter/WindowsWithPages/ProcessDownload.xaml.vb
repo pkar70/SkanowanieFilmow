@@ -7,8 +7,7 @@ Imports pkar.DotNetExtensions
 Imports lib_sharingNetwork
 Imports pkar
 Imports System.Drawing
-'Imports Org.BouncyCastle.Crypto
-'Imports Org.BouncyCastle.Crypto
+Imports pkar.UI.Extensions
 
 Public Class ProcessDownload
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)

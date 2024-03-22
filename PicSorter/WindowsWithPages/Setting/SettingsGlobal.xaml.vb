@@ -1,7 +1,9 @@
 ﻿
 Imports System.Linq.Expressions
 Imports vb14 = Vblib.pkarlibmodule14
-Imports pkar.WPF.Configs.Extensions
+Imports pkar.UI.Configs.Extensions
+
+Imports pkar.UI.Extensions
 
 Class SettingsGlobal
 

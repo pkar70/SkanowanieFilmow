@@ -1,6 +1,6 @@
 ﻿Imports pkar
 Imports Vblib
-Imports pkar.WPF.Configs
+Imports pkar.UI.Configs
 
 Class SettingsShareLogins
 

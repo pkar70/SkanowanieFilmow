@@ -1,5 +1,5 @@
 ﻿Imports vb14 = Vblib.pkarlibmodule14
-Imports pkar.WPF.Configs.Extensions
+Imports pkar.UI.Configs.Extensions
 
 ' nazwy checkboxów mają uiSequence*, bo żeby się nie powtórzyło z żadnym innym Settingsem
 

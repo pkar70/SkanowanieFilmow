@@ -54,22 +54,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="BuildTimeTemplate.vb">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>BuildTimeTemplate.tt</DependentUpon>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
     <PackageReference Include="IPUserControls.Wpf" Version="1.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.4">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="pkar.DotNetExts" Version="2.2.4" />
-    <PackageReference Include="pkar.WPF.Configs" Version="1.1.0" />
+    <PackageReference Include="pkar.DotNetExts" Version="2.2.5" />
+    <PackageReference Include="pkar.WPF.Configs" Version="2.0.1" />
+    <PackageReference Include="pkar.Wpf.Extensions" Version="2.0.11" />
+    <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -114,4 +108,16 @@
 		<!-- https://learn.microsoft.com/en-us/visualstudio/modeling/design-time-code-generation-by-using-t4-text-templates?view=vs-2022&tabs=csharp-->
 		<TransformOnBuild>true</TransformOnBuild>
 	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+	  <DefineConstants>PK_WPF</DefineConstants>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+	  <DefineConstants>PK_WPF</DefineConstants>
+	</PropertyGroup>
+
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	  <Exec Command="&quot;$(DevEnvDir)TextTransform.exe&quot; -out &quot;$(ProjectDir)BuildTimeTemplate.vb&quot; &quot;$(ProjectDir)BuildTimeTemplate.tt&quot;" />
+	</Target>
 </Project>

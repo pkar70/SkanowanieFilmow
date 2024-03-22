@@ -1,10 +1,7 @@
 ﻿
 
 Imports System.IO   ' for AsRandomAccess
-'Imports System.Text
-'Imports Windows.Foundation.Collections
 Imports wingraph = Windows.Graphics.Imaging
-'Imports Windows.Security
 Imports winstreams = Windows.Storage.Streams
 Imports vb14 = Vblib.pkarlibmodule14
 Imports Windows.Storage.Streams
@@ -13,9 +10,8 @@ Imports Vblib
 Imports pkar
 'Imports Windows.UI.Xaml.Controls
 Imports MediaDevices
-'Imports Org.BouncyCastle.Asn1.X509
 Imports pkar.DotNetExtensions
-
+Imports pkar.UI.Extensions
 
 Public Class ShowBig
 
@@ -106,7 +102,7 @@ Public Class ShowBig
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.Title = _picek.oPic.InBufferPathName
-
+        Me.InitDialogs
         uiEditCrop.IsEnabled = True ' po zmianie zdjęcia włącza Crop (bywa zablokowany po FullSize)
 
         Dim iObrot As Rotation = DetermineOrientation(_picek.oPic)
@@ -385,7 +381,7 @@ Public Class ShowBig
     ' jako zwykły menuitem, bo jest też wywoływany klawiszowo
     Private Async Sub uiDelPic_Click(sender As Object, e As RoutedEventArgs)
         If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
-            If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcie ({_picek.oPic.sSuggestedFilename})?") Then Return
+            If Not Await Me.DialogBoxYNAsync($"Skasować zdjęcie ({_picek.oPic.sSuggestedFilename})?") Then Return
         End If
 
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
@@ -416,7 +412,7 @@ Public Class ShowBig
 
             If _editMode <> editMode Then ' jeśli włączamy to samo, to nie ma powodu pytać o zapis
 
-                Dim bSave As Boolean = Await vb14.DialogBoxYNAsync("Jest już edycja, zapisać zmiany?")
+                Dim bSave As Boolean = Await Me.DialogBoxYNAsync("Jest już edycja, zapisać zmiany?")
 
                 If bSave Then Await SaveChanges()
             End If
@@ -635,10 +631,6 @@ Public Class ShowBig
         ' *TODO* (może) do Settings:Misc, [] ask for confirm after EditSave (przy Crop, i ew. Rotate)
         ' If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
 
-        If Not OperatingSystem.IsWindows Then Return False
-        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
-
-
         _picek.oPic.InitEdit(False)
 
         Using oStream As New InMemoryRandomAccessStream
@@ -665,7 +657,7 @@ Public Class ShowBig
                 _picek.oPic.EndEdit(True, True)
 
             Catch ex As Exception
-                vb14.DialogBox("Błąd zapisu zmian:" & vbCrLf & ex.Message)
+                Me.MsgBox("Błąd zapisu zmian:" & vbCrLf & ex.Message)
             End Try
 
 
@@ -802,7 +794,7 @@ Public Class ShowBig
         Dim sBakFileName As String = sJpgFilename & ".bak"
 
         If Not IO.File.Exists(sBakFileName) Then
-            vb14.DialogBox("Nie istnieje plik backup?" & vbCrLf & $"({sBakFileName})")
+            Me.MsgBox("Nie istnieje plik backup?" & vbCrLf & $"({sBakFileName})")
             Return
         End If
 
@@ -865,14 +857,14 @@ Public Class ShowBig
                 uiIkonkaTypu.Content = "►"
                 uiMovie.Stop()
             Case "✋"
-                If Not Await vb14.DialogBoxYNAsync($"Czy podmienić JPG na {_picek.oPic.sSuggestedFilename}?") Then Return
+                If Not Await Me.DialogBoxYNAsync($"Czy podmienić JPG na {_picek.oPic.sSuggestedFilename}?") Then Return
 
                 Dim targetJPG As String = _picek.oPic.sInSourceID ' ustawiony powyżej, otwierając NAR, na path/filename.nar
                 targetJPG = Path.ChangeExtension(targetJPG, "jpg")
                 Dim sourceJPG As String = _picek.oPic.InBufferPathName
 
                 If File.Exists(targetJPG & ".bak") Then
-                    If Not Await Vblib.DialogBoxYNAsync("Były edycje pliku JPG, kontynuować?") Then Return
+                    If Not Await Me.DialogBoxYNAsync("Były edycje pliku JPG, kontynuować?") Then Return
                     Vblib.DumpMessage($"usuwam stary BAK")
                     File.Delete(targetJPG & ".bak")
                 End If
@@ -889,7 +881,7 @@ Public Class ShowBig
 
                 File.Move(sourceJPG, targetJPG)
 
-                If Await vb14.DialogBoxYNAsync("Czy skasować źródłowy NAR?") Then
+                If Await Me.DialogBoxYNAsync("Czy skasować źródłowy NAR?") Then
                     Dim oBrowserWnd As ProcessBrowse = Me.Owner
                     If oBrowserWnd Is Nothing Then Return
                     oBrowserWnd.DeleteByFilename(_picek.oPic.sInSourceID)
@@ -904,7 +896,7 @@ Public Class ShowBig
 
                 ' rozpakuj do TEMPa
                 If IO.Directory.Exists(stereopackfolder) Then
-                    If Not Await vb14.DialogBoxYNAsync($"Katalog '{stereopackfolder}' istnieje ({IO.Directory.GetLastWriteTime(stereopackfolder).ToExifString}), skasować?") Then Return
+                    If Not Await Me.DialogBoxYNAsync($"Katalog '{stereopackfolder}' istnieje ({IO.Directory.GetLastWriteTime(stereopackfolder).ToExifString}), skasować?") Then Return
                     IO.Directory.Delete(stereopackfolder, True)
                 End If
 
@@ -947,7 +939,7 @@ Public Class ShowBig
     End Sub
 
     Private Sub uiSlideshow_Click(sender As Object, e As RoutedEventArgs)
-        vb14.DialogBox("jeszcze nie umiem stąd zrobić")
+        Me.MsgBox("jeszcze nie umiem stąd zrobić")
     End Sub
 
     Private Async Sub uiFlipHoriz_Click(sender As Object, e As RoutedEventArgs)

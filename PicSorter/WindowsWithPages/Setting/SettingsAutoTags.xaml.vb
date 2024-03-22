@@ -1,4 +1,4 @@
-﻿Imports pkar.WPF.Configs.Extensions
+﻿Imports pkar.UI.Configs.Extensions
 
 Class SettingsAutoTags
 

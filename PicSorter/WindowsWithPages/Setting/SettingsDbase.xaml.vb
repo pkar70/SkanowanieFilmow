@@ -1,4 +1,4 @@
-﻿Imports pkar.WPF.Configs
+﻿Imports pkar.UI.Configs
 
 Class SettingsDbase
 
