@@ -21,7 +21,7 @@
             <CheckBox Margin="0,5,0,0" ToolTip="Ignore year (use only month and day)" Content="Ignore year" IsChecked="{Binding IgnoreYear, Mode=TwoWay}"/>
 
             <TextBlock Text="GUID" Margin="0,5,0,0"/>
-            <TextBox ToolTip="Enter fragment of GUID" Text="{Binding GUID}"/>
+        <TextBox ToolTip="Enter fragment of GUID, or '!' to search for empty" Text="{Binding GUID}"/>
 
         <Grid>
             <Grid.ColumnDefinitions>

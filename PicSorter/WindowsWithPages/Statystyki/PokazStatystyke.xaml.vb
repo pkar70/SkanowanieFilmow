@@ -43,8 +43,14 @@ Public Class PokazStatystyke
             End If
 
             Dim licznik As Integer
+
         For Each entry In entries
             licznik += entry.lista.Count
+        Next
+
+        ' policz procenty
+        For Each entry In entries
+            entry.percent = Math.Round(100 * entry.licznik / licznik).ToString("##0") & "%"
         Next
 
         uiLista.ItemsSource = entries
@@ -59,7 +65,7 @@ Public Class PokazStatystyke
         Dim sTxt As String = _history & vbCrLf & vbCrLf
 
         For Each entry As StatEntry In uiLista.ItemsSource
-            sTxt &= entry.label & ":" & vbTab & entry.licznik & vbCrLf
+            sTxt &= entry.label & ":" & vbTab & entry.licznik & vbTab & entry.percent & vbCrLf
         Next
 
         Clipboard.SetText(sTxt)
@@ -367,5 +373,6 @@ End Class
 Public Class StatEntry
     Public Property label As String
     Public Property licznik As Integer
+    Public Property percent As String
     Public Property lista As IEnumerable(Of Vblib.OnePic)
 End Class

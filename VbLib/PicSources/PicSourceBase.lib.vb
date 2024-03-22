@@ -1,6 +1,7 @@
 ﻿
 ' Ewentualnie: JSON config, moze %computername%.picsource.json jako konfiguracja (kopia) w miejscu, przy podłączaniu source szuka takich i pyta czy zaimportować (defaulttags), ale też może byc dla roznych instacji - roznie
 
+Imports System.Text
 Imports System.Text.RegularExpressions
 Imports pkar.DotNetExtensions
 
@@ -225,7 +226,13 @@ Public MustInherit Class PicSourceBase
 		If sDescr <> _sDescriptIonName Then
 			_sDescriptIonName = sDescr
 			If Not IO.File.Exists(sDescr) Then Return
-			_sDescriptIonContent = IO.File.ReadAllLines(sDescr)
+			Try
+				' jak nie ma Nuget System.Text.Encoding.CodePages to bedzie fail przy nie .Net Framework
+				' https://stackoverflow.com/questions/50858209/system-notsupportedexception-no-data-is-available-for-encoding-1252
+				_sDescriptIonContent = IO.File.ReadAllLines(sDescr, Encoding.GetEncoding(1250))
+			Catch ex As Exception
+				_sDescriptIonContent = IO.File.ReadAllLines(sDescr)
+			End Try
 		End If
 
 		If _sDescriptIonContent Is Nothing Then Return
@@ -234,6 +241,7 @@ Public MustInherit Class PicSourceBase
 		' filename.jpg<space>comment<0x04>bindata
 		' "filename ze spacja.jpg"<space>comment<0x04>bindata
 		For Each sLine As String In _sDescriptIonContent
+
 			Dim iInd As Integer = sLine.IndexOf(sPicFile)
 			If iInd < 0 Then Continue For
 			If iInd > 1 Then Continue For

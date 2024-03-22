@@ -17,15 +17,35 @@ Public Class SimpleDescribe
         _readonly = bReadOnly
     End Sub
 
-    Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
+        ZmianaOpisu(False)
+    End Sub
 
+    Private Sub uiAdd_Click(sender As Object, e As RoutedEventArgs)
+        ZmianaOpisu(True)
+    End Sub
+
+    ''' <summary>
+    ''' zmień pic.Descriptions
+    ''' </summary>
+    ''' <param name="bAdd">TRUE: nowy tekst dodaj jako nowy opis; FALSE: zamień wszystkie descriptions na nowy</param>
+    Private Async Sub ZmianaOpisu(bAdd As Boolean)
         ' bez zmian
         If _orgDescribe <> uiAllDescribe.Text Then
 
             Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
             Dim descr As String = uiAllDescribe.Text.Trim
             AddToMenu(descr)
-            oPicek.oPic.ReplaceAllDescriptions(descr)
+
+            If bAdd Then
+                oPicek.oPic.AddDescription(New OneDescription(descr, ""))
+                descr = oPicek.oPic.GetSumOfDescriptionsText
+            Else
+                oPicek.oPic.ReplaceAllDescriptions(descr)
+            End If
+
+            ' podmieniamy do pokazywania w ThumbsBrowse, a nóż zmieni się na ekranie :)
+            oPicek.SumOfDescriptionsText = descr
 
             If Not String.IsNullOrWhiteSpace(oPicek.oPic.sharingFromGuid) Then
                 ' to jest 'obce' zdjęcie, i description można temu loginowi wysłać
@@ -75,6 +95,7 @@ Public Class SimpleDescribe
         uiPrevMenuPopup.IsOpen = False
         Dim oMI As MenuItem = sender
         uiAllDescribe.Text = oMI.Header
+        uiAllDescribe.Focus()
     End Sub
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
@@ -86,6 +107,9 @@ Public Class SimpleDescribe
         _orgDescribe = oPicek.oPic.GetSumOfDescriptionsText
         uiAllDescribe.Text = _orgDescribe
         uiAllDescribe.IsReadOnly = oPicek.oPic.AreTagsInDescription
+        uiAllDescribe.ToolTip = "W description są słowa kluczowe, więc nie można tu tego zmieniać"
+
+        uiAdd.Visibility = If(_orgDescribe.Contains(" | "), Visibility.Visible, Visibility.Collapsed)
 
         If _readonly Then uiApply.IsEnabled = False
 
@@ -111,5 +135,11 @@ Public Class SimpleDescribe
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         uiAllDescribe.Focus()
+    End Sub
+
+    Private Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
+        If e.IsRepeat Then Return
+        If e.Key <> Key.Escape Then Return
+        Me.Close()
     End Sub
 End Class

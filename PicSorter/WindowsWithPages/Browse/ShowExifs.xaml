@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Metadane" Height="400" Width="350" Loaded="Window_Loaded" DataContextChanged="Window_DataContextChanged">
+        Title="Metadane" Height="400" Width="350" Loaded="Window_Loaded" DataContextChanged="Window_DataContextChanged"  KeyUp="Window_KeyUp">
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

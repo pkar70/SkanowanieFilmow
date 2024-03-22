@@ -25,10 +25,7 @@ Imports pkar.DotNetExtensions
 Imports System.Runtime.InteropServices.WindowsRuntime
 Imports Org.BouncyCastle.Math.EC
 Imports System.IO
-'Imports MetadataExtractor
-'Imports FFMpegCore
-'Imports System.Drawing
-'Imports Windows.Perception.Spatial
+Imports pkar.UI.Extensions
 
 Public Class ProcessBrowse
 
@@ -79,8 +76,10 @@ Public Class ProcessBrowse
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
+        Me.ProgRingInit(True, False)
 
-        Application.ShowWait(True)
+        Me.ProgRingShow(True)
+        'Application.ShowWait(True)
 
         ' przenoszę na początek, żeby nie wczytywać tysiąca obrazków które już są do usunięcia
         Await EwentualneKasowanieArchived()
@@ -128,7 +127,8 @@ Public Class ProcessBrowse
         End If
 
 
-        Application.ShowWait(False)
+        Me.ProgRingShow(False)
+        'Application.ShowWait(False)
 
         'DescriptionToDescription
     End Sub
@@ -237,7 +237,7 @@ Public Class ProcessBrowse
 
         If lDeleted.Count < 1 Then Return lista
 
-        If Await Vblib.DialogBoxYNAsync($"Skopiować do clipboard ich listę??") Then
+        If Await Me.DialogBoxYNAsync($"Niektóre pliki są zniknięte ({lDeleted.Count}), skopiować do clipboard ich listę??") Then
             Dim sNames As String = ""
             For Each oItem As Vblib.OnePic In lDeleted
                 sNames = sNames & vbCrLf & oItem.sSuggestedFilename
@@ -246,7 +246,7 @@ Public Class ProcessBrowse
             vb14.ClipPut(sNames)
         End If
 
-        If Await Vblib.DialogBoxYNAsync($"Niektóre pliki są zniknięte ({lDeleted.Count}), usunąć je z indeksu?") Then
+        If Await Me.DialogBoxYNAsync($"Mam je usunąć z indeksu?") Then
             For Each oItem As Vblib.OnePic In lDeleted
                 _oBufor.GetList.Remove(oItem)
             Next
@@ -312,7 +312,7 @@ Public Class ProcessBrowse
         Dim lista As List(Of ThumbPicek) = Await WczytajIndeks()   ' tu ewentualne kasowanie jest znikniętych, to wymaga YNAsync
 
         If lista.Count > iMax Then
-            Await vb14.DialogBoxAsync($"Wczytuję miniaturki tylko {iMax} (z {lista.Count})")
+            Await Me.MsgBoxAsync($"Wczytuję miniaturki tylko {iMax} (z {lista.Count})")
         End If
 
         For Each oItem As ThumbPicek In From c In lista Order By c.dateMin Take iMax
@@ -705,7 +705,7 @@ Public Class ProcessBrowse
             End Try
         Next
 
-        vb14.DialogBox($"{iFileSize.ToSIstringWithPrefix("B", False, True)} in {iCnt} file(s)")
+        Me.MsgBox($"{iFileSize.ToSIstringWithPrefix("B", False, True)} in {iCnt} file(s)")
 
     End Sub
 
@@ -727,7 +727,7 @@ Public Class ProcessBrowse
     Private Async Sub uiStereoPack_Click(sender As Object, e As RoutedEventArgs)
 
         If uiPicList.SelectedItems.Count <> 2 Then
-            vb14.DialogBox($"Umiem zrobić stereoskopię tylko z dwu zdjęć, a zaznaczyłeś {uiPicList.SelectedItems.Count}")
+            Me.MsgBox($"Umiem zrobić stereoskopię tylko z dwu zdjęć, a zaznaczyłeś {uiPicList.SelectedItems.Count}")
             Return
         End If
 
@@ -795,7 +795,7 @@ Public Class ProcessBrowse
             Return True
         End If
 
-        Return Await vb14.DialogBoxYNAsync($"Zdjęcia zbyt odległe w czasie ({timeDiff.ToStringDHMS} sec), kontynuować?")
+        Return Await Me.DialogBoxYNAsync($"Zdjęcia zbyt odległe w czasie ({timeDiff.ToStringDHMS} sec), kontynuować?")
 
     End Function
 
@@ -808,7 +808,7 @@ Public Class ProcessBrowse
         Dim meters As Integer = geo1.DistanceTo(geo0)
         If meters <= vb14.GetSettingsInt("uiStereoMaxDiffMeteres") Then Return True
 
-        Return Await vb14.DialogBoxYNAsync($"Zdjęcia zbyt odległe w przestrzeni ({meters} m), kontynuować?")
+        Return Await Me.DialogBoxYNAsync($"Zdjęcia zbyt odległe w przestrzeni ({meters} m), kontynuować?")
 
     End Function
 
@@ -845,7 +845,7 @@ Public Class ProcessBrowse
 
         If roznice = "" Then Return True
 
-        Return Await vb14.DialogBoxYNAsync($"Metadane różnią się w {roznice.Substring(2)}, kontynuować?")
+        Return Await Me.DialogBoxYNAsync($"Metadane różnią się w {roznice.Substring(2)}, kontynuować?")
 
     End Function
 
@@ -858,7 +858,7 @@ Public Class ProcessBrowse
             Return pic0.oPic.sSuggestedFilename.Substring(0, "wp_yyyymmdd_hh_mm_ss".Length)
         End If
 
-        Return Await vb14.DialogBoxInputAllDirectAsync("Podaj nazwę paczki stereo", IO.Path.GetFileNameWithoutExtension(pic0.oPic.sSuggestedFilename))
+        Return Await Me.InputBoxAsync("Podaj nazwę paczki stereo", IO.Path.GetFileNameWithoutExtension(pic0.oPic.sSuggestedFilename))
     End Function
 
     ''' <summary>
@@ -867,13 +867,13 @@ Public Class ProcessBrowse
     ''' <returns>FALSE gdy katalog już istnieje i nie ma zgody na skasowanie</returns>
     Private Async Function StereoKopiujDoTemp(pic0 As ThumbPicek, pic1 As ThumbPicek, stereopackfolder As String) As Task(Of Boolean)
         If IO.Directory.Exists(stereopackfolder) Then
-            If Not Await vb14.DialogBoxYNAsync($"Katalog '{stereopackfolder}' istnieje ({IO.Directory.GetLastWriteTime(stereopackfolder).ToExifString}), skasować?") Then Return False
+            If Not Await Me.DialogBoxYNAsync($"Katalog '{stereopackfolder}' istnieje ({IO.Directory.GetLastWriteTime(stereopackfolder).ToExifString}), skasować?") Then Return False
             IO.Directory.Delete(stereopackfolder, True)
         End If
 
         IO.Directory.CreateDirectory(stereopackfolder)
-        pic0.oPic.FileCopyToDir(stereopackfolder)
-        pic1.oPic.FileCopyToDir(stereopackfolder)
+        pic0.oPic.FileCopyToDir(stereopackfolder, True)
+        pic1.oPic.FileCopyToDir(stereopackfolder, True)
 
         Dim json As String = "[" & vbCrLf & pic0.oPic.DumpAsJSON & "," & vbCrLf & pic1.oPic.DumpAsJSON & vbCrLf & "]"
         IO.File.WriteAllText(IO.Path.Combine(stereopackfolder, "picsort.json"), json)
@@ -923,8 +923,8 @@ Public Class ProcessBrowse
 
         If metadane.Count < 2 Then Return retVal.ToArray
 
-        retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(0).sSuggestedFilename))
-        retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(1).sSuggestedFilename))
+        retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(0).GetInBuffName))
+        retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(1).GetInBuffName))
         Return retVal.ToArray
 
     End Function
@@ -1195,7 +1195,7 @@ Public Class ProcessBrowse
                     Else
                         Dim oPicRet As ThumbPicek = lista.Item(iLP + 1)
                         If oPicRet.oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
-                            Vblib.DialogBox($"Sprawdź, bo są dwa pliki z nazwą '{oPicRet.oPic.sSuggestedFilename}'")
+                            Me.MsgBox($"Sprawdź, bo są dwa pliki z nazwą '{oPicRet.oPic.sSuggestedFilename}'")
                             oPicRet = lista.Item(iLP + 2)
                         End If
                         'ShowKwdForPic(oPicRet)
@@ -1584,6 +1584,10 @@ Public Class ProcessBrowse
                 For Each oThumb In _thumbsy
                     oThumb.podpis = oThumb.oPic.TargetDir
                 Next
+            Case "source"
+                For Each oThumb In _thumbsy
+                    oThumb.podpis = oThumb.oPic.sSourceName
+                Next
 
             Case Else ' w tym "none"
                 For Each oThumb In _thumbsy
@@ -1616,7 +1620,7 @@ Public Class ProcessBrowse
             Next
 
             If iCnt <> iTotal Then
-                vb14.DialogBox("Nie wszystkie pliki mają znane położenie - sugeruję AUTO_EXIF")
+                Me.MsgBox("Nie wszystkie pliki mają znane położenie - sugeruję AUTO_EXIF")
             End If
 
         End If
@@ -2518,15 +2522,21 @@ Public Class ProcessBrowse
 
         Private Function ThumbCreateFromNormal(sInputFile As String) As BitmapImage
 
-            ' z temp (.png) należy stworzyć THUMB
-            Dim bitmapa As New BitmapImage()
-            bitmapa.BeginInit()
-            bitmapa.DecodePixelHeight = 400
-            bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-            bitmapa.UriSource = New Uri(sInputFile)
-            bitmapa.EndInit()
+            Try
+                ' z temp (.png) należy stworzyć THUMB
+                Dim bitmapa As New BitmapImage()
+                bitmapa.BeginInit()
+                bitmapa.DecodePixelHeight = 400
+                bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                bitmapa.UriSource = New Uri(sInputFile)
+                bitmapa.EndInit()
 
-            Return bitmapa
+                Return bitmapa
+            Catch ex As Exception
+
+            End Try
+
+            Return Nothing
         End Function
 
         Private Async Function ThumbCreateFromMovie(bCacheThumbs As Boolean) As Task(Of BitmapImage)

@@ -14,17 +14,17 @@
             </Grid.RowDefinitions>
         <StackPanel Grid.Row="1">
             <CheckBox Name="uiSequenceRetrieve" Content="Retrieve" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
-            <CheckBox Name="uiSequenceRunAutoExif" Content="Run AutoExif" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
+            <CheckBox Name="uiSequenceRunAutoExif" Content="Run AutoExif" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False" ToolTip="Potrzebne do Crop/Rotate (obrót zapisany w JFIF), tak samo wyciągnięcie Geo"/>
             <CheckBox Name="uiSequenceCropRotate" Content="Crop &amp; Rotate" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
-            <CheckBox Name="uiSequenceAddGeoTag" Content="Add geotags" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
+            <CheckBox Name="uiSequenceAddKeywords" Content="Add keywords" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" ToolTip="Przed Autotag, bo z Kwd jest np. Geo (do pogody)"/>
+            <CheckBox Name="uiSequenceAddGeoTag" Content="Add geotags" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" ToolTip="Po Kwd lepiej, bo część geo pójdzie z Kwd i nie trzeba ustawiać"/>
             <CheckBox Name="uiSequenceRunTaggers" Content="Run autotaggers" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
-            <CheckBox Name="uiSequenceAddKeywords" Content="Add keywords" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
             <CheckBox Name="uiSequenceAddDescriptions" Content="Add descriptions" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
             <CheckBox Name="uiSequenceAddFolder" Content="Set TargetDir" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
             <CheckBox Name="uiSequenceGUID" Content="Set GUID" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
             <CheckBox Name="uiSequencePublish" Content="Publish" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked"/>
             <CheckBox Name="uiSequenceCloudArch" Content="Cloud archive" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
-            <CheckBox Name="uiSequenceArchive" Content="Local archive" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False"/>
+            <CheckBox Name="uiSequenceArchive" Content="Local archive" Margin="5,10,5,5" FontSize="18" Checked="uiStage_Checked" Unchecked="uiStage_Checked" IsEnabled="False" ToolTip="Na końcu, bo wtedy w metadanych jest zapis do cloud i publish"/>
         </StackPanel>
     </Grid>
 </Window>

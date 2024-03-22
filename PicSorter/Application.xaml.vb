@@ -47,14 +47,15 @@ Partial Class Application
         ' próba czy mamy commandline zmieniające nazwę
         Dim appname As String = GetSettingsString("name")
         If String.IsNullOrEmpty(appname) Then
-            Return GetAppDataFolder()
-        Else
-            ' Narzucona nazwa instancji
-            Return IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appname)
+            appname = GetAppName()
+            'Return GetAppDataFolder()
+            'Else
+            '    ' Narzucona nazwa instancji
+            '    Return IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appname)
         End If
+        Return IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), appname)
 
-
-        Return GetAppDataFolder()
+        'Return GetAppDataFolder()
         'Dim sFolder As String = vb14.GetSettingsString("uiFolderData")
         'If bThrowNotExist Then
         '    If sFolder = "" OrElse Not IO.Directory.Exists(sFolder) Then

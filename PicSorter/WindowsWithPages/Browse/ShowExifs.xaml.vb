@@ -9,6 +9,7 @@ Public Class ShowExifs
     'Private _picek As Vblib.OnePic
     Private _fullOpis As String
     Private _bRealExif As String
+    Private _bFullData As Boolean
 
     Public Sub New(bRealExif As Boolean) '(oPic As Vblib.OnePic)
 
@@ -128,16 +129,26 @@ Public Class ShowExifs
         If _bRealExif Then
             _fullOpis = GetRealExifDump(oPic)
         Else
-            _fullOpis = GetMetadataDump(oPic)
+            If _bFullData Then
+                _fullOpis = oPic.DumpAsJSON
+            Else
+                _fullOpis = GetMetadataDump(oPic)
+            End If
         End If
         FilterText()
 
-
+        uiMask.Focus()
     End Sub
 
     Private Sub uiTitle_MouseDoubleClick(sender As Object, e As MouseButtonEventArgs)
-        Dim oPic As Vblib.OnePic = GetOnePicFromDataContext()
-        _fullOpis = oPic.DumpAsJSON
-        FilterText()
+        _bFullData = Not _bFullData
+        Window_DataContextChanged(Nothing, Nothing)
     End Sub
+
+    Private Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
+        If e.IsRepeat Then Return
+        If e.Key <> Key.Escape Then Return
+        Me.Close()
+    End Sub
+
 End Class

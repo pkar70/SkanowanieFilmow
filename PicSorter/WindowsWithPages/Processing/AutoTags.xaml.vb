@@ -4,18 +4,26 @@
 
 Imports Windows.ApplicationModel.Activation
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.UI.Extensions
 
 Public Class AutoTags
 
     Private _lista As List(Of JedenEngine)
 
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
-        If Not Await vb14.DialogBoxYNAsync("Aplikować wszystkie zaznaczone mechanizmy?") Then Return
 
         Dim iSelected As Integer = 0
         For Each oSrc As JedenEngine In _lista
             If oSrc.enabled Then iSelected += 1
         Next
+
+        If iSelected < 1 Then
+            Me.MsgBox("Żaden mechanizm nie jest zaznaczony")
+            Return
+        End If
+
+        If Not Await Me.DialogBoxYNAsync("Aplikować wszystkie zaznaczone mechanizmy?") Then Return
+
 
         uiProgBarEngines.Maximum = iSelected
         uiProgBarEngines.Value = 0
@@ -50,6 +58,7 @@ Public Class AutoTags
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
 
         _lista = New List(Of JedenEngine)
         Dim iMax As Integer = Application.GetBuffer.Count
@@ -89,7 +98,7 @@ Public Class AutoTags
 
         If oSrc.engine.Nazwa = "AUTO_GUID" Then
             If Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrWhiteSpace(x.PicGuid)).Any Then
-                If Await vb14.DialogBoxYNAsync("Istnieją przydzielone GUIDy, skasować je?") Then
+                If Await Me.DialogBoxYNAsync("Istnieją przydzielone GUIDy, skasować je?") Then
                     For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
                         oPic.PicGuid = ""
                         oPic.RemoveExifOfType(Vblib.ExifSource.AutoGuid)

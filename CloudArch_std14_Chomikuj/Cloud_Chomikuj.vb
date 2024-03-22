@@ -39,7 +39,13 @@ Public Class Cloud_Chomikuj
         oDir.UploadFile(oFile)
 
         Dim oRemoteFile As Chomikuj.ChomikujFile = oDir.GetFile(oPic.sSuggestedFilename)
-        If oRemoteFile Is Nothing Then Return "ERROR: unsuccessfull upload"
+        If oRemoteFile Is Nothing Then
+            ' 2024.03.07 mo¿e jednak siê uda³o, tylko trzeba by³o poczekaæ
+            Await Task.Delay(2 * 1000)
+            oRemoteFile = oDir.GetFile(oPic.sSuggestedFilename)
+            If oRemoteFile Is Nothing Then Return "ERROR: unsuccessfull upload"
+            DumpMessage("siê jednak uda³o, po odczekaniu 2 sekund")
+        End If
 
         Dim sCaption As String = oPic.GetDescriptionForCloud
         sCaption = sCaption & vbCrLf & "Keywords: " & oPic.GetAllKeywords

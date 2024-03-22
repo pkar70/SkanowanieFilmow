@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow" Loaded="Window_Loaded" >
+        Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow" Loaded="Window_Loaded" KeyUp="Window_KeyUp">
     <StackPanel Margin="5,2,5,2">
         <TextBox Name="uiFileName" FontWeight="Bold" IsReadOnly="True" BorderThickness="0" />
         <Grid>
@@ -27,7 +27,8 @@
         </Grid>
         <Grid>
             <CheckBox Name="uiDescribeSetAndNext" Content="set&amp;next" HorizontalAlignment="Left" Margin="5,0,0,0"/>
-            <Button Content="Apply" HorizontalAlignment="Right" Click="uiApply_Click" Name="uiApply" Margin="0,0,5,0" IsDefault="true" />
+            <Button Content=" Add " HorizontalAlignment="Right" Click="uiAdd_Click" Name="uiAdd" Margin="0,0,55,0" />
+            <Button Content=" Apply " HorizontalAlignment="Right" Click="uiApply_Click" Name="uiApply" Margin="0,0,5,0" IsDefault="true" />
         </Grid>
 
     </StackPanel>

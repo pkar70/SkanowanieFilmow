@@ -293,6 +293,7 @@ Public MustInherit Class Publish_Facebook
 
             Dim loginResult = Await mMordkaApi.LoginAsync()
             If Not loginResult.Succeeded Then '// logged In
+#Disable Warning BC40000 ' Type or member is obsolete
                 Select Case loginResult.Value
                     Case Enums.FacebookLoginResult.WrongUserOrPassword
                         Await vb14.DialogBoxAsync("Wrong Credentials (user or password is wrong)")
@@ -311,6 +312,7 @@ Public MustInherit Class Publish_Facebook
                         End If
                     Case Else
                         Await vb14.DialogBoxAsync("Login error: " & loginResult.Value)
+#Enable Warning BC40000 ' Type or member is obsolete
                         Return False
                 End Select
 

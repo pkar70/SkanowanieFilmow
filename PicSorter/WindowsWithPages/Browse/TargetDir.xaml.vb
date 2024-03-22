@@ -9,7 +9,7 @@ Imports Vblib
 Imports Windows.Devices
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
-
+Imports System.Drawing.Text
 
 Public Class TargetDir
 
@@ -65,10 +65,32 @@ Public Class TargetDir
 
         PokazIstniejaceKatalogi(_selected(0).dateMin, _selected(_selected.Count - 1).dateMin)
 
-        uiCalendar.DisplayDateStart = _selected(0).dateMin.AddDays(-7)
-        uiCalendar.DisplayDateEnd = _selected(0).dateMin.AddDays(7)
-
+        UstawDateCalendPick()
     End Sub
+
+    Private Sub UstawDateCalendPick()
+        Dim centerDate As Date = _selected(0).dateMin
+        centerDate = DataWgPola(uiManualGeoName.Text, centerDate)
+
+        uiGeoCalendar.DisplayDateStart = centerDate.AddDays(-7)
+        uiGeoCalendar.DisplayDateEnd = centerDate.AddDays(7)
+    End Sub
+
+    Private Function DataWgPola(pole As String, domyslna As Date) As Date
+        If String.IsNullOrWhiteSpace(pole) Then Return domyslna
+        If pole.Length < 7 Then Return domyslna
+
+        Dim retDate As Date
+
+        If pole.Length > 9 Then
+            If Date.TryParse(pole.Substring(0, 10), retDate) Then Return retDate
+        End If
+
+        If Date.TryParse(pole.Substring(0, 7) & ".15", retDate) Then Return retDate
+
+        Return domyslna
+    End Function
+
 
 #Region "combo katalogów"
 
@@ -441,6 +463,8 @@ Public Class TargetDir
         uiAutoGeoSplit.IsEnabled = False
         uiManualGeoSplit.IsEnabled = False
         uiManualGeoName.IsEnabled = False
+
+        uiNoGeoSplit.IsChecked = True ' skoro nie dzielimy piętro wyżej, to tu raczej też
     End Sub
 
     Private Async Sub uiSearchTree_Click(sender As Object, e As RoutedEventArgs)
@@ -459,10 +483,12 @@ Public Class TargetDir
     End Sub
 
     Private Sub uiGeoCalend_Click(sender As Object, e As RoutedEventArgs)
-        uiCalendarPopup.IsOpen = Not uiCalendarPopup.IsOpen
+        uiGeoCalendarPopup.IsOpen = Not uiGeoCalendarPopup.IsOpen
+        ' gdy pokazujemy, to można wykorzystać datę z pola, a nie z OnePic
+        If uiGeoCalendarPopup.IsOpen Then UstawDateCalendPick()
     End Sub
 
-    Private Sub uiCalendar_DateChanged(sender As Object, e As CalendarDateChangedEventArgs)
+    Private Sub uiGeoCalendar_DateChanged(sender As Object, e As CalendarDateChangedEventArgs)
         If e?.AddedDate Is Nothing Then Return
         Dim selDate As Date = e?.AddedDate
         uiManualGeoName.Text = selDate.ExifDateWithWeekDay.DropAccents

@@ -58,8 +58,8 @@
             </StackPanel>
 
             <Button Content="🗓" VerticalAlignment="Center" Margin="10,0,10,0" Grid.Column="1" Click="uiGeoCalend_Click" Name="uiGeoCalen"/>
-            <Popup Name="uiCalendarPopup" PlacementTarget="{Binding ElementName=uiGeoCalen}" IsOpen="False" StaysOpen="False">
-                <Calendar Name="uiCalendar" DisplayDateChanged="uiCalendar_DateChanged"/>
+            <Popup Name="uiGeoCalendarPopup" PlacementTarget="{Binding ElementName=uiGeoCalen}" IsOpen="False" StaysOpen="False">
+                <Calendar Name="uiGeoCalendar" DisplayDateChanged="uiGeoCalendar_DateChanged"/>
             </Popup>
         </Grid>
 

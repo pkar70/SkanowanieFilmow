@@ -15,7 +15,8 @@
 
         <StackPanel Orientation="Horizontal">
             <Button Content=" ... " Click="uiBrowse_Click" />
-            <TextBox Name="uiFolderPath" Width="300"/>
+            <TextBox Name="uiFolderPath" Width="300" Margin="10,0,10,0" />
+            <Button FontWeight="Bold" Content="↻" Click="uiRefresh_Click" />
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Grid.Row="1">

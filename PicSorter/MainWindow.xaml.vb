@@ -4,6 +4,7 @@
 'Imports Org.BouncyCastle.Asn1
 Imports System.Globalization
 Imports System.Net.Http.Json
+Imports System.Text
 Imports CsvHelper
 Imports FacebookApiSharp.Classes.Responses
 'Imports Org.BouncyCastle.Utilities
@@ -19,6 +20,10 @@ Class MainWindow
         InitLib(Nothing)
         Page_Loaded(Nothing, Nothing)    ' tak prościej, bo wklejam tu zawartość dawnego Page
         lib14_httpClnt.httpKlient._machineName = Environment.MachineName    ' musi być tak, bo lib jest też używana w std 1.4, a tam nie ma machinename
+
+        ' https://stackoverflow.com/questions/50858209/system-notsupportedexception-no-data-is-available-for-encoding-1252
+        ' z nugetem System.Text.Encoding.CodePages
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
 
         ' narzucona nazwa instancji (warning)
         Dim appname As String = GetSettingsString("name")
@@ -88,11 +93,10 @@ Class MainWindow
                 ' case tool weather|moon|astro DATA (z tego potem pogoda BN/Wlknoc do sprawdzenia ;) ) dane dla Krakowa
                 ' case tool ocr|face|azure|exif|fullExif FILE
         End Select
-
-
     End Sub
 
-    #Region "commandline"
+
+#Region "commandline"
 
     Private Function CmdLineGetFolder(param As String) As String
         Select Case param.ToLowerInvariant

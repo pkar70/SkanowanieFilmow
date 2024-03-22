@@ -315,7 +315,7 @@ Public Class OnePic
     End Function
 
     ''' <summary>
-    '''  zwraca rzeczywistą datę - z MANUAL albo FileExif
+    '''  zwraca rzeczywistą datę - z MANUAL.DateTimeOriginal albo FileExif.DateTimeOriginal
     ''' </summary>
     ''' <returns></returns>
     Private Function GetRealDate() As Date
@@ -444,6 +444,7 @@ Public Class OnePic
         If MatchesMasks("*.avi") Then Return "►"
         If MatchesMasks("*.mov") Then Return "►"
         If MatchesMasks("*.mp4") Then Return "►"
+        If MatchesMasks("*.mkv") Then Return "►"
         If MatchesMasks("*.jps") Then Return "⧉"
         If InBufferPathName.ContainsCI("stereo.zip") Then Return "⧉"
         Return ""
@@ -484,7 +485,7 @@ Public Class OnePic
         AddDescription(New OneDescription(sDesc, ""))
     End Sub
 
-    Public Function GetSumOfDescriptionsText() As String
+    Public Function GetSumOfDescriptionsText(Optional separator As String = " | ") As String
         If descriptions Is Nothing Then Return ""
 
         Dim sRet As String = ""
@@ -493,7 +494,8 @@ Public Class OnePic
             If oDesc.comment.StartsWith("Cropped to ") Then Continue For
             If oDesc.comment.StartsWith("Rotated ") Then Continue For
             If oDesc.comment.Trim.Length < 2 Then Continue For
-            sRet &= oDesc.comment.Trim & " "
+            If sRet <> "" Then sRet &= separator
+            sRet &= oDesc.comment.Trim
         Next
 
         Return sRet.Trim
@@ -916,10 +918,35 @@ Public Class OnePic
                 ' gdy to aparat cyfrowy, przyjmujemy mniejszą datę pliku
                 oExif = GetExifOfType(ExifSource.SourceFile)
                 If oExif IsNot Nothing Then Return GuidPrefix.FileDate & oExif.DateMin.ToString("yyyyMMddHHmmss")
+            Else
+                If oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.scannerTransparent OrElse
+                    oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.scannerReflex Then
+                    ' gdy to skaner
+
+                    oExif = GetExifOfType(ExifSource.FileExif)
+                    If Not String.IsNullOrWhiteSpace(oExif?.DateTimeScanned) Then
+                        tempData = oExif.DateTimeScanned
+                        If Not String.IsNullOrWhiteSpace(tempData) Then
+                            Dim retDate As Date = ExifDateToDate(tempData)
+                            If retDate.IsDateValid Then Return GuidPrefix.ScannedDate & retDate.ToString("yyyyMMddHHmmss")
+                        End If
+                    End If
+
+                    ' nie ma daty Scanned, to przyjmujemy mniejszą datę pliku
+                    oExif = GetExifOfType(ExifSource.SourceFile)
+                    If oExif IsNot Nothing Then Return GuidPrefix.FileDate & oExif.DateMin.ToString("yyyyMMddHHmmss")
+                End If
+
+            End If
+
+            If oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.unknown Then
+                DialogBox("niezdefiniowany typ źródła podczas importu, nie wiem co zrobić?" & vbCrLf & InBufferPathName)
+                Return ""
             End If
         End If
 
-        DialogBox("zapomniales ze nie umiem stworzyc ID dla bezdatowych?")
+
+        DialogBox("zapomniales ze nie umiem stworzyc ID dla bezdatowych?" & vbCrLf & InBufferPathName)
         Return ""
     End Function
 
@@ -1609,17 +1636,36 @@ Public Class OnePic
 #End Region
 
 #Region "operacje na pliku"
-    Public Sub FileCopyTo(newPathname As String)
+    Public Function FileCopyTo(newPathname As String) As Boolean
+        If File.Exists(newPathname) Then Return False
         IO.File.Copy(InBufferPathName, newPathname)
-    End Sub
+        Return True
+    End Function
 
-    Public Sub FileCopyTo(targetDir As String, newname As String)
-        FileCopyTo(IO.Path.Combine(targetDir, newname))
-    End Sub
+    Public Function FileCopyTo(targetDir As String, newname As String) As Boolean
+        Return FileCopyTo(IO.Path.Combine(targetDir, newname))
+    End Function
 
-    Public Sub FileCopyToDir(newDirname As String)
-        FileCopyTo(newDirname, sSuggestedFilename)
-    End Sub
+    ''' <summary>
+    ''' kopiuj do podanego katalogu, używając suggestedfilename lub inbufferfilename
+    ''' </summary>
+    ''' <param name="newDirname">pathname targer katalogu</param>
+    ''' <param name="bInBuffName">TRUE: użyj nazwy pliku z InBufferPathName, FALSE: użyj sSuggestedFilename (może się powtórzyć!)</param>
+    ''' <returns>TRUE: ok, FALSE: target file already exists</returns>
+    Public Function FileCopyToDir(newDirname As String, bInBuffName As Boolean) As Boolean
+        If bInBuffName Then
+            Return FileCopyTo(newDirname, GetInBuffName)
+        Else
+            Return FileCopyTo(newDirname, sSuggestedFilename)
+        End If
+    End Function
+
+    ''' <summary>
+    ''' nazwa pliku w buforze (bez ścieżki)
+    ''' </summary>
+    Public Function GetInBuffName() As String
+        Return IO.Path.GetFileName(InBufferPathName)
+    End Function
 
 
     ''' <summary>

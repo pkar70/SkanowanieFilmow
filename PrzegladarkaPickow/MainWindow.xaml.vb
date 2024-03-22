@@ -5,7 +5,7 @@ Class MainWindow
         Dim sPath As String = "C:\Users\pkar\Pictures\krakow\FBstaryKrakow"
         FolderBrowser(uiFolderPath, sPath, "Select folder with photos")
 
-        WczytajKatalog(uiFolderPath.Text)
+        uiRefresh_Click(Nothing, Nothing)
     End Sub
 
     Private Async Sub uiFilter_TextChanged(sender As Object, e As TextChangedEventArgs)
@@ -29,7 +29,7 @@ Class MainWindow
                 oPic.oImageSrc = Await WczytajObrazek(oPic.filepath, 300, Rotation.Rotate0)
             End If
 
-            lista.Add(oPic)
+            If oPic.oImageSrc IsNot Nothing Then lista.Add(oPic)
         Next
 
         If lista.Count < 1 Then
@@ -122,6 +122,10 @@ Class MainWindow
         Dim filename As String = oPicker.FileName
         Return IO.Path.GetDirectoryName(filename)
     End Function
+
+    Private Sub uiRefresh_Click(sender As Object, e As RoutedEventArgs)
+        WczytajKatalog(uiFolderPath.Text)
+    End Sub
 End Class
 
 Public Class thumb
