@@ -321,7 +321,12 @@ Public Class OnePic
     Private Function GetRealDate() As Date
 
         Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualDate)
-        If oExif IsNot Nothing Then Return ExifDateToDate(oExif.DateTimeOriginal)
+        If oExif IsNot Nothing Then
+            If Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then Return ExifDateToDate(oExif.DateTimeOriginal)
+
+            Dim dtdiff As TimeSpan = oExif.DateMax - oExif.DateMin
+            Return oExif.DateMin.AddMinutes(dtdiff.TotalMinutes / 2)
+        End If
 
 
         oExif = GetExifOfType(ExifSource.FileExif)
@@ -653,22 +658,36 @@ Public Class OnePic
         If bCopyExif Then
             ' próba przeniesienia kopiowania EXIF tutaj
             _PipelineInput.Seek(0, SeekOrigin.Begin)
-            Dim oExifLib As New CompactExifLib.ExifData(_PipelineInput)
-            If bResetOrientation Then
-                ' zarówno w pliku ma być bez obracania, jak i w naszych danych
-                oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
+            Dim oExifLib As CompactExifLib.ExifData
+            Try
+                oExifLib = New CompactExifLib.ExifData(_PipelineInput)
+            Catch ex As Exception
+                DumpMessage("Sorry, source EXIFtag is corrupted")
+            End Try
 
-                If Not _EditPipeline Then
-                    ' to tylko gdy zmieniamy zdjęcie w buforze
-                    Dim oExif As ExifTag = GetExifOfType(ExifSource.FileExif)
-                    If oExif IsNot Nothing Then oExif.Orientation = 1
+            If oExifLib IsNot Nothing Then
+                If bResetOrientation Then
+                    ' zarówno w pliku ma być bez obracania, jak i w naszych danych
+                    oExifLib.SetTagValue(CompactExifLib.ExifTag.Orientation, 1, CompactExifLib.ExifTagType.UShort)
+
+                    If Not _EditPipeline Then
+                        ' to tylko gdy zmieniamy zdjęcie w buforze
+                        Dim oExif As ExifTag = GetExifOfType(ExifSource.FileExif)
+                        If oExif IsNot Nothing Then oExif.Orientation = 1
+                    End If
                 End If
+                _PipelineOutput.Seek(0, SeekOrigin.Begin)
+                Dim tempStream As New MemoryStream
+                oExifLib.Save(_PipelineOutput, tempStream, 0) ' (orgFileName)
+                _PipelineOutput?.Dispose()
+                _PipelineOutput = tempStream
+            Else
+                ' błąd w EXIFlib wejściowym - tylko kopiujemy IN na OUT
+                Dim tempStream As New MemoryStream
+                _PipelineInput.CopyTo(tempStream)
+                _PipelineOutput?.Dispose()
+                _PipelineOutput = tempStream
             End If
-            _PipelineOutput.Seek(0, SeekOrigin.Begin)
-            Dim tempStream As New MemoryStream
-            oExifLib.Save(_PipelineOutput, tempStream, 0) ' (orgFileName)
-            _PipelineOutput.Dispose()
-            _PipelineOutput = tempStream
         End If
 
         ' do sprawdzenia - czy zachowywane są EXIFy w pliku/strumieniu
@@ -797,7 +816,7 @@ Public Class OnePic
         If Not String.IsNullOrWhiteSpace(oAddExif.Author) Then oToExif.Author = oAddExif.Author
 
         If Not String.IsNullOrWhiteSpace(oAddExif.Copyright) Then
-            If oAddExif.Copyright.Contains("%") And oToExif.Copyright IsNot Nothing Then
+            If oAddExif.Copyright.Contains("%") And Not String.IsNullOrWhiteSpace(oToExif.Copyright) Then
                 ' special case - na koniec, przy publikacji; %1, %3 itp. jako długość odpowiedniego słowa
                 Dim aFull As String() = oToExif.Copyright.Split(" ")
                 Dim aShort As String() = oAddExif.Copyright.Split(" ")
@@ -1293,7 +1312,8 @@ Public Class OnePic
             If query.source_author = "!" Then If Not String.IsNullOrWhiteSpace(oExif.Author) Then Return False
             If Not CheckStringMasks(oExif.Author, query.source_author) Then Return False
 
-            If query.source_type > -1 Then
+            ' było: -1, ale po dodaniu ProgRing w SearchWnd jest 0 jako nieznane?
+            If query.source_type > 0 Then
                 If oExif.FileSourceDeviceType <> query.source_type Then Return False
             End If
         End If

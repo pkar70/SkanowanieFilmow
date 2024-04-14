@@ -21,6 +21,7 @@ uiCacheThumbs=True
 uiSlideShowSeconds=5
 
 uiAzureMaxBatch=500
+uiVisualCrossMaxBatch=400
 uiBigPicSize=90
 
 uiJsonEnabled=True

@@ -220,6 +220,7 @@ SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skle
 
 SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
 SHOWBIG: drag source (duży plik, nie ikonka jak z Browse)
+SHOWBIG home/end w showbig?
 
 
 STEREO:BUG: podczas pakowania do stereo.zip, zapisuje sobie jedną ramkę jako "purge", a to jeszcze nieprawda
@@ -234,6 +235,10 @@ STEREO: * anaglyph z sieci
 STEREO: * jps z sieci
 STEREO: * telefony rowne  ## DONE
 STEREO: * telefony różne
+
+STRUCT może dodać serno do JSONa arch, i dodawac go jako numer kolejny przy dodawaniu do archindex
+STRUCT wtedy SQL nie autogen(id), a jedynie uniq(id)
+
 
 TARGETDIR: brak podzialu date niech robi brak podzialu geo
 
