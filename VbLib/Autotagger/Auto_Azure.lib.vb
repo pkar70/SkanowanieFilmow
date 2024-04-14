@@ -138,7 +138,7 @@ Public Class Auto_AzureTest
 
         If Not EnsureClient() Then Return Nothing
 
-        If Not Vblib.GetSettingsBool("uiAzurePaid") Then Await Task.Delay(3000)  ' 20/min, 20/60, raz na 3 sekundy
+        If Not Vblib.GetSettingsBool("uiAzurePaid") Then Await Task.Delay(4000)  ' 20/min, 20/60, raz na 3 sekundy; 2024.04.09, zmiana z 3000 na 3200, potem 3500
 
         Dim oNew As New Vblib.ExifTag(Nazwa)
         oNew.AzureAnalysis = Await AnalyzeImageLocal(oStream)
@@ -188,6 +188,16 @@ Public Class Auto_AzureTest
         Try
             results = Await _oClient.AnalyzeImageInStreamAsync(oStream, features)
         Catch ex As Exception
+            Dim exceptionCount As Integer = GetSettingsInt("uiAzureExceptions")
+            exceptionCount -= 1
+            SetSettingsInt("uiAzureExceptions", exceptionCount)
+
+            If ex.Message.ContainsCI("Forbidden") Then
+                ' ex.Response.Content
+                ' {"error"{"code":"403","message": "Out of call volume quota for ComputerVision F0 pricing tier. Please retry after 5 days. To increase your call volume switch to a paid tier."}}
+                ' ex.Response.
+                ' ReasonPhrase    "Quota Exceeded"	String
+            End If
             Return Nothing
         End Try
 
