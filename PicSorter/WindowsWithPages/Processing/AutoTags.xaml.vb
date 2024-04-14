@@ -5,6 +5,7 @@
 Imports Windows.ApplicationModel.Activation
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.UI.Extensions
+Imports Auto_std2_Astro
 
 Public Class AutoTags
 
@@ -59,6 +60,7 @@ Public Class AutoTags
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
+        Me.ProgRingInit(True, False)
 
         _lista = New List(Of JedenEngine)
         Dim iMax As Integer = Application.GetBuffer.Count
@@ -90,7 +92,9 @@ Public Class AutoTags
 
     Private Async Function ApplyOne(oSrc As JedenEngine) As Task
 
-        Application.ShowWait(True)
+        ' Application.ShowWait(True)
+        Me.ProgRingShow(True)
+        Me.ProgRingSetText(oSrc.engine.Nazwa)
 
         uiProgBarInEngine.Maximum = oSrc.maxCount
         uiProgBarInEngine.Value = 0
@@ -107,7 +111,14 @@ Public Class AutoTags
             End If
         End If
 
-        Dim maxGuard As Integer = If(oSrc.engine.Nazwa = "AUTO_AZURE", vb14.GetSettingsInt("uiAzureMaxBatch", 500), Integer.MaxValue)
+        Dim maxGuard As Integer = Integer.MaxValue
+        If oSrc.engine.Nazwa = "AUTO_AZURE" Then
+            maxGuard = vb14.GetSettingsInt("uiAzureMaxBatch", 500)
+            vb14.SetSettingsInt("uiAzureExceptions", 4)  ' po 4 exception ma przestać sprawdzać
+        End If
+        If oSrc.engine.Nazwa = "AUTO_WEATHER" Then
+            Auto_Pogoda.maxGuard = vb14.GetSettingsInt("uiVisualCrossMaxBatch", 400)
+        End If
 
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
@@ -118,6 +129,8 @@ Public Class AutoTags
                 If oExif IsNot Nothing Then
                     oItem.ReplaceOrAddExif(oExif)
                     oItem.TagsChanged = True
+                Else
+                    If vb14.GetSettingsInt("uiAzureExceptions") < 1 Then Exit For  ' po 4 exception ma przestać sprawdzać
                 End If
                 Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
                 maxGuard -= 1
@@ -142,7 +155,8 @@ Public Class AutoTags
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed
 
-        Application.ShowWait(False)
+        ' Application.ShowWait(False)
+        Me.ProgRingShow(False)
 
     End Function
 

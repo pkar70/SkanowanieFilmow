@@ -34,6 +34,7 @@ Public Class UserControlSearch
     Private Async Sub uiSaveQuery_Click(sender As Object, e As RoutedEventArgs)
 
         Dim query As SearchQuery = Await QueryValidityCheck() ' w tym duże litery dla słów kluczowych
+        If query Is Nothing Then Return
 
         Dim nazwa As String = Await vb14.DialogBoxInputAllDirectAsync("Podaj nazwę kwerendy")
         If String.IsNullOrWhiteSpace(nazwa) Then Return
@@ -90,21 +91,38 @@ Public Class UserControlSearch
         Dim query As SearchQuery = DataContext
 
         If query.source_type < 0 Then Return
-        For Each oItem As ComboBoxItem In uiComboDevType.Items
-            Dim cbi As String = TryCast(oItem.Content, String)
-            If cbi Is Nothing Then Continue For
-            If cbi.Substring(0, 1) = query.source_type.ToString Then
-                uiComboDevType.SelectedItem = oItem
-                Exit For
-            End If
-        Next
+
+        If uiComboDevType.Items Is Nothing Then Return
+        If uiComboDevType.Items.Count < 1 Then Return
+        Dim testItem = uiComboDevType.Items(0)
+
+        If testItem.GetType Is GetType(String) Then
+            For Each oItem As String In uiComboDevType.Items
+                If oItem Is Nothing Then Continue For
+                If oItem.Substring(0, 1) = query.source_type.ToString Then
+                    uiComboDevType.SelectedItem = oItem
+                    Exit For
+                End If
+            Next
+        Else
+            For Each oItem As ComboBoxItem In uiComboDevType.Items
+                Dim cbi As String = TryCast(oItem.Content, String)
+                If cbi Is Nothing Then Continue For
+                If cbi.Substring(0, 1) = query.source_type.ToString Then
+                    uiComboDevType.SelectedItem = oItem
+                    Exit For
+                End If
+            Next
+
+        End If
+
 
     End Sub
 
     Private Sub uiComboDevType_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
 
         Dim query As SearchQuery = DataContext
-
+        If query Is Nothing Then Return
         query.source_type = -1
         Dim sDevType As String = TryCast(uiComboDevType.SelectedValue, String)
         If Not String.IsNullOrWhiteSpace(sDevType) Then
@@ -112,7 +130,10 @@ Public Class UserControlSearch
         End If
 
     End Sub
-
+    ''' <summary>
+    ''' zwróć Query z ewent. dodatkami z kontroli, lub NULL gdy query nie ma sensu
+    ''' </summary>
+    ''' <returns></returns>
     Public Async Function QueryValidityCheck() As Task(Of SearchQuery)
         Dim query As SearchQuery = FromUiToQuery()
 
@@ -121,6 +142,15 @@ Public Class UserControlSearch
             If Await vb14.DialogBoxYNAsync("Keywords ma tylko małe litery, czy zmienić na duże?") Then
                 'uiTags.Text = uiTags.Text.ToUpper
                 query.ogolne.Tags = query.ogolne.Tags.ToUpperInvariant
+            End If
+        End If
+
+        Dim fname As String = query.ogolne.adv.Filename
+        If Not String.IsNullOrWhiteSpace(fname) Then
+            If Not fname.Contains("*") AndAlso Not fname.Contains("?") Then
+                If Not Await vb14.DialogBoxYNAsync("Filename nie ma * ani ?, czy tak ma być?") Then
+                    Return Nothing
+                End If
             End If
         End If
 

@@ -114,7 +114,9 @@ Public Class ShowBig
         _bitmap = Await _picek.PicForBig(iObrot)
         If _bitmap Is Nothing Then Return
 
-        Me.Title = _picek.oPic.InBufferPathName & $" ({_bitmap.Width.ToString("F0")}×{_bitmap.Height.ToString("F0")})"
+        Me.Title = _picek.oPic.InBufferPathName &
+            $" ({_bitmap.Width.ToString("F0")}×{_bitmap.Height.ToString("F0")})" &
+            $" [{_picek.nrkol}/{_picek.maxnum}]"
 
         UpdateClipRegion() ' tym razem, gdyż editmode=none, likwidacja crop
 
@@ -331,10 +333,12 @@ Public Class ShowBig
                 oWnd.Show()
                 oWnd.Focus()
             Else
+                _MojeDataContextChange = True
                 ' to okno
                 _picek = picek
                 DataContext = _picek.oPic
                 Window_Loaded(Nothing, Nothing)
+                _MojeDataContextChange = False
             End If
 
         End If
@@ -948,6 +952,23 @@ Public Class ShowBig
 
         uiSave_Click(sender, e)
 
+    End Sub
+
+    Private _MojeDataContextChange As Boolean
+
+    Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+        If _editMode <> EditModeEnum.none Then Return
+        If DataContext Is Nothing Then Return
+        If _bitmap Is Nothing Then Return   ' jeszcze przed inicjalizacją pierwszego - obsługujemy jak dotychczas
+        If _MojeDataContextChange Then Return
+
+        If DataContext.GetType Is GetType(ProcessBrowse.ThumbPicek) Then
+            _picek = DataContext
+        Else
+            _picek = New ProcessBrowse.ThumbPicek(DataContext, 0)
+        End If
+
+        Window_Loaded(Nothing, Nothing)
     End Sub
 
 

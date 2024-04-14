@@ -23,6 +23,10 @@
         <TextBlock Text="key:" />
         <TextBox Name="uiVisualCrossSubscriptionKey" />
         <CheckBox Name="uiVisualCrossPaid" Content="Płatna subskrypcja" />
+        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+            <TextBlock Text="Max VisCross batch size " />
+            <TextBox Name="uiVisualCrossMaxBatch" Width="40" InputScope="Digits" HorizontalAlignment="Left" />
+        </StackPanel>
 
         <Button Content=" OK " HorizontalAlignment="Center" Margin="5,20,5,0" Click="uiOK_Click" />
 

@@ -8,6 +8,7 @@ Imports lib_sharingNetwork
 Imports pkar
 Imports System.Drawing
 Imports pkar.UI.Extensions
+Imports System.ComponentModel.Design
 
 Public Class ProcessDownload
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -72,7 +73,11 @@ Public Class ProcessDownload
         End If
 
         If oSrc.Typ <> Vblib.PicSourceType.PeerSrv Then
-            If oSrc.currentExif Is Nothing Then oSrc.currentExif = oSrc.defaultExif.Clone
+            If oSrc.currentExif Is Nothing Then
+                oSrc.currentExif = oSrc.defaultExif.Clone
+            Else
+                oSrc.currentExif = oSrc.currentExif.Clone
+            End If
             Dim oWnd As New EditExifTag(oSrc.currentExif, oSrc.SourceName & " (chwilowe)", EditExifTagScope.LimitedToSourceDir, False)
             oWnd.ShowDialog()
         End If
@@ -237,5 +242,17 @@ Public Class ProcessDownload
 
         Return iCount
 
+    End Function
+End Class
+
+
+Public Class KonwersjaDateTime
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim datka As DateTime = CType(value, DateTime)
+        If Not datka.IsDateValid Then Return "??"
+
+        Return "last run: " & datka.ToExifString
     End Function
 End Class

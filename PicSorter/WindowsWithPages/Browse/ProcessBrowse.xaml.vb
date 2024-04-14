@@ -26,6 +26,8 @@ Imports System.Runtime.InteropServices.WindowsRuntime
 Imports Org.BouncyCastle.Math.EC
 Imports System.IO
 Imports pkar.UI.Extensions
+Imports System.Runtime.Intrinsics
+Imports System.ComponentModel
 
 Public Class ProcessBrowse
 
@@ -87,6 +89,7 @@ Public Class ProcessBrowse
         Await Bufor2Thumbsy()   ' w tym obsługa znikniętych
         SizeMe()
         RefreshMiniaturki(True)
+        'PokazThumbsy() ' tylko test, czy observable zadziała
 
         WypelnMenuFilterSharing()
         'WypelnMenuActionSharing()
@@ -168,7 +171,7 @@ Public Class ProcessBrowse
         Dim iOutdated As Integer = _oBufor.BakDelete(iDelay, False)
         If iOutdated < 1 Then Return
 
-        If Await vb14.DialogBoxYNAsync($"Skasować stare pliki BAK? ({iOutdated})") Then Return
+        If Await Me.DialogBoxYNAsync($"Skasować stare pliki BAK? ({iOutdated})") Then Return
 
         _oBufor.BakDelete(iDelay, True)
 
@@ -189,7 +192,7 @@ Public Class ProcessBrowse
 
         If lista.Count < 1 Then Return
 
-        If Not Await vb14.DialogBoxYNAsync($"Skasować pliki już w pełni zarchiwizowane? ({lista.Count})") Then Return
+        If Not Await Me.DialogBoxYNAsync($"Skasować pliki już w pełni zarchiwizowane? ({lista.Count})") Then Return
 
         For Each oPic As Vblib.OnePic In lista
             DeletePicture(oPic)
@@ -306,7 +309,7 @@ Public Class ProcessBrowse
         uiProgBar.Visibility = Visibility.Visible
 
         _thumbsy.Clear()
-        Dim iMax As String = vb14.GetSettingsInt("uiMaxThumbs")
+        Dim iMax As Integer = vb14.GetSettingsInt("uiMaxThumbs")
         If iMax < 10 Then iMax = 100
 
         Dim lista As List(Of ThumbPicek) = Await WczytajIndeks()   ' tu ewentualne kasowanie jest znikniętych, to wymaga YNAsync
@@ -315,8 +318,12 @@ Public Class ProcessBrowse
             Await Me.MsgBoxAsync($"Wczytuję miniaturki tylko {iMax} (z {lista.Count})")
         End If
 
+        Dim nrkol As Integer = 1
         For Each oItem As ThumbPicek In From c In lista Order By c.dateMin Take iMax
+            oItem.nrkol = nrkol
+            oItem.maxnum = Math.Min(iMax, lista.Count)
             _thumbsy.Add(oItem)
+            nrkol += 1
         Next
         lista.Clear()
 
@@ -501,24 +508,19 @@ Public Class ProcessBrowse
     End Sub
 
     Private Sub uiTargetMetadataChanged(sender As Object, e As EventArgs)
-        uiActionsPopup.IsOpen = False
-        ReDymkuj()
-        SaveMetaData()
+        uiMetadataChangedDymkuj(Nothing, Nothing)
         ' tu trzeba wraz z reapply filter
         If _isTargetFilterApplied Then uiFilterNoTarget_Click(Nothing, Nothing)
     End Sub
     Private Sub uiGeotagMetadataChanged(sender As Object, e As EventArgs)
-        uiActionsPopup.IsOpen = False
-        SaveMetaData()
+        uiMetadataChangedDymkuj(Nothing, Nothing)
         ' tu trzeba wraz z reapply filter
         If _isGeoFilterApplied Then uiFilterNoGeo_Click(Nothing, Nothing)
     End Sub
 
     Private Sub uiMetadataChangedReparse(sender As Object, e As EventArgs)
-        uiActionsPopup.IsOpen = False
-        ReDymkuj()
+        uiMetadataChangedDymkuj(Nothing, Nothing)
         RefreshMiniaturki(True)
-        SaveMetaData()
     End Sub
 
     Private Sub uiMetadataChangedDymkuj(sender As Object, e As EventArgs)
@@ -1472,6 +1474,8 @@ Public Class ProcessBrowse
     Private Sub ReDymkuj()
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             oItem.ZrobDymek()
+            oItem.AllKeywords = oItem.oPic.GetAllKeywords
+            oItem.SumOfDescriptionsText = oItem.oPic.GetSumOfDescriptionsText
         Next
     End Sub
 
@@ -1505,11 +1509,56 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Private Shared _oFirstVisible As ThumbPicek = Nothing
     Private Sub uiComboSize_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles uiComboSize.SelectionChanged
         If _thumbsy Is Nothing Then Return
         If _thumbsy.Count < 1 Then Return
 
+        If uiPicList.Items Is Nothing Then Return
+        If uiPicList.Items.CurrentPosition < 0 Then Return
+
+        If uiPicList.SelectedItems IsNot Nothing AndAlso uiPicList.SelectedItems.Count > 0 Then
+            _oFirstVisible = uiPicList.SelectedItems(0)
+        End If
+        'Dim clientArea = New Rect(0.0, 0.0, uiPicList.ActualWidth, uiPicList.ActualHeight)
+        ' border.scrollviewer.itemspresenter.wrappanel.listviewitem
+        'For Each oItem In uiPicList.Items ' tu mamy ThumbPicki
+        '    Dim oLVI As ListViewItem = TryCast(oItem, ListViewItem)
+        '    If oLVI Is Nothing Then Continue For
+        '    Dim bounds As Rect =
+        '        oItem.TransformToAncestor(uiPicList).TransformBounds(New Rect(0.0, 0.0, oItem.ActualWidth, oItem.ActualHeight))
+        '    If clientArea.Contains(bounds.TopLeft) OrElse clientArea.Contains(bounds.BottomRight) Then
+        '        oFirstVisible = oItem
+        '        Exit For
+        '    End If
+        'Next
+        '    ' https://stackoverflow.com/questions/2926722/get-first-visible-item-in-wpf-listview-c-sharp
+        '    For Each oItem As ThumbPicek In uiPicList.ItemsSource
+        '        Dim bounds As Rect =
+        '    oItem.TransformToAncestor(Container).TransformBounds(New Rect(0.0, 0.0, element.ActualWidth, element.ActualHeight));
+        'var Rect = New Rect(0.0, 0.0, container.ActualWidth, container.ActualHeight);
+        'Return Rect.Contains(bounds.TopLeft) || rect.Contains(bounds.BottomRight);
+        '    Next
+
+        ' https://stackoverflow.com/questions/11187382/get-listview-visible-items  
+        '    ScrollViewer ScrollViewer = ListView.GetVisualChild < ScrollViewer > (); //Extension method
+        'If (ScrollViewer!= null) Then
+        '            {
+        '    ScrollBar scrollBar = ScrollViewer.Template.FindName("PART_VerticalScrollBar", ScrollViewer) as ScrollBar;
+        '    If (scrollBar!= null) Then
+        '                    {
+        '        scrollBar.ValueChanged += delegate
+        '        {
+        '            //VerticalOffset And ViweportHeight Is actually what you want if UI virtualization Is turned on.
+        '            Console.WriteLine("Visible Item Start Index:{0}", ScrollViewer.VerticalOffset);
+        '            Console.WriteLine("Visible Item Count:{0}", ScrollViewer.ViewportHeight);
+        '        };
+        '    }
+        '}
+
         RefreshMiniaturki(False)
+
+        If _oFirstVisible IsNot Nothing Then uiPicList.ScrollIntoView(_oFirstVisible)
     End Sub
 
     Private Sub Window_SizeChanged(sender As Object, e As SizeChangedEventArgs)
@@ -2193,6 +2242,7 @@ Public Class ProcessBrowse
             vb14.DumpMessage($"changing DataContext in {oWnd.Title}")
             oWnd.DataContext = oThumb
         Next
+
     End Sub
 
 
@@ -2399,6 +2449,8 @@ Public Class ProcessBrowse
         Public Property podpis As String = ""
         Public Property AllKeywords As String
         Public Property SumOfDescriptionsText As String
+        Public Property nrkol As Integer
+        Public Property maxnum As Integer
 
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek
@@ -2749,9 +2801,9 @@ End Class
 
 
 Public Class KonwersjaPasekVisibility
-    Implements IValueConverter
+    Inherits ValueConverterOneWay
 
-    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+    Public Overrides Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object
         Dim bTemp As Boolean = CType(value, Integer) > 0
 
         If parameter IsNot Nothing Then
@@ -2764,28 +2816,33 @@ Public Class KonwersjaPasekVisibility
     End Function
 
 
-    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
-        Throw New NotImplementedException()
-    End Function
 End Class
 
 Public Class KonwersjaFileDiscrVisibility
-    Implements IValueConverter
+    Inherits ValueConverterOneWaySimple
 
-    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+    Protected Overrides Function Convert(value As Object) As Object
         Dim bTemp As String = CType(value, String)
-
         If String.IsNullOrWhiteSpace(bTemp) Then Return Visibility.Collapsed
 
         Return Visibility.Visible
     End Function
 
-
-    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
-        Throw New NotImplementedException()
-    End Function
 End Class
 
+Public Class KonwersjaSourcePath2Podpis
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim str As String = CType(value, String)
+        str = IO.Path.GetDirectoryName(str) ' bez "\" na końcu
+        Dim iInd As Integer = str.LastIndexOf(IO.Path.DirectorySeparatorChar)
+        If iInd < 1 Then Return str
+        iInd = str.LastIndexOf(IO.Path.DirectorySeparatorChar, iInd - 1)
+        If iInd < 1 Then Return str
+        Return str.Substring(iInd + 1)
+    End Function
+End Class
 
 Public Enum SplitBeforeEnum
     none

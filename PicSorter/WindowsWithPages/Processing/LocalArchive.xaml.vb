@@ -1,6 +1,6 @@
 ﻿
 Imports vb14 = Vblib.pkarlibmodule14
-
+Imports pkar.DotNetExtensions
 
 Public Class LocalArchive
 
@@ -14,7 +14,30 @@ Public Class LocalArchive
 
         ShowArchivesList()
 
+        Dim iKiB As Integer = GetTotalSizeKiB()
+
+        If iKiB > 0 Then
+            uiTotalSize.Text = $"Total size: {(iKiB / 1024).Ceiling} MiB"
+        Else
+            uiTotalSize.Text = "(cannot calculate total size)"
+        End If
     End Sub
+
+    Private Function GetTotalSizeKiB() As Integer
+        Dim iSize As Integer = 0
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
+
+            If Not IO.File.Exists(oPic.InBufferPathName) Then Continue For
+            Try
+                iSize += New IO.FileInfo(oPic.InBufferPathName).Length / 1024 + 1
+            Catch ex As Exception
+                Return -1
+            End Try
+        Next
+
+        Return iSize
+    End Function
 
     Public Shared Async Function CheckGuidy() As Task(Of Boolean)
 

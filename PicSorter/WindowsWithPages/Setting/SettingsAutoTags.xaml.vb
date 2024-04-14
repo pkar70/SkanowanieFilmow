@@ -6,10 +6,11 @@ Class SettingsAutoTags
         uiAzureEndpoint.GetSettingsString
         uiAzureSubscriptionKey.GetSettingsString
         uiAzurePaid.GetSettingsBool
+        uiAzureMaxBatch.GetSettingsInt()
 
         uiVisualCrossSubscriptionKey.GetSettingsString
         uiVisualCrossPaid.GetSettingsBool
-        uiAzureMaxBatch.GetSettingsInt()
+        uiVisualCrossMaxBatch.GetSettingsInt
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -17,10 +18,11 @@ Class SettingsAutoTags
         uiAzureEndpoint.SetSettingsString
         uiAzureSubscriptionKey.SetSettingsString
         uiAzurePaid.SetSettingsBool
+        uiAzureMaxBatch.SetSettingsInt()
 
         uiVisualCrossSubscriptionKey.SetSettingsString
         uiVisualCrossPaid.SetSettingsBool
-        uiAzureMaxBatch.SetSettingsInt()
+        uiVisualCrossMaxBatch.GetSettingsInt
 
         Me.NavigationService.GoBack()
     End Sub

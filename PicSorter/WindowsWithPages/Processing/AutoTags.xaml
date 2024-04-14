@@ -47,7 +47,7 @@
                 </ListView.ItemTemplate>
             </ListView>
 
-            <Button Grid.Row="2" Name="uiGetAll" HorizontalAlignment="Center" Width="Auto" Content=" Run all " Click="uiGetAll_Click"/>
+            <Button Grid.Row="2" Name="uiGetAll" HorizontalAlignment="Center" Width="Auto" Content=" Run selected " Click="uiGetAll_Click"/>
 
         <ProgressBar Grid.Row="3" Name="uiProgBarEngines" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>
         <ProgressBar Grid.Row="4" Name="uiProgBarInEngine" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>

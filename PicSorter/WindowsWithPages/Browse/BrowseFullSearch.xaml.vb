@@ -20,7 +20,7 @@ Public Class BrowseFullSearch
     Private Async Sub AddRemove(usun As Boolean)
 
         _query = Await uiKwerenda.QueryValidityCheck
-
+        If _query Is Nothing Then Return
         Dim parent As ProcessBrowse = Me.Owner
 
         Try

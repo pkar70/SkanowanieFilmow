@@ -3,8 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="ProcessDownload" Height="450" Width="250" Loaded="Window_Loaded">
+    <Window.Resources>
+        <local:KonwersjaDateTime x:Key="KonwersjaDateTime"/>
+    </Window.Resources>
+    
     <StackPanel Margin="5,5,5,5">
         <TextBlock Text="Pobieranie zdjęć" HorizontalAlignment="Center" FontSize="18" />
         <ListView Name="uiLista" Margin="0,5,0,10">
@@ -16,7 +21,7 @@
 
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0"  >
+                    <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0" ToolTip="{Binding lastDownload, Converter={StaticResource KonwersjaDateTime}}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />

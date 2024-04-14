@@ -13,6 +13,7 @@
         <local:KonwersjaPasekWysok x:Key="KonwersjaPasekWysok"/>
         <local:KonwersjaFileDiscrVisibility x:Key="KonwersjaFileDiscrVisibility"/>
         <local:KonwersjaVisibility x:Key="KonwersjaVisibility"/>
+        <local:KonwersjaSourcePath2Podpis x:Key="KonwersjaSourcePath2Podpis" />
     </Window.Resources>
     
     <Grid Margin="5,5,5,5">
@@ -73,7 +74,7 @@
                     </Menu>
                     </Popup>
 
-                    <ComboBox Name="uiComboSize" Margin="15,0,15,0">
+                <ComboBox Name="uiComboSize" Margin="15,0,15,0" SelectionChanged="uiComboSize_SelectionChanged">
                     <ComboBoxItem Content="fit all" IsSelected="true" />
                     <ComboBoxItem Content="fit run"/>
                     <ComboBoxItem Content="400" />
@@ -100,6 +101,7 @@
                         <MenuItem IsCheckable="True" Header="Filename" MouseDoubleClick="uiPodpisDbl_Click"  Name="uiPodpisFilename"/>
                         <MenuItem IsCheckable="True" Header="Keywords" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisKeywords"/>
                         <MenuItem IsCheckable="True" Header="Description" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisDescription"/>
+                        <MenuItem IsCheckable="True" Header="Src path" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisSrcPath"/>
                         <MenuItem IsCheckable="True" Header="Targetdir" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisTarget" />
                     </Menu>
                 </Popup>
@@ -247,6 +249,7 @@
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sSuggestedFilename}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisFilename, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding AllKeywords}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisKeywords, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding SumOfDescriptionsText}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDescription, Converter={StaticResource KonwersjaVisibility}}" />
+                            <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sInSourceID, Converter={StaticResource KonwersjaSourcePath2Podpis}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSrcPath, Converter={StaticResource KonwersjaVisibility}}" HorizontalAlignment="Left"/>
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.TargetDir}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisTarget, Converter={StaticResource KonwersjaVisibility}}" />
                         </StackPanel>
                     </StackPanel>

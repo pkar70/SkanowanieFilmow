@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="Local archives" Height="450" Width="300" Loaded="Window_Loaded">
     <Grid>
@@ -10,6 +11,7 @@
             <TextBlock Text="Archiwizowanie lokalne zdjęć" HorizontalAlignment="Center" FontSize="18" />
             <TextBlock Text="przydzielony TargetDir" FontSize="12" Margin="2,5,2,0"/>
             <ProgressBar Name="uiWithTargetDir" HorizontalAlignment="Stretch" Height="8"  />
+            <TextBlock Text="." Name="uiTotalSize" />
             <ListView Name="uiLista" Margin="0,5,0,10">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
