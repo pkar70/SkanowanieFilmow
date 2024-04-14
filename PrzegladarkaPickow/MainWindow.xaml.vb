@@ -1,4 +1,4 @@
-﻿Imports System.Security.Policy
+﻿Imports pkar.DotNetExtensions
 
 Class MainWindow
     Private Sub uiBrowse_Click(sender As Object, e As RoutedEventArgs)
@@ -59,14 +59,27 @@ Class MainWindow
     Public Sub WczytajKatalog(path As String)
         _lista = New List(Of thumb)
 
+        Dim lastDate As New Date(1970, 1, 1)
+        Dim lastName As String = ""
+
         For Each plik In IO.Directory.EnumerateFiles(uiFolderPath.Text)
+            If plik.EndsWithCI("descript.ion") Then Continue For
+
             Dim oPic As New thumb
             oPic.filename = IO.Path.GetFileNameWithoutExtension(plik).ToLowerInvariant
             oPic.filepath = plik
             ' *TODO* powiększanie sDymek na więcej informacji
             oPic.sDymek = IO.Path.GetFileNameWithoutExtension(plik)
             _lista.Add(oPic)
+
+            If lastDate < IO.File.GetLastWriteTime(plik) Then
+                lastDate = IO.File.GetLastWriteTime(plik)
+                lastName = IO.Path.GetFileName(plik)
+            End If
         Next
+
+        uiNewestPicDate.Text = lastDate.ToString("yyyy.MM.dd HH:mm")
+        uiNewestPicDate.ToolTip = lastName
     End Sub
 
     Public Shared Async Function WczytajObrazek(sPathName As String, Optional iMaxSize As Integer = 0, Optional iRotation As Rotation = Rotation.Rotate0) As Task(Of BitmapImage)

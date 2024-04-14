@@ -19,6 +19,8 @@
             <Button FontWeight="Bold" Content="↻" Click="uiRefresh_Click" />
         </StackPanel>
 
+        <TextBlock HorizontalAlignment="Right" Name="uiNewestPicDate" Text=". " />
+
         <StackPanel Orientation="Horizontal" Grid.Row="1">
             <TextBlock Text="Filter words " />
             <TextBox Name="uiFilter" TextChanged="uiFilter_TextChanged" Width="300"/>
