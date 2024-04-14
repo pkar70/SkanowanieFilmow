@@ -180,7 +180,7 @@ namespace Chomikuj
             // return dirsTable.QuerySelector(string.Format("a[rel=\"{0}\"]", FolderId))
 
             return dirsTable.SelectSingleNode(string.Format("//a[@rel='{0}']", FolderId))
-                .ParentNode.ParentNode.NextSibling?.SelectSingleNode(".//tbody");
+                ?.ParentNode?.ParentNode?.NextSibling?.SelectSingleNode(".//tbody");
         }
 
         private bool IsSubDirectory(HtmlNode node)
@@ -278,7 +278,20 @@ namespace Chomikuj
             // return html.DocumentNode.QuerySelector(".paginator") == null;
         }
 
-        private ChomikujFile BuildFile(HtmlNode q)
+
+        private string PozbadzSieSpanClassE(HtmlNode filelink)
+        {
+            //< a class="expanderHeader downloadAction downloadContext" href="/pkarFotoArch/Prywatne/FotoVideo/Rodzina/Girlsy/Sylwia/551256_409476565759248_100000907249146_1179361_407476415_n,9212388601.jpg" title="551256_409476565759248_100000907249146_1179361_407476415_n" data-analytics-start-location="filesList">
+            //  <span class="bold">551256_409476565759248_100000907249146_1179361_407<span class="e"> </span>476415_n</span>.jpg
+            //    </a>
+            var probaInside = filelink.SelectSingleNode(".//span[@class='e']");
+            if (probaInside == null) return filelink.InnerText.Trim();
+            probaInside.InnerHtml = "";
+            string cos = filelink.InnerText.Trim();
+            return cos;
+        }
+
+    private ChomikujFile BuildFile(HtmlNode q)
         {
             //var fileLink = q.QuerySelector(".expanderHeader,downloadAction,downloadContext");
             //var fileInfo = q.QuerySelector(".fileinfo").QuerySelectorAll("span").ToArray();
@@ -296,7 +309,7 @@ namespace Chomikuj
             var additionalInfo = q.SelectSingleNode(".//@additionalInfo");
             return new ChomikujFile(_base)
             {
-                Title = fileLink.InnerText.Trim(),
+                Title = PozbadzSieSpanClassE(fileLink), //.InnerText.Trim(),
                 Link = fileLink.Attributes["href"].Value,
                 SizeInKb = Helpers.ParseFileSize(fileSize.Split(' ')[0], fileSize.Split(' ')[1]),
                 Date = Helpers.ParseChomikujDate(fileInfo[1].InnerText),
