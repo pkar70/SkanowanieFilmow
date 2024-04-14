@@ -272,13 +272,13 @@ Public Class Cloud_Skyscraper
             End If
 
 
-            sPostBody &= $"<p>{oPic.GetDescriptionForCloud}</p><p><img src='{oJsonPicRet.link}' style='width: auto;' class='fr-fic fr-dii' data-attachment='full:{oJsonPicRet.attachment.attachment_id}'/></p>"
+            sPostBody &= $"<p>&nbsp;<p>&nbsp;<p>{oPic.GetDescriptionForCloud}</p><p><img src='{oJsonPicRet.link}' style='width: auto;' class='fr-fic fr-dii' data-attachment='full:{oJsonPicRet.attachment.attachment_id}'/></p>"
             If oNextPic IsNot Nothing Then oNextPic()
         Next
 
         ' step 3: wys³anie postu
 
-        sPostBody &= "<p>Post published by PicSorter app</p>"
+        sPostBody &= "<p>&nbsp;<p>Post published using PicSorter app</p>"
 
         Dim pContentPost As New Net.Http.MultipartFormDataContent From {
             {New Net.Http.StringContent(sPostBody, Text.Encoding.UTF8), "message_html"},
@@ -326,32 +326,69 @@ Public Class Cloud_Skyscraper
             Return "ERROR sending ppost status not OK: " & oJsonPostRet.status
         End If
 
-        ' dodanie info o publikacji
-        Dim sPostLink As String = oJsonPostRet.html.content.ToLowerInvariant
-        '' *TODO* tylko w czasie uruchamiania, ¿eby mo¿na by³o sprawdziæ na ile to jest poprawny id...bo chyba jednak nie ten co trzeba
-        'Dim sTemp As String = sPostLink
-        'Dim iInd1 As Integer = sTemp.IndexOf("post-")
-        'While iInd1 > 0
-        '    Debug.WriteLine(sTemp.Substring(iInd1, 20))
-        '    sTemp = sTemp.Substring(iInd1 + 5)
-        '    iInd1 = sTemp.IndexOf("post-")
-        'End While
+        Try
 
-        'Dim iInd As Integer = sPostLink.IndexOf("data-content")
-        Dim iInd As Integer = sPostLink.LastIndexOf("anchorTarget")
-        iInd = sPostLink.IndexOf("post-", iInd)
-        sPostLink = sPostLink.Substring(iInd)
-        iInd = sPostLink.IndexOf("""")
-        sPostLink = sPostLink.Substring(0, iInd)
-        sPostLink = $"{sForum}/{sPostLink}"
+            ' dodanie info o publikacji
+            Dim sPostLink As String = oJsonPostRet.html.content.ToLowerInvariant
+
+            '' *TODO* tylko w czasie uruchamiania, ¿eby mo¿na by³o sprawdziæ na ile to jest poprawny id...bo chyba jednak nie ten co trzeba
+            'Dim sTemp As String = sPostLink
+            'Dim iInd1 As Integer = sTemp.IndexOf("post-")
+            'While iInd1 > 0
+            '    Debug.WriteLine(sTemp.Substring(iInd1, 20))
+            '    sTemp = sTemp.Substring(iInd1 + 5)
+            '    iInd1 = sTemp.IndexOf("post-")
+            'End While
+
+            ' pocz¹tek sPostLinku tutaj:
+            '    <article class="message message--post js-post js-inlinemodcontainer california-message
+            '       is-unread
+            '      "
+            '        data-author="pkar70" data-content="post-187860179"
+            '        id="js-post-187860179" qid="post-item" itemscope itemtype="https://schema.org/comment"
+            '        itemid="/threads/krak%c3%b3w-tramwaje-w-grodzie-kraka.150107/post-187860179">
+            '        <span class="u-anchortarget" id="post-187860179"></span>
+            '        
+            '            
+            '    <meta itemprop="parentitem" content="https://www.skyscrapercity.com/threads/krak%c3%b3w-tramwaje-w-grodzie-kraka.150107/" />
+            '    <meta itemprop="url" content="https://www.skyscrapercity.com/threads/krak%c3%b3w-tramwaje-w-grodzie-kraka.150107/post-187860179" />
 
 
+            'Dim iInd As Integer = sPostLink.IndexOf("data-content")
+            Dim iInd As Integer = sPostLink.LastIndexOf("anchortarget")
+            If iInd < 5 Then
+                Vblib.DialogBox("Error anchorTarget")
+                Return ""
+            End If
+            Vblib.DumpMessage("mam anchorTarget")
+
+            iInd = sPostLink.IndexOf("post-", iInd)
+            If iInd < 5 Then
+                Vblib.DialogBox("Error post-")
+                Return ""
+            End If
+            Vblib.DumpMessage("mam post-")
+
+            sPostLink = sPostLink.Substring(iInd)
+            iInd = sPostLink.IndexOf("""")
+            If iInd < 1 Then
+                Vblib.DialogBox("Error cudzyslow")
+                Return ""
+            End If
+            Vblib.DumpMessage("mam cudzyslow")
+
+            sPostLink = sPostLink.Substring(0, iInd)
+            sPostLink = $"{sForum}/{sPostLink}"
 
 
-        ' do wszystkich - ale przecie¿ dopiero jak ca³y post wyszed³, a nie wczeœniej
-        For Each oPic As Vblib.OnePic In picki
-            oPic.AddCloudPublished(konfiguracja.nazwa, sPostLink)
-        Next
+            ' do wszystkich - ale przecie¿ dopiero jak ca³y post wyszed³, a nie wczeœniej
+            For Each oPic As Vblib.OnePic In picki
+                oPic.AddCloudPublished(konfiguracja.nazwa, sPostLink)
+            Next
+
+        Catch ex As Exception
+
+        End Try
 
         Return ""
 
