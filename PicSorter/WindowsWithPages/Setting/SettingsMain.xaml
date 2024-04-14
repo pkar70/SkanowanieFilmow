@@ -5,6 +5,7 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
       Title="SettingsMain" Loaded="Page_Loaded">
+    <Grid>
     <StackPanel Width="170">
         <TextBlock HorizontalAlignment="Center" Text="" Name="uiVersion"/>
         <Button Content="Global settings" Margin="5,10,5,20" FontSize="18" Click="uiGlobalSett_Click"/>
@@ -28,4 +29,5 @@
         <Button Content="Backup as ZIP" Margin="5,15,5,5" FontSize="18" Click="uiBackup_Click"/>
 
     </StackPanel>
+    </Grid>
 </Page>

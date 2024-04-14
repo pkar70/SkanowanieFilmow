@@ -10,7 +10,7 @@ Imports FacebookApiSharp.Classes.Responses
 'Imports Org.BouncyCastle.Utilities
 Imports pkar
 Imports Vblib
-
+Imports pkar.UI.Extensions
 
 Class MainWindow
     Inherits Window
@@ -248,10 +248,11 @@ Class MainWindow
 #End Region
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
 
         ' jednak podstawowy folder musi istnieć, sami go sobie stworzymy jakby co.
         If Vblib.GetSettingsString("uiFolderBuffer") = "" Then
-            Vblib.DialogBox("Nie ma ustawień, konieczne Settings")
+            Me.MsgBox("Nie ma ustawień, konieczne Settings")
             uiSettings_Click(Nothing, Nothing)
             Vblib.SetSettingsInt("uiMaxThumbs", CalculateMaxThumbCount)
         End If
@@ -273,40 +274,139 @@ Class MainWindow
 
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
-        'PoprawkiArchUniq()
-
-        'Dim pliczek As New BaseList(Of Vblib.OnePic)("E:\Temp\picsortrecovery", "komplet.json")
-        'pliczek.Load()
-
-        'Dim pliczek1 As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json")
-        'pliczek1.Load()
-
-        'For Each oItem1 In pliczek1.GetList
-        '    Dim bFound As Boolean = False
-        '    For Each oItem In pliczek.GetList
-        '        If oItem.sSuggestedFilename <> oItem1.sSuggestedFilename Then Continue For
-        '        If oItem.PicGuid <> oItem1.PicGuid Then Continue For
-
-        '        bFound = True
-        '        Exit For
-        '    Next
-
-        '    If Not bFound Then
-        '        pliczek.Add(oItem1)
-        '    End If
-
-        'Next
-
-        'pliczek.Save(True)
-
-        ' 2023.02.06, poprawienie pliku w ktorym były NULLe. Z 31 MB do 16 MB zeszlo.
-        'Dim _fullArchive As New BaseList(Of Vblib.OnePic)(Application.GetDataFolder, "archIndexFull.json") ' "archIndex.flat.json"
-        '_fullArchive.Load()
-        '_fullArchive.Save(True)
-
-        'Vblib.PicSourceBase.UseTagsFromFilename(Application.GetBuffer.GetList, Application.GetKeywords.ToFlatList)
-        'Application.GetBuffer.SaveData()
+        'Popraw20240411()
     End Sub
+
+#Region "poprawianie plików"
+
+    Private Sub Popraw20240411()
+        ' poprawiam, bo zapomniałem przed archiwizacją
+
+        Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
+        arch.Load()
+
+        If arch.Count < 1 Then
+            Me.MsgBox("Niby władowałem, ale zero?")
+            Return
+        End If
+
+        For Each oItem As Vblib.OnePic In arch
+            If Not oItem.TargetDir.Contains("PAT\Ludziki") Then Continue For
+
+            Dim oExif As Vblib.ExifTag = oItem.GetExifOfType(Vblib.ExifSource.SourceDefault)
+            oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.scannerReflex
+
+            Dim oExifDates = New ExifTag(ExifSource.ManualDate)
+            If oItem.TargetDir.Contains("Karolina") Then
+                ' wczesna szkoła: x_3436bfe2.jpg x_4336be00.jpg x_577082c9.jpg x_6742f1c1.jpg x_ac3f7d29.jpg x_de616f29.jpg
+                If oItem.InBufferPathName.Contains("x_3436bfe2.jpg") OrElse
+                        oItem.InBufferPathName.Contains("x_4336be00.jpg") OrElse
+                        oItem.InBufferPathName.Contains("x_577082c9.jpg") OrElse
+                        oItem.InBufferPathName.Contains("x_6742f1c1.jpg") OrElse
+                        oItem.InBufferPathName.Contains("x_ac3f7d29.jpg") OrElse
+                        oItem.InBufferPathName.Contains("x_de616f29.jpg") Then
+                    oExifDates.DateMin = New Date(1995, 1, 1)
+                    oExifDates.DateMax = New Date(2005, 1, 1)
+                Else
+                    oExifDates.DateMin = New Date(2005, 1, 1)
+                    oExifDates.DateMax = New Date(2011, 1, 1)
+                End If
+            ElseIf oItem.TargetDir.Contains("Sylwia") Then
+                If oItem.InBufferPathName.Contains("DSCF") Then
+                    Continue For
+                Else
+                    oExifDates.DateMin = New Date(2005, 1, 1)
+                    oExifDates.DateMax = New Date(2011, 1, 1)
+                End If
+            Else
+                oExifDates.DateMin = New Date(2007, 1, 1)
+                oExifDates.DateMax = New Date(2011, 1, 1)
+            End If
+
+            oItem.ReplaceOrAddExif(oExifDates)
+
+            Dim guid As String = oItem.GetSuggestedGuid
+            oItem.PicGuid = guid
+            oExif = New ExifTag(Vblib.ExifSource.AutoGuid)
+            oExif.PicGuid = guid
+        Next
+
+        arch.Save(True)
+        Me.MsgBox("Popraw koniec pliku:" & vbCrLf & """PicGuid"": ""t20110812131125""" & vbCrLf & "}")
+
+    End Sub
+
+
+    Private Sub DodajKrecika()
+        For Each oFile In Application.GetBuffer.GetList
+            If Not oFile.sSuggestedFilename.StartsWith("SSA") Then Continue For
+
+            Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.FileExif)
+            If oExif Is Nothing Then Continue For
+
+            oExif.Author = "Łukasz Kluba"
+            oExif.Copyright = "(C) Łukasz Kluba, All rights reserved."
+
+        Next
+        Application.GetBuffer.SaveData()
+    End Sub
+
+    Private Sub PoprawAutora()
+
+        For Each oFile In Application.GetBuffer.GetList
+
+            Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.SourceDefault)
+            If oExif Is Nothing Then Continue For
+
+            If Not String.IsNullOrWhiteSpace(oExif.Author) Then Continue For
+
+            If oFile.sInSourceID.ContainsCI("MagdaMieszk") Then
+                oExif.Author = "Magdalena Zgadzaj"
+                oExif.Copyright = "(C) Magdalena Zgadzaj, All rights reserved."
+            ElseIf oFile.sInSourceID.ContainsCI("AutorJA") Then
+                oExif.Author = "Piotr Karocki"
+                oExif.Copyright = "(C) Piotr Karocki, All rights reserved."
+            ElseIf oFile.sInSourceID.ContainsCI("AutorEwelina") Then
+                oExif.Author = "Ewelina Michalik"
+                oExif.Copyright = "(C) Ewelina Michalik, All rights reserved."
+            End If
+
+        Next
+
+
+        Application.GetBuffer.SaveData()
+    End Sub
+
+    Private Sub PoprawAutora1()
+
+        For Each oFile In Application.GetBuffer.GetList
+
+            Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.SourceDefault)
+            If oExif Is Nothing Then Continue For
+
+            'If Not String.IsNullOrWhiteSpace(oExif.Author) Then Continue For
+
+            If oFile.sInSourceID.ContainsCI("AutorJA") Then
+                'oExif.Author = "Piotr Karocki"
+                'oExif.Copyright = "(C) Piotr Karocki, All rights reserved."
+
+                If oFile.sInSourceID.Contains("\Mio\") Then oExif.CameraModel = "Mio A701"
+
+                'ElseIf oFile.sInSourceID.ContainsCI("AutorEwelina") Then
+                '    oExif.Author = "Ewelina Michalik"
+                '    oExif.Copyright = "(C) Ewelina Michalik, All rights reserved."
+
+            ElseIf oFile.sInSourceID.ContainsCI("AutorInni") Then
+                oExif.Author = ""
+                oExif.Copyright = "(C) Piotr Karocki, All rights reserved."
+            End If
+
+        Next
+
+
+        Application.GetBuffer.SaveData()
+    End Sub
+
 
 
     Private Sub PoprawkiArchUniq()
@@ -435,8 +535,9 @@ Class MainWindow
         Debug.WriteLine("Nowy indeks ma plikow " & pliczek1.Count)
 
         pliczek1.Save(True)
-        Vblib.DialogBox("Zrobilem nowy indeks, ktory powinien byc juz poprawny")
+        Me.MsgBox("Zrobilem nowy indeks, ktory powinien byc juz poprawny")
     End Sub
+#End Region
 
     Private Shared Function CalculateMaxThumbCount() As Integer
         ' policz ile zdjęć można mieć
@@ -505,4 +606,4 @@ Class MainWindow
 
 End Class
 
-'Public Class probaKlasy
+

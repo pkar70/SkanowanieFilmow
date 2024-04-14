@@ -7,6 +7,9 @@ Imports pkar.UI.Extensions
 Class SettingsMain
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
+        Me.ProgRingInit(True, False)
+
         uiVersion.ShowAppVers(True)
         If vb14.GetSettingsString("uiFolderBuffer") = "" Then
             uiGlobalSett_Click(Nothing, Nothing)
@@ -58,7 +61,7 @@ Class SettingsMain
         Me.NavigationService.Navigate(New SettingsMisc)
     End Sub
 
-    Private Sub uiBackup_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiBackup_Click(sender As Object, e As RoutedEventArgs)
 
         Dim oPicker As New Microsoft.Win32.SaveFileDialog
         oPicker.Title = "Select directory for backup"
@@ -74,8 +77,11 @@ Class SettingsMain
 
         Dim filename As String = oPicker.FileName
 
+        Me.ProgRingShow(True)
+
+        Me.ProgRingSetText("database backup...")
         ' np. dump SQLa, i tym podobne rzeczy, z baz; zawsze robi LOAD bazy.
-        Application.gDbase.PreBackup()
+        Await Task.Run(Sub() Application.gDbase.PreBackup())
 
         ' jednak można do tego samego katalogu, bo pakujemy tylko JSON i TXT
         'If IO.Path.GetDirectoryName(filename).ToLowerInvariant = Application.GetDataFolder.ToLowerInvariant Then
@@ -83,18 +89,27 @@ Class SettingsMain
         '    Return
         'End If
 
-        Dim oArchive = IO.Compression.ZipFile.Open(filename, IO.Compression.ZipArchiveMode.Create)
-        For Each sFile As String In IO.Directory.GetFiles(Application.GetDataFolder, "*.txt")
-            oArchive.CreateEntryFromFile(sFile, IO.Path.GetFileName(sFile))
-        Next
-        For Each sFile As String In IO.Directory.GetFiles(Application.GetDataFolder, "*.json")
-            oArchive.CreateEntryFromFile(sFile, IO.Path.GetFileName(sFile))
-        Next
+        Me.ProgRingSetText("packing to ZIP file...")
 
-        oArchive.Dispose()
+        IO.File.Delete(filename)    ' nie daje Exception na nieistnienie pliku; potwierdzenie zapisania ZAMIAST jest przy okienku SaveDialog
 
-        vb14.DialogBox("Archiwum konfiguracji i metadanych utworzone.")
-        ' System.IO.Compression.ZipFile.CreateFromDirectory()
+        Await Task.Run(Sub()
+                           Dim oArchive = IO.Compression.ZipFile.Open(filename, IO.Compression.ZipArchiveMode.Create)
+                           For Each sFile As String In IO.Directory.GetFiles(Application.GetDataFolder, "*.txt")
+                               oArchive.CreateEntryFromFile(sFile, IO.Path.GetFileName(sFile))
+                           Next
+                           For Each sFile As String In IO.Directory.GetFiles(Application.GetDataFolder, "*.json")
+                               oArchive.CreateEntryFromFile(sFile, IO.Path.GetFileName(sFile))
+                           Next
+
+                           oArchive.Dispose()
+
+                           Me.MsgBox("Archiwum konfiguracji i metadanych utworzone.")
+                           ' System.IO.Compression.ZipFile.CreateFromDirectory()
+                       End Sub
+                )
+
+        Me.ProgRingShow(False)
 
     End Sub
 

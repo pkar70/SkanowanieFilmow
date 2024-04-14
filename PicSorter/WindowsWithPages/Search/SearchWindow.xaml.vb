@@ -1,21 +1,23 @@
 ﻿
 
-Imports System.IO
-Imports System.Runtime.InteropServices.WindowsRuntime
-Imports System.Runtime.Serialization
-Imports System.Runtime.Serialization.Formatters.Binary
-Imports System.Security.Policy
-Imports System.Windows.Controls.Primitives
-Imports System.Windows.Input.Manipulations
-Imports FFMpegCore.Enums
-Imports MetadataExtractor.Formats
-Imports Org.BouncyCastle.Crmf
-Imports Org.BouncyCastle.Crypto.Engines
+'Imports System.IO
+'Imports System.Runtime.InteropServices.WindowsRuntime
+'Imports System.Runtime.Serialization
+'Imports System.Runtime.Serialization.Formatters.Binary
+'Imports System.Security.Policy
+'Imports System.Windows.Controls.Primitives
+'Imports System.Windows.Input.Manipulations
+'Imports FFMpegCore.Enums
+'Imports MetadataExtractor.Formats
+'Imports Org.BouncyCastle.Crmf
+'Imports Org.BouncyCastle.Crypto.Engines
 Imports pkar
-Imports Vblib
-Imports Windows.Storage.Streams
-Imports Windows.UI.Core
+'Imports Vblib
+'Imports Windows.Storage.Streams
+'Imports Windows.UI.Core
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.UI.Extensions
+Imports Microsoft.EntityFrameworkCore.Diagnostics
 
 Public Class SearchWindow
 
@@ -25,23 +27,25 @@ Public Class SearchWindow
     'Private _geoTag As BasicGeopos
     Private _initialCount As Integer
 
-    Private _query As New SearchQuery
+    Private _query As New Vblib.SearchQuery
 
     Public Sub New(Optional lista As List(Of Vblib.OnePic) = Nothing)
         ' This call is required by the designer.
         InitializeComponent()
 
-        If lista Is Nothing Then
-            ReadWholeArchive()
-            _inputList = Nothing
-        Else
-            _inputList = lista
-        End If
+        _inputList = lista
 
     End Sub
 
-    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+    Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         'WypelnComboSourceNames()
+        Me.InitDialogs
+        Me.ProgRingInit(True, False)
+
+        If _inputList Is Nothing Then
+            Await ReadWholeArchive()
+            _inputList = Nothing
+        End If
 
         uiResultsCount.Text = $"(no query, total {_initialCount} items)"
 
@@ -51,17 +55,19 @@ Public Class SearchWindow
     End Sub
 
 
-    Private Sub ReadWholeArchive()
+    Private Async Function ReadWholeArchive() As Task
 
         _initialCount = Application.gDbase.Count
         If Application.gDbase.IsLoaded Then Return
 
-        Application.ShowWait(True)
+        Me.ProgRingSetText("loading database...")
+        Me.ProgRingShow(True)
 
-        Application.gDbase.Load()
+        Await Task.Run(Sub() Application.gDbase.Load())
+        'Application.gDbase.Load()
         _initialCount = Application.gDbase.Count
 
-        Application.ShowWait(False)
+        Me.ProgRingShow(False)
         ' potem: new ProcessBrowse.New(bufor As Vblib.IBufor, onlyBrowse As Boolean)
 
         If _initialCount < 1 Then
@@ -69,7 +75,7 @@ Public Class SearchWindow
             ProbaWczytaniaJSON()  ' to pokaże komunikat błędu z wczytywania JSONa
         End If
 
-    End Sub
+    End Function
 
     Private Sub ProbaWczytaniaJSON()
         Dim lista As List(Of Vblib.OnePic)
@@ -82,7 +88,7 @@ Public Class SearchWindow
             sErr = ex.Message
         End Try
 
-        If sErr <> "" Then Vblib.DialogBox("Coś dziwnego, bo jakoby pusty indeks był?" & vbCrLf & sErr)
+        If sErr <> "" Then Me.MsgBox("Coś dziwnego, bo jakoby pusty indeks był?" & vbCrLf & sErr)
         Debug.WriteLine(sErr)
     End Sub
 
@@ -105,12 +111,15 @@ Public Class SearchWindow
     ' „znajdź zdjęcia z parady samochodów zabytkowych, na których to paradach byłem z A, ale bez B”
 
 
-    Private Function Szukaj(lista As IEnumerable(Of Vblib.OnePic), query As SearchQuery) As Integer
+    Private Async Function Szukaj(lista As IEnumerable(Of Vblib.OnePic), query As Vblib.SearchQuery) As Task(Of Integer)
 
         _queryResults = New List(Of Vblib.OnePic)
         Dim iCount As Integer = 0
 
-        Application.ShowWait(True)
+        Me.ProgRingShow(True)
+        Me.ProgRingSetText("searching...")
+        Await Task.Delay(100)
+
         'For Each oPicek As Vblib.OnePic In lista
         '    If Not CheckIfOnePicMatches(oPicek, query) Then Continue For
 
@@ -135,7 +144,7 @@ Public Class SearchWindow
             ' po już ograniczonym
             _queryResults = lista.Where(Function(x) x.CheckIfMatchesQuery(query))
         End If
-        Application.ShowWait(False)
+        Me.ProgRingShow(False)
 
         Return _queryResults.ToList.Count
         'Return iCount
@@ -145,13 +154,14 @@ Public Class SearchWindow
 
         ' clickcli
         _query = Await uiKwerenda.QueryValidityCheck
+        If _query Is Nothing Then Return
 
         ' przeniesienie z UI do _query - większość się zrobi samo, ale daty - nie
         Dim iCount As Integer
         'If _inputList Is Nothing Then
         '    iCount = Szukaj(_fullArchive.GetList, _query)
         'Else
-        iCount = Szukaj(_inputList, _query)
+        iCount = Await Szukaj(_inputList, _query)
         'End If
 
         If iCount < 1 Then
@@ -163,7 +173,7 @@ Public Class SearchWindow
 
         uiResultsCount.Text = $"Found {iCount} items (from {_initialCount})."
         If iCount > 1000 Then
-            If Not Await vb14.DialogBoxYNAsync($"{iCount} to dużo elementów, pokazać listę mimo to?") Then Return
+            If Not Await Me.DialogBoxYNAsync($"{iCount} to dużo elementów, pokazać listę mimo to?") Then Return
         End If
 
         ' pokazanie rezultatów
