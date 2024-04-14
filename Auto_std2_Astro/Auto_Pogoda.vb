@@ -11,6 +11,7 @@ Public Class Auto_Pogoda
     Public Overrides ReadOnly Property DymekAbout As String = "Ściąga informacje o pogodzie, używając visualcrossing.com/weather." & vbCrLf & "Limit 1000 szukań dziennie!"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
 
+    Public Shared Property maxGuard As Integer = 800
 
     Private _cache As New List(Of Vblib.CacheAutoWeather_Item)
 
@@ -30,6 +31,10 @@ Public Class Auto_Pogoda
         Dim oWeather As Vblib.CacheAutoWeather_Item = TryFromCache(oGeo, oData.ToUniversalTime)
 
         If oWeather Is Nothing Then
+            If maxGuard < 0 Then Return Nothing
+
+            maxGuard -= 1
+            Vblib.DumpMessage($"Weather guard: {maxGuard}")
             oWeather = Await TryFromWWW(oGeo, oData)
             If oWeather Is Nothing Then Return Nothing
 
