@@ -10,7 +10,7 @@ Public NotInheritable Class PicMenuDescribe
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Describe") Then Return
+        If Not InitEnableDisable("Add description") Then Return
 
         AddHandler Me.Click, AddressOf ActionClick
 
