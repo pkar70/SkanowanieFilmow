@@ -233,16 +233,22 @@ Public Class DatabaseJSON
         Dim fi As New IO.FileInfo(_dataFilenameFull)
         If fi.Length < 1 Then Return
 
-
-
+        Dim iInd As Long
         ' wczytaj ostatnie 10 bajtów
         Using sr As StreamReader = IO.File.OpenText(_dataFilenameFull)
             sr.BaseStream.Seek(-10, SeekOrigin.End)
             Dim lastchars As String = sr.ReadToEnd
             If Not lastchars.Trim.EndsWith("]") Then Return
 
-            Dim iInd As Long = lastchars.LastIndexOf("]")
-            sr.BaseStream.SetLength(fi.Length - 10 + iInd)
+            iInd = lastchars.LastIndexOf("]")
+            'sr.BaseStream.SetLength(fi.Length - 10 + iInd)
+        End Using
+
+        ' długość pliku powinna być przycięta...
+        DialogBox("uwaga! dokładnie sprawdź czy zadziała, po BACKUP! - ucinanie ']'")
+        Return
+        Using sw As FileStream = IO.File.OpenWrite(_dataFilenameFull)
+            sw.SetLength(fi.Length - 10 + iInd)
         End Using
 
     End Sub
