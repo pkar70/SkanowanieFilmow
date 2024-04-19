@@ -237,7 +237,7 @@ Public Class ShowBig
     End Sub
 
     Private Sub Timer_Ticked(sender As Object, e As EventArgs)
-        ChangePicture(False, False)
+        ChangePicture(1, False)
     End Sub
 
 
@@ -317,11 +317,11 @@ Public Class ShowBig
         oBrowserWnd.SaveMetaData()
     End Sub
 
-    Private Sub ChangePicture(bGoBack As Boolean, bShifty As Boolean)
+    Private Sub ChangePicture(iKierunek As Integer, bShifty As Boolean)
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
 
-        Dim picek As ProcessBrowse.ThumbPicek = oBrowserWnd.FromBig_Next(_picek, bGoBack, _inSlideShow)
+        Dim picek As ProcessBrowse.ThumbPicek = oBrowserWnd.FromBig_Next(_picek, iKierunek, _inSlideShow)
         If picek Is Nothing Then
             Me.Close()  ' koniec obrazków
         Else
@@ -357,10 +357,16 @@ Public Class ShowBig
         Dim bCntr As Boolean = Keyboard.IsKeyDown(Key.RightCtrl) Or Keyboard.IsKeyDown(Key.LeftCtrl)
 
         Select Case e.Key
-            Case Key.Space, Key.PageDown
-                ChangePicture(False, bShifty)
+            Case Key.Space
+                ChangePicture(1, bShifty)
             Case Key.PageUp
-                ChangePicture(True, bShifty)
+                ChangePicture(-1, bShifty)
+            Case Key.PageDown
+                ChangePicture(1, bShifty)
+            Case Key.Home
+                ChangePicture(-100, bShifty)
+            Case Key.End
+                ChangePicture(100, bShifty)
             Case Key.Delete
                 uiDelPic_Click(Nothing, Nothing)
             'Case Key.D

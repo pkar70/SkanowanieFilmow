@@ -298,7 +298,7 @@ Public Class ProcessBrowse
     'End Function
 
     ''' <summary>
-    ''' przetworzenie danych Bufor na własną listę (thumbsów)
+    ''' przetworzenie danych Bufor na własną listę (thumbsów), sortowane wg thumbpic.datemin = onepic.mostprobably
     ''' </summary>
     Private Async Function Bufor2Thumbsy() As Task
         vb14.DumpCurrMethod()
@@ -1141,14 +1141,14 @@ Public Class ProcessBrowse
         Return oNext
     End Function
 
-    Public Function FromBig_Next(oPic As ThumbPicek, bGoBack As Boolean, binSlideShow As Boolean) As ThumbPicek
+    Public Function FromBig_Next(oPic As ThumbPicek, iKierunek As Integer, binSlideShow As Boolean) As ThumbPicek
 
         Dim thumb As ThumbPicek
 
         If uiPicList.SelectedItems.Count > 1 Then
-            thumb = FromBig_NextMain(oPic, bGoBack, uiPicList.SelectedItems, True)
+            thumb = FromBig_NextMain(oPic, iKierunek, uiPicList.SelectedItems, True)
         Else
-            thumb = FromBig_NextMain(oPic, bGoBack, _thumbsy.ToList, False)
+            thumb = FromBig_NextMain(oPic, iKierunek, _thumbsy.ToList, False)
             If thumb IsNot Nothing Then uiPicList.SelectedItem = thumb
         End If
 
@@ -1164,15 +1164,15 @@ Public Class ProcessBrowse
         If Not thumb.oPic.IsAdultInExifs Then Return thumb
 
         ' mamy adult pic a jego nie chcemy, to przeskakujemy do nastepnego
-        Return FromBig_Next(thumb, bGoBack, binSlideShow)
+        Return FromBig_Next(thumb, iKierunek, binSlideShow)
     End Function
 
 
-    Private Function FromBig_NextMain(oPic As ThumbPicek, bGoBack As Boolean, lista As IList, retSame As Boolean) As ThumbPicek
+    Private Function FromBig_NextMain(oPic As ThumbPicek, iKierunek As Integer, lista As IList, retSame As Boolean) As ThumbPicek
         For iLP = 0 To lista.Count - 1
             Dim oItem As ThumbPicek = lista.Item(iLP)
             If oItem.oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
-                If bGoBack Then
+                If iKierunek < 0 Then
                     If iLP = 0 Then
                         If retSame Then
                             System.Media.SystemSounds.Beep.Play()
@@ -1182,11 +1182,15 @@ Public Class ProcessBrowse
                         End If
                     Else
                         Dim oPicRet As ThumbPicek = lista.Item(iLP - 1)
+                        If iKierunek < -1 Then
+                            ' -100 oznacza: na początek
+                            oPicRet = lista.Item(0)
+                        End If
                         'ShowKwdForPic(oPicRet)
                         RefreshOwnedWindows(oPicRet)
                         Return oPicRet
                     End If
-                Else
+                Else ' iKierunek > 0, czyli idziemy do przodu: +1, +100 = do końca
                     If iLP = lista.Count - 1 Then
                         If retSame Then
                             System.Media.SystemSounds.Beep.Play()
@@ -1196,9 +1200,14 @@ Public Class ProcessBrowse
                         End If
                     Else
                         Dim oPicRet As ThumbPicek = lista.Item(iLP + 1)
-                        If oPicRet.oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
-                            Me.MsgBox($"Sprawdź, bo są dwa pliki z nazwą '{oPicRet.oPic.sSuggestedFilename}'")
-                            oPicRet = lista.Item(iLP + 2)
+                        If iKierunek > 1 Then
+                            ' +100 oznacza: na koniec
+                            oPicRet = lista.Item(lista.Count - 1)
+                        Else
+                            If oPicRet.oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
+                                Me.MsgBox($"Sprawdź, bo są dwa pliki z nazwą '{oPicRet.oPic.sSuggestedFilename}'")
+                                oPicRet = lista.Item(iLP + 2)
+                            End If
                         End If
                         'ShowKwdForPic(oPicRet)
                         RefreshOwnedWindows(oPicRet)
