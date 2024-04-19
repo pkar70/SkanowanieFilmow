@@ -43,7 +43,9 @@ Public Class BrowseKeywordsWindow
         ' bo jak nie ma żadnych tagów, to nie kasował oznaczeń
         Application.GetKeywords.ToFlatList.ForEach(Sub(x) x.bChecked = False)
 
-        UstalCheckboxy(_oPic?.oPic.GetAllKeywords)    ' 50 ms
+        Dim currentFlatKwds As String = _oPic?.oPic.GetAllKeywords
+        uiSelectedKwds.Text = If(currentFlatKwds, "")
+        UstalCheckboxy(currentFlatKwds)    ' 50 ms
         ZablokujNiezgodne() ' 200 ms
         RefreshLista()      ' 60 ms
 
@@ -152,6 +154,8 @@ Public Class BrowseKeywordsWindow
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
             oItem.bChecked = False
         Next
+        uiSelectedKwds.Text = ""
+
         _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
         RefreshLista()
     End Sub
@@ -392,4 +396,9 @@ Public Class BrowseKeywordsWindow
         ' InitForPic(_oPic)
     End Sub
 
+    Private Sub uiZmianaCheck(sender As Object, e As RoutedEventArgs)
+        Dim currentFlatKwds As String = ""
+        Application.GetKeywords.ToFlatList.ForEach(Sub(x) If x.bChecked Then currentFlatKwds &= x.sId & " ")
+        uiSelectedKwds.Text = currentFlatKwds
+    End Sub
 End Class

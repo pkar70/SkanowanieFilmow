@@ -10,6 +10,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" Name="naComboGrup" />
             <RowDefinition Height="*" Name="naListView" />
+            <RowDefinition Height="Auto" Name="naPodsumowanie" />
             <RowDefinition Height="Auto" Name="naApply" />
         </Grid.RowDefinitions>
 
@@ -29,7 +30,7 @@
                             <ColumnDefinition Width="80" Name="naCheckBoxOrazTag" />
                             <ColumnDefinition Width="*" Name="naOpis" />
                         </Grid.ColumnDefinitions>
-                        <CheckBox IsChecked="{Binding bChecked}" IsEnabled="{Binding bEnabled}" Content="{Binding sId}"/>
+                        <CheckBox IsChecked="{Binding bChecked}" IsEnabled="{Binding bEnabled}" Content="{Binding sId}" Checked="uiZmianaCheck" Unchecked="uiZmianaCheck" />
                         <TextBlock Grid.Column="1" Text="{Binding sDisplayName}" />
                     </Grid>
                 </DataTemplate>
@@ -37,9 +38,11 @@
 
         </ListView>
 
-        <Button Grid.Row="2" Content=" Clear " HorizontalAlignment="Left" Click="uiClear_Click" Name="uiClear"/>
-        <Button Grid.Row="2" Content=" Apply " HorizontalAlignment="Center" Click="uiApply_Click" Name="uiApply"/>
-        <Button Grid.Row="2" Content=" Edit " HorizontalAlignment="Right" Click="uiEditKeyTree_Click" Name="uiEdit"/>
+        <TextBlock Grid.Row="2" Name="uiSelectedKwds" Margin="0,2,0,2" />
+
+        <Button Grid.Row="3" Content=" Clear " HorizontalAlignment="Left" Click="uiClear_Click" Name="uiClear"/>
+        <Button Grid.Row="3" Content=" Apply " HorizontalAlignment="Center" Click="uiApply_Click" Name="uiApply"/>
+        <Button Grid.Row="3" Content=" Edit " HorizontalAlignment="Right" Click="uiEditKeyTree_Click" Name="uiEdit"/>
 
     </Grid>
 </Window>
