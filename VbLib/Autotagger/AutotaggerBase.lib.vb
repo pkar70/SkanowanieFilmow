@@ -6,7 +6,7 @@
 
     Public Overridable ReadOnly Property MaxSize As Integer = 0 ' 0: no limit (najwyżej będzie Cancel), albo w kB do ilu zmniejszać przed wywołaniem
 
-    Public Overridable ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb"
+    Public Overridable ReadOnly Property includeMask As String = OnePic.ExtsPic & ";" & OnePic.ExtsStereo
 
     ''' <summary>
     ''' Zwraca przygotowany EXIFtag, albo NULL, gdy błąd. EXIFtag może być pusty!

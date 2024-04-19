@@ -22,8 +22,7 @@ Public Class Auto_AzureTest
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próba co można wyciągnąć, 20 na minutę"
     Public Overrides ReadOnly Property MaxSize As Integer = 3800
-    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"
-
+    Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar;*.stereo.zip"
 
     Private _oClient As ComputerVision.ComputerVisionClient
     Private _resizeEngine As Vblib.PostProcBase
@@ -47,22 +46,26 @@ Public Class Auto_AzureTest
 
     Private Async Function GetStreamForSending(oFile As Vblib.OnePic) As Task(Of Stream)
 
+        If oFile.MatchesMasks("*.stereo.zip") Then
+            ' tylko tymczasowo tak - NAR jest obsługa gdzie indziej, tu więc jest tylko JPG z Lumia650, okolo 2 MB - więc w zakresie
+            Dim strumyk As Stream = oFile.SinglePicFromMulti
+            If strumyk.Length < MaxSize * 1024 Then Return strumyk
+            Return Nothing
+        Else
+            Dim sFilename As String = oFile.InBufferPathName
 
-        Dim sFilename As String = oFile.InBufferPathName
+            ' zabezpieczenie wielkościowe (limit Azure)
+            Dim oFileInfo As IO.FileInfo = New IO.FileInfo(sFilename)
+            If oFileInfo.Length < MaxSize * 1024 Then Return IO.File.OpenRead(oFile.InBufferPathName)
 
-        ' zabezpieczenie wielkościowe (limit Azure)
-        Dim oFileInfo As IO.FileInfo = New IO.FileInfo(sFilename)
+            ' przeskalujemy
+            If Not Await _resizeEngine.Apply(oFile, True, "") Then Return Nothing
+            If oFile._PipelineOutput.Length > MaxSize * 1024 Then Return Nothing
+            oFile._PipelineOutput.Seek(0, SeekOrigin.Begin)
 
-        If oFileInfo.Length < MaxSize * 1024 Then Return IO.File.OpenRead(oFile.InBufferPathName)
+            Return oFile._PipelineOutput
 
-        ' przeskalujemy
-        If Not Await _resizeEngine.Apply(oFile, True, "") Then Return Nothing
-
-        If oFile._PipelineOutput.Length > MaxSize * 1024 Then Return Nothing
-
-        oFile._PipelineOutput.Seek(0, SeekOrigin.Begin)
-
-        Return oFile._PipelineOutput
+        End If
 
     End Function
 

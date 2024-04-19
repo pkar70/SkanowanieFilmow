@@ -315,7 +315,7 @@ Public Class OnePic
     End Function
 
     ''' <summary>
-    '''  zwraca rzeczywistą datę - z MANUAL.DateTimeOriginal albo FileExif.DateTimeOriginal
+    '''  zwraca rzeczywistą datę - z MANUAL.DateTimeOriginal (Original, lub Max-Min) albo FileExif.DateTimeOriginal
     ''' </summary>
     ''' <returns></returns>
     Private Function GetRealDate() As Date
@@ -1706,6 +1706,22 @@ Public Class OnePic
         Next
     End Sub
 
+
+#Region "operacje na extensions"
+
+    Public Function IsPic() As Boolean
+        Return MatchesMasks(ExtsPic)
+    End Function
+
+    Public Function IsMovie() As Boolean
+        Return MatchesMasks(ExtsMovie)
+    End Function
+
+    Public Function IsStereo() As Boolean
+        Return MatchesMasks(ExtsStereo)
+    End Function
+
+#End Region
 
     ''' <summary>
     ''' daje stream albo bezpośrednio z pliku, albo po wyborze z paczki (NAR/ZIP)

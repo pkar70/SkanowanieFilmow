@@ -15,6 +15,7 @@ Public Class Auto_WinFace
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje policzyæ twarze u¿ywaj¹c Windows." & vbCrLf & "U¿ywa keyword -fN, gdzie n to liczba twarzy"
     'Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar"
+    Public Shared ReadOnly Property includeMask As String = OnePic.ExtsPic & OnePic.ExtsStereo
 
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
         If Not oFile.MatchesMasks(includeMask) Then Return Nothing
@@ -41,69 +42,69 @@ Public Class Auto_WinFace
         If _FaceEngine Is Nothing Then _FaceEngine = Await FaceDetector.CreateAsync
 
         ' na bitmape i OCR
-        Dim oStream As IO.Stream = Nothing
-        Dim oArchive As IO.Compression.ZipArchive = Nothing
+        Using oStream As IO.Stream = oFile.SinglePicFromMulti
+            '    Dim oArchive As IO.Compression.ZipArchive = Nothing
 
-        If oFile.MatchesMasks("*.nar") Then
-            oArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
-            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
+            'If oFile.MatchesMasks("*.nar") Then
+            '    oArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
+            '    For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+            '        If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
 
-                ' mamy JPGa (a nie XML na przyk³ad)
-                oStream = New MemoryStream
-                Dim oStreamTemp As Stream = oInArch.Open
-                Await oStreamTemp.CopyToAsync(oStream)
-                oStreamTemp.Dispose()
-                Exit For
-            Next
-        Else
-            ' zak³adamy w takim razie ¿e to JPG
-            oStream = IO.File.OpenRead(oFile.InBufferPathName)
-        End If
+            '        ' mamy JPGa (a nie XML na przyk³ad)
+            '        oStream = New MemoryStream
+            '        Dim oStreamTemp As Stream = oInArch.Open
+            '        Await oStreamTemp.CopyToAsync(oStream)
+            '        oStreamTemp.Dispose()
+            '        Exit For
+            '    Next
+            'Else
+            '    ' zak³adamy w takim razie ¿e to JPG
+            '    oStream = IO.File.OpenRead(oFile.InBufferPathName)
+            'End If
 
-        Dim oDecoder As BitmapDecoder
-        Try
-            oDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
-        Catch
-            Return Nothing
-        End Try
+            Dim oDecoder As BitmapDecoder
+            Try
+                oDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
+            Catch
+                Return Nothing
+            End Try
 
-        Dim oTransform As New BitmapTransform()
+            Dim oTransform As New BitmapTransform()
 
-        If oDecoder.PixelHeight > sourceImageHeightLimit Then
-            Dim scalingFactor As Double = sourceImageHeightLimit / oDecoder.PixelHeight
-            oTransform.ScaledWidth = Math.Floor(oDecoder.PixelWidth * scalingFactor)
-            oTransform.ScaledHeight = Math.Floor(oDecoder.PixelHeight * scalingFactor)
-        End If
-
-        Using softbitmap As SoftwareBitmap = Await oDecoder.GetSoftwareBitmapAsync(
-                oDecoder.BitmapPixelFormat, BitmapAlphaMode.Premultiplied, oTransform,
-                ExifOrientationMode.IgnoreExifOrientation, ColorManagementMode.DoNotColorManage)
-
-            Dim convertedBitmap As SoftwareBitmap
-            ' If FaceDetector.IsBitmapPixelFormatSupported(softbitmap.BitmapPixelFormat) Then
-            If softbitmap.BitmapPixelFormat <> faceDetectionPixelFormat Then
-                convertedBitmap = SoftwareBitmap.Convert(softbitmap, faceDetectionPixelFormat)
-            Else
-                convertedBitmap = softbitmap
+            If oDecoder.PixelHeight > sourceImageHeightLimit Then
+                Dim scalingFactor As Double = sourceImageHeightLimit / oDecoder.PixelHeight
+                oTransform.ScaledWidth = Math.Floor(oDecoder.PixelWidth * scalingFactor)
+                oTransform.ScaledHeight = Math.Floor(oDecoder.PixelHeight * scalingFactor)
             End If
 
-            Dim detectedFacesList = Await _FaceEngine.DetectFacesAsync(convertedBitmap)
+            Using softbitmap As SoftwareBitmap = Await oDecoder.GetSoftwareBitmapAsync(
+                    oDecoder.BitmapPixelFormat, BitmapAlphaMode.Premultiplied, oTransform,
+                    ExifOrientationMode.IgnoreExifOrientation, ColorManagementMode.DoNotColorManage)
 
-            Dim oAzure As MojeAzure = AzureFromFacesList(detectedFacesList, convertedBitmap.PixelWidth, convertedBitmap.PixelHeight)
-            convertedBitmap.Dispose()
+                Dim convertedBitmap As SoftwareBitmap
+                ' If FaceDetector.IsBitmapPixelFormatSupported(softbitmap.BitmapPixelFormat) Then
+                If softbitmap.BitmapPixelFormat <> faceDetectionPixelFormat Then
+                    convertedBitmap = SoftwareBitmap.Convert(softbitmap, faceDetectionPixelFormat)
+                Else
+                    convertedBitmap = softbitmap
+                End If
 
-            If detectedFacesList Is Nothing Then Return Nothing
+                Dim detectedFacesList = Await _FaceEngine.DetectFacesAsync(convertedBitmap)
 
-            Dim oExif As New Vblib.ExifTag(Nazwa)
-            oExif.Keywords = "-f" & oAzure.Faces.lista.Count
-            oExif.AzureAnalysis = oAzure
+                Dim oAzure As MojeAzure = AzureFromFacesList(detectedFacesList, convertedBitmap.PixelWidth, convertedBitmap.PixelHeight)
+                convertedBitmap.Dispose()
 
-            Return oExif
-        End Using
+                If detectedFacesList Is Nothing Then Return Nothing
 
-        oStream?.Dispose()
-        oArchive?.Dispose()
+                Dim oExif As New Vblib.ExifTag(Nazwa)
+                oExif.Keywords = "-f" & oAzure.Faces.lista.Count
+                oExif.AzureAnalysis = oAzure
+
+                Return oExif
+            End Using
+
+        End Using 'oStream?.Dispose()
+        'oArchive?.Dispose()
 
     End Function
 

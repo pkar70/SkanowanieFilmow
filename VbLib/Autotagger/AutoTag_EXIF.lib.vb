@@ -15,7 +15,7 @@ Public Class AutoTag_EXIF
     Public Overrides ReadOnly Property Nazwa As String = "AUTO_EXIF"
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Wczytuje znaczniki EXIF z pliku zdjęcia"
-    Public Shared ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.jpeg;*.mov;*.mp4;*.avi;*.nar;*.raf"
+    Public Shared ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.jpeg;*.mov;*.mp4;*.avi;*.nar;*.raf;" & OnePic.ExtsStereo
 
     ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
 
@@ -31,7 +31,7 @@ Public Class AutoTag_EXIF
             If oFile.MatchesMasks("*.jpg;*.jpg.thumb;*.tif;*.tiff;*.png;*.raf") Then Return GetForFileCompact(oFile)
 
             ' teraz NAR - wyciągnięcie pliku ze środka
-            If oFile.MatchesMasks("*.nar") Then Return GetForNARCompact(oFile)
+            If oFile.MatchesMasks("*.nar") OrElse oFile.MatchesMasks("*.stereo.zip") Then Return GetForNARCompact(oFile)
 
             ' filmy: mov, mp4
             If oFile.MatchesMasks("*.mp4;*.mov;*.avi") Then Return GetForMovieFile(oFile)
@@ -172,28 +172,28 @@ Public Class AutoTag_EXIF
 
         Try
 
-            ' traktuj oFile jako ZIP - znajdź pierwszy JPG
-            Using oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
+            '' traktuj oFile jako ZIP - znajdź pierwszy JPG
+            'Using oArchive As IO.Compression.ZipArchive = IO.Compression.ZipFile.OpenRead(oFile.InBufferPathName)
 
-                For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                    If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
+            '    For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+            '        If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
 
-                    ' mamy JPGa, to z niego czytamy EXIFa
-                    Using oStream As Stream = oInArch.Open
-                        ' ale z takim nie zadziała, bo Stream takowy nie ma Seek
-                        Using oSeekable As New MemoryStream
-                            oStream.CopyTo(oSeekable)
-                            oSeekable.Position = 0
+            '        ' mamy JPGa, to z niego czytamy EXIFa
+            ' Using oStream As Stream = oInArch.Open
+            Using oStream = oFile.SinglePicFromMulti
+                ' ale z takim nie zadziała, bo Stream takowy nie ma Seek
+                Using oSeekable As New MemoryStream
+                    oStream.CopyTo(oSeekable)
+                    oSeekable.Position = 0
 
-                            Dim oRdr As New CompactExifLib.ExifData(oSeekable)
-                            oExif = GetForReaderCompact(oRdr)
-                        End Using
-                    End Using
-                    Exit For
-                Next
-
+                    Dim oRdr As New CompactExifLib.ExifData(oSeekable)
+                    oExif = GetForReaderCompact(oRdr)
+                End Using
             End Using
-            'oArchive.Dispose()
+            '        Exit For
+            '    Next
+            ' End Using
+            ''oArchive.Dispose()
         Catch ex As Exception
             Return Nothing
         End Try
