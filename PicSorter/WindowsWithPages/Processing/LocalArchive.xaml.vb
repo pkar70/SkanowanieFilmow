@@ -1,12 +1,15 @@
 ﻿
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
+Imports pkar.UI.Extensions
 
 Public Class LocalArchive
 
     Private _lista As List(Of DisplayArchive)
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
+        Me.ProgRingInit(True, False)
 
         uiWithTargetDir.Maximum = Application.GetBuffer.Count
         uiWithTargetDir.Value = CountWithTargetDir()
@@ -175,10 +178,10 @@ Public Class LocalArchive
 
         If Not Await CheckGuidy() Then Return
 
-        If Not Await vb14.DialogBoxYNAsync("Czy juz poprawiles dopisywanie do archive?") Then Return
+        If Not Await Me.DialogBoxYNAsync("Czy juz poprawiles dopisywanie do archive?") Then Return
 
         If Not oSrc.engine.IsPresent Then
-            Await vb14.DialogBoxAsync($"Ale Archiwum '{oSrc.nazwa}' jest aktualnie niewidoczne!")
+            Await Me.MsgBoxAsync($"Ale Archiwum '{oSrc.nazwa}' jest aktualnie niewidoczne!")
             Return
         End If
 
@@ -194,6 +197,9 @@ Public Class LocalArchive
         Dim sErr As String = ""
 
         Dim newlyArchived As New List(Of Vblib.OnePic)
+
+        Me.ProgRingShow(True)
+        Me.ProgRingSetText(oSrc.nazwa)
 
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir))
             ' If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
@@ -251,9 +257,11 @@ Public Class LocalArchive
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
 
+        Me.ProgRingShow(False)
+
         If sErr <> "" Then
-            Await vb14.DialogBoxAsync("Encountered error(s):" & vbCrLf & sErr)
-            vb14.ClipPut(sErr)
+            Await Me.MsgBoxAsync("Encountered error(s):" & vbCrLf & sErr)
+            sErr.SendToClipboard
         End If
 
 
