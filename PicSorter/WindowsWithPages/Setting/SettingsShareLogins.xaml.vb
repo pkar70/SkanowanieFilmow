@@ -23,12 +23,17 @@ Class SettingsShareLogins
         ShowToEdit(oLogin)
     End Sub
 
+    Public Shared Async Function GetCurrentMeAsWeb() As Task(Of String)
+        Dim adres As String = Vblib.GetSettingsString("uiAdresOverride") ' DDNS, jak u mnie - nie adres fizyczny ale symboliczny, spisek...
+        If String.IsNullOrWhiteSpace(adres) Then adres = Await vb14_GetMyIP.GetMyIP.GetIPString
+        Return adres
+    End Function
+
     Private Async Sub uiEmail_Click(sender As Object, e As RoutedEventArgs)
         Dim oLogin As ShareLogin = TryCast(sender, FrameworkElement)?.DataContext
         If oLogin Is Nothing Then Return
 
-        Dim adres As String = Vblib.GetSettingsString("uiAdresOverride") ' DDNS, jak u mnie - nie adres fizyczny ale symboliczny, spisek...
-        If String.IsNullOrWhiteSpace(adres) Then adres = Await vb14_GetMyIP.GetMyIP.GetIPString
+        Dim adres As String = Await GetCurrentMeAsWeb()
 
         ' wysłanie email
         Dim subject As String = "Dane logowania do mojego PicSort"

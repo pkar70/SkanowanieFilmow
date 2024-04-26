@@ -268,6 +268,13 @@ Public Class ShareLoginsList
     Public Function FindByGuid(loginGuid As String) As ShareLogin
         Return MyBase.Find(Function(x) x.login.ToString = loginGuid)
     End Function
+
+    Protected Overrides Sub InsertDefaultContent()
+        Me.Add(New ShareLogin With {
+               .displayName = "ForPicSearch",
+               .enabled = True,
+               .processing = "Resize1024"})
+    End Sub
 End Class
 
 

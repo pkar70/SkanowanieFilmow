@@ -744,6 +744,13 @@ Public Class OnePic
 
     End Sub
 
+    ''' <summary>
+    ''' Przygotowanie obrazka, po pipeline, do _PipelineOutput
+    ''' </summary>
+    ''' <param name="sProcessingSteps">NULL/empty oznacza brak kroków</param>
+    ''' <param name="aPostProcesory"></param>
+    ''' <param name="bPreferAnaglyph"></param>
+    ''' <returns></returns>
     Public Async Function RunPipeline(sProcessingSteps As String, aPostProcesory As Vblib.PostProcBase(), bPreferAnaglyph As Boolean) As Task(Of String)
         DumpCurrMethod($"plik: {sSuggestedFilename}, steps: {sProcessingSteps}")
 

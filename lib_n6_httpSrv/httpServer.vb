@@ -40,6 +40,7 @@ Public Class ServerWrapper
         If _host Is Nothing Then Task.Run(Sub() InitService())
     End Sub
 
+    ' uwaga: port tak¿e w PicMenuSearchWebByPic
     Private Const baseUri As String = "http://*:20563/"
 
     Public Sub TryAddAcl()
@@ -103,7 +104,6 @@ Public Class ServerWrapper
                 Dim request As HttpListenerRequest = context?.Request
                 If request Is Nothing Then Exit Do   ' takie zabezpieczenie to tylko u³atwienie gdy jest pod debuggerem podczas wy³¹czania programu
 
-
                 _lastNetAccess = Date.Now
                 Vblib.DumpMessage("Mam request: " & request.RawUrl) ' on jest typu: /canupload?guid=xxx&clientHost=Hxxxx
 
@@ -140,7 +140,7 @@ Public Class ServerWrapper
 
 #Region "real work"
 
-    Private Const PROTO_VERS As String = "1.0"
+    Private Const PROTO_VERS As String = "1.1"
 
     ''' <summary>
     ''' returns string = response for remote command
@@ -148,6 +148,12 @@ Public Class ServerWrapper
     Private Async Function MainWork(request As HttpListenerRequest, response As HttpListenerResponse) As Task(Of String)
 
         Dim command As String = request.Url.AbsolutePath
+
+        ' bez logowania jest wysy³ka do celów "BING search by pic"
+        If command.StartsWith("/bufpic/") Then
+            Return Await SendMarkedPicDataFromBuff(Nothing, command.Replace("/bufpic/", ""), response)
+        End If
+
         Dim clientAddress As IPAddress = request.LocalEndPoint.Address
         Dim queryString As NameValueCollection = request.QueryString
 
@@ -233,7 +239,6 @@ Public Class ServerWrapper
                 Return SendMarkedPicsListFromBuff(oLogin)
             Case "currentpicdata"
                 ' input: guid, clientHost, fname = InBuffer
-                ' return: JSON z dumpem wszystkich z kolejki
                 Return Await SendMarkedPicDataFromBuff(oLogin, queryString.Item("fname"), response)
 
             Case "getnewpicslist"
@@ -292,20 +297,30 @@ Public Class ServerWrapper
 
     Private Async Function SendMarkedPicDataFromBuff(oLogin As ShareLogin, fname As String, response As HttpListenerResponse) As Task(Of String)
 
-        Dim oPic As Vblib.OnePic = _buffer.GetList.Find(Function(x) x.InBufferPathName = fname)
+        Dim oPic As Vblib.OnePic = _buffer.GetList.Find(Function(x) x.InBufferPathName.EndsWithCI(fname))
         If oPic Is Nothing Then Return "ERROR: no such pic"
-        If oPic.sharingLockSharing Then Return "ERROR: file is excluded from sharing"
-        If Not oPic.IsCloudPublishMentioned("L:" & oLogin.login.ToString) Then Return "ERROR: pic not marked"
+
+        If oLogin IsNot Nothing Then
+            If oPic.sharingLockSharing Then Return "ERROR: file is excluded from sharing"
+            If Not oPic.IsCloudPublishMentioned("L:" & oLogin.login.ToString) Then Return "ERROR: pic not marked"
+        Else
+            ' spróbuj znaleŸæ oLogin defaultowy do search by pic, ewentualnie przyjmij z empty pipeline
+            oLogin = _loginy.Find(Function(x) x.displayName = "ForPicSearch")
+            If oLogin Is Nothing Then
+                oLogin = New ShareLogin With {.processing = ""}
+            End If
+        End If
+
 
         oPic.ResetPipeline()
         Dim ret As String = Await oPic.RunPipeline(oLogin.processing, _postProcs, False)
         If ret <> "" Then Return "ERROR: " & ret
+        oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
 
-        response.ContentLength64 = oPic.oContent.Length
+        response.ContentLength64 = oPic._PipelineOutput.Length
         response.ContentType = "image/jpeg"
-        oPic.oContent.Seek(0, SeekOrigin.Begin)
-        response.OutputStream.Seek(0, SeekOrigin.Begin)
-        oPic.oContent.CopyTo(response.OutputStream)
+        'response.OutputStream.Seek(0, SeekOrigin.Begin) ' ten stream nie ma seek
+        oPic._PipelineOutput.CopyTo(response.OutputStream)
         'You must close the output stream.
         response.OutputStream.Close()
 
