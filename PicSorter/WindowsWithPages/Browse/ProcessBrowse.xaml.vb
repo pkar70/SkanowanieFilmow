@@ -1519,12 +1519,21 @@ Public Class ProcessBrowse
     End Sub
 
     Private Shared _oFirstVisible As ThumbPicek = Nothing
+    Private Shared _lastSizeOption As String
+
     Private Sub uiComboSize_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles uiComboSize.SelectionChanged
         If _thumbsy Is Nothing Then Return
         If _thumbsy.Count < 1 Then Return
 
         If uiPicList.Items Is Nothing Then Return
         If uiPicList.Items.CurrentPosition < 0 Then Return
+
+        ' ominięcie podwójnego OnSelectionChanged, które się łączyło z:
+        ' System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'ListViewItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
+        Dim sRequest As String = TryCast(uiComboSize.SelectedValue, ComboBoxItem).Content
+        If String.IsNullOrWhiteSpace(sRequest) Then Return
+        If _lastSizeOption = sRequest Then Return
+        _lastSizeOption = sRequest
 
         If uiPicList.SelectedItems IsNot Nothing AndAlso uiPicList.SelectedItems.Count > 0 Then
             _oFirstVisible = uiPicList.SelectedItems(0)
@@ -1736,6 +1745,25 @@ Public Class ProcessBrowse
         RefreshMiniaturki(False)
     End Sub
 
+
+    Private Sub uiFilterNoRealDate_Click(sender As Object, e As RoutedEventArgs)
+        vb14.DumpCurrMethod()
+
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "no date"
+
+        Dim bMamy As Boolean = False
+        For Each oItem In _thumbsy
+            If oItem.oPic.HasRealDate Then
+                oItem.opacity = _OpacityWygas
+            Else
+                oItem.opacity = 1
+                bMamy = True
+            End If
+        Next
+
+        KoniecFiltrowania(bMamy)
+    End Sub
 
     Private Sub uiFilterNoGeo_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
