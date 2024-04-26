@@ -51,6 +51,29 @@ Public Class DateTimePicker
         End Set
     End Property
 
+    Public Property Arrangement As Orientation
+        Get
+            Return uiStack.Orientation
+        End Get
+        Set(value As Orientation)
+            uiStack.Orientation = value
+        End Set
+    End Property
+
+    Public Property Header As String
+        Get
+            Return uiHeader.Text
+        End Get
+        Set(value As String)
+            uiHeader.Text = value
+            If String.IsNullOrWhiteSpace(value) Then
+                uiHeader.Visibility = Visibility.Collapsed
+            Else
+                uiHeader.Visibility = Visibility.Visible
+            End If
+        End Set
+    End Property
+
     Private Sub Grid_Loaded(sender As Object, e As RoutedEventArgs)
         DisplayDateEnd = Date.Now.AddHours(5)
         DisplayDateStart = New Date(1800, 1, 1)

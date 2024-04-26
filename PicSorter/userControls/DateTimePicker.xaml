@@ -12,9 +12,9 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Name="uiHeader" />
-        <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <DatePicker Name="uiData" />
+        <TextBlock Name="uiHeader" Visibility="Collapsed" />
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Name="uiStack">
+            <DatePicker Name="uiData" Width="Auto" />
             <local:TimeEntry x:Name="uiCzas" Margin="5,0,0,0"/>
         </StackPanel>
     </Grid>
