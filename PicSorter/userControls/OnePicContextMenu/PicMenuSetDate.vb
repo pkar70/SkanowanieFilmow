@@ -287,7 +287,7 @@ Public NotInheritable Class PicMenuSetDate
         ' pickery
         _pickerMin = GetNewDatePicker()
         _pickerMax = GetNewDatePicker()
-        _pickerOrig = New DateTimePicker    ' w new jest ustalenie min i max
+        _pickerOrig = New DateTimePicker With {.Arrangement = Orientation.Vertical}   ' w new jest ustalenie min i max
 
         If UseSelectedItems Then
             ' *TODO* środek dat, albo min/max z całej listy
@@ -305,8 +305,8 @@ Public NotInheritable Class PicMenuSetDate
 
         ' checkboxy używania
         _useMin = New CheckBox With {.IsChecked = True, .Content = "Data min:"}
-        _useMax = New CheckBox With {.IsChecked = True, .Content = "Data foto:"}
-        _useOrg = New CheckBox With {.IsChecked = True, .Content = "Data max:"}
+        _useOrg = New CheckBox With {.IsChecked = True, .Content = "Data foto:"}
+        _useMax = New CheckBox With {.IsChecked = True, .Content = "Data max:"}
 
         Dim oStack As New StackPanel
         oStack.Children.Add(_useMin)
@@ -327,7 +327,7 @@ Public NotInheritable Class PicMenuSetDate
 
 
         Dim screenPoint As Point = Me.PointToScreen(New Point(0, 0))
-        _pickWind = New Window With {.Width = 100, .Height = 190, .ResizeMode = ResizeMode.NoResize, .Left = screenPoint.X + 10, .Top = screenPoint.Y}
+        _pickWind = New Window With {.Width = 80, .Height = 210, .ResizeMode = ResizeMode.NoResize, .Left = screenPoint.X + 10, .Top = screenPoint.Y}
         _pickWind.Content = oStack
 
         _pickWind.ShowDialog()
@@ -345,8 +345,9 @@ Public NotInheritable Class PicMenuSetDate
 
         Dim dataMin As Date? = _pickerMin.SelectedDate
         Dim dataMax As Date? = _pickerMax.SelectedDate
+        ' ale chyba zawsze będzie HasValue, bo sam ustawiam uruchamiając okienko :)
         If Not dataMin.HasValue AndAlso Not dataMax.HasValue Then Return
-        If Not _useMin.IsChecked AndAlso Not _useMax.IsChecked AndAlso _useOrg.IsChecked Then Return
+        If Not _useMin.IsChecked AndAlso Not _useMax.IsChecked AndAlso Not _useOrg.IsChecked Then Return
 
         Dim dateMin As Date = dataMin.Value
         Dim dateMax As Date = dataMax.Value
