@@ -20,6 +20,7 @@ Public Class AutoTag_WinOCR
         If Not oFile.MatchesMasks(includeMask) Then Return Nothing
 
         Dim teksty As String = Await ZrobOCR(oFile)
+        If teksty Is Nothing Then Return Nothing
 
         Dim oExif As New Vblib.ExifTag(Nazwa)
         oExif.UserComment = teksty
@@ -65,8 +66,20 @@ Public Class AutoTag_WinOCR
             'End If
 
             Dim oDecoder As BitmapDecoder = Await BitmapDecoder.CreateAsync(oStream.AsRandomAccessStream)
+
+            ' jakby by³o za du¿e, to siê poddaj
+            If oDecoder.PixelWidth >= OcrEngine.MaxImageDimension Then Return Nothing
+            If oDecoder.PixelHeight >= OcrEngine.MaxImageDimension Then Return Nothing
+
             Using softbitmap As SoftwareBitmap = Await oDecoder.GetSoftwareBitmapAsync()
-                rOCR = Await _OcrEngine.RecognizeAsync(softbitmap)
+                Try
+                    rOCR = Await _OcrEngine.RecognizeAsync(softbitmap)
+                Catch ex As Exception
+                    Return Nothing ' np. za du¿y rozmiar
+                    ' Image dimensions are too large! Check MaxImageDimension for maximum allowed image dimensions.
+                    ' PanoramaZKopca.jpg, Image Size  : 16845x2444
+
+                End Try
             End Using
 
             ' oStream?.Dispose()
