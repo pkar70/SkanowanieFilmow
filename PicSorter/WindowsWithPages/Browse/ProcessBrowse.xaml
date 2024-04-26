@@ -47,6 +47,7 @@
                         <MenuItem Header="all" Click="uiFilterAll_Click" />
                         <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
                         <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" />
+                        <MenuItem Header="bez realdate" Click="uiFilterNoRealDate_Click" />
                         <MenuItem Header="only NAR" Click="uiFilterNAR_Click" />
                         <MenuItem Header="wg keywords" Click="uiFilterKeywords_Click" />
                         <MenuItem Header="AZURE »">

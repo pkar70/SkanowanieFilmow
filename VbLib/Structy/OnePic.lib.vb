@@ -315,6 +315,21 @@ Public Class OnePic
     End Function
 
     ''' <summary>
+    ''' czy jest data zdjęcia, z EXIF lub z MANUAL - ale dokładna, nie zakres
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function HasRealDate() As Boolean
+        Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualDate)
+        If Not String.IsNullOrWhiteSpace(oExif?.DateTimeOriginal) Then Return True
+
+        oExif = GetExifOfType(ExifSource.FileExif)
+        If Not String.IsNullOrWhiteSpace(oExif?.DateTimeOriginal) Then Return True
+
+        Return False
+    End Function
+
+
+    ''' <summary>
     '''  zwraca rzeczywistą datę - z MANUAL.DateTimeOriginal (Original, lub Max-Min) albo FileExif.DateTimeOriginal
     ''' </summary>
     ''' <returns></returns>
