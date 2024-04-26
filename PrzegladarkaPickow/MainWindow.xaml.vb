@@ -1,4 +1,5 @@
 ﻿Imports pkar.DotNetExtensions
+Imports pkar.UI.Extensions
 
 Class MainWindow
     Private Sub uiBrowse_Click(sender As Object, e As RoutedEventArgs)
@@ -41,6 +42,24 @@ Class MainWindow
     End Sub
 
     Private Sub uiShowPicInfo_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oThumb As thumb = oFE.DataContext
+        Dim pathname As String = oThumb.filepath
+
+        Dim info As String
+
+        Using strumyk As IO.FileStream = IO.File.OpenRead(pathname)
+            Using img As System.Drawing.Image = System.Drawing.Image.FromStream(strumyk, False, False)
+
+                info = $"Picture {oThumb.filename}
+File: {(New IO.FileInfo(pathname).Length) \ 1024} KiB, @{IO.File.GetCreationTime(pathname).ToString("yyyy.MM.dd")}
+Image: {img.Width} × {img.Height}"
+
+            End Using
+        End Using
+
+
+        Me.MsgBox(info)
 
     End Sub
 
@@ -62,7 +81,8 @@ Class MainWindow
         Dim lastDate As New Date(1970, 1, 1)
         Dim lastName As String = ""
 
-        For Each plik In IO.Directory.EnumerateFiles(uiFolderPath.Text)
+        Dim opt As IO.SearchOption = If(uiRecurs.IsChecked, IO.SearchOption.AllDirectories, IO.SearchOption.TopDirectoryOnly)
+        For Each plik In IO.Directory.EnumerateFiles(uiFolderPath.Text, "*", opt)
             If plik.EndsWithCI("descript.ion") Then Continue For
 
             Dim oPic As New thumb
@@ -139,6 +159,19 @@ Class MainWindow
     Private Sub uiRefresh_Click(sender As Object, e As RoutedEventArgs)
         WczytajKatalog(uiFolderPath.Text)
     End Sub
+
+    Private Async Sub uiDelete_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oThumb As thumb = oFE.DataContext
+
+        If Not Await Me.DialogBoxYNAsync($"Skasować '{oThumb.filename}' ?") Then Return
+
+        oThumb.oImageSrc = Nothing
+        ' _lista.Remove(oThumb)
+
+        IO.File.Delete(oThumb.filepath)
+
+    End Sub
 End Class
 
 Public Class thumb
@@ -146,4 +179,5 @@ Public Class thumb
     Public Property filename As String
     Public Property filepath As String
     Public Property sDymek As String
+
 End Class

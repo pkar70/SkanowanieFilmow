@@ -17,6 +17,7 @@
             <Button Content=" ... " Click="uiBrowse_Click" />
             <TextBox Name="uiFolderPath" Width="300" Margin="10,0,10,0" />
             <Button FontWeight="Bold" Content="↻" Click="uiRefresh_Click" />
+            <CheckBox Margin="20,0,0,0" Content="recursive" Name="uiRecurs"/>
         </StackPanel>
 
         <TextBlock HorizontalAlignment="Right" Name="uiNewestPicDate" Text=". " />
@@ -48,7 +49,8 @@
                             <ContextMenu>
                                 <MenuItem Header="Info" Click="uiShowPicInfo_Click"/>
                                 <MenuItem Header="Shellexec" Click="uiShellExec_Click"/>
-                            </ContextMenu>
+                                    <MenuItem Header="Delete" Click="uiDelete_Click"/>
+                                </ContextMenu>
                         </Image.ContextMenu>
                     </Image>
                     </Grid>
