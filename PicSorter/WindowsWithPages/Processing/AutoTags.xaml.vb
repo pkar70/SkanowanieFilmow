@@ -160,6 +160,22 @@ Public Class AutoTags
 
     End Function
 
+    Private Async Sub uiRemoveTags_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oSrc As JedenEngine = oFE?.DataContext
+        If oSrc Is Nothing Then Return
+
+        If Not Await Me.DialogBoxYNAsync($"Naprawdę usunąć znacznik {oSrc.nazwa} z wszystkich zdjęć w buforze?") Then Return
+
+        For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
+            oItem.RemoveExifOfType(oSrc.nazwa)
+        Next
+
+        Application.GetBuffer.SaveData()
+
+    End Sub
+
+
 
     Public Class JedenEngine
         Public Property enabled As Boolean
@@ -171,4 +187,5 @@ Public Class AutoTags
         Public Property dymekAbout As String
 
     End Class
+
 End Class

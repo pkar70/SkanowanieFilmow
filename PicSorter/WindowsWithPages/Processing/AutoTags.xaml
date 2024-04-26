@@ -42,6 +42,11 @@
                             <Button Grid.Column="2" Content=" Run " Click="uiGetThis_Click" />
 
                             <ProgressBar Height="8" Grid.Row="1" Grid.ColumnSpan="3" Margin="5,2,5,2" Maximum="{Binding maxCount}" Value="{Binding count}" ToolTipService.ToolTip="{Binding dymekCount}" />
+                        <Grid.ContextMenu>
+                            <ContextMenu>
+                                <MenuItem Header="Remove this tags" Click="uiRemoveTags_Click" />
+                            </ContextMenu>
+                        </Grid.ContextMenu>
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
