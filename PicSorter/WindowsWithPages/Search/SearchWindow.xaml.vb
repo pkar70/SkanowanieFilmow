@@ -139,10 +139,10 @@ Public Class SearchWindow
 
         If lista Is Nothing Then
             ' po pełnym
-            _queryResults = Application.gDbase.Search(query)
+            Await Task.Run(Sub() _queryResults = Application.gDbase.Search(query))
         Else
             ' po już ograniczonym
-            _queryResults = lista.Where(Function(x) x.CheckIfMatchesQuery(query))
+            Await Task.Run(Sub() _queryResults = lista.Where(Function(x) x.CheckIfMatchesQuery(query)))
         End If
         Me.ProgRingShow(False)
 
