@@ -98,6 +98,10 @@ Class SettingsGlobal
         uiFolderBuffer.GetSettingsString()
         'uiFolderData.GetSettingsString()
         uiUseOneDrive.GetSettingsBool
+        'uiIdGUID.GetSettingsBool
+        'uiIdSerno.GetSettingsBool
+        uiSerNoDigits.GetSettingsInt
+
     End Sub
 
     Private Shared Function CheckDirsExists(oTBox2 As TextBox) As Boolean
@@ -141,10 +145,36 @@ Class SettingsGlobal
         'uiFolderData.SetSettingsString()
         uiUseOneDrive.SetSettingsBool
 
+        'uiIdGUID.SetSettingsBool
+        'uiIdSerno.SetSettingsBool
+        uiSerNoDigits.SetSettingsInt
+
         Me.NavigationService.GoBack()
     End Sub
 
     Private Sub uiDbase_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsDbase)
     End Sub
+End Class
+
+Public Class KonwersjaDigitsRange
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim ile As Integer = CType(value, Integer)
+
+        Select Case ile
+            Case 5
+                Return "5 (100k)"
+            Case 6
+                Return "6 (1M)"
+            Case 7
+                Return "7 (10M)"
+            Case 8
+                Return "8 (100M)"
+            Case Else
+                Return ile
+        End Select
+
+    End Function
 End Class

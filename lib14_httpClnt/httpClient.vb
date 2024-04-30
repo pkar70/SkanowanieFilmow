@@ -173,16 +173,18 @@ Public Class httpKlient
 #Region "uploading descriptions"
 
     ''' <summary>
-    ''' wyślij wszystkie komentarze z kolejki do podanego serwera (dla loginu nie da się wysłać :), guid ma być prefiksowany jak w liscie
+    ''' wyślij wszystkie komentarze z kolejki do podanego serwera (dla loginu nie da się wysłać :), po wysłaniu każdego descr usuwa go z kolejki
     ''' </summary>
-    Public Shared Async Function UploadPicDescriptions(lista As BaseList(Of Vblib.ShareDescription), serverGuid As String, peer As ShareServer) As Task(Of Boolean)
+    Public Shared Async Function UploadPicDescriptions(lista As BaseList(Of Vblib.ShareDescription), peer As ShareServer) As Task(Of Boolean)
         If lista Is Nothing Then Return True    ' nie ma nic do wysłania
 
+
+
         Do
-            Dim jeden As ShareDescription = lista.First(Function(x) x.descr.PeerGuid = serverGuid)
+            Dim jeden As ShareDescription = lista.First(Function(x) x.descr.PeerGuid = peer.login.ToString)
             If jeden Is Nothing Then Exit Do
 
-            Dim ret As String = Await UploadDesc(peer, jeden.picid, jeden.descr)
+            Dim ret As String = Await UploadDesc(peer, jeden)
             If ret <> "OK" Then Exit Do
 
             lista.Remove(jeden)
@@ -199,19 +201,21 @@ Public Class httpKlient
     ''' Upload oDesc jako description dla oPic (konieczny oPic.PicGuid)
     ''' </summary>
     ''' <returns>OK lub error</returns>
-    Public Shared Async Function UploadDesc(oServer As Vblib.ShareServer, picid As String, oDesc As Vblib.OneDescription) As Task(Of String)
+    Public Shared Async Function UploadDesc(oServer As ShareServer, oDesc As ShareDescription) As Task(Of String)
         If Not EnsureClient() Then Return "FAIL EnsureClient"
 
-        Try ' dla Finally
+        Try ' dla Finally - zwolnienie zasobów
 
-            ' musi być PicGuid jako identyfikator do czego dopisać trzeba description
-            If String.IsNullOrWhiteSpace(picid) Then Return "FAIL no picguid given!"
+            Dim sernotmp As String = oDesc.lastPeer.Replace(";", "")
+            Dim iInd As Integer = sernotmp.IndexOf(":")
+            If iInd < 1 Then Return "source ser# required!"
+            Dim serno As Integer = sernotmp.Substring(iInd + 1)
 
             Dim contentJson As New StringContent(oDesc.DumpAsJSON)
 
             Dim resp As HttpResponseMessage
             Try
-                resp = Await _clientQuick.PutAsync(GetUri(oServer, "uploadpicdesc", "picid=" & picid), contentJson)
+                resp = Await _clientQuick.PutAsync(GetUri(oServer, "uploadpicdesc", "serno=" & serno), contentJson)
                 If Not resp.IsSuccessStatusCode Then Return "FAIL meta notOK"
             Catch ex As Exception
                 Return "FAIL Sending meta"
@@ -242,20 +246,20 @@ Public Class httpKlient
         If Not listaTemp.Import(JsonList) Then Return -2    ' nie da się zdeserializować
 
         Dim iCnt As Integer = 0
-        Dim sLastId As String = ""
+        Dim allIds As String = ""
         For Each oItem As Vblib.ShareDescription In listaTemp
             If oItem Is Nothing Then Continue For
-            sLastId = oItem.picid   ' dokąd serwer będzie mógł skasować z kolejki
+            allIds &= "-" & oItem.serno
 
             ' przetworzenie na 'tutejsze' metadata (wskazanie serwera skąd przyszło) - na wejściu to identyfikator loginu (klienta) do którego ma być wysłany
-            oItem.descr.PeerGuid = "S:" & oServer.login.ToString
+            oItem.descr.PeerGuid = "S:" & oServer.login.ToString & ":" & oItem.serno
 
             descrIn.Add(oItem)
             iCnt += 1
         Next
         descrIn.Save(True)
 
-        Dim retval As String = Await _clientQuick.GetStringAsync(GetUri(oServer, "confirmpicdescqueue", $"lastpicid={sLastId}"))
+        Dim retval As String = Await _clientQuick.GetStringAsync(GetUri(oServer, "confirmpicdescqueue", $"picids={allIds}"))
         ' powinno być OK, ale i tak nie mamy co zrobić z błędem, bo już dodaliśmy do własnej listy :)
 
         Return iCnt

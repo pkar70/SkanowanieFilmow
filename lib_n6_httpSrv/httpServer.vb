@@ -218,7 +218,7 @@ Public Class ServerWrapper
             Case "uploadpicdesc"
                 ' input: UploadPicDesc, guid, clientHost, picid; POST: JSON z OneDescription
                 ' return: OK, BADDATA (b³¹d wczytywania JSON) lub error (ju¿ wczeœniej, przed Select Case)
-                Return GotDescription(oLogin, queryString.Item("picid"), request)
+                Return GotDescription(oLogin, queryString.Item("serno"), request)
 
 
                 ' *TODO* done: 2023.09.29
@@ -231,7 +231,7 @@ Public Class ServerWrapper
             Case "confirmpicdescqueue"
                 ' input: guid, clientHost, lastPicId
                 ' return: JSON z dumpem wszystkich z kolejki
-                Return ConfirmDescriptionQueue(oLogin, queryString.Item("lastpicid"))
+                Return ConfirmDescriptionQueue(oLogin, queryString.Item("picids"))
 
             Case "currentpiclistforme"
                 ' input: guid, clientHost
@@ -285,9 +285,10 @@ Public Class ServerWrapper
     Private Function SendMarkedPicsListFromBuff(oLogin As ShareLogin) As String
 
         Dim sRet As String = ""
-        For Each oPic As Vblib.OnePic In _buffer.GetList.Where(Function(x) Not x.sharingLockSharing AndAlso x.IsCloudPublishMentioned("L:" & oLogin.login.ToString))
+        For Each oPic As Vblib.OnePic In _buffer.GetList.Where(Function(x) Not x.sharingLockSharing AndAlso x.IsPeerAllowed(oLogin))
             If sRet <> "" Then sRet &= ","
-            sRet &= oPic.DumpAsJSON
+            ' usuwamy informacje które tam sie nie powinny znaleŸæ
+            sRet &= oPic.StrippedForSharing.DumpAsJSON
         Next
 
         ' If sRet = "" Then Return "No pics marked for your login"
@@ -356,18 +357,26 @@ Public Class ServerWrapper
     ''' <summary>
     ''' Potwierdzenie przyjêcia komentarzy a¿ do lastpicid - mo¿na je skasowaæ z kolejki OUT (jakbym akurat jednoczeœnie opisywa³)
     ''' </summary>
-    Private Function ConfirmDescriptionQueue(oLogin As ShareLogin, lastpicid As String) As String
+    Private Function ConfirmDescriptionQueue(oLogin As ShareLogin, picids As String) As String
         ' szukamy tych dla podanego GUID (obojêtnie czy login czy server)
         Dim peerGuid As String = oLogin.login.ToString
 
+        Dim aIds As String() = picids.Split("-")
+
         Dim iCnt As Integer = 0
-        Do
-            Dim oItem As Vblib.ShareDescription = _shareDescOut.Find(Function(x) x.descr.PeerGuid.EndsWithCI(peerGuid))
-            If oItem Is Nothing Then Exit Do
-            iCnt += 1
-            _shareDescOut.Remove(oItem)
-            If oItem.picid = lastpicid Then Exit Do
-        Loop
+
+        For Each id As String In aIds
+            Dim iId As Integer
+            If Not Integer.TryParse(id, iId) Then Continue For
+
+            Do
+                Dim oItem As Vblib.ShareDescription = _shareDescOut.Find(Function(x) x.serno = iId)
+                If oItem Is Nothing Then Exit Do
+                iCnt += 1
+                _shareDescOut.Remove(oItem)
+            Loop
+
+        Next
 
         Return $"OK, deleted {iCnt} items from queue"
     End Function
@@ -375,30 +384,27 @@ Public Class ServerWrapper
 
 #Region "przyjmowanie opisu do zdjêcia od nas wziêtego"
     ''' <summary>
-    ''' Przyjêcie OneDescription, opakowanie go w ShareDescription i zapisanie do listy ShareDescIn (parametr New())
+    ''' Przyjêcie ShareDescription, przetworzenie IDs i zapisanie do listy ShareDescIn (parametr New())
     ''' </summary>
-    Private Function GotDescription(oLogin As ShareLogin, picid As String, request As HttpListenerRequest) As String
+    Private Function GotDescription(oLogin As ShareLogin, serno As Integer, request As HttpListenerRequest) As String
         Vblib.DumpCurrMethod()
 
         Dim json As String = ReadReqAsString(request)
 
-        Dim oDesc As Vblib.OneDescription
+        Dim oDesc As Vblib.ShareDescription
         Try
-            oDesc = Newtonsoft.Json.JsonConvert.DeserializeObject(json, GetType(Vblib.OneDescription))
+            oDesc = Newtonsoft.Json.JsonConvert.DeserializeObject(json, GetType(Vblib.ShareDescription))
         Catch ex As Exception
             Return "BADDATA"
         End Try
 
-        oDesc.PeerGuid = "L:" & oLogin.login.ToString
+        oDesc.descr.PeerGuid &= ";L:" & oLogin.login.ToString & ":" & oDesc.serno
+        oDesc.serno = serno
 
-        Dim oNew As New Vblib.ShareDescription
-        oNew.descr = oDesc
-        oNew.picid = request.QueryString.Item("picid")
-
-        _shareDescIn.Add(oNew)
+        _shareDescIn.Add(oDesc)
         _shareDescIn.Save(True)
 
-        Vblib.DumpMessage("Got description for " & oNew.picid)
+        Vblib.DumpMessage("Got description for " & oDesc.serno)
 
         Return "OK"
 
@@ -428,7 +434,8 @@ Public Class ServerWrapper
         End Try
 
         ' teraz nadaj w³asny ID - GUID najlepiej, by by³o niepowtarzalne - albo, po prostu, pozycja na liœcie
-        oPic.sharingFromGuid &= $"L:{oLogin.login.ToString};" ' aktualny jest na koñcu
+        oPic.sharingFromGuid &= $"L:{oLogin.login.ToString}:{oPic.serno};" ' aktualny jest na koñcu
+        oPic.serno = 0
         oPic.InBufferPathName = Guid.NewGuid.ToString
         _nowePicki.Add(oPic)
 
@@ -534,7 +541,7 @@ Public Class ServerWrapper
         Dim ret As String = ""
         For Each oPic As Vblib.OnePic In lista
             If ret <> "" Then ret &= ","
-            ret &= oPic.DumpAsJSON(True)
+            ret &= oPic.StrippedForSharing.DumpAsJSON(True)
         Next
 
         Return "[" & ret & "]"

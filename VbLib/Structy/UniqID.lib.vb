@@ -16,7 +16,8 @@ Public Class UniqID
     ''' </summary>
     ''' <param name="oPic"></param>
     ''' <returns></returns>
-    Public Function GetIdForPic(oPic As OnePic) As Boolean
+    Public Function SetGUIDforPic(oPic As OnePic) As Boolean
+
         Dim sTempId As String = oPic.GetSuggestedGuid
 
         For Each oEngine As UniqIdOneType In _engines
@@ -40,7 +41,7 @@ Public Class UniqID
         If oPic.ArchivedCount > 0 Then Return ' skoro już był archiwizowany, to na pewno mamy IDa zapisanego
 
         If String.IsNullOrWhiteSpace(oPic.PicGuid) Then
-            GetIdForPic(oPic)
+            SetGUIDforPic(oPic)
         End If
 
         For Each oEngine As UniqIdOneType In _engines

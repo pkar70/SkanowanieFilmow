@@ -1,4 +1,5 @@
-﻿Imports vb14 = Vblib.pkarlibmodule14
+﻿Imports Vblib
+Imports vb14 = Vblib.pkarlibmodule14
 Public Class CloudArchiving
 
     Private _lista As List(Of DisplayArchive)
@@ -129,7 +130,7 @@ Public Class CloudArchiving
 
     Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
 
-        If Not Await LocalArchive.CheckGuidy() Then Return
+        If Not Await LocalArchive.CheckSerNo() Then Return
 
         Application.ShowWait(True)
         uiProgBarInEngine.Maximum = oSrc.maxCount
@@ -140,6 +141,9 @@ Public Class CloudArchiving
         Dim bDirTreeToSave As Boolean = False
 
         Dim sErr As String = ""
+
+        'Dim serNoLastArchived As Integer = vb14.GetSettingsInt("serNoLastArchived")
+        'Dim serNoLastArchivedInit As Integer = serNoLastArchived
 
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             Dim sErr1 As String = ""
@@ -159,6 +163,12 @@ Public Class CloudArchiving
             End If
 
             If oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For
+
+            'If oPic.serno < 1 Then
+            '    ' bo może już być przydzielony z archiwizacji na inny dysk
+            '    serNoLastArchived += 1
+            '    oPic.serno = serNoLastArchived
+            'End If
 
             oPic.ResetPipeline()
             Try
@@ -182,6 +192,10 @@ Public Class CloudArchiving
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
+
+        'If serNoLastArchivedInit <> serNoLastArchived Then
+        '    vb14.SetSettingsInt("serNoLastArchived", serNoLastArchived)
+        'End If
 
         If sErr <> "" Then
             Await vb14.DialogBoxAsync("Encountered error(s):" & vbCrLf & sErr)

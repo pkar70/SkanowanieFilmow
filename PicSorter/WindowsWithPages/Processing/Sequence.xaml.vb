@@ -3,7 +3,7 @@ Imports pkar.UI.Configs.Extensions
 
 ' nazwy checkboxów mają uiSequence*, bo żeby się nie powtórzyło z żadnym innym Settingsem
 
-Public Class Sequence
+Public Class SequenceHelper
 
     Private _loading As Boolean = True
 
@@ -19,7 +19,7 @@ Public Class Sequence
         CheckAutoExif()
         CheckGeoTag()
         CheckTargetDir()
-        CheckGUID()
+        'CheckGUID()
         CheckCloudArch()
         CheckLocalArch()
 
@@ -73,23 +73,23 @@ Public Class Sequence
         Return False
     End Function
 
-    Private Function CheckGUID() As Boolean
-        Dim bAllOk As Boolean = True
-        If App.GetBuffer.Count > 1 Then
-            For Each oFile As Vblib.OnePic In App.GetBuffer.GetList
-                If String.IsNullOrEmpty(oFile.PicGuid) Then
-                    vb14.DumpMessage("Plik bez GUID: " & oFile.sSuggestedFilename)
+    'Private Function CheckGUID() As Boolean
+    '    Dim bAllOk As Boolean = True
+    '    If App.GetBuffer.Count > 1 Then
+    '        For Each oFile As Vblib.OnePic In App.GetBuffer.GetList
+    '            If String.IsNullOrEmpty(oFile.PicGuid) Then
+    '                vb14.DumpMessage("Plik bez GUID: " & oFile.sSuggestedFilename)
 
-                    bAllOk = False
-                    Exit For
-                End If
-            Next
-        End If
+    '                bAllOk = False
+    '                Exit For
+    '            End If
+    '        Next
+    '    End If
 
-        uiSequenceGUID.IsChecked = bAllOk
+    '    uiSequenceGUID.IsChecked = bAllOk
 
-        Return bAllOk
-    End Function
+    '    Return bAllOk
+    'End Function
 
     Private Function CheckGeoTag() As Boolean
         Dim bAllOk As Boolean = True
@@ -173,7 +173,7 @@ Public Class Sequence
         vb14.SetSettingsBool("uiSequenceRunTaggers", False)
         vb14.SetSettingsBool("uiSequenceAddKeywords", False)
         vb14.SetSettingsBool("uiSequenceAddDescriptions", False)
-        vb14.SetSettingsBool("uiSequenceGUID", False)
+        'vb14.SetSettingsBool("uiSequenceGUID", False)
         vb14.SetSettingsBool("uiSequenceAddFolder", False)
         vb14.SetSettingsBool("uiSequencePublish", False)
         vb14.SetSettingsBool("uiSequenceCloudArch", False)

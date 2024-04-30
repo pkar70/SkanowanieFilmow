@@ -42,19 +42,12 @@ Public Class LocalArchive
         Return iSize
     End Function
 
-    Public Shared Async Function CheckGuidy() As Task(Of Boolean)
-
-        'If Not Application.GetBuffer.GetList.
-        '    Any(Function(x) (Not String.IsNullOrEmpty(x.TargetDir)) And String.IsNullOrEmpty(x.PicGuid)) Then
-        '    Return True
-        'End If
-
-        'Return Await vb14.DialogBoxYNAsync("Są zdjęcia bez GUID, kontynuować?")
+    Public Shared Async Function CheckSerNo() As Task(Of Boolean)
 
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
-            If String.IsNullOrEmpty(oPic.PicGuid) Then
-                Return Await vb14.DialogBoxYNAsync($"Są zdjęcia bez GUID, kontynuować? ({oPic.sSuggestedFilename}")
+            If oPic.serno < 1 Then
+                Await vb14.MsgBoxAsync($"Są zdjęcia bez serno, nie mogę kontynuować! ({oPic.sSuggestedFilename}")
             End If
         Next
         Return True
@@ -176,7 +169,7 @@ Public Class LocalArchive
     Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
         vb14.DumpCurrMethod()
 
-        If Not Await CheckGuidy() Then Return
+        If Not Await CheckSerNo() Then Return
 
         If Not Await Me.DialogBoxYNAsync("Czy juz poprawiles dopisywanie do archive?") Then Return
 
@@ -201,6 +194,9 @@ Public Class LocalArchive
         Me.ProgRingShow(True)
         Me.ProgRingSetText(oSrc.nazwa)
 
+        'Dim serNoLastArchived As Integer = vb14.GetSettingsInt("serNoLastArchived")
+        'Dim serNoLastArchivedInit As Integer = serNoLastArchived
+
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir))
             ' If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
 
@@ -220,6 +216,12 @@ Public Class LocalArchive
             End If
 
             If oPic.IsArchivedIn(oSrc.nazwa) Then Continue For
+
+            'If oPic.serno < 1 Then
+            '    ' bo może już być przydzielony z archiwizacji na inny dysk
+            '    serNoLastArchived += 1
+            '    oPic.serno = serNoLastArchived
+            'End If
 
             sErr1 = Await oSrc.engine.SendFile(oPic)
 
@@ -245,6 +247,7 @@ Public Class LocalArchive
             ' zapisujemy do globalnego archiwum tylko raz, bez powtarzania przy zapisie do każdego LocalArch
             ' tu był błąd! bylo <1, ale to już jest po dopisywaniu; więc ma być +1
             If oPic.ArchivedCount = 1 Then
+                ' *TODO* ewentualnie, dac tutaj oPic.Clone i usuniecie z IsCloudPublishMentioned "L:<loginguid>"
                 newlyArchived.Add(oPic)
             End If
             '    If sIndexLongJson <> "" Then sIndexLongJson &= ","
@@ -256,6 +259,11 @@ Public Class LocalArchive
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
         Next
+
+        ' bez zapisu jesli się nie zmieniło - niewielka, ale jednak oszczędność zapisywania na dysk
+        'If serNoLastArchivedInit <> serNoLastArchived Then
+        '    vb14.SetSettingsInt("serNoLastArchived", serNoLastArchived)
+        'End If
 
         Me.ProgRingShow(False)
 

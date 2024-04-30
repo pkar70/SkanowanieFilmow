@@ -193,7 +193,7 @@ Public Class DatabaseSQL
         If Not IsLoaded Then If Not Load() Then Return False
 
         For Each oPic As OnePic In nowe
-            oPic.serno = 0  ' czyli default
+            'oPic.serno = 0  ' czyli default
             _allPics.zdjecia.Add(oPic)
         Next
 
@@ -387,7 +387,7 @@ Public Class DatabaseSQL
             builder.Entity(GetType(AutoWeatherHourSingle)).HasNoKey()
 
             'Unable to track an instance of type 'OnePic' because it does not have a primary key. Only entity types with primary keys may be tracked.
-            builder.Entity(GetType(OnePic)).HasKey("serno")
+            builder.Entity(GetType(OnePic)).HasKey("SQLid")
 
             'Exception thrown: 'System.InvalidOperationException' in Microsoft.EntityFrameworkCore.dll
             ' No suitable constructor found for entity type 'ExifTag'. The following constructors had parameters that could not be bound to properties of the entity type: cannot bind 'sSource' in 'ExifTag(string sSource)'.
@@ -407,6 +407,8 @@ Public Class DatabaseSQL
 
         ' na potrzeby SQL i EF
         <ComponentModel.DataAnnotations.Key>
+        Public Property SQLid As Integer
+
         Public Property serno As Integer
 
         Public Property Archived As String
