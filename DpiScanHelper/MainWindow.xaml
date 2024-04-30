@@ -1,0 +1,26 @@
+﻿<Window x:Class="MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DpiScanHelper"
+        mc:Ignorable="d"
+        Title="DPI scan calculator" Height="200" Width="200" WindowStyle="ToolWindow" >
+    <StackPanel Margin="2,2,2,2">
+        <TextBlock Text="Rozmiar odbitki (mm):" FontWeight="Bold"/>
+        <TextBox Name="uiWys" InputScope="Digits" Width="50" HorizontalAlignment="Left" TextChanged="uiPrzelicz_TextChanged"/>
+        <TextBox Name="uiSzer" InputScope="Digits" Width="50" HorizontalAlignment="Left" TextChanged="uiPrzelicz_TextChanged"/>
+        <TextBlock Text="Założenie: papier 75/mm " />
+        <TextBlock Text="Źródło:" Margin="0,10,0,0" FontWeight="Bold"/>
+        <ComboBox Name="uiZrodlo" Width="130" HorizontalAlignment="Left" SelectionChanged="uiPrzelicz__SelectionChanged" >
+            <ComboBoxItem Content="127: 4×4 @90/mm" IsSelected="True"/>
+            <ComboBoxItem Content="127: 4×6 @90/mm" />
+            <ComboBoxItem Content="120: 6×6 @100/mm" />
+            <ComboBoxItem Content="135: 3.6×2.4 @100/mm" />
+            <ComboBoxItem Content="135: 2.4×2.4 @80/mm" />
+        </ComboBox>
+
+        <TextBlock Text="Zalecane DPI skanowania" FontWeight="Bold" Margin="0,10,0,0" />
+        <TextBlock Text="" Name="uiScanDpi"/>
+    </StackPanel>
+</Window>
