@@ -12,17 +12,17 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel Grid.Row="1">
-            <Button Name="uiRetrieve" Content="Retrieve" Margin="5,15,5,5" FontSize="18" Click="uiRetrieve_Click"/>
+            <Button Name="uiRetrieve" Content="Retrieve" Margin="5,15,5,5" FontSize="18" Click="uiRetrieve_Click" ToolTip="Importowanie zdjęć"/>
             <!--<Button Name="uiSharingRetrieve" Content="Get from peers" Margin="5,15,5,5" FontSize="18" Click="uiSharingRetrieve_Click" />-->
-            <Button Name="uiBrowse" Content="Buffer" Margin="5,15,5,5" FontSize="18" Click="uiBrowse_Click"/>
-            <Button Name="uiAutotag" Content="Try autotag (xx)" Margin="5,15,5,5" FontSize="18"  Click="uiAutotag_Click"/>
-            <Button Name="uiSharingDescrips" Content="Peers' descs (xx)" Margin="5,15,5,5" FontSize="18" Click="uiSharingDescrips_Click" />
-            <Button Name="uiBatchEdit" Content="Batch edit" Margin="5,15,5,5" FontSize="18" Click="uiBatchEdit_Click" />
-            <Button Name="uiCloudArch" Content="Cloud arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudArch_Click" />
-            <Button Name="uiLocalArch" Content="Local arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiLocalArch_Click" />
-            <Button Name="uiPublish" Content="Publish (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudPublish_Click" />
+            <Button Name="uiBrowse" Content="Buffer" Margin="5,15,5,5" FontSize="18" Click="uiBrowse_Click" ToolTip="Przeglądanie zdjęć w buforze i operacje na nich"/>
+            <Button Name="uiAutotag" Content="Try autotag (xx)" Margin="5,15,5,5" FontSize="18"  Click="uiAutotag_Click" ToolTip="Dodawanie metadanych przy pomocy automatów"/>
+            <Button Name="uiSharingDescrips" Content="Peers' descs (xx)" Margin="5,15,5,5" FontSize="18" Click="uiSharingDescrips_Click"  ToolTip="Opisy które nadesłano"/>
+            <Button Name="uiBatchEdit" Content="Batch edit" Margin="5,15,5,5" FontSize="18" Click="uiBatchEdit_Click"  ToolTip="Grupowe przetwarzanie zdjęć"/>
+            <Button Name="uiCloudArch" Content="Cloud arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudArch_Click"  ToolTip="Archiwizowanie zdjęć w chmurze"/>
+            <Button Name="uiLocalArch" Content="Local arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiLocalArch_Click"  ToolTip="Archiwizowanie zdjęć na dyskach"/>
+            <Button Name="uiPublish" Content="Publish (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudPublish_Click"  ToolTip="Publikowanie zdjęć w sieci"/>
 
-            <Button Content="Sequence helper" Margin="5,35,5,5" FontSize="18" Click="uiSequence_Click" />
+            <Button Content="Sequence helper" Margin="5,35,5,5" FontSize="18" Click="uiSequence_Click"  ToolTip="Ułatwiacz - co kiedy zrobić?"/>
         </StackPanel>
     </Grid>
 </Window>

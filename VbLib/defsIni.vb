@@ -19,6 +19,7 @@ uiTree0Dekada=True
 uiTree2Miesiac=True
 uiCacheThumbs=True
 uiSlideShowSeconds=5
+uiSerNoDigits=6
 
 uiAzureMaxBatch=500
 uiVisualCrossMaxBatch=400

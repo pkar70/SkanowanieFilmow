@@ -16,12 +16,12 @@
             <TextBlock Text="PicSort" FontSize="18" HorizontalAlignment="Center" />
             <TextBlock FontSize="10" HorizontalAlignment="Center" Name="uiVers" Margin="5,1,5,5"/> 
 
-                <Button Name="uiProcess" Content="Process (xx)" Margin="5,15,5,5" FontSize="18" Click="uiProcess_Click"/>
-                <Button Name="uiBrowseArch" Content="Browse arch" Margin="5,15,5,5" FontSize="18" Click="uiBrowseArch_Click"/>
-                <Button Name="uiSearch" Content="Search arch" Margin="5,15,5,5" FontSize="18" Click="uiSearch_Click"/>
-            <Button Name="uiStats" Content="Statistics" Margin="5,15,5,5" FontSize="18" Click="uiStats_Click"/>
+                <Button Name="uiProcess" Content="Process (xx)" Margin="5,15,5,5" FontSize="18" Click="uiProcess_Click" ToolTip="Porządkowanie zdjęć"/>
+                <Button Name="uiBrowseArch" Content="Browse arch" Margin="5,15,5,5" FontSize="18" Click="uiBrowseArch_Click" ToolTip="Przeglądanie archiwum wg katalogów"/>
+                <Button Name="uiSearch" Content="Search arch" Margin="5,15,5,5" FontSize="18" Click="uiSearch_Click" ToolTip="Wyszukiwanie w archiwum"/>
+            <Button Name="uiStats" Content="Statistics" Margin="5,15,5,5" FontSize="18" Click="uiStats_Click" ToolTip="Statystyki zdjęć w archiwum"/>
             <Button Name="uiSlideshow" Content="Slideshow" IsEnabled="false" Margin="5,15,5,5" FontSize="18"/>
-                <Button Name="uiSettings" Content="Settings" Margin="5,15,5,5" FontSize="18" Click="uiSettings_Click"/>
+                <Button Name="uiSettings" Content="Settings" Margin="5,15,5,5" FontSize="18" Click="uiSettings_Click" ToolTip="Ustawienia"/>
 
 
                 <!--get/process (xx)] -> kolejne etapy procesu, xx: buffer.count+delayedcopy.count(any)

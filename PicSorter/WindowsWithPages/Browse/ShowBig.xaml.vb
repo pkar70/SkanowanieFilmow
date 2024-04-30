@@ -382,6 +382,7 @@ Public Class ShowBig
                 If Not oWnd.ShowDialog Then Return
                 Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
                 _picek.oPic.AddDescription(oDesc)
+                ' *TODO* dodawanie do wysłania (PeerSharing) Application.GetShareDescriptionsOut.Add!
             Case Else
                 System.Media.SystemSounds.Beep.Play()
         End Select

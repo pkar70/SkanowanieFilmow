@@ -285,12 +285,12 @@ Partial Class Application
         Return gShareDescriptionsIn
     End Function
 
-    Private Shared gShareDescriptionsOut As BaseList(Of Vblib.ShareDescription)
+    Private Shared gShareDescriptionsOut As ShareDescOutList
 
-    Public Shared Function GetShareDescriptionsOut() As BaseList(Of ShareDescription)
+    Public Shared Function GetShareDescriptionsOut() As ShareDescOutList
         If gShareDescriptionsOut IsNot Nothing Then Return gShareDescriptionsOut
 
-        gShareDescriptionsOut = New BaseList(Of ShareDescription)(Application.GetDataFolder, "shareOutgoing.json")
+        gShareDescriptionsOut = New ShareDescOutList(Application.GetDataFolder)
         gShareDescriptionsOut.Load()
         Return gShareDescriptionsOut
     End Function
@@ -309,9 +309,9 @@ Partial Class Application
         New Vblib.Auto_OSM_POI(Application.GetDataFolder),
         New Auto_WinOCR.AutoTag_WinOCR,
         New Auto_WinFace.Auto_WinFace,
-        New Vblib.Auto_AzureTest(New Process_ResizeHalf),
-        New Auto_CreateId(New UniqID(Application.GetDataFolder))
+        New Vblib.Auto_AzureTest(New Process_ResizeHalf)
     }
+    ' New Auto_CreateId(New UniqID(Application.GetDataFolder))
 
     Public Shared gPostProcesory As Vblib.PostProcBase() = {
         New Process_AutoRotate,

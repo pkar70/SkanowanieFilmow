@@ -31,8 +31,8 @@
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
             <CheckBox Name="uiDescribeSetAndNext" Content="_Set&amp;next" HorizontalAlignment="Left" Margin="5,0,0,0" IsChecked="True" />
-            <Button Content=" Add " HorizontalAlignment="Left" Click="uiAdd_Click" Name="uiAdd" Margin="303,0,0,0" />
-            <Button Content=" Apply " HorizontalAlignment="Left" Click="uiApply_Click" Name="uiApply" Margin="344,0,0,0" IsDefault="true" Grid.ColumnSpan="2" />
+            <Button Content=" Add " HorizontalAlignment="Left" Click="uiAdd_Click" Name="uiAdd" Margin="293,0,0,0" />
+            <Button Content=" Apply " HorizontalAlignment="Left" Click="uiApply_Click" Name="uiApply" Margin="333,0,0,0" IsDefault="true" Grid.ColumnSpan="2" />
         </Grid>
 
     </StackPanel>

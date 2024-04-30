@@ -42,6 +42,8 @@ Public Class QueryOgolne
     Public Property MaxDate As Date
     Public Property IgnoreYear As Boolean
     Public Property GUID As String = ""
+    Public Property serno As Integer
+    Public Property reel As String
     Public Property Tags As String = ""
     <JsonIgnore>
     Public Property AllSubTags As List(Of String)
@@ -59,6 +61,7 @@ Public Class QueryOgolneAdvanced
     Public Property Source As String = ""
     Public Property TargetDir As String = ""
     Public Property Filename As String = ""
+    Public Property AllowedPeers As String = ""
     Public Property Published As String = ""
     Public Property CloudArchived As String = ""
     Public Property TypePic As Boolean = True

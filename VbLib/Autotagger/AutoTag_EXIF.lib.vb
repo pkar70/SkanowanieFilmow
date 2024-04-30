@@ -34,7 +34,7 @@ Public Class AutoTag_EXIF
             If oFile.MatchesMasks("*.nar") OrElse oFile.MatchesMasks("*.stereo.zip") Then Return GetForNARCompact(oFile)
 
             ' filmy: mov, mp4
-            If oFile.MatchesMasks("*.mp4;*.mov;*.avi") Then Return GetForMovieFile(oFile)
+            If oFile.IsMovie Then Return GetForMovieFile(oFile)
 
             ' filmy: avi
             'If oFile.MatchesMasks("*.avi", "") Then Return GetForAviFile(oFile)

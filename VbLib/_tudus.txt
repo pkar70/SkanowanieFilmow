@@ -112,21 +112,25 @@ MenuItem.SubmenuOpened Event
 == SORTED:
 
 ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
+* wymaga zmian w archfull.json!
+* robienie tego w batchach, np. po 1000 zdjęć
+* może na początku "podsumowanie" wielkości - to może być tool, "ile miejsca zajęte"
 na App.GetArchives - GetPicture(oPic), uzupełnia oContent wedle wszystkich istniejących, próbując znaleźć takie które plik ma.
 ARCHIVE/PUBLISH: Amazon Photo
 ARCHIVE/PUBLISH: czemu archiwizuje png/thumbsy (czasem)? a może je tworzy przy oknie Browse?
 ARCHIVE/PUBLISH: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 ARCHIVE: katalog Target, oraz katalog TargetScan ?
 ARCHIVE/PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
+ARCHIVE(local): ewentulanie usuwac z IsCloudPublishMentioned entries "L:<loginguid>" przed archiwizacja, zob. newlyArchived.Add(oPic)
 
 AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
-AUTOEXIF: full file Exif dump
-
 
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
 AUTOTAG: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
+
+AUTOTAG: rozpoznawanie zwierząt, roślin, samochodów
 
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
 BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
@@ -137,9 +141,6 @@ BROWSER SET-TARGET-DIR:jakos weryfikacja czy już nie ma takiego (żeby się nie
 BROWSER: #Wnd KWD SMALL: dodanie Kwd, razem z opisem może jednak, bo do SEARCH byłoby dobrze mieć "Kurcz" w opisie
 BROWSER action:keywords, brakuje jednego poziomu słów kliczowych?
 BROWSER.Action: LOCK/UNLOCK - tych zdjec nie wysyla nigdzie
-BROWSER: korekta daty: pole teraz, i teraz w telefonie; wylicza sobie offset.
-9 june 19:13 -> 11 june 18:01, wtedy chyba GPS ma też błąd
-BROWSER: pliki zniknięte - najpierw zapytać o clip nazw, potem czy skasować
 BROWSER: DRAG&drop, może z odpalaniem dedykowanego publish? (o nazwie "drag") - ale czy to potrzebne po dodaniu email?
 BROWSER: open folder (explorer, albo i lista w Settingsach)
 BROWSER: kasując pliki ("już wysłane") nie kasuje BAKów?
@@ -152,6 +153,8 @@ BROWSER: do listy publisherów dodawać "sharin»", pod nim "logins/servers", z 
 BROWSER: droptarget, zassanie pliku; a jak shellobject, to razem z metadanymi?
 BROWSER: dodawanie pliku jak z FB, z podaniem linku, informacji, itp.
 
+
+
 CMDLINE: retrieve SOURCE
 CMDLINE: autotag TAGGER
 
@@ -161,22 +164,33 @@ CHOMIK: https://restsharp.dev/v107/ , tu jest o exhausting, że powinno byc nows
 
 CONFIG: combo z publisherami do email? 
 
-DIRTREE: copy to onedrive teraz jest tylko z okna katalogów, a tam sie teraz rzadziej wchodzi (tworzenie dirsów w trakcie)
+DIRTREE: 'copy to onedrive' teraz jest tylko z okna katalogów, a tam sie teraz rzadziej wchodzi (tworzenie dirsów w trakcie)
 DIRTREE: użyć structlist.MaintainCopy
 
 IMPORT: nowa funkcjonalność, import, podaje się zakres dat, browse folder, i ściaga z foldertree podpadające zdjęcia
+IMPORT: razem z drzewkiem, jakoś tak by przyjmować zdjęcia już sortowane (analogowe)
+IMPORT dodawanie zdjec z facebooka - osobny dir narzucany? jakis reel, albo cos takiego?
+IMPORT ale fotka wymaga login, wiec i tak trzeba sciagnac na dysk. Moze "import last from downloads"?
 
 KEYWORDS/GEO: może przy dodawaniu manual geo automatycznie dopisywać keywordy?
 
 MAINPAGE: "open folder in-place", bez import jako takiego? tylko lokalny buffer.json?
 MAINPAGE: ewentualnie osobne okno, jak Archiwizacja, i tam wszystkie Cloudy dać (do ściągania komentarzy do zdjęć)
 MAINPAGE: "uruchamiasz drugi raz; poszukaj okna pierwszego uruchomienia" i OK zamyka program
+MAINPAGE: usunąć 'max' button?
 
 MAIN:BROWSE: ewentualnie "recursive"?
 MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
 MAIN:BROWSE: zdjęcia na dzisiaj w historii (znajdywanie wszystkich) (ale dokładnie dzisiaj raczej niż tydzień/miesiąc)
 
 PEERS: Client na naszym telefonie, dla niego utrzymywać Purge
+PEERS: FindAllPics - wyszukiwania przychodzących komentarzy
+PEERS: wysyłanie komentarzy - gdzie? ReviewPeersDescrs
+PEERS: BrowseRemoteDescr do sprawdzenia
+
+PICEDIT: możliwosć podmiany zdjęcia w archiwach (poprawione zdjęcie...)
+
+PROCESS: usunąć 'max' button?
 
 POSTPROCESS: jeśli któryś etap nie da rady, to pytanie (DialogBoxYN) co zrobić
 
@@ -189,8 +203,8 @@ PUBLISH/ARCH: do katalogu VPN, z filtrowaniem (nie =X, nie Nudne, nie -?U - do t
 PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
 PUBLISH copy out - bez processing, Drag&Drop - processing, email - processing, wybór z różnych o nazwie "email" itp
 PUBLISH: copy to... z browserem, oraz clip copy - do clipboard, content konkretnego, albo liste; moze copy pic do clip tylko z browse (gdzie jest caly wczytany)
-PUBLISH: przez DLNA?
-
+PUBLISH: przez DLNA? -choć to może do slideshow dodać
+PUBLISH: imgur
 PUBLISH: jakiś letsupload.io, i tym podobne; pojedyncze lub do ZIPa - do dzielenia się
 https://nugetmusthaves.com/Package/CloudRail.SDK
 https://location.foursquare.com/products/places/
@@ -199,7 +213,7 @@ RETRIEVE typ: chomikuj? z podanego katalogu? do dzielenia się z innymi?
 RETRIEVE: dla Purge, progressbar od nowa
 RETRIEVE: reakcja na disk full (sprawdzenie przed próbą ściągania)
 RETRIEVE Jako reakcja na drag&DROP
-RETROEVE run AUTOEXIF gdy settings tak mówi
+RETRIEVE run AUTOEXIF gdy settings tak mówi
 RETRIEVE: bez sensu mozliwosc maxymalizacji okna
 
 SEARCH: sekcja OPAD
@@ -208,19 +222,21 @@ SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów 
 SEARCH: poza tagiem również tagi nadrzędne (-ROK dla -DW)
 SEARCH: czemu nie robi wait?
 
-SETTINGS: włączenie AUTOEXIF przy Retrieve, by się samo robiło? Ale na pliku skopiowanym do bufora, nie wcześniej
+SEARCHBYPIC: Bing umie http://, ale nie umie z portu
+
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 SETTINGS: keywords: statystyka
 SETTINGS: cloudpubl, exif - nie pokazuje aktualnego stanu (C)
 SETTINGS: cmdline -name xxx : zmiana nazwy folderu z settingsami, by mogło być kilka instancji
 SETTINGS: umożliwienie kilku instancji jednocześsnie
+SETTINGS: PEER: gdy w Browse zaznaczam dla kogoś, to można byłoby komponować emaila (masz nowe zdjęcia), z picsort://
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 
 SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
 SHOWBIG: drag source (duży plik, nie ikonka jak z Browse)
-SHOWBIG home/end w showbig?
+DONE SHOWBIG home/end w showbig?
 
 
 STEREO:BUG: podczas pakowania do stereo.zip, zapisuje sobie jedną ramkę jako "purge", a to jeszcze nieprawda
@@ -236,9 +252,20 @@ STEREO: * jps z sieci
 STEREO: * telefony rowne  ## DONE
 STEREO: * telefony różne
 
-STRUCT może dodać serno do JSONa arch, i dodawac go jako numer kolejny przy dodawaniu do archindex
-STRUCT wtedy SQL nie autogen(id), a jedynie uniq(id)
+TEMP serno - żeby nie psuło w SQL! (DatabaseSQL, 3 wystąpienia)
+TEMP uiSerNoDigits
+TEMP wyszukiwanie dla peer nowszych - wedle serno teraz mozna zawsze, nie tylko w SQL :)
+TEMP  - zmiana protokolu
+TEMP skoro SQL ma wlasna definicje OnePic, sprawdzic co jeszcze sie zmienilo :) [inherits?]
+TEMP sprawdzic eksport do SQL czy zadziala
+TEMP przesledzic dopisywanie remote description do bufora - tak zeby to zadzialalo
+TEMP uniqid - moj w OnePic, ale w EXIF tez, bo mozna odczytac (i wstawic do AUTOEXIF), tak samo reel
+TEMP szukanie wedle guid jako most probably date
+TEMP szukanie min/max date, datetimepicker?
+TEMP konwersja z 'dateprefix' na min/max, 1970, 1970.05, 1970.05.23, 1970.05.23 17 -
 
+STRUCT.ROLL (REEL) Add roll: okienko na prefix, i up/down (tzn. "127.01", i dodaje ".01" w górę, albo ".xx" w dół do ".01")
+STRUCT.ROLL dodawanie tego do EXIFbasic, oraz w ogole do EXIF - to już jest, bo jest takie pole, ale nie w OnePic tylko w ExifTag
 
 TARGETDIR: brak podzialu date niech robi brak podzialu geo
 

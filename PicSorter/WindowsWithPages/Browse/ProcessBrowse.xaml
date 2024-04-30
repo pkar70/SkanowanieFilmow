@@ -143,6 +143,7 @@
                         <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" UseSelectedItems="True"/>
                         <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiGeotagMetadataChanged" UseSelectedItems="True" />
                         <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />
+                        <!--<local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />-->
                         <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" />
                         
                         <MenuItem Header="Lock" Click="uiActionLock_Click"  />
@@ -172,7 +173,7 @@
         <ListView Name="uiPicList" Grid.Row="1" Margin="5,5,5,5"
                       ScrollViewer.HorizontalScrollBarVisibility="Disabled" 
                       ScrollViewer.VerticalScrollBarVisibility="Auto" Grid.ColumnSpan="2"
-                        SelectionChanged="uiPicList_SelChanged" >
+                        SelectionChanged="uiPicList_SelChanged" KeyUp="uiPicList_KeyUp">
 
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
@@ -233,6 +234,7 @@
                                             <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
                                             <!-- readonly metadata 2 -->
                                             <local:PicMenuShowWiki />
+                                            <local:PicMenuCopyId />
                                             <local:PicMenuCopyOut  />
                                             <Separator/>
                                             <local:PicMenuDeleteTemps />

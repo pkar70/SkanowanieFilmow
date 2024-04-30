@@ -124,7 +124,9 @@ Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "lib14_httpClnt", "lib14_htt
 EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "lib_n6_Stereo", "lib_Stereo\lib_n6_Stereo.vbproj", "{39F69A51-F46A-499C-8395-2F04EBDB6090}"
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Anagly", "Anagly\Anagly.vbproj", "{2248AAF6-D8E7-4C76-8FB0-93FF60C49A81}"
+Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "Anagly", "Anagly\Anagly.vbproj", "{2248AAF6-D8E7-4C76-8FB0-93FF60C49A81}"
+EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "DpiScanHelper", "DpiScanHelper\DpiScanHelper.vbproj", "{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1230,6 +1232,26 @@ Global
 		{2248AAF6-D8E7-4C76-8FB0-93FF60C49A81}.Release|x64.Build.0 = Release|Any CPU
 		{2248AAF6-D8E7-4C76-8FB0-93FF60C49A81}.Release|x86.ActiveCfg = Release|Any CPU
 		{2248AAF6-D8E7-4C76-8FB0-93FF60C49A81}.Release|x86.Build.0 = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|ARM.Build.0 = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|ARM64.Build.0 = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|x64.Build.0 = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Debug|x86.Build.0 = Debug|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|ARM.ActiveCfg = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|ARM.Build.0 = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|ARM64.ActiveCfg = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|ARM64.Build.0 = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|x64.ActiveCfg = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|x64.Build.0 = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|x86.ActiveCfg = Release|Any CPU
+		{1E1E57CA-0958-47C6-9236-1D4A3B2ED114}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

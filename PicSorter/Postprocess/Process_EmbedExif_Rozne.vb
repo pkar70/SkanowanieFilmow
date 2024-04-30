@@ -71,8 +71,8 @@ Public Class Process_EmbedExif
             oExifLib.SetTagValue(CompactExifLib.ExifTag.PkarRestriction, oExif.Restrictions, CompactExifLib.StrCoding.UsAscii)
         End If
 
-        Dim tempGUID As String = oPic.PicGuid
-        If String.IsNullOrWhiteSpace(tempGUID) Then tempGUID = oPic.GetSuggestedGuid
+        ' identyfikator
+        Dim tempGUID As String = oPic.GetFormattedSerNo
         If Not String.IsNullOrWhiteSpace(tempGUID) Then
             oExifLib.SetTagValue(CompactExifLib.ExifTag.ImageUniqueId, tempGUID, CompactExifLib.StrCoding.UsAscii)
         End If
@@ -175,10 +175,13 @@ Public Class Process_EmbedBasicExif
             oExifLib.SetTagValue(CompactExifLib.ExifTag.Copyright, oExif.Copyright, CompactExifLib.StrCoding.UsAscii)
         End If
 
-        Dim tempGUID As String = oPic.PicGuid
-        If String.IsNullOrWhiteSpace(tempGUID) Then tempGUID = oPic.GetSuggestedGuid
+        ' identyfikator
+        Dim tempGUID As String = oPic.GetFormattedSerNo
         If String.IsNullOrWhiteSpace(tempGUID) Then tempGUID = oPic.sSuggestedFilename
-        oExifLib.SetTagValue(CompactExifLib.ExifTag.UserComment, tempGUID, CompactExifLib.StrCoding.UsAscii)
+        If Not String.IsNullOrWhiteSpace(tempGUID) Then
+            oExifLib.SetTagValue(CompactExifLib.ExifTag.ImageUniqueId, tempGUID, CompactExifLib.StrCoding.UsAscii)
+            oExifLib.SetTagValue(CompactExifLib.ExifTag.UserComment, tempGUID, CompactExifLib.StrCoding.UsAscii)
+        End If
 
         'Using oFileStream As Stream = IO.File.Open(oPic.sFilenameEditDst, IO.FileMode.Create)
         ' oExifLib.Save(oStream.AsStream, oFileStream, 0) ' (orgFileName)
@@ -193,8 +196,6 @@ Public Class Process_EmbedBasicExif
 
         Return True
     End Function
-
-
 
 End Class
 

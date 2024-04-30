@@ -46,7 +46,8 @@ Public Class OnePic
     Public Property sharingFromGuid As String   ' a'la UseNet Path, tyle że rozdzielana ";"; GUIDy kolejne; wpsywane przez httpserver.lib; prefiksy: "L:" z loginu, "S:" z serwera
     Public Property sharingLockSharing As Boolean
 
-    <Newtonsoft.Json.JsonIgnore>
+    Public Property allowedPeers As String
+
     Public Property serno As Integer
 
     'Public Property sortOrder As String
@@ -521,6 +522,18 @@ Public Class OnePic
         Return sRet.Trim
     End Function
 
+    Public Function GetSumOfDescriptionsKwds() As String
+        If descriptions Is Nothing Then Return ""
+
+        Dim sRet As String = ""
+        For Each oDesc As OneDescription In descriptions
+            sRet &= " " & oDesc.keywords
+        Next
+
+        Return sRet
+    End Function
+
+
     Public Function GetSumOfCommentText() As String
         Dim sRet As String = ""
 
@@ -545,7 +558,7 @@ Public Class OnePic
             Next
         End If
         ' If String.IsNullOrEmpty(opis.data) Then opis.data = Date.Now.ToString("yyyy.MM.dd HH:mm")
-        descriptions.Add(opis)
+        AddDescription(opis)
 
         TagsChanged = True
     End Sub
@@ -838,34 +851,38 @@ Public Class OnePic
         If Not String.IsNullOrWhiteSpace(oAddExif.Author) Then oToExif.Author = oAddExif.Author
 
         If Not String.IsNullOrWhiteSpace(oAddExif.Copyright) Then
-            If oAddExif.Copyright.Contains("%") And Not String.IsNullOrWhiteSpace(oToExif.Copyright) Then
-                ' special case - na koniec, przy publikacji; %1, %3 itp. jako długość odpowiedniego słowa
-                Dim aFull As String() = oToExif.Copyright.Split(" ")
-                Dim aShort As String() = oAddExif.Copyright.Split(" ")
-                oToExif.Copyright = ""
-                For iLp As Integer = 0 To Math.Min(aShort.Length - 1, aFull.Length - 1)
-                    Dim sToken As String = aShort.ElementAt(iLp)
-                    If sToken.StartsWith("%") Then
-                        Dim sOrgWord As String = aFull.ElementAt(iLp)
-                        sToken = sToken.Substring(1)
-                        Dim iLen As Integer = 0
-                        If sToken.StartsWith("^") Then
-                            Integer.TryParse(sToken.Substring(1), iLen)
-                            sOrgWord = sOrgWord.ToUpperInvariant
+            If oAddExif.Copyright.Contains("%") Then
+                If String.IsNullOrWhiteSpace(oToExif.Copyright) Then
+                    oToExif.Copyright = ""
+                Else
+                    ' special case - na koniec, przy publikacji; %1, %3 itp. jako długość odpowiedniego słowa
+                    Dim aFull As String() = oToExif.Copyright.Split(" ")
+                    Dim aShort As String() = oAddExif.Copyright.Split(" ")
+                    oToExif.Copyright = ""
+                    For iLp As Integer = 0 To Math.Min(aShort.Length - 1, aFull.Length - 1)
+                        Dim sToken As String = aShort.ElementAt(iLp)
+                        If sToken.StartsWith("%") Then
+                            Dim sOrgWord As String = aFull.ElementAt(iLp)
+                            sToken = sToken.Substring(1)
+                            Dim iLen As Integer = 0
+                            If sToken.StartsWith("^") Then
+                                Integer.TryParse(sToken.Substring(1), iLen)
+                                sOrgWord = sOrgWord.ToUpperInvariant
+                            Else
+                                Integer.TryParse(sToken, iLen)
+                            End If
+                            If iLen = 0 Then
+                                oToExif.Copyright = oToExif.Copyright & sOrgWord
+                            Else
+                                oToExif.Copyright = oToExif.Copyright & sOrgWord.Substring(0, iLen)
+                            End If
                         Else
-                            Integer.TryParse(sToken, iLen)
+                            oToExif.Copyright = oToExif.Copyright & sToken & " "
                         End If
-                        If iLen = 0 Then
-                            oToExif.Copyright = oToExif.Copyright & sOrgWord
-                        Else
-                            oToExif.Copyright = oToExif.Copyright & sOrgWord.Substring(0, iLen)
-                        End If
-                    Else
-                        oToExif.Copyright = oToExif.Copyright & sToken & " "
-                    End If
 
-                Next
-                oToExif.Copyright = oToExif.Copyright.Trim
+                    Next
+                    oToExif.Copyright = oToExif.Copyright.Trim
+                End If
             Else
                 oToExif.Copyright = oAddExif.Copyright
             End If
@@ -875,11 +892,11 @@ Public Class OnePic
         If Not String.IsNullOrWhiteSpace(oAddExif.DateTimeScanned) Then oToExif.DateTimeScanned = oAddExif.DateTimeScanned
 
         If Not String.IsNullOrWhiteSpace(oAddExif.Restrictions) Then oToExif.Restrictions = oAddExif.Restrictions
-        If Not String.IsNullOrWhiteSpace(oAddExif.PicGuid) Then oToExif.PicGuid = oAddExif.PicGuid
+        'If Not String.IsNullOrWhiteSpace(oAddExif.PicGuid) Then oToExif.PicGuid = oAddExif.PicGuid
 
         If Not String.IsNullOrWhiteSpace(oAddExif.ReelName) Then oToExif.ReelName = oAddExif.ReelName
         If Not String.IsNullOrWhiteSpace(oAddExif.OriginalRAW) Then oToExif.OriginalRAW = oAddExif.OriginalRAW
-        If Not String.IsNullOrWhiteSpace(oAddExif.PicGuid) Then oToExif.PicGuid = oAddExif.PicGuid
+        'If Not String.IsNullOrWhiteSpace(oAddExif.PicGuid) Then oToExif.PicGuid = oAddExif.PicGuid
 
         ' te sklejamy
         oToExif.Keywords = oToExif.Keywords.ConcatenateWithComma(oAddExif.Keywords)
@@ -989,6 +1006,41 @@ Public Class OnePic
 
         DialogBox("zapomniales ze nie umiem stworzyc ID dla bezdatowych?" & vbCrLf & InBufferPathName)
         Return ""
+    End Function
+
+    ''' <summary>
+    ''' Tworzy ID z SerNo, lub sSuggestedFilename - dla Publish/EXIF
+    ''' </summary>
+    Public Function GetImageUniqueId() As String
+        Dim tempGUID As String = ""
+
+        If Not String.IsNullOrWhiteSpace(PicGuid) Then tempGUID = PicGuid & ";"
+
+        If serno > 0 Then
+            tempGUID &= GetFormattedSerNo()
+        Else
+            tempGUID &= "#" & sSuggestedFilename
+        End If
+
+        Return tempGUID
+    End Function
+
+    ''' <summary>
+    ''' zwraca serno uzupełnione odpowiednio '0', albo #?? jeśli nie ma ustawionego
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function GetFormattedSerNo() As String
+        If serno > 0 Then
+            Dim tempNum As String = serno
+            Dim brakuje As Integer = GetSettingsBool("uiSerNoDigits") - tempNum.Length
+            For iLp = 1 To brakuje
+                'tempNum = Space(brakuje).Replace(" ", "0") ' Space nie ma w .Net Std 1.4 :)
+                tempNum &= "0"
+            Next
+            Return "#" & tempNum
+        Else
+            Return "#??"
+        End If
     End Function
 
     ''' <summary>
@@ -1137,14 +1189,20 @@ Public Class OnePic
     ''' zwraca ostatni zapis ze ścieżki sharing, czyli GUID poprzedzony L: / S:, lub ""
     ''' </summary>
     ''' <returns>L:guid / S:guid / "" gdy nie ma</returns>
-    Public Function GetLastShareGuid() As String
+    Public Function GetLastShareGuid(Optional withSerno As Boolean = False) As String
         If String.IsNullOrWhiteSpace(sharingFromGuid) Then Return ""
 
         Dim tempGuid As String = sharingFromGuid
         If tempGuid.EndsWith(";") Then tempGuid = tempGuid.Substring(0, tempGuid.Length - 1)
         Dim iInd As Integer = tempGuid.LastIndexOf(";")
-        If iInd < 0 Then Return tempGuid
-        tempGuid = tempGuid.Substring(iInd + 1)
+        If iInd > 0 Then tempGuid = tempGuid.Substring(iInd + 1)
+
+        If Not withSerno Then
+            ' usuwamy ID stamtąd, *TODO* przerobić tak by :serno można było wykorzystać do odsyłania opisów
+            iInd = tempGuid.IndexOf(":")
+            If iInd > 0 Then tempGuid = tempGuid.Substring(0, iInd)
+        End If
+
         Return tempGuid
     End Function
 
@@ -1185,6 +1243,61 @@ Public Class OnePic
             Return Nothing
         End If
     End Function
+
+    Public Function IsPeerAllowed(peer As SharePeer) As Boolean
+        If String.IsNullOrWhiteSpace(allowedPeers) Then Return False
+
+        Return allowedPeers.Contains(peer.GetIdForSharing)
+    End Function
+
+    Public Sub AllowPeer(peer As SharePeer)
+        ' juz jest, nie dodajemy drugi raz
+        If IsPeerAllowed(peer) Then Return
+
+        allowedPeers &= peer.GetIdForSharing
+    End Sub
+
+    Public Sub DenyPeer(peer As SharePeer)
+        If String.IsNullOrWhiteSpace(allowedPeers) Then Return
+        If Not IsPeerAllowed(peer) Then Return
+        allowedPeers = allowedPeers.Replace(peer.GetIdForSharing, "")
+    End Sub
+
+    ''' <summary>
+    ''' Zwraca Clone, po usunięciu informacji które nie powinny trafić do obcych
+    ''' </summary>
+    Public Function StrippedForSharing() As OnePic
+        Dim temp As OnePic = Me.Clone
+        Archived = ""
+        CloudArchived = ""
+        'Public Property Published As Dictionary(Of String, String)
+        'Public Property TargetDir As String ' OneDirFlat.sId
+        'Public Property Exifs As New List(Of ExifTag) ' ExifSource.SourceFile ..., )
+        'Public Property InBufferPathName As String ' przy Sharing: GUID pliku, tymczasowe przy odbieraniu z upload
+        'Public Property sSourceName As String
+        'Public Property sInSourceID As String    ' usually pathname
+        'Public Property sSuggestedFilename As String ' mia┼éo by─ç ┼╝e np. scinanie WP_. ale jednak tego nie robi─Ö (bo moge posortowac po dacie, albo po nazwach - i w tym drugim przypadku mam rozdzia┼é na np. telefon i aparat)
+        'Public Property descriptions As List(Of OneDescription)
+        'Public Property editHistory As List(Of OneDescription)
+        TagsChanged = False
+        'Public Property fileTypeDiscriminator As String = Nothing   ' tu "|>", "*", kt├│re maj─ů by─ç dodawane do miniaturek
+        PicGuid = Nothing
+        'Public Property sharingFromGuid As String   ' a'la UseNet Path, tyle ┼╝e rozdzielana ";"; GUIDy kolejne; wpsywane przez httpserver.lib; prefiksy: "L:" z loginu, "S:" z serwera
+        sharingLockSharing = False
+        allowedPeers = Nothing
+
+        ' te i tak są Ignored, więc nie przejdą przez Clone
+        'Public Property toProcessed As String
+        'Public Property oContent As IO.Stream
+        'Public Property oOstatniExif As ExifTag
+        'Public Property locked As Boolean = False
+        'Private Property _EditPipeline As Boolean = True
+        'Public Property _PipelineInput As Stream
+        'Public Property _PipelineOutput As Stream
+
+        Return temp
+    End Function
+
 #End Region
 
 
@@ -1226,6 +1339,14 @@ Public Class OnePic
             If query.ogolne.MinDate.IsDateValid Then
                 If picMaxDate < query.ogolne.MinDate Then Return False
             End If
+
+            If Not CheckStringContains(oExif.ReelName, query.ogolne.reel) Then Return False
+
+        End If
+
+        ' jeśli podany serno, to wtedy EXACT musi być (i jest to liczba!)
+        If query.ogolne.serno > 0 Then
+            If serno <> query.ogolne.serno Then Return False
         End If
 
         If Not CheckStringContains(PicGuid, query.ogolne.GUID) Then Return False

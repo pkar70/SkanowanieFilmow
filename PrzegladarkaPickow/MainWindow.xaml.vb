@@ -10,7 +10,10 @@ Class MainWindow
     End Sub
 
     Private Async Sub uiFilter_TextChanged(sender As Object, e As TextChangedEventArgs)
-        If uiFilter.Text.Length < 5 Then Return
+        Dim sQuery As String = uiFilter.Text
+        If sQuery.Length < 3 Then Return
+
+        If sQuery.Length < 5 AndAlso sQuery.Substring(0, 1) <> "-" Then Return
 
         Dim aWords As String() = uiFilter.Text.ToLower.Split(" ")
 

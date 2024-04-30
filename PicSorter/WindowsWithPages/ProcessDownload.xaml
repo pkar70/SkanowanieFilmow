@@ -9,7 +9,9 @@
     <Window.Resources>
         <local:KonwersjaDateTime x:Key="KonwersjaDateTime"/>
     </Window.Resources>
-    
+
+    <Grid>
+        
     <StackPanel Margin="5,5,5,5">
         <TextBlock Text="Pobieranie zdjęć" HorizontalAlignment="Center" FontSize="18" />
         <ListView Name="uiLista" Margin="0,5,0,10">
@@ -36,6 +38,7 @@
         </ListView>
 
         <Button Name="uiGetAll" HorizontalAlignment="Center" Width="Auto" Content=" Get all " Click="uiGetAll_Click"/>
-        <ProgressBar Name="uiProgBar" HorizontalAlignment="Stretch" Visibility="Collapsed" />
+        <ProgressBar Name="uiPkAutoProgBar" HorizontalAlignment="Stretch" Visibility="Collapsed" />
     </StackPanel>
+    </Grid>
 </Window>

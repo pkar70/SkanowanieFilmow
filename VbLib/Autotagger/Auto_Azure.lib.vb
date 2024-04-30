@@ -173,6 +173,7 @@ Public Class Auto_AzureTest
         Return client
     End Function
 
+    Public Shared _AzureExceptionsGuard As Integer
     Private Async Function AnalyzeImageLocal(oStream As Stream) As Task(Of MojeAzure)
 
         Dim features As New List(Of ComputerVision.Models.VisualFeatureTypes?)() From {
@@ -191,9 +192,7 @@ Public Class Auto_AzureTest
         Try
             results = Await _oClient.AnalyzeImageInStreamAsync(oStream, features)
         Catch ex As Exception
-            Dim exceptionCount As Integer = GetSettingsInt("uiAzureExceptions")
-            exceptionCount -= 1
-            SetSettingsInt("uiAzureExceptions", exceptionCount)
+            _AzureExceptionsGuard -= 1
 
             If ex.Message.ContainsCI("Forbidden") Then
                 ' ex.Response.Content

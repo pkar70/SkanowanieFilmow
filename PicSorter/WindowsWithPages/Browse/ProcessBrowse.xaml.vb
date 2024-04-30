@@ -131,6 +131,13 @@ Public Class ProcessBrowse
 
 
         Me.ProgRingShow(False)
+
+        If Application.GetShareDescriptionsIn.Count > 0 Then
+            If Await Me.DialogBoxYNAsync("Są nadesłane opisy, włączyć teraz odpowiedni filtr?") Then
+                uiFilterRemoteDesc_Click(Nothing, Nothing)
+            End If
+        End If
+
         'Application.ShowWait(False)
 
         'DescriptionToDescription
@@ -1121,6 +1128,10 @@ Public Class ProcessBrowse
         Dim oItem As FrameworkElement = sender
         Dim oPicek As ThumbPicek = oItem?.DataContext
 
+        PokazNaDuzymMain(oPicek)
+    End Sub
+
+    Private Sub PokazNaDuzymMain(oPicek As ThumbPicek)
         If oPicek Is Nothing Then Return
 
         _redrawPending = False
@@ -1295,16 +1306,23 @@ Public Class ProcessBrowse
         Next
     End Sub
 
-    Private Async Sub uiDelOne_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiDelOne_Click(sender As Object, e As RoutedEventArgs)
         Dim oItem As FrameworkElement = sender
         Dim oPicek As ThumbPicek = oItem?.DataContext
+
+        DeleteAskPicekMain(oPicek)
+    End Sub
+
+    Private Async Function DeleteAskPicekMain(oPicek As ThumbPicek) As Task
+        If oPicek Is Nothing Then Return
 
         If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
             If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcie ({oPicek.oPic.sSuggestedFilename})?") Then Return
         End If
 
         DeletePicekMain(oPicek)
-    End Sub
+    End Function
+
 
     ''' <summary>
     ''' usuwa plik "ze wszystkąd", zapisuje metadane oraz odnawia miniaturki
@@ -1762,7 +1780,7 @@ Public Class ProcessBrowse
             End If
         Next
 
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, True)
     End Sub
 
     Private Sub uiFilterNoGeo_Click(sender As Object, e As RoutedEventArgs)
@@ -1783,7 +1801,7 @@ Public Class ProcessBrowse
 
         If bMamy Then _isGeoFilterApplied = True
 
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, sender IsNot Nothing)
     End Sub
 
     Private Sub uiFilterDwaSek_Click(sender As Object, e As RoutedEventArgs)
@@ -1830,7 +1848,7 @@ Public Class ProcessBrowse
 
         Next
 
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, True)
     End Sub
 
     Private Sub uiFilterNoAzure_Click(sender As Object, e As RoutedEventArgs)
@@ -1852,7 +1870,7 @@ Public Class ProcessBrowse
             End If
         Next
 
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, True)
 
     End Sub
 
@@ -1910,7 +1928,7 @@ Public Class ProcessBrowse
         _isGeoFilterApplied = False
         _isTargetFilterApplied = False
 
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, True)
     End Sub
 
     Private Sub uiFilterAzureAdult_Click(sender As Object, e As RoutedEventArgs)
@@ -1933,7 +1951,7 @@ Public Class ProcessBrowse
         _isGeoFilterApplied = False
         _isTargetFilterApplied = False
 
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, True)
     End Sub
 
     Private Sub uiFilterNoDescr_Click(sender As Object, e As RoutedEventArgs)
@@ -1953,7 +1971,7 @@ Public Class ProcessBrowse
 
         _isGeoFilterApplied = False
         _isTargetFilterApplied = True
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, True)
 
     End Sub
 
@@ -1974,7 +1992,7 @@ Public Class ProcessBrowse
 
         _isGeoFilterApplied = False
         _isTargetFilterApplied = True
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, sender IsNot Nothing)
     End Sub
 
     Private Sub uiFilterNAR_Click(sender As Object, e As RoutedEventArgs)
@@ -1994,7 +2012,7 @@ Public Class ProcessBrowse
 
         _isGeoFilterApplied = False
         _isTargetFilterApplied = False
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, True)
     End Sub
 
 
@@ -2023,7 +2041,7 @@ Public Class ProcessBrowse
 
         _isGeoFilterApplied = False
         _isTargetFilterApplied = False
-        KoniecFiltrowania(bMamy)
+        KoniecFiltrowania(bMamy, True)
     End Sub
 
     Private Sub uiFilter_Click(sender As Object, e As RoutedEventArgs)
@@ -2034,12 +2052,22 @@ Public Class ProcessBrowse
     ''' jeśli były jakieś zaznaczone, to je pokaż; jeśli nie było nic - przywróć wszystkie
     ''' </summary>
     ''' <param name="bMamy">czy był jakiś zaznaczony</param>
-    Private Sub KoniecFiltrowania(bMamy As Boolean)
+    Private Sub KoniecFiltrowania(bMamy As Boolean, bScrollIntoView As Boolean)
         If Not bMamy Then
-            vb14.DialogBox("Nie ma takich zdjęć, wyłączam filtrowanie")
+            Me.MsgBox("Nie ma takich zdjęć, wyłączam filtrowanie")
             uiFilterAll_Click(Nothing, Nothing)
         Else
             RefreshMiniaturki(False)
+
+            If bScrollIntoView Then
+                ' scroll do pierwszego niewygaszonego
+                For Each oThumb As ThumbPicek In uiPicList.ItemsSource
+                    If oThumb.opacity > 0.9 Then 'czyli "bardzo pokazane", choć można byłoby =1; tak jednak może być kilka stopni ukrywania :)
+                        uiPicList.ScrollIntoView(oThumb)
+                        Return
+                    End If
+                Next
+            End If
         End If
     End Sub
 
@@ -2090,7 +2118,7 @@ Public Class ProcessBrowse
             End If
         Next
 
-        KoniecFiltrowania(bWas)
+        KoniecFiltrowania(bWas, True)
 
         Return True
     End Function
@@ -2132,7 +2160,7 @@ Public Class ProcessBrowse
             Next
         Next
 
-        KoniecFiltrowania(bWas)
+        KoniecFiltrowania(bWas, True)
 
     End Sub
 
@@ -2150,7 +2178,7 @@ Public Class ProcessBrowse
             End If
         Next
 
-        KoniecFiltrowania(bWas)
+        KoniecFiltrowania(bWas, True)
 
     End Sub
 
@@ -2160,7 +2188,7 @@ Public Class ProcessBrowse
 
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
-            If Application.GetShareDescriptionsIn.FindForPic(thumb.oPic) Is Nothing Then
+            If Application.GetShareDescriptionsIn.FindAllForPic(thumb.oPic) Is Nothing Then
                 thumb.opacity = _OpacityWygas
             Else
                 thumb.opacity = 1
@@ -2168,7 +2196,7 @@ Public Class ProcessBrowse
             End If
         Next
 
-        KoniecFiltrowania(bWas)
+        KoniecFiltrowania(bWas, True)
 
     End Sub
     Private Sub FilterSharingLogin(sender As Object, e As RoutedEventArgs)
@@ -2199,7 +2227,7 @@ Public Class ProcessBrowse
 
         Next
 
-        KoniecFiltrowania(bWas)
+        KoniecFiltrowania(bWas, True)
 
     End Sub
 
@@ -2220,7 +2248,7 @@ Public Class ProcessBrowse
             End If
         Next
 
-        KoniecFiltrowania(bWas)
+        KoniecFiltrowania(bWas, True)
     End Sub
 
     Public Function WypelnMenuFilterSharingChannels() As Integer
@@ -2502,13 +2530,14 @@ Public Class ProcessBrowse
         Public Sub ZrobDymek()
             sDymek = oPic.sSuggestedFilename
 
-            ' jeśli przybywa "skądś"
+            ' line 0: jeśli przybywa "skądś"
             If Not String.IsNullOrWhiteSpace(oPic.sharingFromGuid) Then
                 sDymek &= vbCrLf & GetLastSharePeer()?.displayName & "\" & oPic.sSourceName
             Else
                 If oPic.sSourceName.EqualsCI("adhoc") Then sDymek = sDymek & vbCrLf & "Src: " & oPic.sSourceName
             End If
 
+            ' line 1: data
             Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
             If oExifTag IsNot Nothing Then
                 sDymek = sDymek & vbCrLf & "Taken: " & oExifTag.DateTimeOriginal
@@ -2517,6 +2546,7 @@ Public Class ProcessBrowse
                 sDymek = sDymek & vbCrLf & "(file: " & oExifTag.DateMin.ToExifString & ")"
             End If
 
+            ' line 2: geoname / lat&lon
             Dim sGeo As String = ""
             For Each oExif As Vblib.ExifTag In oPic.Exifs
                 If oExif.GeoName <> "" Then sGeo = sGeo & vbCrLf & oExif.GeoName
@@ -2528,18 +2558,26 @@ Public Class ProcessBrowse
             End If
             If sGeo <> "" Then sDymek = sDymek & vbCrLf & sGeo
 
+            ' line 3: Azure caption
             oExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
             If oExifTag IsNot Nothing Then
                 Dim sCaption As String = oExifTag.AzureAnalysis?.Captions?.GetList(0).ToDisplay
                 sDymek = sDymek & vbCrLf & sCaption
             End If
 
+            ' line 4: descriptions
             sDymek = sDymek & vbCrLf & "Descriptions: " & oPic.GetSumOfDescriptionsText & vbCrLf
+
+            ' line 5: keywords
             sDymek = sDymek & "Keywords: " & oPic.GetAllKeywords & vbCrLf
 
+            ' line 6: targetdir
             If Not String.IsNullOrWhiteSpace(oPic.TargetDir) Then
                 sDymek = sDymek & vbCrLf & "► " & oPic.TargetDir
             End If
+
+            ' line 7: picid - właściwie tylko do picków z archiwum
+            sDymek = sDymek & vbCrLf & oPic.GetFormattedSerNo
 
         End Sub
 
@@ -2791,6 +2829,19 @@ Public Class ProcessBrowse
 
     End Class
 
+    Private Sub uiPicList_KeyUp(sender As Object, e As KeyEventArgs)
+        If e.IsRepeat Then Return
+
+        Dim oThumb As ThumbPicek = uiPicList.SelectedItem
+        If oThumb Is Nothing Then Return
+
+        Select Case e.Key
+            Case Key.Enter
+                PokazNaDuzymMain(oThumb)
+            Case Key.Delete
+                DeleteAskPicekMain(oThumb)
+        End Select
+    End Sub
 End Class
 
 Public Class KonwersjaPasekKolor

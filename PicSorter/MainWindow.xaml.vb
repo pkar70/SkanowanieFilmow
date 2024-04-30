@@ -28,7 +28,7 @@ Class MainWindow
         ' narzucona nazwa instancji (warning)
         Dim appname As String = GetSettingsString("name")
         If Not String.IsNullOrEmpty(appname) Then
-            Vblib.DialogBox("Narzucona nazwa instancji:" & vbCrLf & appname)
+            Me.MsgBox("Narzucona nazwa instancji:" & vbCrLf & appname)
         End If
 
 
@@ -215,11 +215,11 @@ Class MainWindow
             Application.gWcfServer?.StopSvc()
         End If
 
-        If Application.Current.Windows.Count > 2 Then
-            '    If Not Await Vblib.DialogBoxYNAsync("Zamknąć program?") Then Return
-            ' bez tego zamyka tylko to jedno okno, a reszty już NIE
-            Application.Current.Shutdown()
-        End If
+        'If Application.Current.Windows.Count > 2 Then
+        '    If Not Await Vblib.DialogBoxYNAsync("Zamknąć program?") Then Return
+        ' bez tego zamyka tylko to jedno okno, a reszty już NIE
+        Application.Current.Shutdown()
+        'End If
 
     End Sub
 
@@ -274,10 +274,47 @@ Class MainWindow
 
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
-        'Popraw20240411()
+        'UsunDefaultyArch()
+
     End Sub
 
+
 #Region "poprawianie plików"
+
+#If False Then
+
+    Private Sub UsunDefaultyArch()
+        Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
+        arch.Load()
+        arch.Save(True)
+    End Sub
+
+    Private Sub DodajSerNoDoArchLocal()
+        Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
+        arch.Load()
+
+        Dim iSerNo As Integer = 0
+
+        arch.ForEach(Sub(x)
+                         iSerNo += 1
+                         x.serno = iSerNo
+                         x.RemoveExifOfType(Vblib.ExifSource.AutoGuid)
+                     End Sub
+            )
+
+        arch.Save(true)
+
+
+        For Each oFile In Application.GetBuffer.GetList
+            iSerNo += 1
+            oFile.serno = iSerNo
+        Next
+        Application.GetBuffer.SaveData()
+
+        Vblib.SetSettingsInt("lastSerNo", iSerNo)
+
+    End Sub
+
 
     Private Sub Popraw20240411()
         ' poprawiam, bo zapomniałem przed archiwizacją
@@ -488,7 +525,7 @@ Class MainWindow
             If String.IsNullOrWhiteSpace(oPic.PicGuid) Then
                 ' dorobienie, "ExifSource": "AUTO_GUID", oraz w oPic
                 noGuidCnt += 1
-                _uniqId.GetIdForPic(oPic)
+                _uniqId.SetGUIDforPic(oPic)
                 If Not String.IsNullOrWhiteSpace(oPic.PicGuid) Then
 
                     Dim oExif As New ExifTag(ExifSource.AutoGuid)
@@ -537,6 +574,9 @@ Class MainWindow
         pliczek1.Save(True)
         Me.MsgBox("Zrobilem nowy indeks, ktory powinien byc juz poprawny")
     End Sub
+
+#End If
+
 #End Region
 
     Private Shared Function CalculateMaxThumbCount() As Integer

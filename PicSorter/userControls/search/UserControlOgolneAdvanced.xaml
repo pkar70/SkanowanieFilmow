@@ -16,6 +16,9 @@
         <TextBlock Text="Filename" Margin="0,5,0,0"/>
         <TextBox ToolTip="Enter DOS filename mask" Text="{Binding Filename, Mode=TwoWay}"/>
 
+        <TextBlock Text="Allowed peers" Margin="0,5,0,0"/>
+        <local:UserControlAllowedPeers AllowedPeers="{Binding AllowedPeers, Mode=TwoWay}" />
+
         <TextBlock Text="Published" Margin="0,5,0,0"/>
         <TextBox Text="{Binding Published, Mode=TwoWay}" ToolTip="Space separated name's fragments, prefixed with '!' to negate, or '!' to search for empty" />
 

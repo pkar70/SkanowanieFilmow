@@ -443,7 +443,7 @@ Public MustInherit Class PicSourceBase
 	''' </summary>
 	''' <param name="bRealPurge">TRUE: kasuj, FALSE: tylko policz</param>
 	''' <returns></returns>
-	Public Function Purge(bRealPurge As Boolean) As Integer
+	Public Function Purge(bRealPurge As Boolean, everyTick As Action) As Integer
 		DumpCurrMethod()
 		If Typ = PicSourceType.AdHOC Then Return 0
 
@@ -463,7 +463,10 @@ Public MustInherit Class PicSourceBase
 					DialogBox("Błędny plik PURGE!")
 					Return -iCnt
 				End If
-				If bRealPurge Then DeleteFile(sFile.Substring(iInd + 1))   ' tu można byłoby uwzględniac ret=FALSE (nieudane)
+				If bRealPurge Then
+					If everyTick IsNot Nothing Then everyTick()
+					DeleteFile(sFile.Substring(iInd + 1))   ' tu można byłoby uwzględniac ret=FALSE (nieudane)
+				End If
 				iCnt += 1
 			Else
 				If bRealPurge Then sNewContent.Add(sFile)

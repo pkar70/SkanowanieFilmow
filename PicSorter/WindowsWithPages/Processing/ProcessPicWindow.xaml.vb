@@ -153,8 +153,8 @@ Class ProcessPic
         '    wysok += 40
         'End If
 
-        If Application.GetShareDescriptionsIn.Count > 0 Then
-            uiSharingDescrips.Content = $"Peers' descs ({Application.GetShareDescriptionsIn.Count})"
+        If Application.GetShareDescriptionsIn.Count + Application.GetShareDescriptionsOut.Count > 0 Then
+            uiSharingDescrips.Content = $"Upload descrs ({Application.GetShareDescriptionsOut.Count})"
             uiSharingDescrips.Visibility = Visibility.Visible
             wysok += 40
         End If
@@ -195,7 +195,7 @@ Class ProcessPic
     End Sub
 
     Private Sub uiSequence_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New Sequence
+        Dim oWnd As New SequenceHelper
         oWnd.Show()
     End Sub
 
@@ -205,7 +205,7 @@ Class ProcessPic
     End Sub
 
     Private Sub uiSharingDescrips_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New ReviewPeersDescrs
+        Dim oWnd As New ShareSendDescQueue
         oWnd.Show()
     End Sub
 

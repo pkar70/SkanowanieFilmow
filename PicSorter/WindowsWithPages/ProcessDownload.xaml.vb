@@ -13,6 +13,8 @@ Imports System.ComponentModel.Design
 Public Class ProcessDownload
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
+        Me.InitDialogs
+        Me.ProgRingInit(True, True)
 
         Dim listka As New List(Of lib_PicSource.PicSourceImplement)
         Application.GetSourcesList.ForEach(Sub(x) listka.Add(x))
@@ -48,7 +50,7 @@ Public Class ProcessDownload
             Next
         End If
 
-        vb14.DialogBox("Za mało miejsca na dysku z buforem!")
+        Me.MsgBox("Za mało miejsca na dysku z buforem!")
         Return False
     End Function
 
@@ -84,31 +86,46 @@ Public Class ProcessDownload
 
 
         Dim iCount As Integer
-        Application.ShowWait(True)
+
         iCount = Await RetrieveFilesFromSource(oSrc)
-        Application.ShowWait(False)
         If iCount < 0 Then
-            vb14.DialogBox("Błąd wczytywania")
+            Me.MsgBox("Błąd wczytywania")
             Return
         End If
 
-        Dim iToPurge As Integer = 0
-        If oSrc.Typ <> Vblib.PicSourceType.PeerSrv Then iToPurge = oSrc.Purge(False)
-
-        If iToPurge > 0 Then
-            If Await vb14.DialogBoxYNAsync($"Wczytałem {iCount} nowości; czy mam zrobić purge? ({iToPurge} plików)") Then
-                oSrc.Purge(True)
-                vb14.DialogBox($"Done ({iCount} new files).")
-            End If
+        Await Purguj(True, iCount, oSrc)
+        If iCount > 0 Then
+            Me.MsgBox($"Done ({iCount} new files).")
         Else
-            If iCount > 0 Then
-                vb14.DialogBox($"Done ({iCount} new files).")
-            Else
-                vb14.DialogBox($"Done - no new files.")
-            End If
+            Me.MsgBox($"Done - no new files.")
         End If
 
     End Sub
+
+    ''' <summary>
+    ''' oSrc.Purge wrapper z obsługą ProgRing
+    ''' </summary>
+    ''' <param name="bAsk">TRUE gdy pytać o usuwanie, FALSE gdy usuwa bez pytania (GetAll)</param>
+    ''' <param name="iCount">Licza plików wczytanych (do wyświetlenia pytania)</param>
+    ''' <param name="oSrc">Gdzie robić purge</param>
+    ''' <returns></returns>
+    Private Async Function Purguj(bAsk As Boolean, iCount As Integer, oSrc As PicSourceBase) As Task
+        ' dla Peer nie usuwamy, bo nie mamy jak
+        If oSrc.Typ = Vblib.PicSourceType.PeerSrv Then Return
+
+        Dim iToPurge As Integer = oSrc.Purge(False, Nothing)
+        If iToPurge = 0 Then Return
+
+        If bAsk And Not Await Me.DialogBoxYNAsync($"Wczytałem {iCount} nowości; czy mam zrobić purge? ({iToPurge} plików)") Then
+            Return
+        End If
+
+        Me.ProgRingSetMax(iToPurge)
+        Me.ProgRingSetVal(0)
+        Me.ProgRingShow(True)
+        oSrc.Purge(True, Sub() Me.ProgRingInc)
+        Me.ProgRingShow(False)
+    End Function
 
     Private Shared Function GetVolLabelForPath(dirToGet As String) As String
         vb14.DumpCurrMethod()
@@ -130,7 +147,7 @@ Public Class ProcessDownload
 
         ' sprawdzam czy cokolwiek jest zaznaczone
         If Not Application.GetSourcesList.Any(Function(x) x.enabled) Then
-            Await vb14.DialogBoxAsync("Ale nic nie zaznaczyłeś...")
+            Await Me.MsgBoxAsync("Ale nic nie zaznaczyłeś...")
             Return
         End If
 
@@ -138,16 +155,14 @@ Public Class ProcessDownload
 
         ' uproszczona wersja
 
-        If Not Await vb14.DialogBoxYNAsync("Ściągnąć ze wszystkich zaznaczonych źródeł?") Then Return
+        If Not Await Me.DialogBoxYNAsync("Ściągnąć ze wszystkich zaznaczonych źródeł?") Then Return
 
         For Each oSrc As Vblib.PicSourceBase In Application.GetSourcesList.Where(Function(x) x.enabled)
-            Application.ShowWait(True)
             Await RetrieveFilesFromSource(oSrc)
-            Application.ShowWait(False)
-            oSrc.Purge(True)
+            Await Purguj(False, 0, oSrc)
         Next
 
-        vb14.DialogBox("Done.")
+        Me.MsgBox("Done.")
 
     End Sub
 
@@ -156,15 +171,22 @@ Public Class ProcessDownload
 
         If oSrc.Typ = PicSourceType.PeerSrv Then Return Await RetrieveFromPeer(oSrc)
 
+        Me.ProgRingSetMax(100) 'obojętnie ile, byle teraz nie pokazać paska :)
+        Me.ProgRingSetVal(0)
+        Me.ProgRingShow(True)
+        Me.ProgRingSetText($"Dir {oSrc.SourceName}")
+
         Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
         'Await vb14.DialogBoxAsync($"read {iCount} files")
         vb14.DumpMessage($"Read {iCount} files")
 
-        If iCount < 1 Then Return iCount
+        If iCount < 1 Then
+            Me.ProgRingShow(False)
+            Return iCount
+        End If
 
-        uiProgBar.Maximum = iCount
-        uiProgBar.Value = 0
-        uiProgBar.Visibility = Visibility.Visible
+        Me.ProgRingSetMax(iCount)
+        Me.ProgRingSetText($"Import from {oSrc.SourceName}")
 
         Dim oSrcFile As Vblib.OnePic = oSrc.GetFirst
         If oSrcFile Is Nothing Then Return 0
@@ -182,40 +204,96 @@ Public Class ProcessDownload
             Await Application.GetBuffer.AddFile(oSrcFile)
             oSrcFile = oSrc.GetNext
             If oSrcFile Is Nothing Then Exit Do
-            uiProgBar.Value += 1
+            Me.ProgRingInc
             iCount += 1
         Loop
 
-        Sequence.ResetPoRetrieve()
+        Await RunAutoExif()
+
+        SequenceHelper.ResetPoRetrieve()
+
+        Me.ProgRingSetText("Saving metadata...")
 
         Application.GetBuffer.SaveData()
         oSrc.lastDownload = Date.Now
         Application.GetSourcesList.Save()   ' zmieniona data
 
-        uiProgBar.Value = 0
-        uiProgBar.Visibility = Visibility.Collapsed
+        Me.ProgRingShow(False)
 
         Return iCount
+    End Function
+
+    Private Async Function RunAutoExif() As Task
+        Me.ProgRingSetText("Reading EXIFs...")
+        Me.ProgRingSetVal(0)
+
+        Dim oEngine As AutotaggerBase = Application.gAutoTagery.Where(Function(x) x.Nazwa = Vblib.ExifSource.FileExif).ElementAt(0)
+        ' się nie powinno zdarzyć, no ale cóż...
+        If oEngine Is Nothing Then Return
+
+        Dim iSerNo As Integer = vb14.GetSettingsInt("lastSerNo")
+
+        For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
+
+            ' najpierw Serial Number zrobimy - obojętnie co dalej...
+            If oItem.serno < 1 Then
+                iSerNo += 1
+                oItem.serno = iSerNo
+            End If
+
+            If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
+
+            ' niby nie ma prawa być, chyba że to Peer
+            If oItem.GetExifOfType(oEngine.Nazwa) Is Nothing Then
+                Try
+                    Dim oExif As Vblib.ExifTag = Await oEngine.GetForFile(oItem)
+                    If oExif IsNot Nothing Then
+                        oItem.ReplaceOrAddExif(oExif)
+                        oItem.TagsChanged = True
+                    End If
+                    'Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
+                Catch ex As Exception
+                    ' zabezpieczenie, żeby mi na pewno nie zrobił crash przy nadawaniu serno!
+                End Try
+            End If
+            Me.ProgRingInc
+        Next
+
+        vb14.SetSettingsInt("lastSerNo", iSerNo)
     End Function
 
     Private Async Function RetrieveFromPeer(oSrc As PicSourceBase) As Task(Of Integer)
         ' ściągnij przez sieć
 
+        Me.ProgRingSetMax(100) 'obojętnie ile, byle teraz nie pokazać paska :)
+        Me.ProgRingSetVal(0)
+        Me.ProgRingShow(True)
+        Me.ProgRingSetText($"Connecting to {oSrc.SourceName}..")
+
+
         Dim oPeer As Vblib.ShareServer = Application.GetShareServers.FindByGuid(oSrc.Path)
 
         Dim ret As String = Await lib14_httpClnt.httpKlient.TryConnect(oPeer)
         If Not ret.StartsWith("OK") Then
-            Vblib.DialogBox($"Cannot connect to {oSrc.SourceName}" & vbCrLf & ret)
+            Me.MsgBox($"Cannot connect to {oSrc.SourceName}" & vbCrLf & ret)
+            Me.ProgRingShow(False)
             Return -1
         End If
 
-        Dim lista As BaseList(Of Vblib.OnePic) = Await lib14_httpClnt.httpKlient.GetPicListBuffer(oPeer)
-        If lista Is Nothing Then Return -2
-        If lista.Count < 1 Then Return 0
+        Me.ProgRingSetText($"Dir {oSrc.SourceName}...")
 
-        uiProgBar.Maximum = lista.Count
-        uiProgBar.Value = 0
-        uiProgBar.Visibility = Visibility.Visible
+        Dim lista As BaseList(Of Vblib.OnePic) = Await lib14_httpClnt.httpKlient.GetPicListBuffer(oPeer)
+        If lista Is Nothing Then
+            Me.ProgRingShow(False)
+            Return -2
+        End If
+        If lista.Count < 1 Then
+            Me.ProgRingShow(False)
+            Return 0
+        End If
+
+        Me.ProgRingSetMax(lista.Count)
+        Me.ProgRingSetText($"Import from {oSrc.SourceName}")
 
         Dim iCount As Integer = 1
 
@@ -225,20 +303,25 @@ Public Class ProcessDownload
 
             oPicek.oContent = Await lib14_httpClnt.httpKlient.GetPicDataFromBuff(oPeer, oPicek.InBufferPathName)
             If oPicek.oContent IsNot Nothing Then
+                oPicek.sharingFromGuid &= $";L:{oPeer.login}:{oPicek.serno}"
+                oPicek.serno = 0 ' muszę nadać swój
                 Await Application.GetBuffer.AddFile(oPicek)
-                uiProgBar.Value += 1
+                Await Me.ProgRingInc
                 iCount += 1
                 ' co 10 plików zapisuje dane, na wypadek awarii/zamknięcia app żeby coś było
                 If iCount Mod 10 = 0 Then Application.GetBuffer.SaveData()
             End If
         Next
 
-        Sequence.ResetPoRetrieve()
+        Await RunAutoExif()
 
-        uiProgBar.Value = 0
-        uiProgBar.Visibility = Visibility.Collapsed
+        Me.ProgRingSetText("Saving metadata...")
+
+        SequenceHelper.ResetPoRetrieve()
 
         Application.GetBuffer.SaveData()
+
+        Me.ProgRingShow(False)
 
         Return iCount
 

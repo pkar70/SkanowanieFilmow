@@ -19,7 +19,6 @@ Class SettingsKeywords
     Private Sub uiEditKeyword_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
         Dim oItem As Vblib.OneKeyword = oFE?.DataContext
-
         If oItem Is Nothing Then Return
 
         If oItem.sId.Length = 1 Then
