@@ -48,6 +48,12 @@ Public MustInherit Class SharePeer
 
     Public Property login As Guid ' tym się INNY loguje
     Public Property displayName As String ' widać go jako...
+    Public Property ID As String
+
+    Public Function GetIdForSharing() As String
+        Return $"+{ID};"
+    End Function
+
 End Class
 
 Public Class ShareLogin
@@ -150,26 +156,26 @@ End Class
 Public Class ShareDescription
     Inherits BaseStruct
 
+    '''' <summary>
+    '''' id zdjęcia którego dotyczy komentarz (picguid, lub suggestedfilename z prefiksem ':')
+    '''' </summary>
+    'Public Property picid As String
+
     ''' <summary>
-    ''' id zdjęcia którego dotyczy komentarz (picguid, lub suggestedfilename z prefiksem ':')
+    ''' do kogo wysłać, lub od kogo przyjęty, komentarz (razem z :[serno JEGO])
     ''' </summary>
-    Public Property picid As String
+    Public Property lastPeer As String
+
+    ''' <summary>
+    ''' przed wysłaniem: mój ser# zdjęcia, po przyjęciu: 
+    ''' </summary>
+    Public Property serno As Integer
+
     ''' <summary>
     ''' normalny opis, w nim pole peerGuid
     ''' </summary>
     Public Property descr As Vblib.OneDescription
 
-    ''' <summary>
-    ''' w tym ustawienie oNew.descr.PeerGuid (na prefiksowany L/S)
-    ''' </summary>
-    Public Shared Function GetForPic(picek As Vblib.OnePic, descr As String) As ShareDescription
-        Dim oNew As New Vblib.ShareDescription
-        oNew.descr = New Vblib.OneDescription(descr, "")
-        oNew.descr.PeerGuid = picek.GetLastShareGuid
-        oNew.picid = picek.PicGuid
-        If String.IsNullOrWhiteSpace(oNew.picid) Then oNew.picid = ":" & picek.sSuggestedFilename
-        Return oNew
-    End Function
 End Class
 
 
@@ -269,6 +275,11 @@ Public Class ShareLoginsList
         Return MyBase.Find(Function(x) x.login.ToString = loginGuid)
     End Function
 
+    Public Function FindByID(ID As String) As ShareLogin
+        Return MyBase.Find(Function(x) x.ID = ID)
+    End Function
+
+
     Protected Overrides Sub InsertDefaultContent()
         Me.Add(New ShareLogin With {
                .displayName = "ForPicSearch",
@@ -299,23 +310,47 @@ Public Class ShareDescInList
         MyBase.New(folder, "shareIncoming.json")
     End Sub
 
-    Public Function FindForPic(picek As Vblib.OnePic) As List(Of ShareDescription)
-        Dim ret As List(Of ShareDescription)
+    ''' <summary>
+    ''' zwraca listę opisów dla danego zdjęcia (ser#)
+    ''' </summary>
+    ''' <param name="picek">dla jakiego zdjęcia (serno)</param>
+    ''' <returns>NULL gdy nie ma (ważne później)</returns>
+    Public Function FindAllForPic(picek As Vblib.OnePic) As List(Of ShareDescription)
+        Dim temp As List(Of ShareDescription)
 
-        ' jeśli picek ma guid, to z niego skorzystamy najpierw
-        If Not String.IsNullOrWhiteSpace(picek.PicGuid) Then
-            ret = MyBase.Where(Function(x) x.picid = picek.PicGuid)
-            If ret IsNot Nothing AndAlso ret.Count > 0 Then Return ret
-        End If
+        temp = MyBase.Where(Function(x) x.serno = picek.serno)
+        If temp Is Nothing OrElse temp.Count < 1 Then Return Nothing
 
-        ' próbujemy z dwukropkiem - nazwą pliku
-        Dim temp As String = ":" & IO.Path.GetFileName(picek.InBufferPathName)
-        ret = MyBase.Where(Function(x) x.picid = temp)
-        If ret IsNot Nothing AndAlso ret.Count > 0 Then Return ret
-
-        Return Nothing
+        '' obrócenie serno mój/twój następuje już w serwer (przy przyjmowaniu descriptions)
+        'Dim ret As New List(Of OneDescription)
+        'For Each oItem As ShareDescription In temp
+        '    'Dim oNew As OneDescription = oItem.descr.Clone
+        '    ret.Add(oItem.descr)
+        'Next
+        ' zwraca ShareDesc, bo potem użyte trzeba usuwać - mając tylko OneDesc byłoby trudniej
+        Return temp
     End Function
 
 End Class
+
+Public Class ShareDescOutList
+    Inherits BaseList(Of ShareDescription)
+
+    Public Sub New(folder As String)
+        MyBase.New(folder, "shareOutgoing.json")
+    End Sub
+
+    Public Sub AddPicDescForPicLastPeer(picek As Vblib.OnePic, descr As String)
+        Dim oNew As New ShareDescription
+
+        oNew.descr = New Vblib.OneDescription(descr, "")
+        oNew.lastPeer = picek.GetLastShareGuid(True)
+        oNew.serno = picek.serno
+
+        MyBase.Add(oNew)
+    End Sub
+
+End Class
+
 
 #End Region

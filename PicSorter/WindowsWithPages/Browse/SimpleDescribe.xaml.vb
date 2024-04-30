@@ -44,21 +44,20 @@ Public Class SimpleDescribe
                 oPicek.oPic.ReplaceAllDescriptions(descr)
             End If
 
-            ' podmieniamy do pokazywania w ThumbsBrowse, a nóż zmieni się na ekranie :)
+            ' podmieniamy do pokazywania w ThumbsBrowse, a nuż zmieni się na ekranie :)
             oPicek.SumOfDescriptionsText = descr
 
             If Not String.IsNullOrWhiteSpace(oPicek.oPic.sharingFromGuid) Then
                 ' to jest 'obce' zdjęcie, i description można temu loginowi wysłać
 
-                Dim oNew As Vblib.ShareDescription = ShareDescription.GetForPic(oPicek, descr)
-                Application.GetShareDescriptionsOut.Add(oNew)
+                Application.GetShareDescriptionsOut.AddPicDescForPicLastPeer(oPicek.oPic, descr)
 
                 Dim peer = oPicek.GetLastSharePeer
                 If peer IsNot Nothing Then
                     If peer.GetType Is GetType(ShareServer) Then
                         ' zdjęcie jest z serwera, więc jest mu jak wysłać komentarz
-                        If Vblib.GetSettingsBool("uiSharingAutoUploadComment") OrElse Await Vblib.DialogBoxYNAsync("Zdjęcie przysłane - spróbować odesłać komentarz?") Then
-                            Await lib14_httpClnt.httpKlient.UploadPicDescriptions(Application.GetShareDescriptionsOut, oNew.descr.PeerGuid, peer)
+                        If Vblib.GetSettingsBool("uiSharingAutoUploadComment") Then ' OrElse Await Vblib.DialogBoxYNAsync("Zdjęcie przysłane - spróbować odesłać komentarz?") Then
+                            Await lib14_httpClnt.httpKlient.UploadPicDescriptions(Application.GetShareDescriptionsOut, peer)
                         End If
                     Else
                         ' mamy do czynienia z loginem, czyli ktoś nam wrzucił - nie mamy jak mu wysłać komentarza, on sobie musi odebrać

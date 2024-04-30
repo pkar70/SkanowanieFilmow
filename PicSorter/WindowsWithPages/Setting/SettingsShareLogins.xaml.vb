@@ -1,12 +1,15 @@
 ﻿Imports pkar
 Imports Vblib
 Imports pkar.UI.Configs
+Imports pkar.UI.Extensions
+Imports Microsoft.VisualBasic.Logging
 
 Class SettingsShareLogins
 
     Dim _channels As List(Of String)
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
         uiLista.ItemsSource = Application.GetShareLogins '.OrderBy(Function(x) x.displayName)
         uiAdresOverride.GetSettingsString
         Dim adres As String = Await vb14_GetMyIP.GetMyIP.GetIPString
@@ -20,6 +23,7 @@ Class SettingsShareLogins
     Private Sub uiEdit_Click(sender As Object, e As RoutedEventArgs)
         Dim oLogin As ShareLogin = TryCast(sender, FrameworkElement)?.DataContext
         If oLogin Is Nothing Then Return
+        uiPeerID.IsEnabled = False
         ShowToEdit(oLogin)
     End Sub
 
@@ -57,7 +61,7 @@ Class SettingsShareLogins
         Dim oLogin As ShareLogin = TryCast(sender, FrameworkElement)?.DataContext
         If oLogin Is Nothing Then Return
 
-        If Not Await Vblib.DialogBoxYNAsync($"Usunąć login {oLogin.displayName}?") Then Return
+        If Not Await Me.DialogBoxYNAsync($"Usunąć login {oLogin.displayName}?") Then Return
 
         Application.GetShareLogins.Remove(oLogin)
         Page_Loaded(Nothing, Nothing)
@@ -78,6 +82,9 @@ Class SettingsShareLogins
 
     Private Sub uiAddLogin_Click(sender As Object, e As RoutedEventArgs)
         Dim oNew As New ShareLogin
+        uiPeerID.IsEnabled = True
+        oNew.displayName = "login " & Date.Now.ToString("yyyy.MM.dd")
+        oNew.login = Guid.NewGuid
         ShowToEdit(oNew)
     End Sub
 
@@ -131,34 +138,31 @@ Class SettingsShareLogins
     End Sub
 
 
-    Private Async Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
         Dim oLogin As ShareLogin = oFE?.DataContext
         If oLogin Is Nothing Then Return
 
-        ' default name
-        If String.IsNullOrWhiteSpace(oLogin.displayName) Then
-            oLogin.displayName = "login " & Date.Now.ToString("yyyy.MM.dd")
-            oLogin.login = Guid.NewGuid
-        End If
-
-        Dim sName As String = Await Vblib.DialogBoxInputAllDirectAsync("Podaj nazwę loginu", oLogin.displayName)
-        If String.IsNullOrWhiteSpace(sName) Then Return
-
-        For Each oLog As ShareLogin In Application.GetShareLogins
-            If oLog.displayName = sName Then
-                If Not Await Vblib.DialogBoxYNAsync($"Login '{sName}' już istnieje, zastąpić?") Then Return
-                Application.GetShareLogins.Remove(oLog)
-                Exit For
+        If Not uiPeerID.IsReadOnly Then
+            ' a więc mamy do czynienia z NEW
+            If String.IsNullOrWhiteSpace(oLogin.ID) Then
+                Me.MsgBox("Musisz nadać identyfikator dla tego loginu")
+                Return
             End If
-        Next
 
-        oLogin.displayName = sName
+            Dim peer As ShareLogin = Application.GetShareLogins.FindByID(oLogin.ID)
+            If peer IsNot Nothing Then
+                Me.MsgBox($"Taki ID już istnieje (dla '{peer.displayName}')")
+                Return
+            End If
+
+            ' tylko przy new, bo EDIT i tak bezpośrednio na obiekcie jest
+            Application.GetShareLogins.Add(oLogin)
+        End If
 
         ' tu mamy Clone oryginału, którego nie zmieniamy
         uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
         With Application.GetShareLogins
-            .Add(oLogin)
             .ReResolveChannels()
             .Save(True)
         End With

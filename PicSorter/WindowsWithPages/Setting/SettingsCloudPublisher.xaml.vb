@@ -13,7 +13,7 @@ Class SettingsCloudPublisher
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         ShowSourcesList()
         WypelnMenuTypyZrodel()
-        'WypelnMenuPostprocesory
+        'WypelnMenuPeers
     End Sub
 
     Private Sub uiAddSource_Click(sender As Object, e As RoutedEventArgs)

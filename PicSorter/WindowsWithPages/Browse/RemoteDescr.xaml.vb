@@ -22,8 +22,12 @@ Public Class RemoteDescr
 
         uiFileName.Text = _thumb.oPic.sSuggestedFilename
 
+        RefreshLista()
+    End Sub
+
+    Private Sub RefreshLista()
         uiLista.ItemsSource = Nothing
-        uiLista.ItemsSource = Application.GetShareDescriptionsIn.FindForPic(_thumb.oPic)
+        uiLista.ItemsSource = Application.GetShareDescriptionsIn.FindAllForPic(_thumb.oPic)
     End Sub
 
     Private Sub uiDel_Click(sender As Object, e As RoutedEventArgs)
@@ -44,8 +48,9 @@ Public Class RemoteDescr
 
     End Sub
 
-    Private Shared Sub Usun(oDesc As ShareDescription)
+    Private Sub Usun(oDesc As ShareDescription)
         Application.GetShareDescriptionsIn.Remove(oDesc)
+        RefreshLista()
     End Sub
 
     Private Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
