@@ -9,7 +9,7 @@ Public NotInheritable Class PicMenuFileExif
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("File EXIF") Then Return
+        If Not InitEnableDisable("File EXIF", "Pokaż pełny opis zdjęcia (odczytuje dane z pliku)") Then Return
 
         AddHandler Me.Click, AddressOf ActionClick
 

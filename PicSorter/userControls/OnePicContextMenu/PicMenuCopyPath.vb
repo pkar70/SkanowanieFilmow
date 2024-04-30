@@ -11,7 +11,7 @@ Public NotInheritable Class PicMenuCopyPath
         MyBase.OnApplyTemplate()
 
 
-        If Not InitEnableDisable("Copy path") Then Return
+        If Not InitEnableDisable("Copy path", "Kopiowanie ścieżki zdjęcia do clipboard") Then Return
 
         AddHandler Me.Click, AddressOf ActionClick
 

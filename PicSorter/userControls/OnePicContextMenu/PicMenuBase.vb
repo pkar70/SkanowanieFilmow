@@ -50,11 +50,12 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ''' </summary>
     ''' <param name="header">Defaultowy Header dla MenuItem</param>
     ''' <returns>TRUE gdy jest enabled</returns>
-    Protected Function InitEnableDisable(header As String, Optional bSubItems As Boolean = False)
+    Protected Function InitEnableDisable(header As String, dymek As String, Optional bSubItems As Boolean = False)
 
         If String.IsNullOrWhiteSpace(Me.Header) Then
             Me.Header = header & If(UseSelectedItems AndAlso bSubItems, " »", "")
         End If
+        ToolTip = dymek
 
         If UseSelectedItems Then
             _picek = Nothing
@@ -79,10 +80,11 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         Return picek
     End Function
 
-    Protected Shared Function NewMenuItem(header As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
+    Protected Shared Function NewMenuItem(header As String, dymek As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
         Dim oNew As New MenuItem
         oNew.Header = header
         oNew.IsEnabled = isenabled
+        oNew.ToolTip = dymek
         If handler IsNot Nothing Then AddHandler oNew.Click, handler
         Return oNew
     End Function

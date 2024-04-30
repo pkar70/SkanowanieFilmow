@@ -10,7 +10,7 @@ Public NotInheritable Class PicMenuBatchProc
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Batch process", True) Then Return
+        If Not InitEnableDisable("Batch process", "Uruchamianie przetwarzania wsadowego", True) Then Return
 
         WypelnMenuBatchProcess(Me, AddressOf ApplyBatchProcess)
 

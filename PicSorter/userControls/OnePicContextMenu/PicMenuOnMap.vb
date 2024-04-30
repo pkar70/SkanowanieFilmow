@@ -13,7 +13,7 @@ Public NotInheritable Class PicMenuOnMap
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("On map", True) Then Return
+        If Not InitEnableDisable("On map", "Wywołanie mapy ze wskazaniem miejsca wykonania zdjęcia", True) Then Return
 
         If _picek.GetGeoTag Is Nothing Then
             Me.IsEnabled = False

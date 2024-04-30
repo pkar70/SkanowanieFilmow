@@ -11,10 +11,10 @@ Public NotInheritable Class PicMenuShowWiki
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Show wiki", True) Then Return
+        If Not InitEnableDisable("Show wiki", "Otwarcie wikipedii", True) Then Return
 
-        Me.Items.Add(NewMenuItem("for day", AddressOf ShowWikiDay))
-        Me.Items.Add(NewMenuItem("for month", AddressOf ShowWikiMonth))
+        Me.Items.Add(NewMenuItem("for day", "Pokaż co się działo w danym dniu", AddressOf ShowWikiDay))
+        Me.Items.Add(NewMenuItem("for month", "Pokaż co się działo w danym miesiącu", AddressOf ShowWikiMonth))
 
         _wasApplied = True
     End Sub

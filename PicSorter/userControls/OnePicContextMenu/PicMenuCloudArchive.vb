@@ -13,7 +13,7 @@ Public NotInheritable Class PicMenuCloudArchive
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Cloud archive", True) Then Return
+        If Not InitEnableDisable("Cloud archive", "Wysyłanie do archiwum w chmurze", True) Then Return
 
         WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
 

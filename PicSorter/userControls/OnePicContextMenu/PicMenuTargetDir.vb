@@ -16,28 +16,28 @@ Public NotInheritable Class PicMenuTargetDir
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Target dir", True) Then Return
+        If Not InitEnableDisable("Target dir", "Operacje na wskazanym katalogu", True) Then Return
 
         Me.Items.Clear()
 
         If UseSelectedItems Then
             ' dla pojedyńczego trudno jest ustalić TargetDir (radiobuttony automatycznego podziału)
-            Me.Items.Add(NewMenuItem("Set target dir", AddressOf uiCreateTargetDir_Click))
+            Me.Items.Add(NewMenuItem("Set target dir", "Ustawianie katalogu docelowego", AddressOf uiCreateTargetDir_Click))
         End If
 
         If UseSelectedItems Then
-            Me.Items.Add(NewMenuItem("Make same", AddressOf uiTargetMakeSame_Click))
+            Me.Items.Add(NewMenuItem("Make same", "Skopiowanie katalogu docelowego między zdjęciami", AddressOf uiTargetMakeSame_Click))
         End If
 
         If Not UseSelectedItems Then
-            Me.Items.Add(NewMenuItem("Copy TargetDir", AddressOf uiTargetToClip_Click, String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)))
+            Me.Items.Add(NewMenuItem("Copy TargetDir", "Skopiowanie katalogu docelowego do lokalnego schowka", AddressOf uiTargetToClip_Click, String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)))
         End If
 
         'oNew = New MenuItem
-        _itemPaste = NewMenuItem("Paste TargetDir", AddressOf uiTargetPaste_Click, Not String.IsNullOrWhiteSpace(_clipForTargetDir))
+        _itemPaste = NewMenuItem("Paste TargetDir", "Narzucenie zdjęciom katalogu docelowego wg lokalnego schowka", AddressOf uiTargetPaste_Click, Not String.IsNullOrWhiteSpace(_clipForTargetDir))
         Me.Items.Add(_itemPaste)
 
-        Me.Items.Add(NewMenuItem("Clear TargetDir", AddressOf uiTargetClear_Click, UseSelectedItems OrElse String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)))
+        Me.Items.Add(NewMenuItem("Clear TargetDir", "Usunięcie wskazania katalogu docelowego", AddressOf uiTargetClear_Click, UseSelectedItems OrElse String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)))
 
         _wasApplied = True
     End Sub

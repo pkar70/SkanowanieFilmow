@@ -15,17 +15,17 @@ Public NotInheritable Class PicMenuGeotag
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Geotags", True) Then Return
+        If Not InitEnableDisable("Geotags", "Operacje na danych geograficznych", True) Then Return
 
         Me.Items.Clear()
 
-        Me.Items.Add(NewMenuItem("Create Geotag", AddressOf uiCreateGeotag_Click))
-        Me.Items.Add(NewMenuItem("Make same", AddressOf uiGeotagMakeSame_Click, UseSelectedItems))
-        Me.Items.Add(NewMenuItem("Copy Geotag", AddressOf uiGeotagToClip_Click, Not UseSelectedItems))
-        _itemPaste = NewMenuItem("Paste Geotag", AddressOf uiGeotagPaste_Click, _clip IsNot Nothing)
+        Me.Items.Add(NewMenuItem("Create Geotag", "Tworzenie znacznika z lokalizacją", AddressOf uiCreateGeotag_Click))
+        Me.Items.Add(NewMenuItem("Make same", "Skopiowanie geografii pomiędzy zdjęciami", AddressOf uiGeotagMakeSame_Click, UseSelectedItems))
+        Me.Items.Add(NewMenuItem("Copy Geotag", "Skopiuj dane geograficzne ze wskazanego zdjęcia do lokalnego schowka ", AddressOf uiGeotagToClip_Click, Not UseSelectedItems))
+        _itemPaste = NewMenuItem("Paste Geotag", "ustaw dane geograficzne zdjęć wedle lokalnego schowka", AddressOf uiGeotagPaste_Click, _clip IsNot Nothing)
         Me.Items.Add(_itemPaste)
 
-        Me.Items.Add(NewMenuItem("Reset Geotag", AddressOf uiGeotagClear_Click, UseSelectedItems OrElse GetFromDataContext.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing))
+        Me.Items.Add(NewMenuItem("Reset Geotag", "Wyczyść dopisane przez program dane geograficzne zdjęcia (ManualGeo, OSM, IMGW)", AddressOf uiGeotagClear_Click, UseSelectedItems OrElse GetFromDataContext.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing))
 
         _wasApplied = True
     End Sub

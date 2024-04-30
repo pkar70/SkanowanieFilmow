@@ -12,12 +12,12 @@ Public NotInheritable Class PicMenuCopyOut
         MyBase.OnApplyTemplate()
 
         Dim header As String = If(UseSelectedItems, "Copy files", "Copy File")
-        If Not InitEnableDisable(header, True) Then Return
+        If Not InitEnableDisable(header, "Kopiowanie plików (takich jak są w buforze, bez pipeline)", True) Then Return
 
         Me.Items.Clear()
 
-        Me.Items.Add(NewMenuItem("To dir ...", AddressOf uiCopyOut_Click))
-        Me.Items.Add(NewMenuItem("To Clip", AddressOf uiCopyClip_Click))
+        Me.Items.Add(NewMenuItem("To dir ...", "Kopiowanie do wskazanego katalogu", AddressOf uiCopyOut_Click))
+        Me.Items.Add(NewMenuItem("To Clip", "Kopiowanie do clipboard", AddressOf uiCopyClip_Click))
 
         _wasApplied = True
     End Sub

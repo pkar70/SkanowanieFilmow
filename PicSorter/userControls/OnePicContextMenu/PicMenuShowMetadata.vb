@@ -10,7 +10,7 @@ Public NotInheritable Class PicMenuShowMetadata
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Metadata") Then Return
+        If Not InitEnableDisable("Metadata", "Pokazanie opisów zdjęcia") Then Return
 
         AddHandler Me.Click, AddressOf ActionClick
 

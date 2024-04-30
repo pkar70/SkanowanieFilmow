@@ -10,7 +10,7 @@ Public NotInheritable Class PicMenuDescribe
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Add description") Then Return
+        If Not InitEnableDisable("Add description", "Dodawanie opisu zdjęcia") Then Return
 
         AddHandler Me.Click, AddressOf ActionClick
 
@@ -24,8 +24,13 @@ Public NotInheritable Class PicMenuDescribe
 
         Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
 
-        OneOrMany(Sub(x) x.AddDescription(oDesc))
+        OneOrMany(Sub(x)
+                      x.AddDescription(oDesc)
+                      If Not String.IsNullOrWhiteSpace(x.sharingFromGuid) Then
+                          Application.GetShareDescriptionsOut.AddPicDescForPicLastPeer(x, oDesc.comment)
+                      End If
 
+                  End Sub)
         EventRaise(Me)
 
     End Sub

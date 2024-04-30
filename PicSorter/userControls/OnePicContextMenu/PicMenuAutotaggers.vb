@@ -9,7 +9,7 @@ Public NotInheritable Class PicMenuAutotaggers
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Auto-taggers", True) Then Return
+        If Not InitEnableDisable("Auto-taggers", "Uruchamianie automatycznych opisywaczy zdjęć", True) Then Return
 
         WypelnMenuAutotagerami(Me, AddressOf ApplyProcess)
 

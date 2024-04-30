@@ -15,10 +15,10 @@ Public NotInheritable Class PicMenuSearchWebByPic
         MyBase.OnApplyTemplate()
 
         ' *TODO* może być Bing, Google
-        If Not InitEnableDisable("Search by pic", True) Then Return
+        If Not InitEnableDisable("Search by pic", "Przeszukiwanie sieci według zdjęcia", True) Then Return
 
-        Me.Items.Add(NewMenuItem("Google", AddressOf SearchGoogle))
-        Me.Items.Add(NewMenuItem("BING(?)", AddressOf SearchBing))
+        Me.Items.Add(NewMenuItem("Google", "Wyszukaj w Goole", AddressOf SearchGoogle))
+        Me.Items.Add(NewMenuItem("BING(?)", "Wyszukaj w BING (chwilowo nie działa", AddressOf SearchBing))
 
         'AddHandler Me.Click, AddressOf ActionClick
 
@@ -39,11 +39,15 @@ Public NotInheritable Class PicMenuSearchWebByPic
         If UseSelectedItems Then Return ' umiemy tylko pojedyńczy picek
 
         Dim oPic As Vblib.OnePic = GetFromDataContext()
-        Dim currMe As String = Await SettingsShareLogins.GetCurrentMeAsWeb & ":20563"
-        Dim localUri As String = "http://" & currMe & "/bufpic/" & IO.Path.GetFileName(oPic.InBufferPathName)
+        Dim localUri As String = Await GetLocalUriInBuff(oPic)
         Dim oUri As New Uri(baselink & localUri)
         oUri.OpenBrowser
     End Sub
+
+    Public Shared Async Function GetLocalUriInBuff(oPic As Vblib.OnePic) As Task(Of String)
+        Dim currMe As String = Await SettingsShareLogins.GetCurrentMeAsWeb & ":20563"
+        Return "http://" & currMe & "/bufpic/" & IO.Path.GetFileName(oPic.InBufferPathName)
+    End Function
 
 End Class
 

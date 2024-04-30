@@ -21,35 +21,35 @@ Public NotInheritable Class PicMenuSetDate
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Dates", True) Then Return
+        If Not InitEnableDisable("Dates", "Operacje na datach", True) Then Return
 
         Me.Items.Clear()
 
         ' dla wielu: date refit (stopniowo od pierwszego do ostatniego zdjęcia)
         ' dla jednej: force date (na konkretną od-do)
 
-        Me.Items.Add(NewMenuItem("Force date range", AddressOf uiForceDate_Click))
+        Me.Items.Add(NewMenuItem("Force date range", "Narzuca datowanie zdjęcia", AddressOf uiForceDate_Click))
 
         If UseSelectedItems Then
-            Me.Items.Add(NewMenuItem("Interpolate", AddressOf uiInterpolateDates_Click))
+            Me.Items.Add(NewMenuItem("Interpolate", "Interpoluje datę zdjęcia z sąsiednich", AddressOf uiInterpolateDates_Click))
         End If
 
-        Me.Items.Add(NewMenuItem("Copy range", AddressOf uiDatesToClip_Click, Not UseSelectedItems))
+        Me.Items.Add(NewMenuItem("Copy range", "Kopiuje daty wybranego pliku do lokalnego clipboard", AddressOf uiDatesToClip_Click, Not UseSelectedItems))
 
-        _itemPaste = NewMenuItem("Paste range", AddressOf uiDatesPaste_Click, _clipMin.IsDateValid OrElse _clipMax.IsDateValid)
+        _itemPaste = NewMenuItem("Paste range", "Narzuca daty zdjęć wedle zapisanych w lokalnym clipboard", AddressOf uiDatesPaste_Click, _clipMin.IsDateValid OrElse _clipMax.IsDateValid)
         Me.Items.Add(_itemPaste)
 
         Dim timediff As TimeSpan = Date.Now - Date.UtcNow
 
-        Dim tools As MenuItem = NewMenuItem("Tools")
+        Dim tools As MenuItem = NewMenuItem("Tools", "Narzędzia poprawiania dat")
         Me.Items.Add(tools)
-        tools.Items.Add(NewMenuItem("To DST (+1)", AddressOf uiToDST_Click))
-        tools.Items.Add(NewMenuItem("From DST (-1)", AddressOf uiFromDST_Click))
-        tools.Items.Add(NewMenuItem($"To local ({timediff.Hours})", AddressOf uiToLocal_Click))
-        tools.Items.Add(NewMenuItem($"To universal (-{timediff.Hours})", AddressOf uiToUTC_Click))
-        tools.Items.Add(NewMenuItem("Adjust offset", AddressOf uiAdjustOffset_Click))
+        tools.Items.Add(NewMenuItem("To DST (+1)", "Dodaje godzinę", AddressOf uiToDST_Click))
+        tools.Items.Add(NewMenuItem("From DST (-1)", "Odejmuje godzinę", AddressOf uiFromDST_Click))
+        tools.Items.Add(NewMenuItem($"To local ({timediff.Hours})", "Zamienia czas UTC na lokalny", AddressOf uiToLocal_Click))
+        tools.Items.Add(NewMenuItem($"To universal (-{timediff.Hours})", "Zamienia czas lokalny na UTC", AddressOf uiToUTC_Click))
+        tools.Items.Add(NewMenuItem("Adjust offset", "Przesuwa czas o podane minuty", AddressOf uiAdjustOffset_Click))
         If UseSelectedItems Then
-            tools.Items.Add(NewMenuItem("Calculate diff", AddressOf uiCalcDiff_Click))
+            tools.Items.Add(NewMenuItem("Calculate diff", "Wylicza różnicę czasu pomiędzy zdjęciami", AddressOf uiCalcDiff_Click))
         End If
 
 

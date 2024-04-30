@@ -11,7 +11,7 @@ Public NotInheritable Class PicMenuShellExec
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Shell exec") Then Return
+        If Not InitEnableDisable("Shell exec", "Uruchomienie programu domyślnego dla danego typu zdjęcia") Then Return
 
         AddHandler Me.Click, AddressOf ActionClick
 

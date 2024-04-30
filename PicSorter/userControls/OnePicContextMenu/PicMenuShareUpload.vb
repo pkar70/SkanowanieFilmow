@@ -13,7 +13,7 @@ Public NotInheritable Class PicMenuShareUpload
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Share peers", True) Then Return
+        If Not InitEnableDisable("Share peers", "Dzielenie się zdjęciami", True) Then Return
 
         If Application.GetShareLogins.Count > 0 Then
             Dim oNew As New MenuItem With {.Header = "Mark for Login"}
@@ -73,11 +73,11 @@ Public NotInheritable Class PicMenuShareUpload
     End Sub
 
     Private Async Function MarkOnePicForLogin(oPic As OnePic) As Task
-        oPic.AddCloudPublished("L:" & _ShareLogin.login.ToString, "")
+        oPic.AllowPeer(_ShareLogin)
     End Function
 
     Private Async Function UnMarkOnePicForLogin(oPic As OnePic) As Task
-        oPic.RemoveCloudPublished("L:" & _ShareLogin.login.ToString)
+        oPic.DenyPeer(_ShareLogin)
     End Function
 
 #End Region

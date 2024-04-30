@@ -12,7 +12,7 @@ Public NotInheritable Class PicMenuDeleteTemps
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Delete temps") Then Return
+        If Not InitEnableDisable("Delete temps", "Usuwanie plików tymczasowych związanych ze zdjęciem") Then Return
 
         AddHandler Me.Click, AddressOf ActionClick
 
