@@ -264,6 +264,25 @@ Class MainWindow
 
         Dim count As Integer = Application.GetBuffer.Count
         uiProcess.Content = $"Process ({count})"
+        If count = 0 Then
+            Dim path As String = IO.Path.Combine(Application.GetDataFolder, "buffer.json")
+            If IO.File.Exists(path) Then
+                If New IO.FileInfo(path).Length > 5 Then
+                    Dim lista As List(Of Vblib.OnePic)
+                    Dim sTxt = IO.File.ReadAllText(path)
+                    Dim sErr As String = ""
+                    Try
+                        lista = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(ObservableList(Of Vblib.OnePic)))
+                    Catch ex As Exception
+                        sErr = ex.Message
+                    End Try
+
+                    If sErr <> "" Then Me.MsgBox("Coś dziwnego, chyba błąd w pliku bufffer.json?" & vbCrLf & sErr)
+                    Debug.WriteLine(sErr)
+                End If
+            End If
+        End If
+
 
         uiBrowseArch.IsEnabled = IsAnyArchPresent()
 
