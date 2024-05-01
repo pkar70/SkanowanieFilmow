@@ -54,9 +54,16 @@ Public Class AutoTags
         Dim oSrc As JedenEngine = oFE?.DataContext
         If oSrc Is Nothing Then Return
 
+        Dim prevCount As Integer = PoliczUstawione(oSrc.nazwa)
         Await ApplyOne(oSrc)
-        Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
-        Window_Loaded(Nothing, Nothing)
+
+        If prevCount <> PoliczUstawione(oSrc.nazwa) Then
+            Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+            Window_Loaded(Nothing, Nothing)
+        Else
+            Me.msgbox("Nic się nie zmieniło... Pewnie mechanizm jest nieaplikowalny do pozostałych zdjęć.")
+        End If
+
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -84,7 +91,6 @@ Public Class AutoTags
     Private Shared Function PoliczUstawione(nazwa As String) As Integer
 
         Dim liczyk As Func(Of OnePic, Boolean)
-        liczyk = Function(x) Not String.IsNullOrWhiteSpace(x.PicGuid)
 
         If nazwa = ExifSource.AutoGuid Then
             ' przypadek specjalny: liczy w OnePic
