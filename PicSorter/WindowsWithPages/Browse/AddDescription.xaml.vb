@@ -1,6 +1,7 @@
 ﻿
 
-Imports Windows.Media.Devices
+'Imports Windows.Media.Devices
+Imports pkar.UI.Extensions
 
 Public Class AddDescription
 
@@ -22,6 +23,8 @@ Public Class AddDescription
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
+
         If _picek IsNot Nothing Then uiTitle.Text = _picek.sSuggestedFilename
 
         If _picek?.descriptions IsNot Nothing Then
@@ -37,9 +40,14 @@ Public Class AddDescription
         uiDescription.Focus()
     End Sub
 
-    Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
         _keywords = uiKeywords.Text
         _comment = uiDescription.Text
+
+        If _keywords.Contains("NO:") AndAlso Not _keywords.Contains("=NO:") Then
+            If Await Me.dialogboxynasync("Podejrzewam że chciałeś użyć keyword blokującego AUTOTAG, ale użyłeś złej składni: powinno być =NO:" & vbCrLf & "Chcesz poprawić?") Then Return
+        End If
+
         If _editmode Then
             _picek.descriptions.ElementAt(0).keywords = uiKeywords.Text
             _picek.descriptions.ElementAt(0).comment = uiDescription.Text
@@ -99,16 +107,6 @@ Public Class AddDescription
     Private Sub WypelnMenuKeywords()
 
         Dim count As Integer = WypelnMenuKeywords(uiMenuKeywords, AddressOf DodajTenKeyword)
-        'uiMenuKeywords.Items.Clear()
-
-        'For Each oItem As Vblib.OneKeyword In Application.GetKeywords.GetList
-        '    Dim oNew As New MenuItem
-        '    oNew.Header = oItem.sId
-        '    'oNew.Margin = _DefMargin
-        '    DodajSubTree(oNew, oItem.SubItems)
-        '    ' AddHandler oNew.Click, AddressOf DodajTenKeyword ' nie można dodawać keywords głównego poziomu (#,-,=)
-        '    oMenu.Items.Add(oNew)
-        'Next
 
         If count < 1 Then
             uiAdd.IsEnabled = False
