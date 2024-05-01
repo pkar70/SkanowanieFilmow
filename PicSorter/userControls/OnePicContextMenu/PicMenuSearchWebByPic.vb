@@ -15,7 +15,7 @@ Public NotInheritable Class PicMenuSearchWebByPic
         MyBase.OnApplyTemplate()
 
         ' *TODO* może być Bing, Google
-        If Not InitEnableDisable("Search web by pic", "Przeszukiwanie sieci według zdjęcia", True) Then Return
+        If Not InitEnableDisable("Web search by pic", "Przeszukiwanie sieci według zdjęcia", True) Then Return
 
         Me.Items.Add(NewMenuItem("Google", "Wyszukaj w Google", AddressOf SearchGoogle))
         Me.Items.Add(NewMenuItem("BING(?)", "Wyszukaj w BING (chwilowo nie działa", AddressOf SearchBing))

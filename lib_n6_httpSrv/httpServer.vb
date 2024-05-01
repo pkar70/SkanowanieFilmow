@@ -297,7 +297,7 @@ Public Class ServerWrapper
     End Function
 
     Private Async Function SendMarkedPicDataFromBuff(oLogin As ShareLogin, fname As String, response As HttpListenerResponse) As Task(Of String)
-
+        fname = fname.Replace("%20", " ") ' byæ mo¿e te¿ trzeba wiêcej 
         Dim oPic As Vblib.OnePic = _buffer.GetList.Find(Function(x) x.InBufferPathName.EndsWithCI(fname))
         If oPic Is Nothing Then Return "ERROR: no such pic"
 
