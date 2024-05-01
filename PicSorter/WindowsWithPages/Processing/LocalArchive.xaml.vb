@@ -6,13 +6,16 @@ Imports pkar.UI.Extensions
 Public Class LocalArchive
 
     Private _lista As List(Of DisplayArchive)
+    Private _withTargetDir As Integer
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
         Me.ProgRingInit(True, False)
 
+        _withTargetDir = CountWithTargetDir()
+
         uiWithTargetDir.Maximum = Application.GetBuffer.Count
-        uiWithTargetDir.Value = CountWithTargetDir()
+        uiWithTargetDir.Value = _withTargetDir
         uiWithTargetDir.ToolTip = uiWithTargetDir.Value & "/" & uiWithTargetDir.Maximum
 
         ShowArchivesList()
@@ -146,8 +149,6 @@ Public Class LocalArchive
 
     Private Sub ShowArchivesList()
 
-        Dim iMax As Integer = Application.GetBuffer.Count
-
         _lista = New List(Of DisplayArchive)
 
         For Each oArch As Vblib.LocalStorage In Application.GetArchivesList
@@ -156,9 +157,12 @@ Public Class LocalArchive
             oNew.enabled = oArch.enabled
             oNew.nazwa = oArch.StorageName
             oNew.dymekAbout = oArch.VolLabel
-            oNew.maxCount = iMax
+            oNew.maxCount = _withTargetDir
             oNew.count = CountArchived(oNew.nazwa)
-            oNew.dymekCount = oNew.count & "/" & iMax
+            oNew.dymekCount = oNew.count & "/" & _withTargetDir
+            If oNew.count = _withTargetDir Then
+                oNew.dymekCount &= " (komplet)"
+            End If
 
             _lista.Add(oNew)
         Next
