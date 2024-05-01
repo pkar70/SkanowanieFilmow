@@ -1,4 +1,7 @@
 ﻿Imports Vblib
+Imports pkar
+Imports pkar.UI.Extensions
+Imports System.Globalization
 
 Public Class UserControlGeo
 
@@ -9,10 +12,10 @@ Public Class UserControlGeo
         Dim dataCont As QueryGeo = DataContext
         If dataCont Is Nothing Then Return
 
-        dataCont.Location = oWnd.GetGeoPos
+        Dim radiusKm As Double = If(oWnd.IsZgrubne, 20, 0.1)
+        dataCont.Location = New BasicGeoposWithRadius(oWnd.GetGeoPos, radiusKm * 1000)
         uiLatLon.Text = $"szer. {dataCont.Location.StringLat(3)}, dług. {dataCont.Location.StringLon(3)}"
 
-        Dim radiusKm As Integer = If(oWnd.IsZgrubne, 20, 5)
         uiGeoRadius.Text = radiusKm
 
     End Sub
@@ -27,9 +30,11 @@ Public Class UserControlGeo
         Dim dataCont As QueryGeo = DataContext
         If dataCont Is Nothing Then Return
 
-        Dim radiusStr As String = uiGeoRadius.Text
-        If String.IsNullOrWhiteSpace(radiusStr) Then radiusStr = "5"
-        dataCont.Location.Radius = radiusStr * 1000
+        If dataCont.Location IsNot Nothing Then
+            Dim radiusStr As String = uiGeoRadius.Text
+            If String.IsNullOrWhiteSpace(radiusStr) Then radiusStr = "0"
+            dataCont.Location.Radius = radiusStr * 1000
+        End If
 
         bInChange = False
 
@@ -44,10 +49,37 @@ Public Class UserControlGeo
         Dim dataCont As QueryGeo = DataContext
         If dataCont Is Nothing Then Return
 
-        uiLatLon.Text = $"szer. {dataCont.Location.StringLat(3)}, dług. {dataCont.Location.StringLon(3)}"
-        uiGeoRadius.Text = dataCont.Location.Radius \ 1000  ' integer tylko nas interesuje
+        If dataCont.Location IsNot Nothing Then
+            uiLatLon.Text = $"szer. {dataCont.Location.StringLat(3)}, dług. {dataCont.Location.StringLon(3)}"
+            uiGeoRadius.Text = dataCont.Location.Radius \ 1000  ' integer tylko nas interesuje
+        End If
 
         bInChange = False
 
     End Sub
+
+    Public Overrides Sub OnApplyTemplate()
+        MyBase.OnApplyTemplate()
+
+        UserControl_DataContextChanged(Nothing, Nothing)
+    End Sub
 End Class
+
+#If False Then
+Public Class KonwersjaMetryKilometry
+    Implements IValueConverter
+
+    ' metry na km
+    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.Convert
+        Dim metry As Double = CType(value, Double)
+        Return (metry \ 1000).ToString
+    End Function
+
+    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As CultureInfo) As Object Implements IValueConverter.ConvertBack
+        Dim tekstowo As String = CType(value, String)
+        Dim km As Double = 1
+        If Not Double.TryParse(tekstowo, km) Then Return 1
+        Return km
+    End Function
+End Class
+#End If
