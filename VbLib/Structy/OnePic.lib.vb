@@ -1117,7 +1117,7 @@ Public Class OnePic
     ''' <summary>
     ''' pobiera (poprzez Flatten) wszystkie keywords, ale robi na tym uniq
     ''' </summary>
-    ''' <returns></returns>
+    ''' <returns>string zawierający słowa kluczowe rozdzielone spacjami</returns>
     Public Function GetAllKeywords() As String
 
         Dim oFlat As ExifTag = FlattenExifs(False)
@@ -1271,9 +1271,9 @@ Public Class OnePic
         Archived = ""
         CloudArchived = ""
         'Public Property Published As Dictionary(Of String, String)
-        'Public Property TargetDir As String ' OneDirFlat.sId
+        TargetDir = ""
         'Public Property Exifs As New List(Of ExifTag) ' ExifSource.SourceFile ..., )
-        'Public Property InBufferPathName As String ' przy Sharing: GUID pliku, tymczasowe przy odbieraniu z upload
+        InBufferPathName = ""
         'Public Property sSourceName As String
         'Public Property sInSourceID As String    ' usually pathname
         'Public Property sSuggestedFilename As String ' mia┼éo by─ç ┼╝e np. scinanie WP_. ale jednak tego nie robi─Ö (bo moge posortowac po dacie, albo po nazwach - i w tym drugim przypadku mam rozdzia┼é na np. telefon i aparat)
@@ -1308,7 +1308,13 @@ Public Class OnePic
         Dim oExif As Vblib.ExifTag
         Dim bGdziekolwiekMatch As Boolean = False
 
+
 #Region "ogólne"
+
+        oExif = GetExifOfType(ExifSource.FileExif)
+
+        'If Not CheckStringContains(oExif.ReelName, query.ogolne.reel) Then Return False
+
         If query.ogolne.MaxDate.IsDateValid Or query.ogolne.MinDate.IsDateValid Then
 
             Dim picMinDate, picMaxDate As Date
@@ -1332,15 +1338,13 @@ Public Class OnePic
                 picMaxDate = picMaxDate.AddYears(query.ogolne.MaxDate.Year - picMaxDate.Year)
             End If
 
-            If query.ogolne.MaxDate.IsDateValid Then
+            If query.ogolne.MaxDateCheck AndAlso query.ogolne.MaxDate.IsDateValid Then
                 If picMinDate > query.ogolne.MaxDate Then Return False
             End If
 
-            If query.ogolne.MinDate.IsDateValid Then
+            If query.ogolne.MinDateCheck AndAlso query.ogolne.MinDate.IsDateValid Then
                 If picMaxDate < query.ogolne.MinDate Then Return False
             End If
-
-            If Not CheckStringContains(oExif.ReelName, query.ogolne.reel) Then Return False
 
         End If
 
