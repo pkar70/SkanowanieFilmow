@@ -2868,6 +2868,18 @@ Public Class ProcessBrowse
                 DeleteAskPicekMain(oThumb)
         End Select
     End Sub
+
+    Private Sub uiAddLink_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New AddLink
+        If Not oWnd.ShowDialog() Then Return
+
+        For Each oThumb As ThumbPicek In uiPicList.SelectedItems
+            oThumb.oPic.AddLink(oWnd.linek)
+        Next
+
+        SaveMetaData()
+
+    End Sub
 End Class
 
 Public Class KonwersjaPasekKolor

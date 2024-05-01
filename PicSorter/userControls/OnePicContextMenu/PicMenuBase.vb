@@ -53,7 +53,8 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     Protected Function InitEnableDisable(header As String, dymek As String, Optional bSubItems As Boolean = False)
 
         If String.IsNullOrWhiteSpace(Me.Header) Then
-            Me.Header = header & If(UseSelectedItems AndAlso bSubItems, " »", "")
+            'Me.Header = header & If(UseSelectedItems AndAlso bSubItems, " »", "")
+            Me.Header = header & If(bSubItems, " »", "")
         End If
         ToolTip = dymek
 
@@ -167,7 +168,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     End Sub
 
     ''' <summary>
-    ''' wykonaj AKCJA na jednym bądź liście zdjęć, używając znalezionego ProgressBar (uiProgBar)
+    ''' wykonaj AKCJA na jednym bądź liście zdjęć (OnePic), używając znalezionego ProgressBar (uiProgBar)
     ''' </summary>
     ''' <returns></returns>
     Protected Async Function OneOrManyAsync(akcja As DoActionAsync) As Task

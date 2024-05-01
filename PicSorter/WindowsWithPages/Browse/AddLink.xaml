@@ -1,0 +1,16 @@
+﻿<Window x:Class="AddLink"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="AddLink" Height="150" Width="200" ResizeMode="NoResize">
+    <StackPanel Margin="3,3,3,3"  KeyUp="Window_KeyUp">
+        <TextBlock Text="Opis linku (krótki!)" />
+        <TextBox Text="{Binding opis, Mode=TwoWay}" Width="80" HorizontalAlignment="Left"/>
+        <TextBlock Text="Link" />
+        <TextBox Text="{Binding link, Mode=TwoWay}"  />
+        <Button Content=" OK " HorizontalAlignment="Center" IsDefault="True" Click="uiOk_Click" Margin="0,10,0,0"/>
+    </StackPanel>
+</Window>

@@ -978,7 +978,6 @@ Public Class ShowBig
         Window_Loaded(Nothing, Nothing)
     End Sub
 
-
 #End Region
 
 End Class
