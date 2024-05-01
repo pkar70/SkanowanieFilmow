@@ -50,6 +50,8 @@ Public Class OnePic
 
     Public Property serno As Integer
 
+    Public Property linki As List(Of OneLink)
+
     'Public Property sortOrder As String
 
     <Newtonsoft.Json.JsonIgnore>
@@ -475,6 +477,19 @@ Public Class OnePic
         fileTypeDiscriminator = GetFileTypeIcon()
     End Sub
 
+#Region "linki"
+
+    ''' <summary>
+    ''' dodaj link, sprawdzając unikalność
+    ''' </summary>
+    ''' <returns>FALSE gdy już taki URL bądź taki opis istnieje</returns>
+    Public Function AddLink(linek As OneLink) As Boolean
+        If linki Is Nothing Then linki = New List(Of OneLink)
+        If linki.Any(Function(x) x.link = linek.link OrElse x.opis = linek.opis) Then Return False
+        linki.Add(linek)
+        Return True
+    End Function
+#End Region
 
 #Region "descriptionsy"
 
@@ -1981,4 +1996,12 @@ Public Class OneDescription
         comment = sComment
         keywords = sKeywords
     End Sub
+End Class
+
+
+Public Class OneLink
+    Inherits BaseStruct
+
+    Public Property opis As String = ""
+    Public Property link As String = ""
 End Class
