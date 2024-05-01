@@ -171,7 +171,7 @@ Public Class LocalArchive
 
         If Not Await CheckSerNo() Then Return
 
-        If Not Await Me.DialogBoxYNAsync("Czy juz poprawiles dopisywanie do archive?") Then Return
+        'If Not Await Me.DialogBoxYNAsync("Czy juz poprawiles dopisywanie do archive?") Then Return
 
         If Not oSrc.engine.IsPresent Then
             Await Me.MsgBoxAsync($"Ale Archiwum '{oSrc.nazwa}' jest aktualnie niewidoczne!")

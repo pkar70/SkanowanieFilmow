@@ -43,7 +43,7 @@ Public Class QueryOgolne
     Public Property IgnoreYear As Boolean
     Public Property GUID As String = ""
     Public Property serno As Integer
-    Public Property reel As String
+    Public Property Reel As String
     Public Property Tags As String = ""
     <JsonIgnore>
     Public Property AllSubTags As List(Of String)
