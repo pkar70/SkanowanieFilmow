@@ -256,7 +256,7 @@ Public MustInherit Class PicSourceBase
 
 			Dim sComment As String = sLine.Substring(iInd + 1)
 			iInd = sComment.IndexOf(ChrW(4))
-			sComment = sComment.Substring(0, iInd).Trim
+			If iInd > -1 Then sComment = sComment.Substring(0, iInd).Trim
 
 			If Not String.IsNullOrWhiteSpace(sComment) Then
 				' jesli tak, to stworz nowego Exifa
