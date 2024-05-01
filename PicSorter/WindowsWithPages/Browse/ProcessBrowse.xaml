@@ -216,6 +216,7 @@
                                         <!-- readonly metadata 2 -->
                                         <local:PicMenuOnMap  />
                                         <local:PicMenuSearchWebByPic />
+                                        <local:PicMenuSearchArchive />
                                         <local:PicMenuShellExec  />
 
                                         <MenuItem Header="other...">

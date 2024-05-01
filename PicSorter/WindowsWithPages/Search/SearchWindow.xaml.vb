@@ -27,13 +27,19 @@ Public Class SearchWindow
     'Private _geoTag As BasicGeopos
     Private _initialCount As Integer
 
-    Private _query As New Vblib.SearchQuery
+    Private _query As Vblib.SearchQuery
 
-    Public Sub New(Optional lista As List(Of Vblib.OnePic) = Nothing)
+    ''' <summary>
+    ''' Okno wyszukiwania (do zadawania pytań)
+    ''' </summary>
+    ''' <param name="lista">NULL albo już wstępnie ograniczona lista (np. przy szukaniu w nowym oknie w rezultatach)</param>
+    ''' <param name="query">NULL, albo już zdefiniowane query</param>
+    Public Sub New(Optional lista As List(Of Vblib.OnePic) = Nothing, Optional query As Vblib.SearchQuery = Nothing)
         ' This call is required by the designer.
         InitializeComponent()
 
-        _inputList = lista
+        _inputList = Nothing
+        _query = If(query, New Vblib.SearchQuery)
 
     End Sub
 
@@ -172,14 +178,8 @@ Public Class SearchWindow
         End If
 
         uiResultsCount.Text = $"Found {iCount} items (from {_initialCount})."
-        If iCount > 1000 Then
-            If Not Await Me.DialogBoxYNAsync($"{iCount} to dużo elementów, pokazać listę mimo to?") Then Return
-        End If
 
-        ' pokazanie rezultatów
-        uiLista.ItemsSource = _queryResults 'From c In _queryResults
-
-        ' oraz folderów
+        ' najpierw lista folderów - znacznie krótsza niż plików (zakładam) i zawsze do pokazania
         Dim listaNazwFolderow As New List(Of String)
         For Each oPicek As Vblib.OnePic In _queryResults
             listaNazwFolderow.Add(oPicek.TargetDir)
@@ -202,6 +202,16 @@ Public Class SearchWindow
             ' kasujemy ewentualny poprzedni
             uiListaKatalogow.ItemsSource = Nothing
         End If
+
+
+        If iCount > 1000 Then
+            If Not Await Me.DialogBoxYNAsync($"{iCount} to dużo elementów, pokazać listę mimo to?") Then Return
+        End If
+
+        ' pokazanie rezultatów
+        uiLista.ItemsSource = _queryResults 'From c In _queryResults
+
+
 
     End Sub
 
