@@ -17,17 +17,17 @@
 ' EXIF per oglądany obrazek, oraz per zaznaczone (EXIFSource: MANUAL & yyMMdd-HHmmss)
 
 
-Imports System.Security.Policy
+'Imports System.Security.Policy
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar
 Imports pkar.DotNetExtensions
 Imports System.Runtime.InteropServices.WindowsRuntime
-Imports Org.BouncyCastle.Math.EC
+'Imports Org.BouncyCastle.Math.EC
 Imports System.IO
 Imports pkar.UI.Extensions
-Imports System.Runtime.Intrinsics
-Imports System.ComponentModel
+'Imports System.Runtime.Intrinsics
+'Imports System.ComponentModel
 
 Public Class ProcessBrowse
 
@@ -88,6 +88,8 @@ Public Class ProcessBrowse
 
         Await Bufor2Thumbsy()   ' w tym obsługa znikniętych
         SizeMe()
+        SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat!
+
         RefreshMiniaturki(True)
         'PokazThumbsy() ' tylko test, czy observable zadziała
 
@@ -229,19 +231,19 @@ Public Class ProcessBrowse
 
         Dim lDeleted As New List(Of Vblib.OnePic)
 
-        For Each oItem As Vblib.OnePic In _oBufor.GetList
-            If Not IO.File.Exists(oItem.InBufferPathName) Then
+        For Each oPic As Vblib.OnePic In _oBufor.GetList
+            If Not IO.File.Exists(oPic.InBufferPathName) Then
                 ' zabezpieczenie przed samoznikaniem - nie ma, to kasujemy z listy naszych plikow
-                lDeleted.Add(oItem)
-                vb14.DumpMessage("Znikniety plik: " & oItem.InBufferPathName)
+                lDeleted.Add(oPic)
+                vb14.DumpMessage("Znikniety plik: " & oPic.InBufferPathName)
                 Continue For
             End If
 
-            Dim oNew As New ThumbPicek(oItem, iMaxBok)
+            Dim oThumb As New ThumbPicek(oPic, iMaxBok)
 
-            oNew.dateMin = oItem.GetMostProbablyDate
+            oThumb.dateMin = oPic.GetMostProbablyDate
             uiProgBar.Value += 1
-            lista.Add(oNew)
+            lista.Add(oThumb)
 
         Next
 
@@ -280,15 +282,15 @@ Public Class ProcessBrowse
 
     End Function
 
-    'Public Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oItem As ThumbPicek, Optional bRecreate As Boolean = False) As Task
+    'Public Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oThumb As ThumbPicek, Optional bRecreate As Boolean = False) As Task
 
-    '    Dim miniaturkaPathname As String = oItem.ThumbGetFilename
+    '    Dim miniaturkaPathname As String = Thumb.ThumbGetFilename
 
     '    ' wymuszone odtworzenie miniaturki
     '    If bRecreate Then IO.File.Delete(miniaturkaPathname)
 
-    '    Dim bitmapa As BitmapImage = Await WczytajObrazek(oItem.oPic.InBufferPathName, 400, Rotation.Rotate0)
-    '    oItem.oImageSrc = bitmapa
+    '    Dim bitmapa As BitmapImage = Await WczytajObrazek(oThumb.oPic.InBufferPathName, 400, Rotation.Rotate0)
+    '    oThumb.oImageSrc = bitmapa
 
     '    If bCacheThumbs AndAlso Not IO.File.Exists(miniaturkaPathname) Then
     '        Dim encoder As New JpegBitmapEncoder()
@@ -358,9 +360,23 @@ Public Class ProcessBrowse
 
 #Region "górny toolbox"
 
-    Private Sub PokazThumbsy()
+    ''' <summary>
+    ''' posortuj thumbsy wedle daty - na start, i po zmianach dat
+    ''' </summary>
+    Private Sub SortujThumbsy()
         uiPicList.ItemsSource = Nothing
-        uiPicList.ItemsSource = From c In _thumbsy Where c.bVisible Order By c.dateMin
+        _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.dateMin)
+        uiPicList.ItemsSource = _thumbsy
+    End Sub
+
+    ''' <summary>
+    ''' teraz tylko aktualizacja licznika - też do przesunięcia na "po delete" i po "read"
+    ''' </summary>
+    Private Sub PokazThumbsy()
+        ' *PROBA* - nieudana!
+        'uiPicList.ItemsSource = Nothing
+        'uiPicList.ItemsSource = From c In _thumbsy Where c.bVisible Order By c.dateMin
+        SortujThumbsy()
         Me.Title = $"{_title} ({_thumbsy.Count} images)"
     End Sub
 
@@ -419,8 +435,8 @@ Public Class ProcessBrowse
     '    uiProgBar.Visibility = Visibility.Visible
 
     '    Dim allErrs As String = ""
-    '    For Each oItem As ThumbPicek In uiPicList.SelectedItems
-    '        Dim oPic As Vblib.OnePic = oItem.oPic
+    '    For Each oThumb As ThumbPicek In uiPicList.SelectedItems
+    '        Dim oPic As Vblib.OnePic = oThumb.oPic
 
     '        If oPic.sharingLockSharing Then
     '            allErrs &= oPic.sSuggestedFilename & " is excluded from sharing, ignoring" & vbCrLf
@@ -464,16 +480,16 @@ Public Class ProcessBrowse
     '    If uiPicList.SelectedItems.Count < 1 Then Return
 
     '    Dim lSelected As New List(Of ThumbPicek)
-    '    For Each oItem As ThumbPicek In uiPicList.SelectedItems
-    '        lSelected.Add(oItem)
+    '    For Each oThumb As ThumbPicek In uiPicList.SelectedItems
+    '        lSelected.Add(oThumb)
     '    Next
 
     '    Dim oWnd As New TargetDir(_thumbsy.ToList, lSelected)
     '    If Not oWnd.ShowDialog Then Return
 
     '    If _isTargetFilterApplied Then
-    '        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-    '            oItem.opacity = _OpacityWygas
+    '        For Each oThumb As ThumbPicek In uiPicList.SelectedItems
+    '            oThumb.opacity = _OpacityWygas
     '        Next
     '    End If
 
@@ -514,6 +530,13 @@ Public Class ProcessBrowse
         SaveMetaData()
     End Sub
 
+    Private Sub uiMetadataChangedResort(sender As Object, e As EventArgs)
+        uiActionsPopup.IsOpen = False
+        SortujThumbsy()
+        SaveMetaData()
+    End Sub
+
+
     Private Sub uiTargetMetadataChanged(sender As Object, e As EventArgs)
         uiMetadataChangedDymkuj(Nothing, Nothing)
         ' tu trzeba wraz z reapply filter
@@ -546,9 +569,9 @@ Public Class ProcessBrowse
     '    If Not IO.Directory.Exists(sFolder) Then Return
 
     '    Dim iErrCount As Integer = 0
-    '    For Each oItem As ThumbPicek In uiPicList.SelectedItems
+    '    For Each oThumb As ThumbPicek In uiPicList.SelectedItems
     '        Try
-    '            IO.File.Copy(oItem.oPic.InBufferPathName, IO.Path.Combine(sFolder, oItem.oPic.sSuggestedFilename))
+    '            IO.File.Copy(oThumb.oPic.InBufferPathName, IO.Path.Combine(sFolder, oPic.oPic.sSuggestedFilename))
     '        Catch ex As Exception
     '            iErrCount += 1
     '        End Try
@@ -1370,9 +1393,9 @@ Public Class ProcessBrowse
 
         'Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
 
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            Await oItem.ThumbWczytajLubStworz(_inArchive, True)
-            'Await DoczytajMiniaturke(bCacheThumbs, oItem, True)
+        For Each oThumb As ThumbPicek In uiPicList.SelectedItems
+            Await oThumb.ThumbWczytajLubStworz(_inArchive, True)
+            'Await DoczytajMiniaturke(bCacheThumbs, oThumb, True)
         Next
 
     End Sub
@@ -1569,9 +1592,9 @@ Public Class ProcessBrowse
         '    End If
         'Next
         '    ' https://stackoverflow.com/questions/2926722/get-first-visible-item-in-wpf-listview-c-sharp
-        '    For Each oItem As ThumbPicek In uiPicList.ItemsSource
+        '    For Each oThumb As ThumbPicek In uiPicList.ItemsSource
         '        Dim bounds As Rect =
-        '    oItem.TransformToAncestor(Container).TransformBounds(New Rect(0.0, 0.0, element.ActualWidth, element.ActualHeight));
+        '    oThumb.TransformToAncestor(Container).TransformBounds(New Rect(0.0, 0.0, element.ActualWidth, element.ActualHeight));
         'var Rect = New Rect(0.0, 0.0, container.ActualWidth, container.ActualHeight);
         'Return Rect.Contains(bounds.TopLeft) || rect.Contains(bounds.BottomRight);
         '    Next
@@ -1735,6 +1758,7 @@ Public Class ProcessBrowse
         _isGeoFilterApplied = False
         _isTargetFilterApplied = False
 
+        '*PROBA* nieudana zakomentownia
         RefreshMiniaturki(False)
     End Sub
 
@@ -1746,6 +1770,7 @@ Public Class ProcessBrowse
             oItem.opacity = If(oItem.opacity = 1, _OpacityWygas, 1)
         Next
 
+        '*PROBA* nieudana zakomentownia
         RefreshMiniaturki(False)
     End Sub
 
@@ -1760,6 +1785,7 @@ Public Class ProcessBrowse
         _isGeoFilterApplied = False
         _isTargetFilterApplied = False
 
+        '*PROBA* nieudana zakomentownia
         RefreshMiniaturki(False)
     End Sub
 
@@ -2324,11 +2350,11 @@ Public Class ProcessBrowse
         End If
 
         If ile = 1 Then
-            Dim oItem As ThumbPicek = uiPicList.SelectedItems(0)
-            RefreshOwnedWindows(oItem)
+            Dim oThumb As ThumbPicek = uiPicList.SelectedItems(0)
+            RefreshOwnedWindows(oThumb)
 
-            'ShowKwdForPic(oItem)
-            'ShowExifForPic(oItem)
+            'ShowKwdForPic(oThumb)
+            'ShowExifForPic(oThumb)
         End If
 
         _dragDropCreated = False

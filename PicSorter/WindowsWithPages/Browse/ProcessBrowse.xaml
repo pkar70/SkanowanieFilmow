@@ -142,7 +142,7 @@
                         <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" IsEnabled="False"/>
                         <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" UseSelectedItems="True"/>
                         <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiGeotagMetadataChanged" UseSelectedItems="True" />
-                        <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />
+                        <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" UseSelectedItems="True" />
                         <!--<local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />-->
                         <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" />
                         
