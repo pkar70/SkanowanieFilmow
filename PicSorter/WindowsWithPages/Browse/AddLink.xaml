@@ -7,10 +7,10 @@
         mc:Ignorable="d"
         Title="AddLink" Height="150" Width="200" ResizeMode="NoResize">
     <StackPanel Margin="3,3,3,3"  KeyUp="Window_KeyUp">
-        <TextBlock Text="Opis linku (krótki!)" />
-        <TextBox Text="{Binding opis, Mode=TwoWay}" Width="80" HorizontalAlignment="Left"/>
         <TextBlock Text="Link" />
-        <TextBox Text="{Binding link, Mode=TwoWay}"  />
+        <TextBox Text="{Binding link, Mode=TwoWay}" TextChanged="uiLink_TextChanged" Name="uiLink"  />
+        <TextBlock Text="Opis linku (krótki!)" />
+        <TextBox Text="{Binding opis, Mode=TwoWay}" Width="80" HorizontalAlignment="Left" Name="uiOpis"/>
         <Button Content=" OK " HorizontalAlignment="Center" IsDefault="True" Click="uiOk_Click" Margin="0,10,0,0"/>
     </StackPanel>
 </Window>

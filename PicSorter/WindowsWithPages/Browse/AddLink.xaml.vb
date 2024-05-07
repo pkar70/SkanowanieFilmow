@@ -1,5 +1,6 @@
 ﻿Imports pkar.UI.Extensions
 Imports Vblib
+Imports pkar.DotNetExtensions
 
 Public Class AddLink
 
@@ -33,4 +34,23 @@ Public Class AddLink
         Me.Close()
     End Sub
 
+    Private Sub uiLink_TextChanged(sender As Object, e As TextChangedEventArgs)
+        Dim link As String = uiLink.Text
+        If link = "" Then Return
+
+        If Not link.ContainsCI("wikipedia") Then Return
+
+        If uiOpis.Text <> "" Then Return
+
+        uiOpis.Text = "wiki"
+
+        Dim iInd As Integer = link.IndexOf("wikipedia")
+        If link.Substring(iInd - 1, 1) <> "." Then Return
+
+        link = link.Substring(0, iInd - 1)
+        iInd = link.LastIndexOf("/")
+
+        uiOpis.Text &= " (" & link.Substring(iInd) & ")"
+
+    End Sub
 End Class
