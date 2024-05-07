@@ -1050,7 +1050,7 @@ Public Class OnePic
     Public Function GetFormattedSerNo() As String
         If serno > 0 Then
             Dim tempNum As String = serno
-            Dim brakuje As Integer = GetSettingsBool("uiSerNoDigits") - tempNum.Length
+            Dim brakuje As Integer = GetSettingsInt("uiSerNoDigits") - tempNum.Length
             For iLp = 1 To brakuje
                 'tempNum = Space(brakuje).Replace(" ", "0") ' Space nie ma w .Net Std 1.4 :)
                 tempNum &= "0"

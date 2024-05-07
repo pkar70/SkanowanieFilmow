@@ -122,15 +122,20 @@ ARCHIVE/PUBLISH: może progressbar przy pelnej archiwizacji innego koloru niz cz
 ARCHIVE: katalog Target, oraz katalog TargetScan ?
 ARCHIVE/PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
 ARCHIVE(local): ewentulanie usuwac z IsCloudPublishMentioned entries "L:<loginguid>" przed archiwizacja, zob. newlyArchived.Add(oPic)
+ARCHIVE: progbar, i task.run
 
 AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
+AUTOEXIF: sprawdzic czy wewnetrzne Windows potrafi te dane wyciągnąć (i ew. w ogóle pozbyć się compact?)
+AUTOEXIF RAF?
 
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
 AUTOTAG: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 
 AUTOTAG: rozpoznawanie zwierząt, roślin, samochodów
+AUTOTAG:FACES nie usuwa twarzy dla zdjęć ponad 50 (albo from settings) lat?
+
 
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
 BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
@@ -152,8 +157,8 @@ BROWSER: blokować akcje InArchive gdy jest read-only
 BROWSER: do listy publisherów dodawać "sharin»", pod nim "logins/servers", z listami zdefiniowanych
 BROWSER: droptarget, zassanie pliku; a jak shellobject, to razem z metadanymi?
 BROWSER: dodawanie pliku jak z FB, z podaniem linku, informacji, itp.
-
-
+BROWSER: filtry: filtr "grdziekolwiek" jako wrapper do istniejacego 'full'
+BROWSER: kasowanie w pełni zarchiwizowanych - z progring
 
 CMDLINE: retrieve SOURCE
 CMDLINE: autotag TAGGER
@@ -216,11 +221,14 @@ RETRIEVE Jako reakcja na drag&DROP
 RETRIEVE run AUTOEXIF gdy settings tak mówi
 RETRIEVE: bez sensu mozliwosc maxymalizacji okna
 
+
 SEARCH: sekcja OPAD
 SEARCH: wirtualne katalogi z query można robić
 SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
 SEARCH: poza tagiem również tagi nadrzędne (-ROK dla -DW)
-SEARCH: czemu nie robi wait?
+SEARCH: czemu progring się zatrzymuje?
+SEARCH: może "copy to buffer", dla udostępniania? Z zaznaczeniem w OnePic że tego zdjęcia nie-auto-usuwać jako zarchiwizowanego
+
 
 SEARCHBYPIC: Bing umie http://, ale nie umie z portu
 
@@ -283,7 +291,70 @@ SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę z
 TELEFON: eksporter do chomikuj różnych
 TELEFON: click po lewej stronie ekranu - prev, po prawej - next
 
-* WPF i Store, może ten cmdline instalator?
+
+REEL: jako film, album, pudełko - nadawane przy import z katalogu, albo potem po wczytaniu
+REEL: sortowanie dalej tematycznie (choć się rozrośnie TargetDir, a reel mogłoby być .\reel\struktura, pamiętana nawet bez ostatniego członu - dw\alb, juz bez dw\alb\alb01, i dw\127 bez dw\127\12)
+
+
+
+Drobne:
+* rozdzielić setdate na force taken oraz set range (add range?) właśnie, add range, i można dowolnie dużo zakresów podać
+* formatka add range, z polem Edit gdzie :1970: przerobi na zakres od 1 stycznia do 31 grudnia
+* browse, dymek, # - nie ma tyle cyfr co powinien mieć!
+* nie robi kopii do OneDrive - a włączenie robienia kopii powinno robić kopię "aktualną"
+* czy archive.add zmienia tylko to co na dysku, czy także to co już wczytane do pamięci?
+* run all -> stop gdy w trakcie, i naciśnięcie przerywa po wysłąniu kolejnego pliku na chomika
+* nunget, me.prgringgetlevel - jak głęboko zagnieżdżony, może się kiedyś przydać
+* add udostępnienia - fun bool, i false gdy już za dużo udostępnień (licznik zszedł do zera) oraz gdy otrzymany od tego komu się miałoby udostępnić (żeby wyłączyć pętle)
+* addpeer - automatycznie wedle kwd, badz pole login.autoAllowKwds
+
+Duże:
+* dodatkowe typy: foto, scan, +internet, +screenshot
+* import ze screenshot (katalogu tamtejszego, path z systemu brany)
+* import z downloads (katalog brany z systemu), okienko:
+ miniaturka ostatniego zdjęcia
+ Edit autor (nie lista, a nawet jeśli, to oddzielna i można wpisać spoza listy)
+ Edit description
+ Edit link (do postu FB)
+ Button OK oraz Add (Add - przechodzi do kolejnego, OK - zamyka; oba: dopisują)
+ Button cancel (oraz ESC)
+ Geo, kwd (miejsca oraz inni, # i =)
+ Button: search by descr, by geo, by kwd miejsca # - okno wyszukiwarki
+ target dir (default: z ustawień importera) 
+* optymalizacja search
+ search step x, kwd x, current count x
+ proste query: sumOfKwd (bez -NO:), sumOfDscr (bez Azure), date exact min max, id, target, suggestedFilename, ewent. OCR
+* profiler na search puścić, gdzie najwięcej czasu spędza
+for each kwd in query
+ lista = lista.where( x.sumkwd.contains(kwd) )
+ewentualnie if kwd.begins("|") lista = lista.concatenate(poprzlista.where())
+* ewentulanie klasa onepic.descr.add, itp., properties: sumofdescr, list(of onedescr)
+* zmiana wtedy w thumbs (likwidacja pól sum), i przepiecie dymkow na to z onepic
+* dopilnować by nie manipulowac descriptions poza klasą onepic
+* automatyczne tagowanie wielkanocy? (=KalWlk)
+
+!!!! One more important difference is you can access ObservableCollection only from thread on which it was created where as list can be accessed fromany thread.
+zdaje ise ze obsColl sam z siebie umie tylko add/remove sygnalizowac, a pozostale (change) to trzeba przez SetItem
+ 
+
+
+
+
+
+* WPF i Store, może ten cmdline instalator? clickonce? tak by picsort:// od razu wpisywał do serwerów, bym mógł ten program propagować dając link picsort w SSC na przykład
+
+
+optymalizacja:
+Browse: wykorzystanie Observable, i wszystkie parametry pokazywane w caption wyciągnąć do Thumba, by się samo zmieniało
+sprobowac wygaszanie - czy zadziała samo w sobie, bez redraw
+- tak żeby przyspieszyc działanie oraz dobrze pokazywac podpisy przy zmianach
+Zmiany dat (czyli re-sort) tylko przy keywords (czasem) oraz forcedate
+
+czemu geoname dziala dluzej na braku geopos niz np. azure na keyword? rownie szybko powinno!
+
+potem przyspieszyc szukanie, wyciągając do OnePic to wedle czego sie najwiecej szuka - zeby nie trzeba bylo chodzic po exifach
+
+
 
 gdy bedzie baza, to zrobic "import" wszystkich zdjec z analogowe, z ustawianiem targetDir wedle aktualnego dir (choc teraz data jest przed tytułem)
 
