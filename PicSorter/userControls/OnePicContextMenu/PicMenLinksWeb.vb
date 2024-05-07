@@ -26,11 +26,11 @@ Public Class PicMenLinksWeb
         _wasApplied = True
     End Sub
 
-    Private Async Sub uiAddLink_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiAddLink_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AddLink
         If Not oWnd.ShowDialog() Then Return
 
-        Await OneOrManyAsync(Function(x) x.AddLink(oWnd.linek))
+        OneOrMany(Sub(x) x.AddLink(oWnd.linek))
 
         EventRaise(Me)
     End Sub
