@@ -8,9 +8,11 @@ Public Class LocalArchive
     Private _lista As List(Of DisplayArchive)
     Private _withTargetDir As Integer
 
+#Region "UI"
+
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
-        Me.ProgRingInit(True, False)
+        Me.ProgRingInit(True, True)
 
         _withTargetDir = CountWithTargetDir()
 
@@ -29,6 +31,24 @@ Public Class LocalArchive
         End If
     End Sub
 
+    Private Async Sub uiCheckFree_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim oSrc As DisplayArchive = oFE?.DataContext
+        If oSrc Is Nothing Then Return
+
+        If Not oSrc.engine.IsPresent Then
+            Me.MsgBox($"Ale Archiwum '{oSrc.nazwa}' jest aktualnie niewidoczne!")
+            Return
+        End If
+
+        Dim wolne As Integer = Await oSrc.engine.GetMBfreeSpace
+        Me.MsgBox($"Wolne: {wolne.ToStringWithSpaces} MiB")
+
+    End Sub
+#End Region
+
+
+#Region "przygotowanie danych do pokazania"
     Private Function GetTotalSizeKiB() As Integer
         Dim iSize As Integer = 0
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
@@ -44,57 +64,6 @@ Public Class LocalArchive
 
         Return iSize
     End Function
-
-    Public Shared Async Function CheckSerNo() As Task(Of Boolean)
-
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
-            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
-            If oPic.serno < 1 Then
-                Await vb14.MsgBoxAsync($"Są zdjęcia bez serno, nie mogę kontynuować! ({oPic.sSuggestedFilename}")
-            End If
-        Next
-        Return True
-    End Function
-
-    Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
-        vb14.DumpCurrMethod()
-
-        Dim oFE As FrameworkElement = sender
-        Dim oSrc As DisplayArchive = oFE?.DataContext
-        If oSrc Is Nothing Then Return
-
-        Await ApplyOne(oSrc)
-
-        Window_Loaded(Nothing, Nothing) ' odczytaj na nowo spisy
-    End Sub
-
-    Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
-
-        Dim iSelected As Integer = 0
-        For Each oSrc As DisplayArchive In _lista
-            If oSrc.enabled Then iSelected += 1
-        Next
-
-        uiProgBarEngines.Maximum = iSelected
-        uiProgBarEngines.Value = 0
-        uiProgBarEngines.Visibility = Visibility.Visible
-
-        uiGetAll.IsEnabled = False
-
-        For Each oSrc As DisplayArchive In _lista
-            uiProgBarEngines.Value += 1
-
-            If Not oSrc.enabled Then Continue For
-            If Not oSrc.engine.IsPresent Then Continue For
-
-            Await ApplyOne(oSrc)
-        Next
-
-        uiProgBarEngines.Visibility = Visibility.Collapsed
-        uiGetAll.IsEnabled = True
-
-        Window_Loaded(Nothing, Nothing)
-    End Sub
 
 
     Public Shared Function CountWithTargetDir() As Integer
@@ -162,6 +131,7 @@ Public Class LocalArchive
             oNew.dymekCount = oNew.count & "/" & _withTargetDir
             If oNew.count = _withTargetDir Then
                 oNew.dymekCount &= " (komplet)"
+                oNew.allDone = False
             End If
 
             _lista.Add(oNew)
@@ -169,6 +139,61 @@ Public Class LocalArchive
 
         uiLista.ItemsSource = _lista
     End Sub
+#End Region
+
+#Region "archiwizowanie"
+    Public Shared Async Function CheckSerNo() As Task(Of Boolean)
+
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+            If oPic.serno < 1 Then
+                Await vb14.MsgBoxAsync($"Są zdjęcia bez serno, nie mogę kontynuować! ({oPic.sSuggestedFilename}")
+                Return False
+            End If
+        Next
+        Return True
+    End Function
+
+    Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
+        vb14.DumpCurrMethod()
+
+        Dim oFE As FrameworkElement = sender
+        Dim oSrc As DisplayArchive = oFE?.DataContext
+        If oSrc Is Nothing Then Return
+
+        Await ApplyOne(oSrc)
+
+        Window_Loaded(Nothing, Nothing) ' odczytaj na nowo spisy
+    End Sub
+
+    Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim iSelected As Integer = 0
+        For Each oSrc As DisplayArchive In _lista
+            If oSrc.enabled Then iSelected += 1
+        Next
+
+        uiProgBarEngines.Maximum = iSelected
+        uiProgBarEngines.Value = 0
+        uiProgBarEngines.Visibility = Visibility.Visible
+
+        uiGetAll.IsEnabled = False
+
+        For Each oSrc As DisplayArchive In _lista
+            uiProgBarEngines.Value += 1
+
+            If Not oSrc.enabled Then Continue For
+            If Not oSrc.engine.IsPresent Then Continue For
+
+            Await ApplyOne(oSrc)
+        Next
+
+        uiProgBarEngines.Visibility = Visibility.Collapsed
+        uiGetAll.IsEnabled = True
+
+        Window_Loaded(Nothing, Nothing)
+    End Sub
+
 
     Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
         vb14.DumpCurrMethod()
@@ -182,10 +207,6 @@ Public Class LocalArchive
             Return
         End If
 
-        uiProgBarInEngine.Maximum = oSrc.maxCount
-        uiProgBarInEngine.Value = 0
-        uiProgBarInEngine.Visibility = Visibility.Visible
-
         Dim sIndexShortJson As String = ""
         Dim sIndexLongJson As String = ""
 
@@ -195,8 +216,9 @@ Public Class LocalArchive
 
         Dim newlyArchived As New List(Of Vblib.OnePic)
 
-        Me.ProgRingShow(True)
+        Me.ProgRingShow(True, False, oSrc.maxCount)
         Me.ProgRingSetText(oSrc.nazwa)
+        Me.ProgRingSetVal(0)
 
         'Dim serNoLastArchived As Integer = vb14.GetSettingsInt("serNoLastArchived")
         'Dim serNoLastArchivedInit As Integer = serNoLastArchived
@@ -204,7 +226,7 @@ Public Class LocalArchive
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir))
             ' If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
 
-            uiProgBarInEngine.Value += 1
+            Await Me.ProgRingInc
             Dim sErr1 As String = ""
             If Not IO.File.Exists(oPic.InBufferPathName) Then
                 sErr1 = $"Cannot archive {oPic.InBufferPathName} because file doesn't exist"
@@ -277,8 +299,6 @@ Public Class LocalArchive
         End If
 
 
-        uiProgBarInEngine.Visibility = Visibility.Collapsed
-
         Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
         If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
 
@@ -287,6 +307,10 @@ Public Class LocalArchive
         'Application.GetArchIndex.AddToGlobalJsonIndex(sIndexShortJson, sIndexLongJson)    ' aktualizacja indeksu archiwalnego
 
     End Function
+#End Region
+
+
+
 
     Public Class DisplayArchive
         Public Property enabled As Boolean
@@ -297,6 +321,7 @@ Public Class LocalArchive
         Public Property dymekCount As String
         Public Property dymekAbout As String
 
+        Public Property allDone As Boolean = True
     End Class
 
 End Class

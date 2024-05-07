@@ -30,9 +30,9 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <CheckBox IsChecked="{Binding enabled, Mode=TwoWay}" Margin="2,0,5,0" />
+                            <CheckBox IsChecked="{Binding enabled, Mode=TwoWay}" Margin="2,0,5,0" ToolTip="Zaznacz jeśli ma być użyte w [Run all]"/>
                             <TextBlock Grid.Column="1" Text="{Binding nazwa}" ToolTipService.ToolTip="{Binding dymekAbout}"  />
-                            <Button Grid.Column="2" Content=" Run " Click="uiGetThis_Click" />
+                            <Button Grid.Column="2" Content=" Run " Click="uiGetThis_Click" IsEnabled="{Binding allDone}"/>
 
                             <ProgressBar Height="8" Grid.Row="1" Grid.ColumnSpan="3" Margin="5,2,5,2" Maximum="{Binding maxCount}" Value="{Binding count}" ToolTipService.ToolTip="{Binding dymekCount}" />
 
@@ -44,7 +44,7 @@
             <Button Name="uiGetAll" HorizontalAlignment="Center" Width="Auto" Content=" Run all " Click="uiGetAll_Click"/>
 
             <ProgressBar Name="uiProgBarEngines" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>
-            <ProgressBar Name="uiProgBarInEngine" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>
+            <ProgressBar Name="uiPkAutoProgBar" HorizontalAlignment="Stretch" Visibility="Collapsed" Height="8" Margin="5,10,5,0"/>
         </StackPanel>
 
     </Grid>

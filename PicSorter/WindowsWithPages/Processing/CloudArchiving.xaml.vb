@@ -1,13 +1,17 @@
 ﻿Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.UI.Extensions
+
 Public Class CloudArchiving
 
     Private _lista As List(Of DisplayArchive)
+    Private _withTargetDir As Integer
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
-
+        Me.ProgRingInit(True, True)
         uiWithTargetDir.Maximum = Application.GetBuffer.Count
-        uiWithTargetDir.Value = CountWithTargetDir()
+        _withTargetDir = CountWithTargetDir()
+        uiWithTargetDir.Value = _withTargetDir
         uiWithTargetDir.ToolTip = uiWithTargetDir.Value & "/" & uiWithTargetDir.Maximum
 
         ShowArchivesList()
@@ -108,8 +112,6 @@ Public Class CloudArchiving
 
     Private Sub ShowArchivesList()
 
-        Dim iMax As Integer = Application.GetBuffer.Count
-
         _lista = New List(Of DisplayArchive)
 
         For Each oArch As Vblib.CloudArchive In Application.GetCloudArchives.GetList
@@ -118,9 +120,13 @@ Public Class CloudArchiving
             oNew.enabled = oArch.konfiguracja.enabled
             oNew.nazwa = oArch.konfiguracja.nazwa
             oNew.dymekAbout = oArch.sProvider
-            oNew.maxCount = iMax
+            oNew.maxCount = _withTargetDir
             oNew.count = CountArchived(oNew.nazwa)
-            oNew.dymekCount = oNew.count & "/" & iMax
+            oNew.dymekCount = oNew.count & "/" & _withTargetDir
+            If oNew.count = _withTargetDir Then
+                oNew.allDone = False
+                oNew.dymekCount &= " (komplet)"
+            End If
 
             _lista.Add(oNew)
         Next
@@ -132,10 +138,11 @@ Public Class CloudArchiving
 
         If Not Await LocalArchive.CheckSerNo() Then Return
 
-        Application.ShowWait(True)
-        uiProgBarInEngine.Maximum = oSrc.maxCount
-        uiProgBarInEngine.Value = 0
-        uiProgBarInEngine.Visibility = Visibility.Visible
+        Me.ProgRingShow(True)
+        Me.ProgRingSetText(oSrc.nazwa)
+
+        Me.ProgRingSetMax(oSrc.maxCount)
+        Me.ProgRingSetVal(0)
 
         Dim sIndexJson As String = ""
         Dim bDirTreeToSave As Boolean = False
@@ -147,7 +154,7 @@ Public Class CloudArchiving
 
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             Dim sErr1 As String = ""
-            uiProgBarInEngine.Value += 1
+            Me.ProgRingInc
 
             If Not IO.File.Exists(oPic.InBufferPathName) Then
                 sErr1 = $"Cannot cloud archive {oPic.InBufferPathName} because file doesn't exist"
@@ -172,7 +179,8 @@ Public Class CloudArchiving
 
             oPic.ResetPipeline()
             Try
-                sErr1 = Await oSrc.engine.SendFile(oPic)
+                ' 2024.05.03, próba zrobienia tak by ProgRing się kręcił bez zatrzymywania
+                sErr1 = Await Task.Run(Function() oSrc.engine.SendFile(oPic))
             Catch ex As Exception
                 sErr1 = $"Cannot cloud archive {oPic.InBufferPathName} to {oPic.TargetDir} because of error {sErr}"
                 sErr &= sErr1 & vbCrLf
@@ -198,15 +206,13 @@ Public Class CloudArchiving
         'End If
 
         If sErr <> "" Then
-            Await vb14.DialogBoxAsync("Encountered error(s):" & vbCrLf & sErr)
-            vb14.ClipPut(sErr)
+            Await Me.MsgBoxAsync("Encountered error(s):" & vbCrLf & sErr)
+            sErr.SendToClipboard
         End If
-
-        uiProgBarInEngine.Visibility = Visibility.Collapsed
 
         Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
 
-        Application.ShowWait(False)
+        Me.ProgRingShow(False)
     End Function
 
     Public Class DisplayArchive
@@ -217,7 +223,7 @@ Public Class CloudArchiving
         Public Property count As Integer
         Public Property dymekCount As String
         Public Property dymekAbout As String
-
+        Public Property allDone As Boolean = True
     End Class
 
 End Class
