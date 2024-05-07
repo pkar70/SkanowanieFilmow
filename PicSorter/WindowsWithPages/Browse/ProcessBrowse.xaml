@@ -139,7 +139,7 @@
                         </ItemsPanelTemplate>
                     </Menu.ItemsPanel>
                         <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
-                        <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" IsEnabled="False"/>
+                        <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
                         <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" UseSelectedItems="True"/>
                         <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
                         <!--<MenuItem Header="Add link" Click="uiAddLink_Click" />-->

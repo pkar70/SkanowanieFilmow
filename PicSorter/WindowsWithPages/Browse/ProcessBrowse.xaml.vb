@@ -2342,7 +2342,7 @@ Public Class ProcessBrowse
 
         Dim ile As Integer = uiPicList.SelectedItems.Count
         If ile < 1 Then
-            uiAction.IsEnabled = False
+            'uiAction.IsEnabled = False
             uiAction.Content = " Action "
         Else
             uiAction.IsEnabled = True
