@@ -8,6 +8,7 @@ Public MustInherit Class Auto_Meteo_Base
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.WebPublic
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
+    Public Overrides ReadOnly Property IsWeb As Boolean = True
 
     Protected _cacheDataFolder As String
 

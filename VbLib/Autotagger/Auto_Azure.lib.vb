@@ -23,6 +23,7 @@ Public Class Auto_AzureTest
     Public Overrides ReadOnly Property DymekAbout As String = "Próba co można wyciągnąć, 20 na minutę"
     Public Overrides ReadOnly Property MaxSize As Integer = 3800
     Public Overrides ReadOnly Property includeMask As String = "*.jpg;*.jpg.thumb;*.nar;*.stereo.zip"
+    Public Overrides ReadOnly Property IsWeb As Boolean = True
 
     Private _oClient As ComputerVision.ComputerVisionClient
     Private _resizeEngine As Vblib.PostProcBase

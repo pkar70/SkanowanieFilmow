@@ -76,10 +76,15 @@ Public Class AutoTags
         For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
             Dim oNew As New JedenEngine
             oNew.nazwa = oEngine.Nazwa
+            oNew.ineticon = If(oEngine.IsWeb, "🌍", "")
             oNew.engine = oEngine
             oNew.maxCount = iMax
             oNew.count = PoliczUstawione(oNew.nazwa)
             oNew.dymekCount = vbCrLf & oNew.count & "/" & oNew.maxCount
+            If oNew.count = iMax Then
+                oNew.enabled = False
+                oNew.dymekCount &= " (komplet)"
+            End If
             oNew.dymekAbout = oEngine.DymekAbout
 
             _lista.Add(oNew)
@@ -234,12 +239,14 @@ Public Class AutoTags
     Public Class JedenEngine
         Public Property enabled As Boolean
         Public Property nazwa As String
+        Public Property ineticon As String
         Public Property engine As Vblib.AutotaggerBase
         Public Property maxCount As Integer
         Public Property count As Integer
         Public Property dymekCount As String
         Public Property dymekAbout As String
 
+        Public Property allDone As Boolean = True
     End Class
 
 End Class

@@ -15,6 +15,7 @@ Public Class Auto_GeoNamePl
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Zamienia współrzędne na nazwę miejscowości (tylko pierwszy znacznik)"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
+    Public Overrides ReadOnly Property IsWeb As Boolean = True
 
     Private _cacheDataFolder As String
 

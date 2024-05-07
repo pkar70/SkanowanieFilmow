@@ -15,6 +15,7 @@
     ''' <returns></returns>
     Public MustOverride Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
 
+    Public Overridable ReadOnly Property IsWeb As Boolean = False
 
 End Class
 
