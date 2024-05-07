@@ -298,12 +298,8 @@ REEL: sortowanie dalej tematycznie (choć się rozrośnie TargetDir, a reel mog�
 
 
 Drobne:
-* rozdzielić setdate na force taken oraz set range (add range?) właśnie, add range, i można dowolnie dużo zakresów podać
-* formatka add range, z polem Edit gdzie :1970: przerobi na zakres od 1 stycznia do 31 grudnia
-* browse, dymek, # - nie ma tyle cyfr co powinien mieć!
-* nie robi kopii do OneDrive - a włączenie robienia kopii powinno robić kopię "aktualną"
+* nie robi kopii do OneDrive - a włączenie robienia kopii powinno robić kopię "aktualną" [bo tylko z settings.dirtree aktualizuje plik]
 * czy archive.add zmienia tylko to co na dysku, czy także to co już wczytane do pamięci?
-* run all -> stop gdy w trakcie, i naciśnięcie przerywa po wysłąniu kolejnego pliku na chomika
 * nunget, me.prgringgetlevel - jak głęboko zagnieżdżony, może się kiedyś przydać
 * add udostępnienia - fun bool, i false gdy już za dużo udostępnień (licznik zszedł do zera) oraz gdy otrzymany od tego komu się miałoby udostępnić (żeby wyłączyć pętle)
 * addpeer - automatycznie wedle kwd, badz pole login.autoAllowKwds

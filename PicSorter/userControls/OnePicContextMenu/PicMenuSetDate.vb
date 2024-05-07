@@ -29,7 +29,7 @@ Public NotInheritable Class PicMenuSetDate
         ' dla jednej: force date (na konkretną od-do)
 
         Me.Items.Add(NewMenuItem("Force date taken", "Narzuca datowanie zdjęcia", AddressOf uiForceDateTaken_Click))
-        Me.Items.Add(NewMenuItem("Set date range", "Narzuca zakres dat zdjęcia", AddressOf uiForceDateTaken_Click))
+        Me.Items.Add(NewMenuItem("Set date range", "Narzuca zakres dat zdjęcia", AddressOf uiForceDateRange_Click))
 
         If UseSelectedItems Then
             Me.Items.Add(NewMenuItem("Interpolate", "Interpoluje datę zdjęcia z sąsiednich", AddressOf uiInterpolateDates_Click))
@@ -275,13 +275,6 @@ Public NotInheritable Class PicMenuSetDate
 #Region "force date"
     Private _pickWind As Window
 
-    Private Function GetNewDatePicker() As DatePicker
-        Dim picker As New DatePicker
-        picker.DisplayDateStart = New Date(1800, 1, 1)
-        picker.DisplayDateEnd = Date.Now.AddHours(5)
-        Return picker
-    End Function
-
     Private Async Function AskCzyNaPewno(maxDays As Integer) As Task(Of Boolean)
         Return Await Vblib.DialogBoxYNAsync($"Przestawić datę o {If(UseSelectedItems, "maksymalnie ", "")}{maxDays.Abs} dni?")
     End Function
@@ -335,7 +328,7 @@ Public NotInheritable Class PicMenuSetDate
     End Sub
 
     Private Sub uiForceDateTaken_Click(sender As Object, e As RoutedEventArgs)
-        StworzOkienko()
+
         _pickerOrig = New DateTimePicker With {.Arrangement = Orientation.Vertical}   ' w new jest ustalenie min i max
 
         If UseSelectedItems Then
@@ -355,7 +348,7 @@ Public NotInheritable Class PicMenuSetDate
         AddHandler oButt.Click, AddressOf PickerTaken_Clicked
         oStack.Children.Add(oButt)
 
-        PokazWokienku(oStack, 100)
+        PokazWokienku(oStack, 110)
     End Sub
 
 
@@ -366,64 +359,47 @@ Public NotInheritable Class PicMenuSetDate
 
 #Region "daterange"
 
-    Private _pickerMin As DatePicker
-    Private _pickerMax As DatePicker
-    Private _useMin As CheckBox
-    Private _useMax As CheckBox
+    Private _pickerRange As UserDateRange
 
-
-
-
-    Private Sub StworzOkienko()
+    Private Sub uiForceDateRange_Click(sender As Object, e As RoutedEventArgs)
 
         ' pickery
-        _pickerMin = GetNewDatePicker()
-        _pickerMax = GetNewDatePicker()
+        _pickerRange = New UserDateRange
 
         If UseSelectedItems Then
             ' *TODO* środek dat, albo min/max z całej listy
             Dim lista = GetSelectedItemsAsPics()
             If lista IsNot Nothing Then
-                _pickerMin.SelectedDate = lista(0).GetMinDate
-                _pickerMax.SelectedDate = lista(0).GetMaxDate
+                _pickerRange.MinDate = lista(0).GetMinDate
+                _pickerRange.MaxDate = lista(0).GetMaxDate
             End If
         Else
-            _pickerMin.SelectedDate = GetFromDataContext.GetMinDate
-            _pickerMax.SelectedDate = GetFromDataContext.GetMaxDate
+            _pickerRange.MinDate = GetFromDataContext.GetMinDate
+            _pickerRange.MaxDate = GetFromDataContext.GetMaxDate
         End If
 
-        ' checkboxy używania
-        _useMin = New CheckBox With {.IsChecked = True, .Content = "Data min:"}
-        _useMax = New CheckBox With {.IsChecked = True, .Content = "Data max:"}
-
         Dim oStack As New StackPanel
-        oStack.Children.Add(_useMin)
-        oStack.Children.Add(_pickerMin)
-
-        oStack.Children.Add(_useMax)
-        oStack.Children.Add(_pickerMax)
+        oStack.Children.Add(_pickerRange)
 
         Dim oButt As New Button With {.Content = " Set ", .HorizontalAlignment = HorizontalAlignment.Center}
         'oButt.Content = " Set " ' w With nie działa?
         'Dim oTxt As New TextBlock With {.Text = " Set "}
         'oButt.Content = oTxt
-        AddHandler oButt.Click, AddressOf PickerOk_Clicked
+        AddHandler oButt.Click, AddressOf PickerRange_Clicked
         oStack.Children.Add(oButt)
 
         PokazWokienku(oStack, 190)
 
     End Sub
-    Private Async Sub PickerOk_Clicked(sender As Object, e As RoutedEventArgs)
+    Private Async Sub PickerRange_Clicked(sender As Object, e As RoutedEventArgs)
         _pickWind.Close()
 
-        Dim dataMin As Date? = _pickerMin.SelectedDate
-        Dim dataMax As Date? = _pickerMax.SelectedDate
         ' ale chyba zawsze będzie HasValue, bo sam ustawiam uruchamiając okienko :)
-        If Not dataMin.HasValue AndAlso Not dataMax.HasValue Then Return
-        If Not _useMin.IsChecked AndAlso Not _useMax.IsChecked Then Return
+        'If Not dataMin.HasValue AndAlso Not dataMax.HasValue Then Return
+        If Not _pickerRange.UseMin AndAlso Not _pickerRange.UseMax Then Return
 
-        Dim dateMin As Date = dataMin.Value
-        Dim dateMax As Date = dataMax.Value
+        Dim dateMin As Date = _pickerRange.MinDate
+        Dim dateMax As Date = _pickerRange.MaxDate
 
         ' check odległości między plikiem a datą forsowaną
         Dim maxDaysFromMin As Integer = 0
@@ -439,12 +415,12 @@ Public NotInheritable Class PicMenuSetDate
         End If
 
         Dim maxDaysFromAll As Integer = 0
-        If _useMin.IsChecked Then
+        If _pickerRange.UseMin Then
             maxDaysFromAll = maxDaysFromAll.Max(maxDaysFromMin)
         Else
             dateMin = Date.MinValue
         End If
-        If _useMax.IsChecked Then
+        If _pickerRange.UseMax Then
             maxDaysFromAll = maxDaysFromAll.Max(maxDaysFromMax)
         Else
             dateMax = Date.MaxValue
@@ -458,7 +434,7 @@ Public NotInheritable Class PicMenuSetDate
         ' realne przestawianie daty
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                ForceInPic(oItem.oPic, dateMin, dateMax,emptydate)
+                ForceInPic(oItem.oPic, dateMin, dateMax, emptydate)
                 oItem.dateMin = oItem.oPic.GetMostProbablyDate
             Next
         Else
@@ -469,9 +445,6 @@ Public NotInheritable Class PicMenuSetDate
 
     End Sub
 
-    Private Sub uiForceDateRange_Click(sender As Object, e As RoutedEventArgs)
-        StworzOkienko()
-    End Sub
 #End Region
 
 #End Region
