@@ -105,7 +105,7 @@ Public NotInheritable Class PicMenuSetDate
 
         Vblib.DumpMessage($"Nowe daty: {dateMin} / {dateMax}")
         If dateOrg.IsDateValid Then
-            oExif.DateTimeOriginal = dateOrg
+            oExif.DateTimeOriginal = dateOrg.ToExifString
             Vblib.DumpMessage($"OriginalDate: {oExif.DateTimeOriginal} ")
         End If
         'Else
@@ -187,7 +187,7 @@ Public NotInheritable Class PicMenuSetDate
         Dim currDate As Date = date00 + offset
         For ind As Integer = 1 To lista.Count - 2
             Dim oNew As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
-            oNew.DateTimeOriginal = currDate
+            oNew.DateTimeOriginal = currDate.ToExifString
             lista(ind).oPic.ReplaceOrAddExif(oNew)
             currDate += offset
         Next
