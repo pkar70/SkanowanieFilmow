@@ -79,6 +79,7 @@ Public NotInheritable Class PicMenuTargetDir
             End If
         Next
 
+        EventRaise(Me)
     End Sub
 
     Private Sub uiTargetClear_Click(sender As Object, e As RoutedEventArgs)
