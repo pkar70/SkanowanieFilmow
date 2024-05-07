@@ -28,7 +28,8 @@ Public NotInheritable Class PicMenuSetDate
         ' dla wielu: date refit (stopniowo od pierwszego do ostatniego zdjęcia)
         ' dla jednej: force date (na konkretną od-do)
 
-        Me.Items.Add(NewMenuItem("Force date range", "Narzuca datowanie zdjęcia", AddressOf uiForceDate_Click))
+        Me.Items.Add(NewMenuItem("Force date taken", "Narzuca datowanie zdjęcia", AddressOf uiForceDateTaken_Click))
+        Me.Items.Add(NewMenuItem("Set date range", "Narzuca zakres dat zdjęcia", AddressOf uiForceDateTaken_Click))
 
         If UseSelectedItems Then
             Me.Items.Add(NewMenuItem("Interpolate", "Interpoluje datę zdjęcia z sąsiednich", AddressOf uiInterpolateDates_Click))
@@ -96,7 +97,7 @@ Public NotInheritable Class PicMenuSetDate
 
     ''' <summary>
     ''' ustaw datemin/datemax/dateorg dla zdjęcia.
-    ''' Jeśli dateorg.IsValid to ono, jeśli nie, to DateOriginal jako mniejsza z tych dwu
+    ''' Jeśli dateorg.IsValid to ono, jeśli nie, to bez DateOriginal
     ''' </summary>
     Private Shared Sub ForceInPic(oPic As Vblib.OnePic, dateMin As Date, dateMax As Date, dateOrg As Date)
         Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
@@ -108,12 +109,9 @@ Public NotInheritable Class PicMenuSetDate
             oExif.DateTimeOriginal = dateOrg.ToExifString
             Vblib.DumpMessage($"OriginalDate: {oExif.DateTimeOriginal} ")
         End If
-        'Else
-        '    oExif.DateTimeOriginal = If(dateMin < dateMax, dateMin, dateMax).ToExifString
-        'End If
-
         oPic.ReplaceOrAddExif(oExif)
     End Sub
+
 
     Private Sub uiToUTC_Click(sender As Object, e As RoutedEventArgs)
         Dim timediff As TimeSpan = Date.Now - Date.UtcNow
@@ -273,13 +271,107 @@ Public NotInheritable Class PicMenuSetDate
 
     End Sub
 
+
+#Region "force date"
     Private _pickWind As Window
+
+    Private Function GetNewDatePicker() As DatePicker
+        Dim picker As New DatePicker
+        picker.DisplayDateStart = New Date(1800, 1, 1)
+        picker.DisplayDateEnd = Date.Now.AddHours(5)
+        Return picker
+    End Function
+
+    Private Async Function AskCzyNaPewno(maxDays As Integer) As Task(Of Boolean)
+        Return Await Vblib.DialogBoxYNAsync($"Przestawić datę o {If(UseSelectedItems, "maksymalnie ", "")}{maxDays.Abs} dni?")
+    End Function
+
+    Private Sub PokazWokienku(oStack As StackPanel, wysok As Integer)
+        Dim screenPoint As Point = Me.PointToScreen(New Point(0, 0))
+        _pickWind = New Window With {.Width = 80, .Height = wysok, .ResizeMode = ResizeMode.NoResize, .Left = screenPoint.X + 10, .Top = screenPoint.Y}
+        _pickWind.Content = oStack
+
+        _pickWind.ShowDialog()
+    End Sub
+
+
+#Region "date taken"
+    Private _pickerOrig As DateTimePicker
+
+    Private Async Sub PickerTaken_Clicked(sender As Object, e As RoutedEventArgs)
+        _pickWind.Close()
+
+        Dim dateOrg As Date = _pickerOrig.DateTime
+
+        ' check odległości między plikiem a datą forsowaną
+        Dim maxDaysFromOrg As Integer = 0
+        If UseSelectedItems Then
+            For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                maxDaysFromOrg = Math.Max(maxDaysFromOrg, (oItem.oPic.GetMostProbablyDate - dateOrg).TotalDays.Abs)
+            Next
+        Else
+            maxDaysFromOrg = Math.Max(maxDaysFromOrg, (GetFromDataContext.GetMostProbablyDate - dateOrg).TotalDays.Abs)
+        End If
+
+        If Not Await AskCzyNaPewno(maxDaysFromOrg) Then Return
+
+        ' realne przestawianie daty
+        If UseSelectedItems Then
+            For Each oThumb As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
+                oExif.DateTimeOriginal = dateOrg.ToExifString
+                oThumb.oPic.ReplaceOrAddExif(oExif)
+                oThumb.dateMin = oThumb.oPic.GetMostProbablyDate
+            Next
+        Else
+            Dim oPic As Vblib.OnePic = GetFromDataContext()
+            Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
+            oExif.DateTimeOriginal = dateOrg.ToExifString
+            oPic.ReplaceOrAddExif(oExif)
+        End If
+
+        EventRaise(Me)
+
+    End Sub
+
+    Private Sub uiForceDateTaken_Click(sender As Object, e As RoutedEventArgs)
+        StworzOkienko()
+        _pickerOrig = New DateTimePicker With {.Arrangement = Orientation.Vertical}   ' w new jest ustalenie min i max
+
+        If UseSelectedItems Then
+            ' *TODO* środek dat, albo min/max z całej listy
+            Dim lista = GetSelectedItemsAsPics()
+            If lista IsNot Nothing Then
+                _pickerOrig.DateTime = lista(0).GetMostProbablyDate
+            End If
+        Else
+            _pickerOrig.DateTime = GetFromDataContext.GetMostProbablyDate
+        End If
+
+        Dim oStack As New StackPanel
+        oStack.Children.Add(_pickerOrig)
+
+        Dim oButt As New Button With {.Content = " Set ", .HorizontalAlignment = HorizontalAlignment.Center}
+        AddHandler oButt.Click, AddressOf PickerTaken_Clicked
+        oStack.Children.Add(oButt)
+
+        PokazWokienku(oStack, 100)
+    End Sub
+
+
+
+
+
+#End Region
+
+#Region "daterange"
+
     Private _pickerMin As DatePicker
     Private _pickerMax As DatePicker
-    Private _pickerOrig As DateTimePicker
     Private _useMin As CheckBox
     Private _useMax As CheckBox
-    Private _useOrg As CheckBox
+
+
 
 
     Private Sub StworzOkienko()
@@ -287,7 +379,6 @@ Public NotInheritable Class PicMenuSetDate
         ' pickery
         _pickerMin = GetNewDatePicker()
         _pickerMax = GetNewDatePicker()
-        _pickerOrig = New DateTimePicker With {.Arrangement = Orientation.Vertical}   ' w new jest ustalenie min i max
 
         If UseSelectedItems Then
             ' *TODO* środek dat, albo min/max z całej listy
@@ -295,25 +386,19 @@ Public NotInheritable Class PicMenuSetDate
             If lista IsNot Nothing Then
                 _pickerMin.SelectedDate = lista(0).GetMinDate
                 _pickerMax.SelectedDate = lista(0).GetMaxDate
-                _pickerOrig.DateTime = lista(0).GetMostProbablyDate
             End If
         Else
             _pickerMin.SelectedDate = GetFromDataContext.GetMinDate
             _pickerMax.SelectedDate = GetFromDataContext.GetMaxDate
-            _pickerOrig.DateTime = GetFromDataContext.GetMostProbablyDate
         End If
 
         ' checkboxy używania
         _useMin = New CheckBox With {.IsChecked = True, .Content = "Data min:"}
-        _useOrg = New CheckBox With {.IsChecked = True, .Content = "Data foto:"}
         _useMax = New CheckBox With {.IsChecked = True, .Content = "Data max:"}
 
         Dim oStack As New StackPanel
         oStack.Children.Add(_useMin)
         oStack.Children.Add(_pickerMin)
-
-        oStack.Children.Add(_useOrg)
-        oStack.Children.Add(_pickerOrig)
 
         oStack.Children.Add(_useMax)
         oStack.Children.Add(_pickerMax)
@@ -325,21 +410,9 @@ Public NotInheritable Class PicMenuSetDate
         AddHandler oButt.Click, AddressOf PickerOk_Clicked
         oStack.Children.Add(oButt)
 
+        PokazWokienku(oStack, 190)
 
-        Dim screenPoint As Point = Me.PointToScreen(New Point(0, 0))
-        _pickWind = New Window With {.Width = 80, .Height = 210, .ResizeMode = ResizeMode.NoResize, .Left = screenPoint.X + 10, .Top = screenPoint.Y}
-        _pickWind.Content = oStack
-
-        _pickWind.ShowDialog()
     End Sub
-
-    Private Function GetNewDatePicker() As DatePicker
-        Dim picker As New DatePicker
-        picker.DisplayDateStart = New Date(1800, 1, 1)
-        picker.DisplayDateEnd = Date.Now.AddHours(5)
-        Return picker
-    End Function
-
     Private Async Sub PickerOk_Clicked(sender As Object, e As RoutedEventArgs)
         _pickWind.Close()
 
@@ -347,26 +420,22 @@ Public NotInheritable Class PicMenuSetDate
         Dim dataMax As Date? = _pickerMax.SelectedDate
         ' ale chyba zawsze będzie HasValue, bo sam ustawiam uruchamiając okienko :)
         If Not dataMin.HasValue AndAlso Not dataMax.HasValue Then Return
-        If Not _useMin.IsChecked AndAlso Not _useMax.IsChecked AndAlso Not _useOrg.IsChecked Then Return
+        If Not _useMin.IsChecked AndAlso Not _useMax.IsChecked Then Return
 
         Dim dateMin As Date = dataMin.Value
         Dim dateMax As Date = dataMax.Value
-        Dim dateOrg As Date = _pickerOrig.DateTime
 
         ' check odległości między plikiem a datą forsowaną
         Dim maxDaysFromMin As Integer = 0
         Dim maxDaysFromMax As Integer = 0
-        Dim maxDaysFromOrg As Integer = 0
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
                 maxDaysFromMin = Math.Max(maxDaysFromMin, (oItem.oPic.GetMostProbablyDate - dateMin).TotalDays.Abs)
                 maxDaysFromMax = Math.Max(maxDaysFromMax, (oItem.oPic.GetMostProbablyDate - dateMax).TotalDays.Abs)
-                maxDaysFromOrg = Math.Max(maxDaysFromOrg, (oItem.oPic.GetMostProbablyDate - dateOrg).TotalDays.Abs)
             Next
         Else
             maxDaysFromMin = Math.Max(maxDaysFromMin, (GetFromDataContext.GetMostProbablyDate - dateMin).TotalDays.Abs)
             maxDaysFromMax = Math.Max(maxDaysFromMax, (GetFromDataContext.GetMostProbablyDate - dateMax).TotalDays.Abs)
-            maxDaysFromOrg = Math.Max(maxDaysFromOrg, (GetFromDataContext.GetMostProbablyDate - dateOrg).TotalDays.Abs)
         End If
 
         Dim maxDaysFromAll As Integer = 0
@@ -380,31 +449,31 @@ Public NotInheritable Class PicMenuSetDate
         Else
             dateMax = Date.MaxValue
         End If
-        If _useOrg.IsChecked Then
-            maxDaysFromAll = maxDaysFromAll.Max(maxDaysFromOrg)
-        Else
-            dateOrg = Date.MinValue
-        End If
 
-        If Not Await Vblib.DialogBoxYNAsync($"Przestawić datę o maksymalnie {maxDaysFromAll} dni?") Then Return
+        If Not Await AskCzyNaPewno(maxDaysFromAll) Then Return
 
         'Dim dateMax As Date = dataMin.Value.AddHours(23).AddMinutes(59)
+        Dim emptydate As New Date(1500, 1, 1)
 
         ' realne przestawianie daty
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                ForceInPic(oItem.oPic, dateMin, dateMax, dateOrg)
+                ForceInPic(oItem.oPic, dateMin, dateMax,emptydate)
                 oItem.dateMin = oItem.oPic.GetMostProbablyDate
             Next
         Else
-            ForceInPic(GetFromDataContext, dateMin, dateMax, dateOrg)
+            ForceInPic(GetFromDataContext, dateMin, dateMax, emptydate)
         End If
 
         EventRaise(Me)
 
     End Sub
 
-    Private Sub uiForceDate_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiForceDateRange_Click(sender As Object, e As RoutedEventArgs)
         StworzOkienko()
     End Sub
+#End Region
+
+#End Region
+
 End Class
