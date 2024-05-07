@@ -79,6 +79,12 @@ Public Class OnePic
     ''' </summary>
     Public Shared ReadOnly ExtsStereo As String = "*.jps;*.stereo.zip;"
 
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sumOfKwds As String
+
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sumOfDescr As String
+
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()
         sSourceName = sourceName
@@ -1053,7 +1059,7 @@ Public Class OnePic
             Dim brakuje As Integer = GetSettingsInt("uiSerNoDigits") - tempNum.Length
             For iLp = 1 To brakuje
                 'tempNum = Space(brakuje).Replace(" ", "0") ' Space nie ma w .Net Std 1.4 :)
-                tempNum &= "0"
+                tempNum = "0" & tempNum
             Next
             Return "#" & tempNum
         Else
