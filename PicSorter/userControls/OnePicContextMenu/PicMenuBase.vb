@@ -189,7 +189,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
                 Await ProgBarInc()
             Next
 
-            _progBar.Visibility = Visibility.Collapsed
+            If _progBar IsNot Nothing Then _progBar.Visibility = Visibility.Collapsed
         Else
             Await akcja(GetFromDataContext)
         End If
