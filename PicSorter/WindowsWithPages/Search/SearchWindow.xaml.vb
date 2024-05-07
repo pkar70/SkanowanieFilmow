@@ -18,6 +18,7 @@ Imports pkar
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.UI.Extensions
 Imports Microsoft.EntityFrameworkCore.Diagnostics
+Imports Windows.Media.Devices
 
 Public Class SearchWindow
 
@@ -50,6 +51,23 @@ Public Class SearchWindow
 
         If _inputList Is Nothing Then
             Await ReadWholeArchive()
+
+            'Dim dtstart = Date.Now
+            'For Each oPic As Vblib.OnePic In Application.gDbase.GetFirstLoaded.GetAll
+            '    oPic.sumOfDescr = oPic.GetSumOfDescriptionsText
+            'Next
+            'Dim dtstop = Date.Now
+            'Await Me.MsgBoxAsync("Przeliczenie descriptions: " & (dtstop - dtstart).Milliseconds) = 5
+
+            'dtstart = Date.Now
+            'For Each oPic As Vblib.OnePic In Application.gDbase.GetFirstLoaded.GetAll
+            '    oPic.sumOfDescr = oPic.GetAllKeywords
+            'Next
+            'dtstop = Date.Now
+            'Await Me.MsgBoxAsync("Przeliczenie kwds: " & (dtstop - dtstart).Milliseconds) = 276
+
+
+
             _inputList = Nothing
         End If
 
