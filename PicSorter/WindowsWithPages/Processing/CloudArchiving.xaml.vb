@@ -28,7 +28,15 @@ Public Class CloudArchiving
         Window_Loaded(Nothing, Nothing) ' odczytaj na nowo spisy
     End Sub
 
+    Private _stopArchiving As Boolean
+
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
+
+        If uiGetAll.Content = " STOP " Then
+            _stopArchiving = True
+            Me.ProgRingSetText("stopping")
+            Return
+        End If
 
         Dim iSelected As Integer = 0
         For Each oSrc As DisplayArchive In _lista
@@ -144,6 +152,8 @@ Public Class CloudArchiving
         Me.ProgRingSetMax(oSrc.maxCount)
         Me.ProgRingSetVal(0)
 
+        uiGetAll.content = " STOP "
+
         Dim sIndexJson As String = ""
         Dim bDirTreeToSave As Boolean = False
 
@@ -199,6 +209,7 @@ Public Class CloudArchiving
             End If
 
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
+            If _stopArchiving Then Exit For
         Next
 
         'If serNoLastArchivedInit <> serNoLastArchived Then
@@ -213,6 +224,8 @@ Public Class CloudArchiving
         Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
 
         Me.ProgRingShow(False)
+        uiGetAll.Content = " Run all " ' bo był STOP
+        Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie - bo zaraz się zacznie następny (przy RunAll)
     End Function
 
     Public Class DisplayArchive
