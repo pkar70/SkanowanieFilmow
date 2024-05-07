@@ -202,6 +202,7 @@ Public Class DatabaseSQL
     End Function
 
     Public Function PreBackup() As Boolean Implements DatabaseInterface.PreBackup
+        If Not IsEnabled Then Return False
         If Not IsLoaded Then If Not Load() Then Return False
 
         ' najpierw kasujemy starszy backup, i zachoowujemy backup ostatniego zapisu
@@ -387,7 +388,7 @@ Public Class DatabaseSQL
             builder.Entity(GetType(AutoWeatherHourSingle)).HasNoKey()
 
             'Unable to track an instance of type 'OnePic' because it does not have a primary key. Only entity types with primary keys may be tracked.
-            builder.Entity(GetType(OnePic)).HasKey("SQLid")
+            builder.Entity(GetType(OnePic)).HasKey("serno")
 
             'Exception thrown: 'System.InvalidOperationException' in Microsoft.EntityFrameworkCore.dll
             ' No suitable constructor found for entity type 'ExifTag'. The following constructors had parameters that could not be bound to properties of the entity type: cannot bind 'sSource' in 'ExifTag(string sSource)'.
