@@ -69,12 +69,15 @@ Public Class OnePic
     ''' <summary>
     ''' "*.jpg;*.tif;*.gif;*.png"
     ''' </summary>
-    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png;*.jpeg;*.nar;*.raf"
+    Public Shared ReadOnly ExtsPic As String = "*.jpg;*.tif;*.gif;*.png;*.jpeg;*.nar;*.raf;"
     ''' <summary>
     ''' "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
     ''' </summary>
-    Public Shared ReadOnly ExtsMovie As String = "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
-    Public Shared ReadOnly ExtsStereo As String = "*.jps;*.stereo.zip"
+    Public Shared ReadOnly ExtsMovie As String = "*.mov;*.avi;*.mp4;*.m4v;*.mkv;"
+    ''' <summary>
+    ''' "*.jps;*.stereo.zip"
+    ''' </summary>
+    Public Shared ReadOnly ExtsStereo As String = "*.jps;*.stereo.zip;"
 
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()

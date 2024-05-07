@@ -23,7 +23,7 @@ Public Class ProcessDownload
             ' dodajemy do tego jeszcze peer-serwery
             For Each oSrv As Vblib.ShareServer In Application.GetShareServers
                 Dim oNew As New lib_PicSource.PicSourceImplement(PicSourceType.PeerSrv, Nothing)
-                oNew.SourceName = oSrv.displayName
+                oNew.SourceName = "peer: " & oSrv.displayName
                 oNew.Path = oSrv.login.ToString
                 oNew.enabled = False
                 listka.Add(oNew)
