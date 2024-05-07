@@ -27,9 +27,10 @@ Public Class TimeEntry
 
 
     Private Sub uiHour_PreviewTextInput(sender As Object, e As TextCompositionEventArgs)
-        If e.Text.EndsWith(":") Then
+        If e.Text.Contains(":") Then
             e.Handled = True
             uiMin.Focus()
+            uiMin.SelectAll()
             Return
         End If
 
@@ -44,9 +45,10 @@ Public Class TimeEntry
     End Function
 
     Private Sub uiMin_PreviewTextInput(sender As Object, e As TextCompositionEventArgs)
-        If e.Text.EndsWith(":") Then
+        If e.Text.Contains(":") Then
             e.Handled = True
-            uiMin.Focus()
+            uiSec.Focus()
+            uiSec.SelectAll()
             Return
         End If
 
