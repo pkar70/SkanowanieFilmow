@@ -1,0 +1,53 @@
+﻿<Window x:Class="ProcessDownloadInternet"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="ProcessDownloadInternet" Height="600" Width="350" Loaded="Window_Loaded">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" Name="_naTytul"/>
+            <RowDefinition Height="300" Name="_naZdjecie"/>
+            <RowDefinition Height="Auto" Name="_naOpis"/>
+            <RowDefinition Height="Auto" Name="_naButtony"/>
+        </Grid.RowDefinitions>
+        <TextBlock Name="uiSourceFilename" FontWeight="Bold" HorizontalAlignment="Center" />
+        <Image Grid.Row="1" Name="uiPicek" MaxHeight="300" MaxWidth="300" HorizontalAlignment="Center"/>
+
+        <Grid Grid.Row="2" Margin="5,10,5,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <TextBlock Grid.Row="0" Text="Description " />
+            <TextBox Grid.Row="0" Grid.Column="1" Name="uiDescription" AcceptsReturn="True" TextChanged="uiDescription_TextChanged"/>
+            <TextBlock Grid.Row="1" Text="Autor " />
+            <TextBox Grid.Row="1" Grid.Column="1" Name="uiAutor" />
+            <TextBlock Grid.Row="2" Text="Date range " />
+            <local:UserDateRange Grid.Row="2"  Grid.Column="1" x:Name="uiDateRange"/>
+            <TextBlock Grid.Row="3" Text="Link " />
+            <TextBox Grid.Row="3" Grid.Column="1" Name="uiLink" TextChanged="uiLink_TextChanged"/>
+            <TextBlock Grid.Row="4" Text="Keywords " />
+            <TextBox Grid.Row="4" Grid.Column="1" Name="uiKeywords" />
+            <TextBlock Grid.Row="5" Text="Geotag " />
+            <Button Grid.Row="5" Grid.Column="1" Content="..." Click="uiSetGeo_Click" Name="uiGeo" Width="Auto" HorizontalAlignment="Center"/>
+            <Button Grid.Row="5" Grid.Column="1" Content=" use last " Click="uiSameGeo_Click" Name="uiSameGeo" Width="Auto" HorizontalAlignment="Right"/>
+        </Grid>
+
+
+            <Button Width="Auto" Grid.Row="3" HorizontalAlignment="Left" Content=" End " Click="uiEnd_Click" ToolTip="Koniec wczytywania" FontSize="14"/>
+        <Button Width="Auto" Grid.Row="3" HorizontalAlignment="Center" Content=" Add " Click="uiAdd_Click" ToolTip="Dodaj zdjęcie (i pozostań w tym oknie); przed naciśnięciem zrzuć kolejne zdjęcie!" FontSize="14"/>
+        <Button Width="Auto" Grid.Row="3" HorizontalAlignment="Right" Content=" Search " Click="uiSearch_Click" ToolTip="Jeszcze nie umiem" IsEnabled="False" FontSize="14"/>
+
+    </Grid>
+</Window>

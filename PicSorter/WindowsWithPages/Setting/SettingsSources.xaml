@@ -8,8 +8,8 @@
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" x:Name="uiRowTitle"/>
-            <RowDefinition Height="*" x:Name="uiRowSrcList" />
-            <RowDefinition Height="2*" x:Name="uiRowSrcProp" />
+            <RowDefinition Height="10*" x:Name="uiRowSrcList" />
+            <RowDefinition Height="15*" x:Name="uiRowSrcProp" />
             <RowDefinition Height="Auto" x:Name="uiRowOK"/>
         </Grid.RowDefinitions>
 
@@ -89,13 +89,13 @@
             <TextBox Grid.Row="1" Grid.Column="1" Name="uiSrcName" />
 
             <TextBlock Grid.Row="2" Text="Volume:" />
-            <ComboBox Grid.Row="2" Grid.Column="1" Name="uiSrcVolume" />
+            <ComboBox Grid.Row="2" Grid.Column="1" Name="uiSrcVolume" ToolTip="Program będzie wyszukiwał Volume o podanej nazwie, niezależnie od aktualnie przypisanej mu litery dysku"/>
 
             <TextBlock Grid.Row="3" Text="Path:" />
             <TextBox Grid.Row="3" Grid.Column="1" Name="uiSrcPath" Margin="0,0,15,0"/>
-            <Button Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Content=" ... " Click="uiSrcBrowse_Click" Name="uiSrcBrowse"/>
+            <Button Grid.Row="3" Grid.Column="1" HorizontalAlignment="Right" Content=" ... " Click="uiSrcBrowse_Click" Name="uiSrcBrowse" ToolTip="Wybierz katalog źródłowy (na wskazanym Volume)"/>
 
-            <TextBlock Grid.Row="4" Text="Recursive:" />
+            <TextBlock Grid.Row="4" Text="Recursive:" Name="uiSrcRecursLabel"/>
             <CheckBox Grid.Row="4" Grid.Column="1" Name="uiSrcRecursive" />
 
             <TextBlock Grid.Row="5" Text="Purge delay (days):" />
@@ -112,11 +112,11 @@
             <TextBlock Grid.Row="8" Text="Ostatni download:" />
             <TextBlock Grid.Row="8" Grid.Column="1" Name="uiSrcLastDownload" />
 
-            <Button Grid.Row="9" Content=" EXIF " Click="uiEditExif_Click" Name="uiOpenExif" Width="100" Height="Auto" Grid.ColumnSpan="2"/>
+            <Button Grid.Row="9" Content=" EXIF " Click="uiEditExif_Click" Name="uiOpenExif" Width="100" Height="Auto" Grid.ColumnSpan="2" />
 
             <Button Grid.Row="10" Content=" OK " Click="uiEditOk_Click" Width="80" Height="Auto" Margin="5,10,5,5"  Grid.ColumnSpan="2"/>
         </Grid>
         
-        <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Width="Auto" Click="uiOk_Click" Name="uiOK"/>
+        <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Click="uiOk_Click" Name="uiOK"/>
     </Grid>
 </Page>

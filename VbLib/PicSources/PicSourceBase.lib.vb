@@ -93,8 +93,9 @@ Public MustInherit Class PicSourceBase
 	''' "import" wcześniej używanych tagów, tych istniejących
 	''' </summary>
 	''' <param name="lPicki"></param>
-	''' <param name="lKeys"></param>
+	''' <param name="lKeys">NULL to return od razu</param>
 	Public Shared Sub UseTagsFromFilename(lPicki As List(Of OnePic), lKeys As List(Of OneKeyword))
+		If lKeys Is Nothing Then Return
 
 		For Each oPic As OnePic In lPicki
 
@@ -304,6 +305,33 @@ Public MustInherit Class PicSourceBase
 		Return Nothing
 
 	End Function
+
+	''' <summary>
+	''' get last file to download (np. ostatni w Downloads)
+	''' </summary>
+	''' <param name="sinceDate">ogranicznik daty</param>
+	''' <returns></returns>
+	Public Function GetLast(Optional sinceDate As DateTime = Nothing) As OnePic
+		If _listaPlikow Is Nothing Then Return Nothing
+
+		If Not SourceName.ContainsCI("adhoc") Then
+			If Not sinceDate.IsDateValid Then sinceDate = lastDownload
+		End If
+
+		_sinceDate = sinceDate
+
+		Try
+			Dim oFile As OnePic = _listaPlikow.OrderByDescending(Of Date)(Function(x) x.GetExifOfType(ExifSource.SourceFile).DateMax).ElementAtOrDefault(0)
+			If oFile Is Nothing Then Return Nothing
+			OpenFile(oFile)
+			TryDescrptIon(oFile)
+			Return oFile
+		Catch ex As Exception
+			Return Nothing
+		End Try
+
+	End Function
+
 
 	<Newtonsoft.Json.JsonIgnore>
 	Private Property _lastIDreturned As Integer = -1

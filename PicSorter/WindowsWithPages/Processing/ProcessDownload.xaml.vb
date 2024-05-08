@@ -4,11 +4,11 @@
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
-Imports lib_sharingNetwork
-Imports pkar
-Imports System.Drawing
+'Imports lib_sharingNetwork
+Imports pkar    ' dla baselist
+'Imports System.Drawing
 Imports pkar.UI.Extensions
-Imports System.ComponentModel.Design
+'Imports System.ComponentModel.Design
 
 Public Class ProcessDownload
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -33,9 +33,13 @@ Public Class ProcessDownload
 
         uiLista.ItemsSource = listka
 
-        CheckDiskFree()
+        CheckDiskFree() ' tylko ostrzeżenie - można zrobić miejsce przed uruchamianiem Source
     End Sub
 
+    ''' <summary>
+    ''' Sprawdza czy dysk z buforem ma 100 MB wolnego. Jeśli nie: message
+    ''' </summary>
+    ''' <returns>TRUE gdy jest 100 MB, else FALSE</returns>
     Private Function CheckDiskFree() As Boolean
         Dim buffer As String = vb14.GetSettingsString("uiFolderBuffer")
         If buffer <> "" Then
@@ -74,18 +78,23 @@ Public Class ProcessDownload
 
         End If
 
+
         If oSrc.Typ <> Vblib.PicSourceType.PeerSrv Then
             If oSrc.currentExif Is Nothing Then
                 oSrc.currentExif = oSrc.defaultExif.Clone
             Else
                 oSrc.currentExif = oSrc.currentExif.Clone
             End If
-            Dim oWnd As New EditExifTag(oSrc.currentExif, oSrc.SourceName & " (chwilowe)", EditExifTagScope.LimitedToSourceDir, False)
-            oWnd.ShowDialog()
+
+            If oSrc.Typ <> PicSourceType.Inet Then
+                Dim oWnd As New EditExifTag(oSrc.currentExif, oSrc.SourceName & " (chwilowe)", EditExifTagScope.LimitedToSourceDir, False)
+                oWnd.ShowDialog()
+            End If
+
         End If
 
 
-        Dim iCount As Integer
+            Dim iCount As Integer
 
         iCount = Await RetrieveFilesFromSource(oSrc)
         If iCount < 0 Then
@@ -167,46 +176,28 @@ Public Class ProcessDownload
     End Sub
 
     Private Async Function RetrieveFilesFromSource(oSrc As Vblib.PicSourceBase) As Task(Of Integer)
-        vb14.DumpCurrMethod(oSrc.VolLabel)
 
-        If oSrc.Typ = PicSourceType.PeerSrv Then Return Await RetrieveFromPeer(oSrc)
+        vb14.DumpCurrMethod(oSrc.SourceName & ": " & oSrc.VolLabel)
 
         Me.ProgRingSetMax(100) 'obojętnie ile, byle teraz nie pokazać paska :)
         Me.ProgRingSetVal(0)
         Me.ProgRingShow(True)
-        Me.ProgRingSetText($"Dir {oSrc.SourceName}")
 
-        Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
-        'Await vb14.DialogBoxAsync($"read {iCount} files")
-        vb14.DumpMessage($"Read {iCount} files")
+        Dim retval As Integer = 0
 
-        If iCount < 1 Then
-            Me.ProgRingShow(False)
-            Return iCount
-        End If
-
-        Me.ProgRingSetMax(iCount)
-        Me.ProgRingSetText($"Import from {oSrc.SourceName}")
-
-        Dim oSrcFile As Vblib.OnePic = oSrc.GetFirst
-        If oSrcFile Is Nothing Then Return 0
-
-        iCount = 1
-
-        Do
-            ' obsługa WP_20221119_10_39_05_Rich.jpg.thumb
-            ' raczej nie będzie wtedy JPGa pełnego, więc ignorujemy dokładniejsze testowanie
-            If IO.Path.GetExtension(oSrcFile.sSuggestedFilename).EqualsCI(".thumb") Then
-                oSrcFile.sSuggestedFilename = oSrcFile.sSuggestedFilename.Replace(".thumb", "")
-            End If
-
-            ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
-            Await Application.GetBuffer.AddFile(oSrcFile)
-            oSrcFile = oSrc.GetNext
-            If oSrcFile Is Nothing Then Exit Do
-            Me.ProgRingInc
-            iCount += 1
-        Loop
+        Select Case oSrc.Typ
+            Case PicSourceType.Inet
+                Dim oWnd As New ProcessDownloadInternet(oSrc)
+                If Not oWnd.ShowDialog() Then
+                    retval = 0
+                Else
+                    retval = oWnd.Counter
+                End If
+            Case PicSourceType.PeerSrv
+                retval = Await RetrieveFromPeer(oSrc)
+            Case Else
+                retval = Await RetrieveFromDisk(oSrc)
+        End Select
 
         Await RunAutoExif()
 
@@ -220,7 +211,7 @@ Public Class ProcessDownload
 
         Me.ProgRingShow(False)
 
-        Return iCount
+        Return retval
     End Function
 
     Private Async Function RunAutoExif() As Task
@@ -262,35 +253,61 @@ Public Class ProcessDownload
         vb14.SetSettingsInt("lastSerNo", iSerNo)
     End Function
 
+    Private Async Function RetrieveFromDisk(oSrc As PicSourceBase) As Task(Of Integer)
+        Me.ProgRingSetText($"Dir {oSrc.SourceName}")
+
+        Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
+        'Await vb14.DialogBoxAsync($"read {iCount} files")
+        vb14.DumpMessage($"Read {iCount} files")
+
+        If iCount < 1 Then
+            Me.ProgRingShow(False)
+            Return iCount
+        End If
+
+        Me.ProgRingSetMax(iCount)
+        Me.ProgRingSetText($"Import from {oSrc.SourceName}")
+
+        Dim oSrcFile As Vblib.OnePic = oSrc.GetFirst
+        If oSrcFile Is Nothing Then Return 0
+
+        iCount = 1
+
+        Do
+            ' obsługa WP_20221119_10_39_05_Rich.jpg.thumb
+            ' raczej nie będzie wtedy JPGa pełnego, więc ignorujemy dokładniejsze testowanie
+            If IO.Path.GetExtension(oSrcFile.sSuggestedFilename).EqualsCI(".thumb") Then
+                oSrcFile.sSuggestedFilename = oSrcFile.sSuggestedFilename.Replace(".thumb", "")
+            End If
+
+            ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
+            Await Application.GetBuffer.AddFile(oSrcFile)
+            oSrcFile = oSrc.GetNext
+            If oSrcFile Is Nothing Then Exit Do
+            Me.ProgRingInc
+            iCount += 1
+        Loop
+
+        Return iCount
+    End Function
+
     Private Async Function RetrieveFromPeer(oSrc As PicSourceBase) As Task(Of Integer)
         ' ściągnij przez sieć
-
-        Me.ProgRingSetMax(100) 'obojętnie ile, byle teraz nie pokazać paska :)
-        Me.ProgRingSetVal(0)
-        Me.ProgRingShow(True)
-        Me.ProgRingSetText($"Connecting to {oSrc.SourceName}..")
-
 
         Dim oPeer As Vblib.ShareServer = Application.GetShareServers.FindByGuid(oSrc.Path)
 
         Dim ret As String = Await lib14_httpClnt.httpKlient.TryConnect(oPeer)
         If Not ret.StartsWith("OK") Then
             Me.MsgBox($"Cannot connect to {oSrc.SourceName}" & vbCrLf & ret)
-            Me.ProgRingShow(False)
             Return -1
         End If
 
         Me.ProgRingSetText($"Dir {oSrc.SourceName}...")
 
         Dim lista As BaseList(Of Vblib.OnePic) = Await lib14_httpClnt.httpKlient.GetPicListBuffer(oPeer)
-        If lista Is Nothing Then
-            Me.ProgRingShow(False)
-            Return -2
-        End If
-        If lista.Count < 1 Then
-            Me.ProgRingShow(False)
-            Return 0
-        End If
+        If lista Is Nothing Then Me.ProgRingShow(False)
+
+        If lista.Count < 1 Then Return 0
 
         Me.ProgRingSetMax(lista.Count)
         Me.ProgRingSetText($"Import from {oSrc.SourceName}")
@@ -312,16 +329,6 @@ Public Class ProcessDownload
                 If iCount Mod 10 = 0 Then Application.GetBuffer.SaveData()
             End If
         Next
-
-        Await RunAutoExif()
-
-        Me.ProgRingSetText("Saving metadata...")
-
-        SequenceHelper.ResetPoRetrieve()
-
-        Application.GetBuffer.SaveData()
-
-        Me.ProgRingShow(False)
 
         Return iCount
 

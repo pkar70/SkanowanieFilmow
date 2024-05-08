@@ -311,6 +311,7 @@ Duże:
  miniaturka ostatniego zdjęcia
  Edit autor (nie lista, a nawet jeśli, to oddzielna i można wpisać spoza listy)
  Edit description
+ Edit daterange
  Edit link (do postu FB)
  Button OK oraz Add (Add - przechodzi do kolejnego, OK - zamyka; oba: dopisują)
  Button cancel (oraz ESC)

@@ -53,6 +53,7 @@
 
         Dim rok, mies, dzien As Integer
         Dim zakres As String = uiDateRange.Text
+
         If zakres.Length > 3 AndAlso Integer.TryParse(zakres.Substring(0, 4), rok) Then
             uiDateMin.SelectedDate = New Date(rok, 1, 1)
             uiDateMax.SelectedDate = New Date(rok, 12, 31)
@@ -67,6 +68,12 @@
                 End If
 
             End If
+
+        ElseIf zakres.Length > 2 AndAlso Integer.TryParse(zakres.Substring(0, 3), rok) Then
+            ' dekada
+            uiDateMin.SelectedDate = New Date(rok * 10, 1, 1)
+            uiDateMax.SelectedDate = New Date(rok * 10 + 9, 12, 31)
+
 
         End If
 

@@ -5,13 +5,14 @@
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
-
+Imports pkar.UI.Extensions
 
 Class SettingsSources
 
     Private _item As Vblib.PicSourceBase
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
         ShowSourcesList()
         WypelnMenuTypyZrodel()
     End Sub
@@ -31,7 +32,7 @@ Class SettingsSources
         Dim oFE As FrameworkElement = sender
         Dim oItem As Vblib.PicSourceBase = oFE?.DataContext
 
-        If Not Await vb14.DialogBoxYNAsync("Na pewno usunąć, a nie tylko zablokować?") Then Return
+        If Not Await Me.DialogBoxYNAsync("Na pewno usunąć, a nie tylko zablokować?") Then Return
 
         Application.GetSourcesList().Remove(oItem)
         ShowSourcesList()
@@ -64,6 +65,8 @@ Class SettingsSources
         uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("FOLDER"))
         uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("MTP"))
 
+        uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("Inet"))
+
         ' ADHOC może być dodany tylko raz
         If Application.GetSourcesList.Find(Function(x) x.Typ = Vblib.PicSourceType.AdHOC) IsNot Nothing Then Return
         uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("ADHOC"))
@@ -81,6 +84,13 @@ Class SettingsSources
                 oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.MTP, Application.GetDataFolder)
             Case "adhoc"
                 oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.AdHOC, Application.GetDataFolder)
+            Case "inet"
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Inet, Application.GetDataFolder)
+                oNewSrc.defaultExif = New ExifTag With
+                    {
+                    .ExifSource = Vblib.ExifSource.SourceDefault,
+                    .FileSourceDeviceType = FileSourceDeviceTypeEnum.internet
+                    }
             Case Else
                 Return
         End Select
@@ -92,7 +102,7 @@ Class SettingsSources
         End If
 
         oNewSrc.enabled = False
-        oNewSrc.defaultExif = New Vblib.ExifTag(Vblib.ExifSource.SourceDefault)
+        If oNewSrc.defaultExif Is Nothing Then oNewSrc.defaultExif = New Vblib.ExifTag(Vblib.ExifSource.SourceDefault)
 
         Application.GetSourcesList().Add(oNewSrc)
         PokazDoEdycji(oNewSrc)
@@ -100,6 +110,8 @@ Class SettingsSources
     End Sub
 
     Private Sub ComboVolLabels(iSrcType As Vblib.PicSourceType, sCurrentVolLabel As String)
+
+        If iSrcType = PicSourceType.Inet Then Return
 
         If String.IsNullOrWhiteSpace(sCurrentVolLabel) Then sCurrentVolLabel = "#####"  ' taka nie wystąpi
 
@@ -156,7 +168,7 @@ Class SettingsSources
         uiSrcType.Text = _item.Typ.ToString
         uiSrcName.Text = _item.SourceName
 
-        ComboVolLabels(oItem.Typ, _item.VolLabel)
+        If oItem.Typ <> PicSourceType.Inet Then ComboVolLabels(oItem.Typ, _item.VolLabel)
 
         uiSrcPath.Text = _item.Path
 
@@ -179,15 +191,31 @@ Class SettingsSources
         If _item.lastDownload > New Date(2000, 1, 1) Then uiSrcLastDownload.Text = _item.lastDownload.ToString("yyyy-MM-dd HH:mm")
 
         ' te są bez sensu dla ADHOC, więc ukrywamy
-        If _item.Typ = Vblib.PicSourceType.AdHoc Then
-            uiSrcVolume.IsEnabled = False
-            uiSrcPath.IsEnabled = False
-            uiSrcBrowse.IsEnabled = False
-        Else
-            uiSrcVolume.IsEnabled = True
-            uiSrcPath.IsEnabled = True
-            uiSrcBrowse.IsEnabled = True
-        End If
+        Select Case _item.Typ
+            Case Vblib.PicSourceType.AdHOC
+                uiSrcVolume.Visibility = Visibility.Collapsed
+                uiSrcPath.Visibility = Visibility.Collapsed
+                uiSrcBrowse.Visibility = Visibility.Collapsed
+                uiSrcRecursLabel.Text = "Recursive:"
+                uiSrcRecursive.ToolTip = "Czy wczytywać także z podkatalogów wskazanego katalogu"
+                uiOpenExif.Visibility = Visibility.Visible
+            Case PicSourceType.Inet
+                uiSrcVolume.Visibility = Visibility.Collapsed
+                uiSrcPath.Visibility = Visibility.Visible
+                uiSrcPath.ToolTip = "Strona do otwarcia w przeglądarce"
+                uiSrcBrowse.Visibility = Visibility.Collapsed
+                uiSrcRecursLabel.Text = "Del at once:"
+                uiSrcRecursive.ToolTip = "Czy usuwać zdjęcia natychmiast po ich zaimportowaniu?"
+                uiOpenExif.Visibility = Visibility.Collapsed
+            Case Else
+                uiSrcVolume.Visibility = Visibility.Visible
+                uiSrcPath.Visibility = Visibility.Visible
+                uiSrcPath.ToolTip = "Ścieżka w ramach Volume"
+                uiSrcRecursLabel.Text = "Recursive:"
+                uiSrcRecursive.ToolTip = "Czy wczytywać także z podkatalogów wskazanego katalogu"
+                uiSrcBrowse.Visibility = Visibility.Visible
+                uiOpenExif.Visibility = Visibility.Visible
+        End Select
 
     End Sub
 
@@ -230,7 +258,7 @@ Class SettingsSources
         If uiSrcName.Text <> _item.SourceName Then
             For Each oItem In Application.GetSourcesList
                 If oItem.SourceName.EqualsCIAI(uiSrcName.Text) Then
-                    vb14.DialogBox("Źródło o takiej nazwie już istnieje")
+                    Me.MsgBox("Źródło o takiej nazwie już istnieje")
                     Return
                 End If
             Next
@@ -243,18 +271,18 @@ Class SettingsSources
             Try
                 dPurgeDelay = uiSrcPurge.Text
             Catch ex As Exception
-                vb14.DialogBox("Niepoprawna liczba (purge delay)")
+                Me.MsgBox("Niepoprawna liczba (purge delay)")
                 Return
             End Try
         End If
 
         ' disabled: gdy edycja MTP, którego nie ma podpiętego
-        If uiSrcVolume.IsEnabled Then
+        If uiSrcVolume.Visibility = Visibility.Visible AndAlso uiSrcVolume.IsEnabled Then
             If _item.Typ <> Vblib.PicSourceType.AdHOC Then
                 ' przy AdHoc to jest null
                 _item.VolLabel = uiSrcVolume.SelectedValue
                 If _item.VolLabel.Length < 2 Then
-                    vb14.DialogBox("Błędny vollabel")
+                    Me.MsgBox("Błędny vollabel")
                     Return
                 End If
             End If
@@ -272,6 +300,7 @@ Class SettingsSources
         _item.excludeMask = uiSrcExclude.Text
 
 
+        Application.GetSourcesList().Save()
         ShowSourcesList()
     End Sub
 

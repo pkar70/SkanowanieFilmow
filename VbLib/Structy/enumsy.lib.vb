@@ -14,6 +14,7 @@ Public Enum FileSourceDeviceTypeEnum
     scannerTransparent = 1
     scannerReflex = 2
     digital = 3
+    internet = 11
 End Enum
 
 Public Class RestrictionsEnum
@@ -40,6 +41,7 @@ Public Enum PicSourceType
     MTP = 2
     AdHOC = 3
     PeerSrv = 10
+    Inet = 11
 End Enum
 
 Public Class ExifSource

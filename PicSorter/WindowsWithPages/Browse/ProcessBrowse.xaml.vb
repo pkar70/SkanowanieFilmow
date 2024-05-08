@@ -2673,7 +2673,7 @@ Public Class ProcessBrowse
 
         End Function
 
-        Private Function ThumbCreateFromNormal(sInputFile As String) As BitmapImage
+        Public Shared Function ThumbCreateFromNormal(sInputFile As String) As BitmapImage
 
             Try
                 ' z temp (.png) należy stworzyć THUMB

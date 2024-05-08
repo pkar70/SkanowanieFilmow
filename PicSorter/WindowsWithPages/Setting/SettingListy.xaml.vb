@@ -10,6 +10,10 @@ Class SettingListy
         oWnd.Show()
     End Sub
 
+    Private Sub uiListInetAuthor_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New EditEntryHist(App.GetDataFolder, "inetauthors", "Dodaj autora (zwykle: imię nazwisko) zdjęć z Internet", "")
+        oWnd.Show()
+    End Sub
     'Private Sub uiListCameraMakers_Click(sender As Object, e As RoutedEventArgs)
     '    Dim oWnd As New EditEntryHist(App.GetDataFolder, "CameraMakers", "Dodaj producenta aparatu/skanera", "")
     '    oWnd.Show()
@@ -19,8 +23,4 @@ Class SettingListy
         oWnd.Show()
     End Sub
 
-    Private Sub uiGeoPlaces_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New SettingsGeoPlaces
-        oWnd.Show()
-    End Sub
 End Class

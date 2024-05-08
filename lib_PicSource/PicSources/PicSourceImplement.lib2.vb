@@ -37,9 +37,20 @@ Public Class PicSourceImplement
         End Select
     End Function
 
+    Private Function GetDownloadFolder() As String
+        Dim path As String = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+        Return IO.Path.Combine(path, "Downloads")
+    End Function
+
     Protected Overrides Function DeleteFile(sId As String) As Boolean
         Vblib.pkarlibmodule14.DumpCurrMethod(sId)
         Select Case Typ
+            Case PicSourceType.Inet
+                Dim path As String = GetDownloadFolder()
+                If Not IO.Directory.Exists(path) Then Return False
+                path = IO.Path.Combine(path, sId)
+                IO.File.Delete(path)
+                Return True
             Case Vblib.PicSourceType.MTP
                 Return DeleteFile_MTP(sId)
             Case Else
@@ -59,11 +70,13 @@ Public Class PicSourceImplement
         End Select
     End Function
 
-#Region "Folder"
+#Region "Folder oraz Inet"
     Private Function ReadDirectory_Folder() As Integer
         DumpCurrMethod()
         If Not IsPresent_Main() Then Return -1
-        If Not IO.Directory.Exists(Path) Then Return -2
+        If Typ <> PicSourceType.Inet Then
+            If Not IO.Directory.Exists(Path) Then Return -2
+        End If
 
         Dim iCnt As Integer = 0
         _listaPlikow?.Clear()
@@ -71,7 +84,16 @@ Public Class PicSourceImplement
 
         Dim dateMin As Date = currentExif.DateMin
 
-        Dim allfiles As String() = IO.Directory.GetFiles(Path, "*", IO.SearchOption.AllDirectories)
+        Dim srchopts As IO.SearchOption = IO.SearchOption.TopDirectoryOnly
+        If Typ <> PicSourceType.Inet AndAlso Recursive Then srchopts = IO.SearchOption.AllDirectories
+
+        Dim allfiles As String()
+        If Typ = PicSourceType.Inet Then
+            allfiles = IO.Directory.GetFiles(GetDownloadFolder)
+        Else
+            allfiles = IO.Directory.GetFiles(Path, "*", srchopts)
+        End If
+
         DumpMessage("got allfiles array, starting to iterate")
 
         For Each sFilePathName As String In allfiles
@@ -156,7 +178,7 @@ Public Class PicSourceImplement
 
 
     Private Function IsPresent_Folder() As Boolean
-
+        If Typ = PicSourceType.Inet Then Return True
         If Not PoprawPathWedleVolLabel_Folder(VolLabel) Then Return False  ' "nie ma takiego Vollabel"
 
         Dim oDrive As IO.DriveInfo = New IO.DriveInfo(Path) ' .Net 2.0
