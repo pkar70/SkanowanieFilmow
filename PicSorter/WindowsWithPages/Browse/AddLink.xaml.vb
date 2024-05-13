@@ -50,7 +50,11 @@ Public Class AddLink
         link = link.Substring(0, iInd - 1)
         iInd = link.LastIndexOf("/")
 
-        uiOpis.Text &= " (" & link.Substring(iInd) & ")"
+        uiOpis.Text &= " (" & link.Substring(iInd + 1) & ")"
 
+    End Sub
+
+    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        uiLink.Focus()
     End Sub
 End Class

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="AddLink" Height="150" Width="200" ResizeMode="NoResize">
+        Title="AddLink" Height="150" Width="200" ResizeMode="NoResize" Loaded="Window_Loaded">
     <StackPanel Margin="3,3,3,3"  KeyUp="Window_KeyUp">
         <TextBlock Text="Link" />
         <TextBox Text="{Binding link, Mode=TwoWay}" TextChanged="uiLink_TextChanged" Name="uiLink"  />
