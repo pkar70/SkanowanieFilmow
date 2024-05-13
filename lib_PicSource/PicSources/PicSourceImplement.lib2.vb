@@ -104,7 +104,7 @@ Public Class PicSourceImplement
             If OnePic.MatchesMasks(sFileName, includeMask, excludeMask) Then
 
                 Dim oNew As New Vblib.OnePic(SourceName, sFilePathName, sFileName)
-                oNew.Exifs.Add(currentExif)
+                oNew.Exifs.Add(currentExif.Clone) ' clone, bo jakby potem gdzieś zmieniać (jak było w InetDownld), to by się zmieniało wszędzie
 
                 Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.SourceFile)
                 Dim createDate As Date = IO.File.GetCreationTime(sFilePathName)
