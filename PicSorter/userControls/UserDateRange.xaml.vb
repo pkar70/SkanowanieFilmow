@@ -56,15 +56,15 @@
 
         If zakres.Length > 3 AndAlso Integer.TryParse(zakres.Substring(0, 4), rok) Then
             uiDateMin.SelectedDate = New Date(rok, 1, 1)
-            uiDateMax.SelectedDate = New Date(rok, 12, 31)
+            uiDateMax.SelectedDate = New Date(rok, 12, 31, 23, 59, 59)
 
             If zakres.Length > 6 AndAlso Integer.TryParse(zakres.Substring(5, 2), mies) Then
                 uiDateMin.SelectedDate = New Date(rok, mies, 1)
-                uiDateMax.SelectedDate = New Date(rok, mies + 1, 1).AddDays(-1)
+                uiDateMax.SelectedDate = New Date(rok, mies + 1, 1).AddSeconds(-2)
 
                 If zakres.Length > 9 AndAlso Integer.TryParse(zakres.Substring(8, 2), dzien) Then
                     uiDateMin.SelectedDate = New Date(rok, mies, dzien)
-                    uiDateMax.SelectedDate = New Date(rok, mies, dzien)
+                    uiDateMax.SelectedDate = New Date(rok, mies, dzien, 23, 59, 59)
                 End If
 
             End If
@@ -72,7 +72,7 @@
         ElseIf zakres.Length > 2 AndAlso Integer.TryParse(zakres.Substring(0, 3), rok) Then
             ' dekada
             uiDateMin.SelectedDate = New Date(rok * 10, 1, 1)
-            uiDateMax.SelectedDate = New Date(rok * 10 + 9, 12, 31)
+            uiDateMax.SelectedDate = New Date(rok * 10 + 9, 12, 31, 23, 59, 59)
 
 
         End If
