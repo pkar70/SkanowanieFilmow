@@ -48,6 +48,8 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
         Mouse.OverrideCursor = Nothing ' bo z poprzedniego okna jest override, i przeszkadza
 
+        uiKeywords.uiSlowka.Text = _source.defaultKwds
+
         NextPic()
     End Sub
 
@@ -97,8 +99,10 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         If uiDateRange.UseMax Then srcExif.DateMax = uiDateRange.MaxDate
         _picek.ReplaceOrAddExif(srcExif)    ' bo się powtarzało, nie wiem czemu - inne dane w _picek są ładnie zmienne
 
-        Dim descr As New OneDescription(uiDescription.Text, uiKeywords.Text)
-        _picek.AddDescription(descr)
+        ' MANUAL_TAG, ale z pełnym opisem, a także z GeoTag jak trzeba
+        _picek.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(uiKeywords.uiSlowka.Text))
+        'Dim descr As New OneDescription(uiDescription.Text, uiKeywords.Text)
+        '_picek.AddDescription(descr)
 
         Dim linek As New OneLink() With {.link = uiLink.Text, .opis = "source"}
         _picek.AddLink(linek)

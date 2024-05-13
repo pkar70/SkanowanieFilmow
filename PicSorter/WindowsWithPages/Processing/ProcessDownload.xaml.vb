@@ -280,6 +280,11 @@ Public Class ProcessDownload
                 oSrcFile.sSuggestedFilename = oSrcFile.sSuggestedFilename.Replace(".thumb", "")
             End If
 
+            If Not String.IsNullOrWhiteSpace(oSrc.defaultKwds) Then
+                ' mogłoby być i bez IFa, bo potrafi się zachować :)
+                oSrcFile.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
+            End If
+
             ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
             Await Application.GetBuffer.AddFile(oSrcFile)
             oSrcFile = oSrc.GetNext
@@ -322,6 +327,13 @@ Public Class ProcessDownload
             If oPicek.oContent IsNot Nothing Then
                 oPicek.sharingFromGuid &= $";L:{oPeer.login}:{oPicek.serno}"
                 oPicek.serno = 0 ' muszę nadać swój
+
+                If Not String.IsNullOrWhiteSpace(oSrc.defaultKwds) Then
+                    ' mogłoby być i bez IFa, bo potrafi się zachować :)
+                    oPicek.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
+                End If
+
+
                 Await Application.GetBuffer.AddFile(oPicek)
                 Await Me.ProgRingInc
                 iCount += 1

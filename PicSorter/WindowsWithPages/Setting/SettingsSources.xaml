@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:PicSorterNS"
       mc:Ignorable="d" 
       Title="SettingsSources" Loaded="Page_Loaded">
     <Grid Margin="5,5,5,5">
@@ -80,6 +81,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0" Text="Type:" />
@@ -112,9 +114,12 @@
             <TextBlock Grid.Row="8" Text="Ostatni download:" />
             <TextBlock Grid.Row="8" Grid.Column="1" Name="uiSrcLastDownload" />
 
-            <Button Grid.Row="9" Content=" EXIF " Click="uiEditExif_Click" Name="uiOpenExif" Width="100" Height="Auto" Grid.ColumnSpan="2" />
+            <TextBlock Grid.Row="9" Text="Default keywords:" />
+            <local:UserKwdEditButton Grid.Row="9" Grid.Column="1" x:Name="uiKeywords" />
 
-            <Button Grid.Row="10" Content=" OK " Click="uiEditOk_Click" Width="80" Height="Auto" Margin="5,10,5,5"  Grid.ColumnSpan="2"/>
+            <Button Grid.Row="10" Content=" EXIF " Click="uiEditExif_Click" Name="uiOpenExif" Width="100" Height="Auto" Grid.ColumnSpan="2" />
+
+            <Button Grid.Row="11" Content=" OK " Click="uiEditOk_Click" Width="80" Height="Auto" Margin="5,10,5,5"  Grid.ColumnSpan="2"/>
         </Grid>
         
         <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Click="uiOk_Click" Name="uiOK"/>

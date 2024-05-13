@@ -190,6 +190,8 @@ Class SettingsSources
         uiSrcLastDownload.Text = "-"
         If _item.lastDownload > New Date(2000, 1, 1) Then uiSrcLastDownload.Text = _item.lastDownload.ToString("yyyy-MM-dd HH:mm")
 
+        uiKeywords.uiSlowka.Text = _item.defaultKwds
+
         ' te są bez sensu dla ADHOC, więc ukrywamy
         Select Case _item.Typ
             Case Vblib.PicSourceType.AdHOC
@@ -299,6 +301,7 @@ Class SettingsSources
         _item.includeMask = uiSrcInclude.Text
         _item.excludeMask = uiSrcExclude.Text
 
+        _item.defaultKwds = uiKeywords.uiSlowka.Text
 
         Application.GetSourcesList().Save()
         ShowSourcesList()

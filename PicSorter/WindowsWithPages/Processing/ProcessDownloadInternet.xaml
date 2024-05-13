@@ -44,7 +44,8 @@
             <TextBlock Grid.Row="3" Text="Link " />
             <TextBox Grid.Row="3" Grid.Column="1" Name="uiLink" TextChanged="uiLink_TextChanged"/>
             <TextBlock Grid.Row="4" Text="Keywords " />
-            <TextBox Grid.Row="4" Grid.Column="1" Name="uiKeywords" ToolTip="słowa kluczowe (np. miejsca)"/>
+            <local:UserKwdEditButton Grid.Row="4" Grid.Column="1" x:Name="uiKeywords" ToolTip="słowa kluczowe (np. miejsca)" />
+            <!--<TextBox Grid.Row="4" Grid.Column="1" Name="uiKeywords" ToolTip="słowa kluczowe (np. miejsca)"/>-->
             <TextBlock Grid.Row="5" Text="Geotag " />
             <Button Grid.Row="5" Grid.Column="1" Content="..." Click="uiSetGeo_Click" Name="uiGeo" Width="Auto" HorizontalAlignment="Center"/>
             <Button Grid.Row="5" Grid.Column="1" Content=" use last " Click="uiSameGeo_Click" Name="uiSameGeo" Width="Auto" HorizontalAlignment="Right" ToolTip="użyj poprzednio ustawionego geotag"/>

@@ -19,6 +19,7 @@ Public MustInherit Class PicSourceBase
 	Public Property includeMask As String = OnePic.ExtsPic & OnePic.ExtsMovie & ";*.nar;*.jpg.thumb;*.raf" ' maski regexp
 	Public Property excludeMask As String  ' maski regexp
 	Public Property lastDownload As DateTime
+	Public Property defaultKwds As String
 	Public Property defaultExif As ExifTag
 
 	<Newtonsoft.Json.JsonIgnore>
