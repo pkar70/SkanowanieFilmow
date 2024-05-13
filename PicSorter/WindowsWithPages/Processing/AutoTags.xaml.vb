@@ -142,14 +142,14 @@ Public Class AutoTags
         Dim maxGuard As Integer = Integer.MaxValue
         If oSrc.engine.Nazwa = "AUTO_AZURE" Then
             maxGuard = vb14.GetSettingsInt("uiAzureMaxBatch", 500)
+            Auto_AzureTest._AzureExceptionsGuard = 2 ' po 4 exception ma przestać sprawdzać
+            Auto_AzureTest._AzureExceptionMsg = "" ' suma exceptionsow
         End If
 
         If oSrc.engine.Nazwa = "AUTO_WEATHER" Then
             Auto_Pogoda.maxGuard = vb14.GetSettingsInt("uiVisualCrossMaxBatch", 400)
         End If
 
-        ' zawsze to robimy, choć wystarczyłoby tylko gdy AZURE
-        Auto_AzureTest._AzureExceptionsGuard = 4 ' po 4 exception ma przestać sprawdzać
 
         Dim autoTagLock As String = GetAutoTagDisableKwd(oSrc)
 
@@ -183,6 +183,13 @@ Public Class AutoTags
 
         ' Application.ShowWait(False)
         Me.ProgRingShow(False)
+
+        If Not String.IsNullOrEmpty(Auto_AzureTest._AzureExceptionMsg) Then
+            Me.MsgBox(Auto_AzureTest._AzureExceptionMsg)
+        End If
+
+
+
 
     End Function
 

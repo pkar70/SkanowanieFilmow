@@ -142,7 +142,7 @@ Public Class Auto_AzureTest
 
         If Not EnsureClient() Then Return Nothing
 
-        If Not Vblib.GetSettingsBool("uiAzurePaid") Then Await Task.Delay(4000)  ' 20/min, 20/60, raz na 3 sekundy; 2024.04.09, zmiana z 3000 na 3200, potem 3500
+        If Not Vblib.GetSettingsBool("uiAzurePaid") Then Await Task.Delay(3000)  ' 20/min, 20/60, raz na 3 sekundy; 2024.04.09, zmiana z 3000 na 3200, potem 3500
 
         Dim oNew As New Vblib.ExifTag(Nazwa)
         oNew.AzureAnalysis = Await AnalyzeImageLocal(oStream)
@@ -175,6 +175,8 @@ Public Class Auto_AzureTest
     End Function
 
     Public Shared _AzureExceptionsGuard As Integer
+    Public Shared _AzureExceptionMsg As String
+
     Private Async Function AnalyzeImageLocal(oStream As Stream) As Task(Of MojeAzure)
 
         Dim features As New List(Of ComputerVision.Models.VisualFeatureTypes?)() From {
@@ -192,8 +194,21 @@ Public Class Auto_AzureTest
         Dim results As ComputerVision.Models.ImageAnalysis
         Try
             results = Await _oClient.AnalyzeImageInStreamAsync(oStream, features)
+            'Catch ex As Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models.ComputerVisionErrorResponseException
+            '    _AzureExceptionsGuard = -1
+            '    If ex.Response.Content.ContainsCI("Out of call volume quota") Then
+            '        _AzureExceptionMsg &= ex.Response.Content & vbCrLf
+            '    End If
         Catch ex As Exception
             _AzureExceptionsGuard -= 1
+
+            If ex.GetType Is GetType(Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models.ComputerVisionErrorResponseException) Then
+                Dim ex1 = TryCast(ex, Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models.ComputerVisionErrorResponseException)
+                _AzureExceptionsGuard = -1
+                If ex1.Response.Content.ContainsCI("Out of call volume quota") Then
+                    _AzureExceptionMsg &= ex1.Response.Content & vbCrLf
+                End If
+            End If
 
             If ex.Message.ContainsCI("Forbidden") Then
                 ' ex.Response.Content
@@ -201,6 +216,9 @@ Public Class Auto_AzureTest
                 ' ex.Response.
                 ' ReasonPhrase    "Quota Exceeded"	String
             End If
+
+            _AzureExceptionMsg &= ex.Message & vbCrLf
+
             Return Nothing
         End Try
 
