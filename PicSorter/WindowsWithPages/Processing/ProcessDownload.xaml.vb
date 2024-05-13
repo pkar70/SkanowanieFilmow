@@ -68,7 +68,7 @@ Public Class ProcessDownload
         Dim oSrc As Vblib.PicSourceBase = oFE?.DataContext
         If oSrc Is Nothing Then Return
 
-        If oSrc.Typ = Vblib.PicSourceType.AdHOC Then
+        If oSrc.Typ = Vblib.PicSourceType.AdHOC OrElse oSrc.Typ = Vblib.PicSourceType.Reel Then
             ' troche bardziej skomplikowane, zeby w oSrc.Path był ostatni naprawdę użyty katalog
             Dim dirToGet As String = SettingsGlobal.FolderBrowser(oSrc.Path, "Select source folder")
             If dirToGet = "" Then Return
@@ -94,7 +94,7 @@ Public Class ProcessDownload
         End If
 
 
-            Dim iCount As Integer
+        Dim iCount As Integer
 
         iCount = Await RetrieveFilesFromSource(oSrc)
         If iCount < 0 Then
@@ -195,6 +195,8 @@ Public Class ProcessDownload
                 End If
             Case PicSourceType.PeerSrv
                 retval = Await RetrieveFromPeer(oSrc)
+            Case PicSourceType.Reel
+                retval = Await RetrieveFromReel(oSrc)
             Case Else
                 retval = Await RetrieveFromDisk(oSrc)
         End Select
@@ -284,6 +286,59 @@ Public Class ProcessDownload
                 ' mogłoby być i bez IFa, bo potrafi się zachować :)
                 oSrcFile.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
             End If
+
+            ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
+            Await Application.GetBuffer.AddFile(oSrcFile)
+            oSrcFile = oSrc.GetNext
+            If oSrcFile Is Nothing Then Exit Do
+            Me.ProgRingInc
+            iCount += 1
+        Loop
+
+        Return iCount
+    End Function
+
+    Private Async Function RetrieveFromReel(oSrc As PicSourceBase) As Task(Of Integer)
+        Me.ProgRingSetText($"Dir {oSrc.SourceName}")
+
+        Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
+        'Await vb14.DialogBoxAsync($"read {iCount} files")
+        vb14.DumpMessage($"Read {iCount} files")
+
+        If iCount < 1 Then
+            Me.ProgRingShow(False)
+            Return 0
+        End If
+
+        Dim wndRenameFolders As New ReelRenames(oSrc.GetInternalDirList, oSrc.Path)
+        If Not wndRenameFolders.ShowDialog() Then
+            Me.ProgRingShow(False)
+            Return 0
+        End If
+
+
+        Me.ProgRingSetMax(iCount)
+        Me.ProgRingSetText($"Import from {oSrc.SourceName}")
+
+        Dim oSrcFile As Vblib.OnePic = oSrc.GetFirst
+        If oSrcFile Is Nothing Then Return 0
+
+        iCount = 1
+
+        Do
+            ' obsługa WP_20221119_10_39_05_Rich.jpg.thumb
+            ' raczej nie będzie wtedy JPGa pełnego, więc ignorujemy dokładniejsze testowanie
+            If IO.Path.GetExtension(oSrcFile.sSuggestedFilename).EqualsCI(".thumb") Then
+                oSrcFile.sSuggestedFilename = oSrcFile.sSuggestedFilename.Replace(".thumb", "")
+            End If
+
+            If Not String.IsNullOrWhiteSpace(oSrc.defaultKwds) Then
+                ' mogłoby być i bez IFa, bo potrafi się zachować :)
+                oSrcFile.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
+            End If
+
+            ' wszystkie zmiany wynikające z rename
+            wndRenameFolders.RenamesInOnePic(oSrcFile)
 
             ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
             Await Application.GetBuffer.AddFile(oSrcFile)

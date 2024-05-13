@@ -66,6 +66,7 @@ Class SettingsSources
         uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("MTP"))
 
         uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("Inet"))
+        uiMenuSourcesTypes.Items.Add(StworzMenuItemTypu("Reel"))
 
         ' ADHOC może być dodany tylko raz
         If Application.GetSourcesList.Find(Function(x) x.Typ = Vblib.PicSourceType.AdHOC) IsNot Nothing Then Return
@@ -90,6 +91,13 @@ Class SettingsSources
                     {
                     .ExifSource = Vblib.ExifSource.SourceDefault,
                     .FileSourceDeviceType = FileSourceDeviceTypeEnum.internet
+                    }
+            Case "reel"
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Reel, Application.GetDataFolder)
+                oNewSrc.defaultExif = New ExifTag With
+                    {
+                    .ExifSource = Vblib.ExifSource.SourceDefault,
+                    .FileSourceDeviceType = FileSourceDeviceTypeEnum.reel ' ewentualnie skaner może być
                     }
             Case Else
                 Return
@@ -192,31 +200,36 @@ Class SettingsSources
 
         uiKeywords.uiSlowka.Text = _item.defaultKwds
 
+        ' defaulty
+        uiSrcVolume.Visibility = Visibility.Visible
+        uiSrcPath.ToolTip = "Ścieżka w ramach Volume"
+        uiSrcPath.Visibility = Visibility.Visible
+        uiSrcBrowse.Visibility = Visibility.Visible
+
+        uiSrcRecursive.IsEnabled = True
+        uiSrcRecursLabel.Text = "Recursive:"
+        uiSrcRecursive.ToolTip = "Czy wczytywać także z podkatalogów wskazanego katalogu"
+
+        uiOpenExif.Visibility = Visibility.Visible
+
         ' te są bez sensu dla ADHOC, więc ukrywamy
         Select Case _item.Typ
             Case Vblib.PicSourceType.AdHOC
                 uiSrcVolume.Visibility = Visibility.Collapsed
                 uiSrcPath.Visibility = Visibility.Collapsed
                 uiSrcBrowse.Visibility = Visibility.Collapsed
-                uiSrcRecursLabel.Text = "Recursive:"
-                uiSrcRecursive.ToolTip = "Czy wczytywać także z podkatalogów wskazanego katalogu"
-                uiOpenExif.Visibility = Visibility.Visible
             Case PicSourceType.Inet
                 uiSrcVolume.Visibility = Visibility.Collapsed
-                uiSrcPath.Visibility = Visibility.Visible
                 uiSrcPath.ToolTip = "Strona do otwarcia w przeglądarce"
                 uiSrcBrowse.Visibility = Visibility.Collapsed
+
                 uiSrcRecursLabel.Text = "Del at once:"
                 uiSrcRecursive.ToolTip = "Czy usuwać zdjęcia natychmiast po ich zaimportowaniu?"
+
                 uiOpenExif.Visibility = Visibility.Collapsed
-            Case Else
-                uiSrcVolume.Visibility = Visibility.Visible
-                uiSrcPath.Visibility = Visibility.Visible
-                uiSrcPath.ToolTip = "Ścieżka w ramach Volume"
-                uiSrcRecursLabel.Text = "Recursive:"
-                uiSrcRecursive.ToolTip = "Czy wczytywać także z podkatalogów wskazanego katalogu"
-                uiSrcBrowse.Visibility = Visibility.Visible
-                uiOpenExif.Visibility = Visibility.Visible
+            Case PicSourceType.Reel
+                uiSrcRecursive.IsChecked = True
+                uiSrcRecursive.IsEnabled = False
         End Select
 
     End Sub
@@ -234,7 +247,10 @@ Class SettingsSources
         Select Case _item.Typ
             Case Vblib.PicSourceType.FOLDER
                 sPath = lib_PicSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath, "")
-                SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaz folder na archiwum")
+                SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaż domyślny folder")
+            Case Vblib.PicSourceType.Reel
+                sPath = lib_PicSource.PicSourceImplement.GetConvertedPathForVol_Folder(sVolLabel, sPath, "")
+                SettingsGlobal.FolderBrowser(uiSrcPath, sPath, "Wskaż domyślny folder")
             Case Vblib.PicSourceType.MTP
                 Dim oWnd As New BrowseMtpDevice(sVolLabel, sPath)
                 oWnd.ShowDialog()
@@ -280,7 +296,7 @@ Class SettingsSources
 
         ' disabled: gdy edycja MTP, którego nie ma podpiętego
         If uiSrcVolume.Visibility = Visibility.Visible AndAlso uiSrcVolume.IsEnabled Then
-            If _item.Typ <> Vblib.PicSourceType.AdHOC Then
+            If _item.Typ <> Vblib.PicSourceType.AdHOC AndAlso _item.Typ <> Vblib.PicSourceType.Reel Then
                 ' przy AdHoc to jest null
                 _item.VolLabel = uiSrcVolume.SelectedValue
                 If _item.VolLabel.Length < 2 Then

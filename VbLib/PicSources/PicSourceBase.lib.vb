@@ -87,6 +87,10 @@ Public MustInherit Class PicSourceBase
 
 	End Function
 
+	Public Function GetInternalDirList() As IReadOnlyList(Of OnePic)
+		Return _listaPlikow
+	End Function
+
 	<Newtonsoft.Json.JsonIgnore>
 	Protected _listaPlikow As List(Of OnePic)
 
