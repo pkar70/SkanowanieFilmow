@@ -279,6 +279,15 @@ Class MainWindow
 
                     If sErr <> "" Then Me.MsgBox("Coś dziwnego, chyba błąd w pliku bufffer.json?" & vbCrLf & sErr)
                     Debug.WriteLine(sErr)
+                    Dim iInd As Integer = sErr.IndexOf(", line ")
+                    If iInd > 0 Then
+                        sErr = sErr.Substring(iInd + ", line ".Length)
+                        iInd = sErr.IndexOf(",")
+                        If iInd > 0 AndAlso iInd < 10 Then
+                            sErr = sErr.Substring(0, iInd).Trim
+                        End If
+                    End If
+                    sErr.SendToClipboard
                 End If
             End If
         End If
