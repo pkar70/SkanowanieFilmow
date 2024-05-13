@@ -9,6 +9,8 @@ Public MustInherit Class Auto_Meteo_Base
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
     Public Overrides ReadOnly Property IsWeb As Boolean = True
+    Public Overrides ReadOnly Property RequireDate As Boolean = True
+    Public Overrides ReadOnly Property RequireGeo As Boolean = True
 
     Protected _cacheDataFolder As String
 

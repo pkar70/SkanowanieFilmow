@@ -76,7 +76,7 @@ Public Class AutoTags
         For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
             Dim oNew As New JedenEngine
             oNew.nazwa = oEngine.Nazwa
-            oNew.ineticon = If(oEngine.IsWeb, "🌍", "")
+            'oNew.ineticon = If(oEngine.IsWeb, "🌍", "")
             oNew.engine = oEngine
             oNew.maxCount = iMax
             oNew.count = PoliczUstawione(oNew.nazwa)
@@ -246,7 +246,7 @@ Public Class AutoTags
     Public Class JedenEngine
         Public Property enabled As Boolean
         Public Property nazwa As String
-        Public Property ineticon As String
+        'Public Property ineticon As String
         Public Property engine As Vblib.AutotaggerBase
         Public Property maxCount As Integer
         Public Property count As Integer

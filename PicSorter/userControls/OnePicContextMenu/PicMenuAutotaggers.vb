@@ -24,7 +24,9 @@ Public NotInheritable Class PicMenuAutotaggers
         For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
             Dim oNew As New MenuItem
             oNew.Header = oEngine.Nazwa.Replace("_", "__")
-            If oEngine.IsWeb Then oNew.Header &= " (🌍)"
+
+            Dim ikony As String = oEngine.Ikony
+            If ikony <> "" Then oNew.Header &= $" ({ikony})"
             oNew.DataContext = oEngine
             oNew.ToolTip = oEngine.DymekAbout
             AddHandler oNew.Click, oEventHandler

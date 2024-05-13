@@ -13,6 +13,7 @@ Public Class Auto_MoonPhase
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Wylicza (dla daty zdjêcia) fazê Ksiê¿yca"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
+    Public Overrides ReadOnly Property RequireDate As Boolean = True
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
@@ -47,6 +48,8 @@ Public Class Auto_Astro
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Wylicza (dla daty zdjêcia) fazê Ksiê¿yca, wschód i zachód S³oñca oraz Ksiê¿yca"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
+    Public Overrides ReadOnly Property RequireDate As Boolean = True
+    Public Overrides ReadOnly Property RequireGeo As Boolean = True
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)

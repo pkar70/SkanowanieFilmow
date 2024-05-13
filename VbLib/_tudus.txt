@@ -307,17 +307,6 @@ Drobne:
 Duże:
 * dodatkowe typy: foto, scan, +internet, +screenshot
 * import ze screenshot (katalogu tamtejszego, path z systemu brany)
-* import z downloads (katalog brany z systemu), okienko:
- miniaturka ostatniego zdjęcia
- Edit autor (nie lista, a nawet jeśli, to oddzielna i można wpisać spoza listy)
- Edit description
- Edit daterange
- Edit link (do postu FB)
- Button OK oraz Add (Add - przechodzi do kolejnego, OK - zamyka; oba: dopisują)
- Button cancel (oraz ESC)
- Geo, kwd (miejsca oraz inni, # i =)
- Button: search by descr, by geo, by kwd miejsca # - okno wyszukiwarki
- target dir (default: z ustawień importera) 
 * optymalizacja search
  search step x, kwd x, current count x
  proste query: sumOfKwd (bez -NO:), sumOfDscr (bez Azure), date exact min max, id, target, suggestedFilename, ewent. OCR

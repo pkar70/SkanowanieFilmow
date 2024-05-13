@@ -9,6 +9,7 @@ Public Class Auto_OSM_POI
     Public Overrides ReadOnly Property DymekAbout As String = "Zamienia współrzędne na nazwę miejsca (tylko pierwszy znacznik), używając OpenStreetMap." & vbCrLf & "Limit 1 szukanie na sekundę!"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
     Public Overrides ReadOnly Property IsWeb As Boolean = True
+    Public Overrides ReadOnly Property RequireGeo As Boolean = True
 
     Private _cacheDataFolder As String
 

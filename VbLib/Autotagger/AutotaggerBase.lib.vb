@@ -16,6 +16,29 @@
     Public MustOverride Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
 
     Public Overridable ReadOnly Property IsWeb As Boolean = False
+    Public Overridable ReadOnly Property RequireDate As Boolean = False
+    Public Overridable ReadOnly Property RequireGeo As Boolean = False
+
+    Public ReadOnly Property Ikony As String
+        Get
+            Dim temp As String = ""
+            If RequireDate Then temp &= "📆"
+            If RequireGeo Then temp &= "🌍"
+            If IsWeb Then temp &= "🔗"
+            Return temp.Trim
+        End Get
+    End Property
+
+    Public ReadOnly Property IkonyDymek As String
+        Get
+            Dim temp As String = ""
+            If RequireDate Then temp &= "wymaga daty; "
+            If RequireGeo Then temp &= "wymaga danych geo; "
+            If IsWeb Then temp &= "wymaga dostępu do Internet; "
+            Return temp.Trim
+        End Get
+    End Property
+
 
 End Class
 

@@ -10,6 +10,8 @@ Public Class Auto_Pogoda
     Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Ściąga informacje o pogodzie, używając visualcrossing.com/weather." & vbCrLf & "Limit 1000 szukań dziennie!"
     Public Overrides ReadOnly Property includeMask As String = "*.*"
+    Public Overrides ReadOnly Property RequireDate As Boolean = True
+    Public Overrides ReadOnly Property RequireGeo As Boolean = True
 
     Public Shared Property maxGuard As Integer = 800
 
