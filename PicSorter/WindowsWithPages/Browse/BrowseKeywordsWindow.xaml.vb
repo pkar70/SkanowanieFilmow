@@ -138,6 +138,7 @@ Public Class BrowseKeywordsWindow
 
 
     Public Shared Sub ApplyKeywordsToExif(oExif As Vblib.ExifTag, lKeywords As List(Of Vblib.OneKeyword))
+        ' *TODO* do zamiany na KeywordsList.CreateManualTagFromKwds(string aktualnych)
         SetDatesByKeywords(oExif, lKeywords)
         SetGeoByKeywords(oExif, lKeywords)
 

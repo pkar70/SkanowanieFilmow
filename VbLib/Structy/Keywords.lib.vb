@@ -215,6 +215,56 @@ Public Class KeywordsList
 
 #End Region
 
+    Public Function CreateManualTagFromKwds(keywords As String) As ExifTag
+        If String.IsNullOrWhiteSpace(keywords) Then Return Nothing
+
+        Dim oExif As New ExifTag(ExifSource.ManualTag)
+
+        Dim kwds As String() = keywords.Split(" ")
+
+        ' mozna byloby GetKeyword(id), ale to za każdym razem by robiło ToFlatList, może nie ma sensu...
+        Dim flatka As List(Of OneKeyword) = ToFlatList()
+
+        oExif.Keywords = keywords ' razem z nieznanymi...
+        oExif.UserComment = ""
+
+        Dim iMinRadius As Integer = Integer.MaxValue
+
+        Dim oMinDate As Date = Date.MinValue
+        Dim oMaxDate As Date = Date.MaxValue
+
+
+        For Each kwd As String In kwds
+
+            ' keywords
+            Dim oKey As OneKeyword = flatka.Find(Function(x) x.sId = kwd)
+            If oKey Is Nothing Then Continue For
+
+            oExif.UserComment = oExif.UserComment & " | " & oKey.sDisplayName
+
+
+            ' z nich geotag
+            If oKey.iGeoRadius > 0 Then
+                If oKey.iGeoRadius > iMinRadius Then Continue For
+                oExif.GeoTag = oKey.oGeo
+                oExif.GeoName = oKey.sDisplayName
+                iMinRadius = oKey.iGeoRadius
+            End If
+
+            ' oraz daty z nich
+            oMinDate = oMinDate.Max(oKey.minDate)
+            oMaxDate = oMaxDate.Min(oKey.maxDate)
+
+        Next
+
+
+        If oMaxDate.IsDateValid Then oExif.DateMax = oMaxDate
+        If oMinDate.IsDateValid Then oExif.DateMin = oMinDate
+
+        Return oExif
+
+    End Function
+
 
 End Class
 

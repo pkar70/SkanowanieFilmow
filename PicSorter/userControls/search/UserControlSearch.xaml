@@ -31,7 +31,7 @@
             <!--<Expander Header="Ogólne" IsExpanded="true" FlowDirection="RightToLeft">
                 <StackPanel FlowDirection="LeftToRight">-->
             <Expander Header="Ogólne" IsExpanded="true" ToolTip="Parametry ogólne" BorderThickness="1" BorderBrush="Blue">
-                <local:UserControlOgolne DataContext="{Binding ogolne, Mode=TwoWay}" />
+                <local:UserControlOgolne DataContext="{Binding ogolne, Mode=TwoWay}" x:Name="uiOgolne"/>
             </Expander>
 
             <Expander Header="Source" ToolTip="Parametry znacznika SourceDefault" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">

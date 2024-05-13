@@ -279,8 +279,9 @@ Public Class OnePic
     ''' <summary>
     ''' podmień (lub dodaj nowy) ExifTag, wedle ExifTag.Source
     ''' </summary>
-    ''' <param name="oExifTag"></param>
+    ''' <param name="oExifTag">może być NULL - wtedy nic nie robi</param>
     Public Sub ReplaceOrAddExif(oExifTag As ExifTag)
+        If oExifTag Is Nothing Then Return
         Dim oOldExif As ExifTag = GetExifOfType(oExifTag.ExifSource)
         If oOldExif IsNot Nothing Then Exifs.Remove(oOldExif)
 

@@ -96,7 +96,7 @@ Public Class AddDescription
             oNew.Header = oItem.sId
             'oNew.Margin = _DefMargin
             DodajSubTree(oNew, oItem.SubItems, oEventHandler)
-            ' AddHandler oNew.Click, AddressOf DodajTenKeyword ' nie można dodawać keywords głównego poziomu (#,-,=)
+            ' AddHandler oNew.Click, AddressOf Keyword_Click ' nie można dodawać keywords głównego poziomu (#,-,=)
             oMenu.Items.Add(oNew)
         Next
 

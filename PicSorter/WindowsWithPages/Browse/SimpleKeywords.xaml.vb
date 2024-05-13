@@ -15,14 +15,19 @@
 
     Private Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
 
-        ' bez zmian
-        If _orgKeywords = uiAllKeywords.Text Then Return
+        Dim newKwds As String = uiKwds.uiSlowka.Text
+        'Dim newKwds As String = uiAllKeywords.Text 
+
+        ' bez zmian - to wracamy
+        If _orgKeywords = newKwds Then Return
 
         ' zmiana keywordów
-        Dim _oNewExif As New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
-        Dim listaKwds As List(Of Vblib.OneKeyword) = Application.GetKeywords.GetKeywordsList(uiAllKeywords.Text)
+        'Dim _oNewExif As New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
+        'Dim listaKwds As List(Of Vblib.OneKeyword) = Application.GetKeywords.GetKeywordsList(uiAllKeywords.Text)
 
-        BrowseKeywordsWindow.ApplyKeywordsToExif(_oNewExif, listaKwds)
+        'BrowseKeywordsWindow.ApplyKeywordsToExif(_oNewExif, listaKwds)
+
+        Dim _oNewExif As Vblib.ExifTag = Application.GetKeywords.CreateManualTagFromKwds(newKwds)
 
         Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
         oPicek.oPic.ReplaceOrAddExif(_oNewExif)
@@ -35,7 +40,8 @@
         uiFileName.Text = oPicek.oPic.sSuggestedFilename
 
         _orgKeywords = oPicek.oPic.GetAllKeywords
-        uiAllKeywords.Text = _orgKeywords
+        'uiAllKeywords.Text = _orgKeywords
+        uiKwds.uiSlowka.Text = _orgKeywords
 
         If _readonly Then uiApply.IsEnabled = False
 

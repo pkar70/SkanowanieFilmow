@@ -274,7 +274,7 @@ Public Class KonwersjaGeo
         If temp Is Nothing Then Return ""
         If temp.IsEmpty Then Return ""
 
-        Return "(geo)"
+        Return AutotaggerBase.IconGeo
 
     End Function
 

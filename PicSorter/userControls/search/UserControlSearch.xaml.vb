@@ -206,6 +206,7 @@ Public Class UserControlSearch
             query.ogolne.adv.Filename = query.ogolne.adv.Filename.ToLowerInvariant
         End If
 
+        query.ogolne.Tags = uiOgolne.uiTags.uiSlowka.Text
 
         Return query
 

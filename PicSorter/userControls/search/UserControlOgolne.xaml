@@ -27,17 +27,19 @@
         <TextBlock Text="Reel name" />
         <TextBox ToolTip="Enter fragment of Reel, or '!' to search for empty" Text="{Binding Reel}"/>
 
-        <Grid>
+           
+        <!--<Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+            </Grid.ColumnDefinitions> -->
             <TextBlock Text="Tags" Margin="0,5,0,0"/>
-            <Button Content=" ... " Click="uiTagsSelect_Click" Grid.Column="1" />
+            <!--<Button Content=" ... " Click="uiTagsSelect_Click" Grid.Column="1" />
         </Grid>
-        <TextBox Text="{Binding Tags, Mode=TwoWay}" ToolTip="Space separated tags, prefixed with '!' to negate, or '!' to search for empty" />
+        <TextBox Text="{Binding Tags, Mode=TwoWay}" ToolTip="Space separated tags, prefixed with '!' to negate, or '!' to search for empty" /> -->
+        <local:UserKwdEditButton x:Name="uiTags" ToolTip="Space separated tags, prefixed with '!' to negate, or '!' to search for empty" />
 
-            <TextBlock Text="Descriptions" Margin="0,5,0,0"/>
+        <TextBlock Text="Descriptions" Margin="0,5,0,0"/>
         <TextBox Text="{Binding Descriptions, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, from Descriptions or Comments, or '!' to search for empty" />
 
             <TextBlock Text="Gdziegolwiek" Margin="0,5,0,0"/>

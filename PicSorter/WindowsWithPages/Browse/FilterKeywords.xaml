@@ -8,9 +8,9 @@
         Title="FilterKeywords" Height="150" Width="200" Loaded="Window_Loaded">
     <StackPanel Margin="5,5,5,5">
         <TextBlock Name="uiTitle" HorizontalAlignment="Center" />
-        <Grid>
+        <!--<Grid>-->
             <TextBlock FontWeight="Bold" Text="Keywords:" />
-            <Button Content=" + " HorizontalAlignment="Right" Name="uiAdd" Click="uiAdd_Click"/>
+            <!--<Button Content=" + " HorizontalAlignment="Right" Name="uiAdd" Click="uiAdd_Click"/>
             <Popup IsOpen="False" Name="uiAddPopup" PlacementTarget="{Binding ElementName=uiAdd}" HorizontalOffset="-10" StaysOpen="False" >
                 <Menu Name="uiMenuKeywords">
                     <Menu.ItemsPanel>
@@ -21,7 +21,8 @@
                 </Menu>
             </Popup>
         </Grid>
-        <TextBox Name="uiKeywords" />
+        <TextBox Name="uiKeywords" />-->
+        <local:UserKwdEditButton x:Name="uiKeywords" />
         <Button Content=" Search " HorizontalAlignment="Center" Margin="5,10,5,5" Click="Button_Click" />
     </StackPanel>
 </Window>
