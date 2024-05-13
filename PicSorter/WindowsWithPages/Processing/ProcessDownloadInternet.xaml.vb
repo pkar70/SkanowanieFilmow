@@ -4,6 +4,7 @@ Imports Vblib
 Imports pkar.UI.Extensions
 Imports PicSorterNS.ProcessBrowse
 Imports System.Text.RegularExpressions
+Imports System.IO
 
 
 Public Class ProcessDownloadInternet
@@ -30,6 +31,8 @@ Public Class ProcessDownloadInternet
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.Title = "Importing for " & _source.SourceName
+
+        Me.MsgBox("włącz kontrolę - bo wszystkie zdjęcia mają takie same dane w OnePic!")
 
         If Not String.IsNullOrWhiteSpace(_source.Path) Then
             Dim urik As New Uri(_source.Path)
@@ -69,6 +72,9 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         Vblib.DumpMessage("Picek: " & uiSourceFilename.Text)
 
         uiAutor.Text = "" ' autora nie chcemy powtarzać
+        uiLink.Text = "" ' jak się nie uda ściągnąć, to trzeba będzie wpisać
+        TryGetLastLink()
+
         uiDescription.Focus()
 
         uiSameGeo.IsEnabled = _lastgeo IsNot Nothing
@@ -83,13 +89,13 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
     Private Async Sub uiAdd_Click(sender As Object, e As RoutedEventArgs)
         Counter += 1
 
-        _picek.TargetDir = "inet" & _source.SourceName
+        _picek.TargetDir = "inet\" & _source.SourceName
 
-        Dim srcExif As Vblib.ExifTag = _picek.GetExifOfType(Vblib.ExifSource.SourceDefault)
+        Dim srcExif As Vblib.ExifTag = _picek.GetExifOfType(Vblib.ExifSource.SourceDefault).Clone
         srcExif.Author = uiAutor.Text
         If uiDateRange.UseMin Then srcExif.DateMin = uiDateRange.MinDate
         If uiDateRange.UseMax Then srcExif.DateMax = uiDateRange.MaxDate
-
+        _picek.ReplaceOrAddExif(srcExif)    ' bo się powtarzało, nie wiem czemu - inne dane w _picek są ładnie zmienne
 
         Dim descr As New OneDescription(uiDescription.Text, uiKeywords.Text)
         _picek.AddDescription(descr)
@@ -212,5 +218,57 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         _lastgeo = Nothing
         uiSameGeo.IsEnabled = False
         uiGeo.Content = " Change "
+    End Sub
+
+    Private Sub uiRefresh_Click(sender As Object, e As RoutedEventArgs)
+        NextPic()
+    End Sub
+
+    ''' <summary>
+    ''' próba odczytania ostatnio przeczytanej strony ze zdjęciem z facebook (z logu Edge) - ale nie próbuje szukać gdy src.path nie jest facebookowy
+    ''' </summary>
+    Private Sub TryGetLastLink()
+        If Not _source.Path.Contains("facebook.com") Then Return
+
+        Dim target As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+        target = target & "\Microsoft\Edge\User Data\Default\Sync Data\LevelDB\"
+        Dim lastlog As String = ""
+        For Each plik In IO.Directory.GetFiles(target, "*.log")
+            lastlog = plik
+        Next
+
+        If lastlog = "" Then
+            Vblib.DumpMessage("Nie znalazłem logu!")
+            Return
+        End If
+
+        Vblib.DumpMessage("skorzystam z pliku logu " & lastlog)
+
+        If (Date.Now - IO.File.GetLastWriteTime(lastlog)).TotalMinutes > 5 Then
+            Vblib.DumpMessage("Za stary log chyba...")
+            Return
+        End If
+
+        'OpenRead ma Share.Read, i wtedy jest exception :)
+        Dim strumyk As IO.FileStream = IO.File.Open(lastlog, IO.FileMode.Open, IO.FileAccess.Read, IO.FileShare.ReadWrite)
+        Dim rider = New StreamReader(strumyk)
+        Dim content As String = rider.ReadToEnd
+        rider.Dispose()
+        strumyk.Close()
+
+        ' tak byc nie moze, bo sharing violation
+        'Dim content As String = IO.File.ReadAllText(lastlog)
+        Dim iInd As Integer = content.LastIndexOf("https://www.facebook.com/photo/?")
+        content = content.Substring(iInd)
+
+        Dim pageaddr As String = ""
+        For iLp = 0 To content.Length
+            Dim znak As Char = content.Chars(iLp)
+            If znak < " " Or znak > "z" Then Exit For
+            pageaddr &= znak
+        Next
+
+        Vblib.DumpMessage("Ostatni URL to " & pageaddr)
+        uiLink.Text = pageaddr
     End Sub
 End Class

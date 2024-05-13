@@ -14,7 +14,13 @@
             <RowDefinition Height="Auto" Name="_naButtony"/>
         </Grid.RowDefinitions>
         <TextBlock Name="uiSourceFilename" FontWeight="Bold" HorizontalAlignment="Center" />
-        <Image Grid.Row="1" Name="uiPicek" MaxHeight="300" MaxWidth="300" HorizontalAlignment="Center"/>
+        <Image Grid.Row="1" Name="uiPicek" MaxHeight="300" MaxWidth="300" HorizontalAlignment="Center">
+            <Image.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Refresh" Click="uiRefresh_Click" ToolTip="przeładowanie strony - odczytanie aktualnie najnowszego zdjęcia"/>
+                </ContextMenu>
+            </Image.ContextMenu>
+        </Image>
 
         <Grid Grid.Row="2" Margin="5,10,5,10">
             <Grid.ColumnDefinitions>
@@ -30,7 +36,7 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <TextBlock Grid.Row="0" Text="Description " />
-            <TextBox Grid.Row="0" Grid.Column="1" Name="uiDescription" AcceptsReturn="True" TextChanged="uiDescription_TextChanged"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Name="uiDescription" AcceptsReturn="True" TextChanged="uiDescription_TextChanged" ToolTip="Wklej opis do zdjęcia - zmiany linii zostaną automatycznie usunięte, oraz spróbuje rozpoznać autora (wedle listy autorów Internet) i datę"/>
             <TextBlock Grid.Row="1" Text="Autor " />
             <TextBox Grid.Row="1" Grid.Column="1" Name="uiAutor" />
             <TextBlock Grid.Row="2" Text="Date range " />
@@ -38,10 +44,10 @@
             <TextBlock Grid.Row="3" Text="Link " />
             <TextBox Grid.Row="3" Grid.Column="1" Name="uiLink" TextChanged="uiLink_TextChanged"/>
             <TextBlock Grid.Row="4" Text="Keywords " />
-            <TextBox Grid.Row="4" Grid.Column="1" Name="uiKeywords" />
+            <TextBox Grid.Row="4" Grid.Column="1" Name="uiKeywords" ToolTip="słowa kluczowe (np. miejsca)"/>
             <TextBlock Grid.Row="5" Text="Geotag " />
             <Button Grid.Row="5" Grid.Column="1" Content="..." Click="uiSetGeo_Click" Name="uiGeo" Width="Auto" HorizontalAlignment="Center"/>
-            <Button Grid.Row="5" Grid.Column="1" Content=" use last " Click="uiSameGeo_Click" Name="uiSameGeo" Width="Auto" HorizontalAlignment="Right"/>
+            <Button Grid.Row="5" Grid.Column="1" Content=" use last " Click="uiSameGeo_Click" Name="uiSameGeo" Width="Auto" HorizontalAlignment="Right" ToolTip="użyj poprzednio ustawionego geotag"/>
         </Grid>
 
 
