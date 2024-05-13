@@ -19,12 +19,17 @@
     Public Overridable ReadOnly Property RequireDate As Boolean = False
     Public Overridable ReadOnly Property RequireGeo As Boolean = False
 
+    Public Shared ReadOnly Property IconWeb As String = "🔗"
+    Public Shared ReadOnly Property IconGeo As String = "🌍"
+    Public Shared ReadOnly Property IconCal As String = "📆"
+
+
     Public ReadOnly Property Ikony As String
         Get
             Dim temp As String = ""
-            If RequireDate Then temp &= "📆"
-            If RequireGeo Then temp &= "🌍"
-            If IsWeb Then temp &= "🔗"
+            If RequireDate Then temp &= IconCal
+            If RequireGeo Then temp &= IconGeo
+            If IsWeb Then temp &= IconWeb
             Return temp.Trim
         End Get
     End Property
