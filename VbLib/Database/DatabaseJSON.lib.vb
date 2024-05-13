@@ -221,7 +221,13 @@ Public Class DatabaseJSON
 
     Public Function Load() As Boolean Implements DatabaseInterface.Load
         Dim bRet As Boolean = _allItems.Load()
-        If bRet Then _IsLoaded = True
+        If bRet Then
+            _IsLoaded = True
+            ' recalculate sums
+            For Each oItem As OnePic In _allItems
+                oItem.sumOfDescr = oItem.GetSumOfDescriptionsText
+            Next
+        End If
         Return bRet
     End Function
 

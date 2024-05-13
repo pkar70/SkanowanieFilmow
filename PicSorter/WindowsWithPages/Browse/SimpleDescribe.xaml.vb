@@ -45,7 +45,8 @@ Public Class SimpleDescribe
             End If
 
             ' podmieniamy do pokazywania w ThumbsBrowse, a nuż zmieni się na ekranie :)
-            oPicek.SumOfDescriptionsText = descr
+            ' nie trzeba, bo zmienia się w OnePic.sumofdescr
+            'oPicek.SumOfDescriptionsText = descr
 
             If Not String.IsNullOrWhiteSpace(oPicek.oPic.sharingFromGuid) Then
                 ' to jest 'obce' zdjęcie, i description można temu loginowi wysłać

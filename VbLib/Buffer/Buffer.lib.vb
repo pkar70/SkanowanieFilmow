@@ -47,6 +47,7 @@ Public Class BufferSortowania
         _RootDataPath = sRootDataPath
         _pliki = New FilesInBuffer(_RootDataPath)
         _pliki.Load()
+        _pliki.RecalcSumsy()
         ' AddSortBy
         'AddTyp3()
         _rootPictures = GetSettingsString("uiFolderBuffer")
@@ -258,6 +259,13 @@ Public Class BufferSortowania
             MyBase.New(sFolder, "buffer.json")
         End Sub
 
+        Public Sub RecalcSumsy()
+            For Each oItem As OnePic In _list
+                oItem.sumOfDescr = oItem.GetSumOfDescriptionsText
+            Next
+        End Sub
+
+
     End Class
 
 
@@ -280,6 +288,11 @@ Public Class BufferFromQuery
         Dim lista As New pkar.BaseList(Of OnePic)(sFolder, IO.Path.GetFileName(sFilepathname))
 
         lista.Load()
+        ' recalc sumsy
+        For Each oItem As OnePic In _pliki
+            oItem.sumOfDescr = oItem.GetSumOfDescriptionsText
+        Next
+
         _pliki = New List(Of OnePic)
 
         For Each oPic As OnePic In lista

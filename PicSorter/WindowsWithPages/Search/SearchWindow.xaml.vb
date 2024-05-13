@@ -19,6 +19,7 @@ Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.UI.Extensions
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Windows.Media.Devices
+Imports Vblib
 
 Public Class SearchWindow
 

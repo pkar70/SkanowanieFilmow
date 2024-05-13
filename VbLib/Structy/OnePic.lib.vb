@@ -502,6 +502,7 @@ Public Class OnePic
 
 #Region "descriptionsy"
 
+
     ''' <summary>
     ''' dodaje jeden description, gdy nie ma daty to go datuje na Now
     ''' </summary>
@@ -510,6 +511,7 @@ Public Class OnePic
         If descriptions Is Nothing Then descriptions = New List(Of OneDescription)
         ' If String.IsNullOrEmpty(opis.data) Then opis.data = Date.Now.ToString("yyyy.MM.dd HH:mm")
         descriptions.Add(opis)
+        sumOfDescr = GetSumOfDescriptionsText()
 
         TagsChanged = True
     End Sub
@@ -528,6 +530,7 @@ Public Class OnePic
     Public Sub ReplaceAllDescriptions(sDesc As String)
         descriptions = New List(Of OneDescription)
         AddDescription(New OneDescription(sDesc, ""))
+        sumOfDescr = GetSumOfDescriptionsText()
     End Sub
 
     Public Function GetSumOfDescriptionsText(Optional separator As String = " | ") As String
@@ -583,6 +586,7 @@ Public Class OnePic
         End If
         ' If String.IsNullOrEmpty(opis.data) Then opis.data = Date.Now.ToString("yyyy.MM.dd HH:mm")
         AddDescription(opis)
+        sumOfDescr = GetSumOfDescriptionsText()
 
         TagsChanged = True
     End Sub
@@ -624,6 +628,8 @@ Public Class OnePic
         For Each oItem As OneDescription In lToRemove
             descriptions.Remove(oItem)
         Next
+
+        sumOfDescr = GetSumOfDescriptionsText()
 
     End Sub
 

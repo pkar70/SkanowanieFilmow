@@ -1525,7 +1525,8 @@ Public Class ProcessBrowse
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             oItem.ZrobDymek()
             oItem.AllKeywords = oItem.oPic.GetAllKeywords
-            oItem.SumOfDescriptionsText = oItem.oPic.GetSumOfDescriptionsText
+            ' to jest podczas wczytywania i wszystkich operacji na Descriptions
+            'oItem.SumOfDescriptionsText = oItem.oPic.GetSumOfDescriptionsText
         Next
     End Sub
 
@@ -1644,9 +1645,10 @@ Public Class ProcessBrowse
                     oThumb.AllKeywords = oThumb.oPic.GetAllKeywords
                 Next
             Case "description"
-                For Each oThumb In _thumbsy
-                    oThumb.SumOfDescriptionsText = oThumb.oPic.GetSumOfDescriptionsText
-                Next
+                ' to już jest zrobione w trakcie wczytywania
+                'For Each oThumb In _thumbsy
+                '    oThumb.SumOfDescriptionsText = oThumb.oPic.GetSumOfDescriptionsText
+                'Next
         End Select
 
         RefreshMiniaturki(False)
@@ -2539,7 +2541,7 @@ Public Class ProcessBrowse
 
         Public Property podpis As String = ""
         Public Property AllKeywords As String
-        Public Property SumOfDescriptionsText As String
+        'Public Property SumOfDescriptionsText As String
         Public Property nrkol As Integer
         Public Property maxnum As Integer
 
