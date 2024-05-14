@@ -285,7 +285,7 @@ Public Class ServerWrapper
     Private Function SendMarkedPicsListFromBuff(oLogin As ShareLogin) As String
 
         Dim sRet As String = ""
-        For Each oPic As Vblib.OnePic In _buffer.GetList.Where(Function(x) Not x.sharingLockSharing AndAlso x.IsPeerAllowed(oLogin))
+        For Each oPic As Vblib.OnePic In _buffer.GetList.Where(Function(x) Not x.sharingLockSharing AndAlso x.PeerIsForLogin(oLogin))
             If sRet <> "" Then sRet &= ","
             ' usuwamy informacje które tam sie nie powinny znaleŸæ
             sRet &= oPic.StrippedForSharing.DumpAsJSON

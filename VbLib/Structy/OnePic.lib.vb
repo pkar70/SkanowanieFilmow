@@ -1275,23 +1275,33 @@ Public Class OnePic
         End If
     End Function
 
-    Public Function IsPeerAllowed(peer As SharePeer) As Boolean
+    Public Function PeerIsForceAllowed(peer As SharePeer) As Boolean
         If String.IsNullOrWhiteSpace(allowedPeers) Then Return False
 
         Return allowedPeers.Contains(peer.GetIdForSharing)
     End Function
 
-    Public Sub AllowPeer(peer As SharePeer)
+    Public Sub PeerForceAllow(peer As ShareLogin)
         ' juz jest, nie dodajemy drugi raz
-        If IsPeerAllowed(peer) Then Return
+        If PeerIsForLogin(peer) Then Return
+
+        If PeerIsForcedDeny(peer) Then
+            peer.exclusions = peer.exclusions.Replace(GetFormattedSerNo(), "")
+            Return
+        End If
 
         allowedPeers &= peer.GetIdForSharing
     End Sub
 
-    Public Sub DenyPeer(peer As SharePeer)
-        If String.IsNullOrWhiteSpace(allowedPeers) Then Return
-        If Not IsPeerAllowed(peer) Then Return
-        allowedPeers = allowedPeers.Replace(peer.GetIdForSharing, "")
+    Public Sub PeerForceDeny(peer As ShareLogin)
+        If PeerIsForcedDeny(peer) Then Return
+
+        If PeerIsForceAllowed(peer) Then
+            allowedPeers = allowedPeers.Replace(peer.GetIdForSharing, "")
+            Return
+        End If
+
+        peer.exclusions = peer.exclusions & GetFormattedSerNo() & ";"
     End Sub
 
     ''' <summary>
@@ -1327,6 +1337,32 @@ Public Class OnePic
         'Public Property _PipelineOutput As Stream
 
         Return temp
+    End Function
+
+    Public Function PeerIsForcedDeny(oLogin As ShareLogin) As Boolean
+        If oLogin?.exclusions Is Nothing Then Return False
+        Return oLogin.exclusions.Contains(GetFormattedSerNo() & ";")
+    End Function
+
+    Public Function PeerIsForLogin(oLogin As ShareLogin) As Boolean
+
+        If PeerIsForcedDeny(oLogin) Then Return False
+
+        If PeerIsForceAllowed(oLogin) Then Return True
+
+        If oLogin.channels Is Nothing Then Return False
+        For Each oChannel As Vblib.ShareChannelProcess In oLogin.channels
+
+            If oChannel?.channel?.queries Is Nothing Then Continue For
+
+            For Each oQuery As ShareQueryProcess In oChannel.channel.queries
+                If CheckIfMatchesQuery(oQuery.query) Then Return True
+            Next
+
+        Next
+
+        Return False
+
     End Function
 
 #End Region

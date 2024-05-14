@@ -2270,7 +2270,7 @@ Public Class ProcessBrowse
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
             thumb.opacity = _OpacityWygas
-            If thumb.oPic.IsCloudPublishMentioned("L:" & oLogin.login.ToString) Then
+            If thumb.oPic.PeerIsForLogin(oLogin) Then
                 thumb.opacity = 1
                 bWas = True
             End If
@@ -2301,16 +2301,16 @@ Public Class ProcessBrowse
     End Function
 
     Public Function WypelnMenuFilterSharingLogins() As Integer
-        uiFilterLogins.Items.Clear()
+        'uiFilterLogins.Items.Clear()
         uiFilterLoginsMarked.Items.Clear()
 
         Dim iCnt As Integer = 0
 
         For Each oLogin As Vblib.ShareLogin In Application.GetShareLogins
 
-            Dim oNew As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
-            AddHandler oNew.Click, AddressOf FilterSharingLogin
-            uiFilterLogins.Items.Add(oNew)
+            'Dim oNew As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
+            'AddHandler oNew.Click, AddressOf FilterSharingLogin
+            'uiFilterLogins.Items.Add(oNew)
             iCnt += 1
 
             Dim oNewMarked As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
@@ -2320,7 +2320,7 @@ Public Class ProcessBrowse
 
         Next
 
-        uiFilterLogins.IsEnabled = (iCnt > 0)
+        'uiFilterLogins.IsEnabled = (iCnt > 0)
         uiFilterLoginsMarked.IsEnabled = (iCnt > 0)
 
         Return iCnt

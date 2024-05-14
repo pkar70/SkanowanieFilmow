@@ -64,8 +64,9 @@
                         <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget"/>
                         <MenuItem Header="Sharing »" Name="uiFilterSharing">
                             <MenuItem Header="Queries for Channel" Name="uiFilterChannels" />
-                            <MenuItem Header="Queries for Login" Name="uiFilterLogins"/>
-                            <MenuItem Header="Marked for Login" Name="uiFilterLoginsMarked"/>
+                            <!--<MenuItem Header="Queries for Login" Name="uiFilterLogins"/>-->
+                            <!--<MenuItem Header="Marked for Login" Name="uiFilterLoginsMarked"/>-->
+                            <MenuItem Header="for Login" Name="uiFilterLoginsMarked"/>
                             <MenuItem Header="Cudze" Click="uiFilterCudze_Click" />
                             <MenuItem Header="remote desc" Click="uiFilterRemoteDesc_Click" />
                         </MenuItem>

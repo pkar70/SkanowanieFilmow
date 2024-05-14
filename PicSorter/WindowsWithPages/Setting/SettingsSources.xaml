@@ -9,8 +9,8 @@
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" x:Name="uiRowTitle"/>
-            <RowDefinition Height="10*" x:Name="uiRowSrcList" />
-            <RowDefinition Height="15*" x:Name="uiRowSrcProp" />
+            <RowDefinition Height="*" x:Name="uiRowSrcList" />
+            <RowDefinition Height="Auto" x:Name="uiRowSrcProp" />
             <RowDefinition Height="Auto" x:Name="uiRowOK"/>
         </Grid.RowDefinitions>
 

@@ -2,9 +2,15 @@
 
 
 Imports Vblib
+Imports pkar.DotNetExtensions
+
 
 Public NotInheritable Class PicMenuShareUpload
     Inherits PicMenuBase
+
+    Private _menuAllow As MenuItem
+    Private _menuDeny As MenuItem
+
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -16,13 +22,15 @@ Public NotInheritable Class PicMenuShareUpload
         If Not InitEnableDisable("Share peers", "Dzielenie się zdjęciami", True) Then Return
 
         If Application.GetShareLogins.Count > 0 Then
-            Dim oNew As New MenuItem With {.Header = "Mark for Login"}
-            Me.Items.Add(oNew)
-            WypelnMenuLogins(oNew, AddressOf ActionSharingLogin)
+            _menuAllow = New MenuItem With {.Header = "Force allow"}
+            AddHandler _menuAllow.SubmenuOpened, AddressOf OpeningForceAllowMenu
+            WypelnMenuLogins(_menuAllow, AddressOf ActionSharingLogin)
+            Me.Items.Add(_menuAllow)
 
-            oNew = New MenuItem With {.Header = "UnMark for Login"}
-            Me.Items.Add(oNew)
-            WypelnMenuLogins(oNew, AddressOf ActionSharingLoginUnMark)
+            _menuDeny = New MenuItem With {.Header = "Force deny"}
+            AddHandler _menuDeny.SubmenuOpened, AddressOf OpeningForceDenyMenu
+            WypelnMenuLogins(_menuDeny, AddressOf ActionSharingLoginUnMark)
+            Me.Items.Add(_menuDeny)
 
         End If
 
@@ -34,6 +42,139 @@ Public NotInheritable Class PicMenuShareUpload
         _wasApplied = True
     End Sub
 
+    Private Sub OpeningForceDenyMenu(sender As Object, e As RoutedEventArgs)
+        For Each oMI As MenuItem In _menuDeny.Items
+            Dim oLogin As Vblib.ShareLogin = TryCast(oMI.DataContext, Vblib.ShareLogin)
+            If oLogin Is Nothing Then Continue For
+
+            Dim oPic As Vblib.OnePic = GetFromDataContext()
+
+            oMI.IsEnabled = True
+
+            ' 1) wymuszony DENY: można go wyłączyć
+            If oPic.PeerIsForcedDeny(oLogin) Then
+                oMI.IsChecked = True
+                Continue For
+            End If
+
+            ' 2) wymuszony ALLOW: można zablokować (jest ważniejszy niż ALLOW)
+            If oPic.PeerIsForceAllowed(oLogin) Then
+                oMI.IsChecked = False
+                Continue For
+            End If
+
+            ' 3) podpada pod Login (bo Query): można zablokować
+            If oPic.PeerIsForLogin(oLogin) Then
+                oMI.IsChecked = False
+                Continue For
+            End If
+
+            ' 4) nie podpada pod Login, więc nie ma sensu blokować
+            oMI.IsChecked = False
+            oMI.IsEnabled = False
+
+        Next
+
+    End Sub
+
+    Private Sub OpeningForceAllowMenu(sender As Object, e As RoutedEventArgs)
+        For Each oMI As MenuItem In _menuAllow.Items
+            Dim oLogin As Vblib.ShareLogin = TryCast(oMI.DataContext, Vblib.ShareLogin)
+            If oLogin Is Nothing Then Continue For
+
+            Dim oPic As Vblib.OnePic = GetFromDataContext()
+
+            oMI.IsEnabled = True
+
+            ' 1) wymuszony DENY: z Allow nic nie można zrobić
+            If oPic.PeerIsForcedDeny(oLogin) Then
+                oMI.IsChecked = False
+                oMI.IsEnabled = False
+                Continue For
+            End If
+
+            ' 2) wymuszony ALLOW: można wyłączyć
+            If oPic.PeerIsForceAllowed(oLogin) Then
+                oMI.IsChecked = True
+                Continue For
+            End If
+
+            ' 3) podpada pod Login (bo Query): nie ma sensu nic robić
+            If oPic.PeerIsForLogin(oLogin) Then
+                oMI.IsChecked = True
+                oMI.IsEnabled = False
+                Continue For
+            End If
+
+            ' 4) nie podpada pod Login, więc nie ma sensu blokować
+            oMI.IsChecked = False
+
+        Next
+    End Sub
+
+    Private Sub OpeningForceMenu(meni As MenuItem, inDenyMenu As Boolean)
+        If UseSelectedItems Then Return
+
+        For Each oMI As MenuItem In meni.Items
+            Dim oLogin As Vblib.ShareLogin = TryCast(oMI.DataContext, Vblib.ShareLogin)
+            If oLogin Is Nothing Then Continue For
+
+            Dim oPic As Vblib.OnePic = GetFromDataContext()
+
+            ' 1) wymuszony DENY, to nie można włączyć - można jedynie UNCHECK w MenuDeny
+            If oPic.PeerIsForcedDeny(oLogin) Then
+                If inDenyMenu Then
+                    oMI.IsChecked = True
+                    oMI.IsEnabled = True
+                Else
+                    oMI.IsChecked = False
+                    oMI.IsEnabled = False
+                End If
+
+                Continue For
+            End If
+
+            ' 2) wymuszony ALLOW
+            If oPic.PeerIsForceAllowed(oLogin) Then
+                If inDenyMenu Then
+                    oMI.IsChecked = False
+                    oMI.IsEnabled = True
+                Else
+                    oMI.IsChecked = True
+                    oMI.IsEnabled = True
+                End If
+
+                Continue For
+            End If
+
+
+            If oPic.PeerIsForLogin(oLogin) Then
+                If inDenyMenu Then
+                    oMI.IsChecked = False
+                    oMI.IsEnabled = True
+                Else
+                    oMI.IsChecked = True
+                    oMI.IsEnabled = True
+                End If
+
+                Continue For
+            End If
+
+            If inDenyMenu Then
+                oMI.IsChecked = False
+                oMI.IsEnabled = True
+            Else
+                oMI.IsChecked = False
+                oMI.IsEnabled = True
+            End If
+
+
+        Next
+    End Sub
+
+
+
+
 #Region "submenu logins"
 
     Private _ShareLogin As Vblib.ShareLogin
@@ -42,10 +183,11 @@ Public NotInheritable Class PicMenuShareUpload
         oMenuItem.Items.Clear()
 
         For Each oLogin As Vblib.ShareLogin In Application.GetShareLogins
-
+            If oLogin.displayName.EqualsCI("FORPICSEARCH") Then Continue For
             Dim oNew As New MenuItem
             oNew.Header = oLogin.displayName
             oNew.DataContext = oLogin
+            oNew.IsCheckable = True
 
             AddHandler oNew.Click, oEventHandler
 
@@ -56,7 +198,7 @@ Public NotInheritable Class PicMenuShareUpload
 
     Private Async Sub ActionSharingLogin(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        _ShareLogin = oFE?.DataContext
+        _ShareLogin = TryCast(oFE?.DataContext, ShareLogin)
         If _ShareLogin Is Nothing Then Return
 
         Await OneOrManyAsync(AddressOf MarkOnePicForLogin)
@@ -65,7 +207,7 @@ Public NotInheritable Class PicMenuShareUpload
 
     Private Async Sub ActionSharingLoginUnMark(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        _ShareLogin = oFE?.DataContext
+        _ShareLogin = TryCast(oFE?.DataContext, ShareLogin)
         If _ShareLogin Is Nothing Then Return
 
         Await OneOrManyAsync(AddressOf UnMarkOnePicForLogin)
@@ -73,11 +215,13 @@ Public NotInheritable Class PicMenuShareUpload
     End Sub
 
     Private Async Function MarkOnePicForLogin(oPic As OnePic) As Task
-        oPic.AllowPeer(_ShareLogin)
+        ' *TODO* dla tego loginu, w zależności od aktualnego stanu, dopuść sharing
+        oPic.PeerForceAllow(_ShareLogin)
     End Function
 
     Private Async Function UnMarkOnePicForLogin(oPic As OnePic) As Task
-        oPic.DenyPeer(_ShareLogin)
+        ' *TODO* dla tego loginu, w zależności od aktualnego stanu, zablokuj sharing
+        oPic.PeerForceDeny(_ShareLogin)
     End Function
 
 #End Region

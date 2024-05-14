@@ -69,9 +69,9 @@ Public Class ShareLogin
     'Public Property channelNames As String ' na dysku są tylko nazwy
 
     ''' <summary>
-    ''' lista PicGuid wyłączanych (mimo że pasują do powyższych filtrów)
+    ''' lista serno wyłączanych (mimo że pasują do powyższych filtrów)
     ''' </summary>
-    Public Property exclusions As List(Of String)
+    Public Property exclusions As String
 
     Public Property processing As String ' składane do query.processing i channel.processing
 
