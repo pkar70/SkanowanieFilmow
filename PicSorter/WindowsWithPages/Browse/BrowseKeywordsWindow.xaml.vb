@@ -1,13 +1,9 @@
 ﻿
 
-Imports System.DirectoryServices.ActiveDirectory
-Imports System.Security.Cryptography
-Imports System.Security.Policy
-Imports MetadataExtractor.Formats
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
-
+Imports pkar.UI.Configs
 
 Public Class BrowseKeywordsWindow
 
@@ -57,6 +53,7 @@ Public Class BrowseKeywordsWindow
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         WypelnCombo()
         uiApply.IsEnabled = Not _readonly
+        uiHideKeywords.GetSettingsBool
 
         If _oPic IsNot Nothing Then Return
 
@@ -196,7 +193,7 @@ Public Class BrowseKeywordsWindow
 
         ' step 2: znajdź - ale hierarchicznie!
 
-        If vb14.GetSettingsBool("uiHideKeywords") Then
+        If uiHideKeywords.IsChecked Then
             uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList.Where(Function(x) x.bEnabled)
         Else
             uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList
@@ -401,5 +398,9 @@ Public Class BrowseKeywordsWindow
         Dim currentFlatKwds As String = ""
         Application.GetKeywords.ToFlatList.ForEach(Sub(x) If x.bChecked Then currentFlatKwds &= x.sId & " ")
         uiSelectedKwds.Text = currentFlatKwds
+    End Sub
+
+    Private Sub uiHideKeywords_Checked(sender As Object, e As RoutedEventArgs)
+        RefreshLista()
     End Sub
 End Class

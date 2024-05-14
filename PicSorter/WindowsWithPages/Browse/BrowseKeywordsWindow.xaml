@@ -9,6 +9,7 @@
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" Name="naComboGrup" />
+            <RowDefinition Height="Auto" Name="naHideDisable" />
             <RowDefinition Height="*" Name="naListView" />
             <RowDefinition Height="Auto" Name="naPodsumowanie" />
             <RowDefinition Height="Auto" Name="naApply" />
@@ -16,7 +17,9 @@
 
         <ComboBox Name="uiGrupy" SelectionChanged="uiGrupy_SelectionChanged" />
 
-        <ListView Grid.Row="1" Name="uiLista" Margin="0,10,0,10">
+        <CheckBox Name="uiHideKeywords" Content="Hide inactive keywords" Margin="0,3,0,3" Grid.Row="1" Checked="uiHideKeywords_Checked" Unchecked="uiHideKeywords_Checked"/>
+
+        <ListView Grid.Row="2" Name="uiLista" Margin="0,0,0,10">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
@@ -38,11 +41,11 @@
 
         </ListView>
 
-        <TextBlock Grid.Row="2" Name="uiSelectedKwds" Margin="0,2,0,2" />
+        <TextBlock Grid.Row="3" Name="uiSelectedKwds" Margin="0,2,0,2" />
 
-        <Button Grid.Row="3" Content=" Clear " HorizontalAlignment="Left" Click="uiClear_Click" Name="uiClear"/>
-        <Button Grid.Row="3" Content=" Apply " HorizontalAlignment="Center" Click="uiApply_Click" Name="uiApply"/>
-        <Button Grid.Row="3" Content=" Edit " HorizontalAlignment="Right" Click="uiEditKeyTree_Click" Name="uiEdit"/>
+        <Button Grid.Row="4" Content=" Clear " HorizontalAlignment="Left" Click="uiClear_Click" Name="uiClear"/>
+        <Button Grid.Row="4" Content=" Apply " HorizontalAlignment="Center" Click="uiApply_Click" Name="uiApply"/>
+        <Button Grid.Row="4" Content=" Edit " HorizontalAlignment="Right" Click="uiEditKeyTree_Click" Name="uiEdit"/>
 
     </Grid>
 </Window>
