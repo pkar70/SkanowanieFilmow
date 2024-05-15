@@ -70,12 +70,15 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         uiSourceFilename.Text = _picek.sSuggestedFilename
         uiPicek.Source = ThumbPicek.ThumbCreateFromNormal(_picek.sInSourceID)
         uiGeo.Content = " Set "
+        uiGeo.ToolTip = ""
 
         Vblib.DumpMessage("Picek: " & uiSourceFilename.Text)
 
         uiAutor.Text = "" ' autora nie chcemy powtarzać
         uiLink.Text = "" ' jak się nie uda ściągnąć, to trzeba będzie wpisać
         TryGetLastLink()
+
+        uiKeywords.uiSlowka.Text = _source.defaultKwds
 
         uiDescription.Focus()
 
@@ -84,6 +87,8 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
     Private Sub uiEnd_Click(sender As Object, e As RoutedEventArgs)
         Application.GetBuffer.SaveData()
+        'Application.GetSourcesList.Save() - zapis będzie z "piętro wyżej", razem z datą itp.
+
         DialogResult = True
         Me.Close()
     End Sub
@@ -136,6 +141,8 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         _picek.ReplaceOrAddExif(geoExif)
         _lastgeo = geoExif
         uiGeo.Content = " Change "
+        uiGeo.ToolTip = _lastgeo.GeoTag.FormatLink("%lat / %lon")
+
     End Sub
 
     Private Sub uiLink_TextChanged(sender As Object, e As TextChangedEventArgs)
@@ -195,10 +202,23 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
             End If
         End If
 
+        mam = Regex.Match(tekst, "ata [0-9][0-9]-[0-9][0-9]")
+        If Not mam.Success Then mam = Regex.Match(tekst, "ata [0-9][0-9]/[0-9][0-9]")
+        If mam.Success Then
+            Dim tempStr As String = mam.Value.Replace("ata ", "")
+            Dim rokOd, rokDo As Integer
+            Integer.TryParse(tempStr.Substring(0, 2), rokOd)
+            Integer.TryParse(tempStr.Substring(3, 2), rokDo)
+            uiDateRange.MinDate = New Date(rokOd, 1, 1)
+            uiDateRange.MinDate = (New Date(rokDo + 1, 1, 1)).AddMinutes(-1)
+            Return
+        End If
+
+
         mam = Regex.Match(tekst, "ata [0-9]0")
         If mam.Success Then
             Dim tempInt As Integer
-            If Integer.TryParse(mam.Value, tempInt) Then
+            If Integer.TryParse(mam.Value.Replace("ata ", ""), tempInt) Then
                 uiDateRange.RangeAsText = 1900 + tempInt * 10
                 Return
             End If
