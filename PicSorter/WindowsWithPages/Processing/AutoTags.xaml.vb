@@ -139,10 +139,13 @@ Public Class AutoTags
         '    End If
         'End If
 
+        ' musi być tutaj, bo inaczej pierwszy błąd z GetForFile kończy sprawdzanie :) 
+        Auto_AzureTest._AzureExceptionsGuard = 2 ' po 4 exception ma przestać sprawdzać
+
         Dim maxGuard As Integer = Integer.MaxValue
         If oSrc.engine.Nazwa = "AUTO_AZURE" Then
             maxGuard = vb14.GetSettingsInt("uiAzureMaxBatch", 500)
-            Auto_AzureTest._AzureExceptionsGuard = 2 ' po 4 exception ma przestać sprawdzać
+            'Auto_AzureTest._AzureExceptionsGuard = 2 ' po 4 exception ma przestać sprawdzać
             Auto_AzureTest._AzureExceptionMsg = "" ' suma exceptionsow
         End If
 
