@@ -41,14 +41,14 @@
 
                         <ListView.ItemTemplate>
                             <DataTemplate >
-                                <Grid HorizontalAlignment="Stretch" >
+                                <Grid HorizontalAlignment="Stretch" ToolTip="{Binding sumOfDescr}">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150" Name="naID" />
+                                        <ColumnDefinition Width="50" Name="naID" />
                                         <ColumnDefinition Width="*" Name="naFolder" />
                                         <ColumnDefinition Width="*" Name="naName" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="{Binding PicGuid}" />
+                                    <TextBlock Text="{Binding serno}" HorizontalAlignment="Right" />
                                     <TextBlock Text="{Binding TargetDir}" Grid.Column="1" Margin="5,0,5,0"/>
                                     <TextBlock Text="{Binding sSuggestedFilename}" Grid.Column="2"/>
 
