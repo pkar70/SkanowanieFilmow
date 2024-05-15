@@ -28,6 +28,7 @@ uiBigPicSize=90
 uiJsonEnabled=True
 uiSqlInstance=(localdb)\MSSQLLocalDB
 
+uiWinFaceMaxAge=90
 # remark
 ' remark
 ; remark

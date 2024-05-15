@@ -20,6 +20,12 @@ Public Class Process_FaceRemove
 
         oPic.InitEdit(bPipeline)
 
+        ' 2024.05.15: limit ukrywania twarzy (default: 90 lat)
+        If (Date.Now - oPic.GetMostProbablyDate).TotalDays > 365 * Vblib.GetSettingsInt("uiWinFaceMaxAge") Then
+            oPic.SkipEdit()
+            Return True
+        End If
+
         If oExif?.AzureAnalysis?.Faces?.lista Is Nothing Then
             oPic.SkipEdit()
             Return True

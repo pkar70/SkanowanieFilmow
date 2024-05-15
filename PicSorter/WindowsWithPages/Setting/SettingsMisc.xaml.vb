@@ -15,6 +15,7 @@ Class SettingsMisc
         uiHideThumbs.GetSettingsBool
         uiBigPicSize.GetSettingsInt()
         uiDragOutThumbs.GetSettingsBool
+        uiWinFaceMaxAge.GetSettingsInt
         'uiStereoThumb.GetSettingsInt()
     End Sub
 
@@ -35,6 +36,7 @@ Class SettingsMisc
         uiHideThumbs.SetSettingsBool
         uiBigPicSize.SetSettingsInt
         uiDragOutThumbs.SetSettingsBool
+        uiWinFaceMaxAge.SetSettingsInt
         'uiStereoThumb.SetSettingsInt
 
         Me.NavigationService.GoBack()
