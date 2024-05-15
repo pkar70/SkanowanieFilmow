@@ -35,7 +35,6 @@
     <ProjectReference Include="..\lib14_httpClnt\lib14_httpClnt.vbproj" />
     <ProjectReference Include="..\lib_n6_httpSrv\lib_n6_httpSrv.vbproj" />
     <ProjectReference Include="..\lib_n6_MediaDevices\lib_n6_MediaDevices.vbproj" />
-    <ProjectReference Include="..\lib_n6_PowerPoint\lib_n6_PowerPoint.vbproj" />
     <ProjectReference Include="..\lib_n6_UseMapi\lib_n6_UseMapi.vbproj" />
     <ProjectReference Include="..\lib_PicSource\lib_n6_PicSource.vbproj" />
     <ProjectReference Include="..\Process_n6_SigAndFace\Process_n6_SigAndFace.vbproj" />

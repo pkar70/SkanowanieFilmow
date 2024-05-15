@@ -14,9 +14,12 @@ Public Class CloudPublishersList
         New Publish_std2_Facebook.Publish_Facebook_Post,
         New Publish_std2_Facebook.Publish_Facebook_Album,
         New Publish_ZIP,
-        New Publish_CBZ,
-        New lib_n6_PowerPoint.Publish_PowerPoint
+        New Publish_CBZ
         }
+
+    ' PowerPointa i tak nie używam, a jest to 40 MB w .exe
+    'New lib_n6_PowerPoint.Publish_PowerPoint
+    '}
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)
 
@@ -26,6 +29,7 @@ Public Class CloudPublishersList
 
     Public Sub New(sDataDir As String)
         _DataDir = sDataDir
+
     End Sub
 
     Public Function Load() As Boolean

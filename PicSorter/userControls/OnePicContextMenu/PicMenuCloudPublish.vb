@@ -92,10 +92,12 @@ Public NotInheritable Class PicMenuCloudPublish
                 Dim archiveName As String = SettingsGlobal.FileSaveBrowser("", "Podaj nazwę pliku docelowego", "plik.cbz")
                 If archiveName = "" Then Return
                 _engine.sZmienneZnaczenie = archiveName
-            Case lib_n6_PowerPoint.Publish_PowerPoint.PROVIDERNAME
-                Dim archiveName As String = SettingsGlobal.FileSaveBrowser("", "Podaj nazwę pliku docelowego", "plik.pps")
-                If archiveName = "" Then Return
-                _engine.sZmienneZnaczenie = archiveName
+#If KOMPILUJ_PPT Then
+                Case lib_n6_PowerPoint.Publish_PowerPoint.PROVIDERNAME
+                    Dim archiveName As String = SettingsGlobal.FileSaveBrowser("", "Podaj nazwę pliku docelowego", "plik.pps")
+                    If archiveName = "" Then Return
+                    _engine.sZmienneZnaczenie = archiveName
+#End If
             Case Else
                 bSendNow = Await Vblib.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
         End Select
