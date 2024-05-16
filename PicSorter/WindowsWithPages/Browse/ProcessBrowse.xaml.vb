@@ -1524,7 +1524,7 @@ Public Class ProcessBrowse
     Private Sub ReDymkuj()
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             oItem.ZrobDymek()
-            oItem.AllKeywords = oItem.oPic.GetAllKeywords
+            'oItem.AllKeywords = oItem.oPic.GetAllKeywords
             ' to jest podczas wczytywania i wszystkich operacji na Descriptions
             'oItem.SumOfDescriptionsText = oItem.oPic.GetSumOfDescriptionsText
         Next
@@ -1641,9 +1641,9 @@ Public Class ProcessBrowse
         Dim mode As String = oMI.Header
         Select Case mode.ToLowerInvariant
             Case "keywords"
-                For Each oThumb In _thumbsy
-                    oThumb.AllKeywords = oThumb.oPic.GetAllKeywords
-                Next
+                'For Each oThumb In _thumbsy
+                '    oThumb.AllKeywords = oThumb.oPic.GetAllKeywords
+                'Next
             Case "description"
                 ' to już jest zrobione w trakcie wczytywania
                 'For Each oThumb In _thumbsy
@@ -2540,7 +2540,7 @@ Public Class ProcessBrowse
         Public Property opacity As Double = 1   ' czyli normalnie pokazany
 
         Public Property podpis As String = ""
-        Public Property AllKeywords As String
+        'Public Property AllKeywords As String
         'Public Property SumOfDescriptionsText As String
         Public Property nrkol As Integer
         Public Property maxnum As Integer
@@ -2597,7 +2597,7 @@ Public Class ProcessBrowse
             sDymek = sDymek & vbCrLf & "Descriptions: " & oPic.GetSumOfDescriptionsText & vbCrLf
 
             ' line 5: keywords
-            sDymek = sDymek & "Keywords: " & oPic.GetAllKeywords & vbCrLf
+            sDymek = sDymek & "Keywords: " & oPic.sumOfKwds & vbCrLf
 
             ' line 6: targetdir
             If Not String.IsNullOrWhiteSpace(oPic.TargetDir) Then
@@ -2605,7 +2605,7 @@ Public Class ProcessBrowse
             End If
 
             ' line 7: picid - właściwie tylko do picków z archiwum
-            sDymek = sDymek & vbCrLf & oPic.GetFormattedSerNo
+            sDymek = sDymek & vbCrLf & oPic.FormattedSerNo
 
         End Sub
 
@@ -2885,9 +2885,9 @@ Public Class ProcessBrowse
 End Class
 
 Public Class KonwersjaPasekKolor
-    Implements IValueConverter
+    Inherits ValueConverterOneWaySimple
 
-    Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+    Protected Overrides Function Convert(value As Object) As Object
         Dim temp As Integer = CType(value, Integer)
 
         If temp = SplitBeforeEnum.czas Then Return New SolidColorBrush(Colors.SkyBlue)
@@ -2897,10 +2897,6 @@ Public Class KonwersjaPasekKolor
         Return Microsoft.Windows.Themes.ThemeColor.NormalColor
     End Function
 
-
-    Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
-        Throw New NotImplementedException()
-    End Function
 End Class
 
 Public Class KonwersjaPasekWysok

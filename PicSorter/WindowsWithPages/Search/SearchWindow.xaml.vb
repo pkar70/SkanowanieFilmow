@@ -162,6 +162,8 @@ Public Class SearchWindow
         '    Next
         'End If
 
+        Dim startTime As Date = Date.Now
+
         If lista Is Nothing Then
             ' po pełnym
             Await Task.Run(Sub() _queryResults = Application.gDbase.Search(query))
@@ -170,6 +172,11 @@ Public Class SearchWindow
             Await Task.Run(Sub() _queryResults = lista.Where(Function(x) x.CheckIfMatchesQuery(query)))
         End If
         Me.ProgRingShow(False)
+
+        Dim stopTime As Date = Date.Now
+
+        ' w 21 tysiącach, -JA to niecałe 3 ms, 'gdziekolwiek' podobnie, ale czas jest bardzo długi PO tym msgbox do wyświetlenia!
+        'Await Me.MsgBoxAsync("Szukanie zajęło ms: " & (stopTime - startTime).TotalMilliseconds)
 
         Return _queryResults.ToList.Count
         'Return iCount
@@ -198,38 +205,64 @@ Public Class SearchWindow
 
         uiResultsCount.Text = $"Found {iCount} items (from {_initialCount})."
 
+        Dim startTime As Date = Date.Now
+
         ' najpierw lista folderów - znacznie krótsza niż plików (zakładam) i zawsze do pokazania
         Dim listaNazwFolderow As New List(Of String)
+
         For Each oPicek As Vblib.OnePic In _queryResults
             listaNazwFolderow.Add(oPicek.TargetDir)
         Next
 
+        Dim stopTime As Date = Date.Now
+        'Await Me.MsgBoxAsync("Wyciagniecie lista katalogów took ms: " & (stopTime - startTime).TotalMilliseconds)
+
         If listaNazwFolderow.Count > 0 Then
+
             Dim listaFolderow As New List(Of Vblib.OneDir)
             For Each nazwa As String In From c In listaNazwFolderow Order By c Distinct
                 Dim oFolder As Vblib.OneDir = Application.GetDirTree.GetDirFromTargetDir(nazwa)
                 If oFolder IsNot Nothing Then listaFolderow.Add(oFolder)
             Next
 
+            'stopTime = Date.Now
+            'Await Me.MsgBoxAsync("GetDirFromTargetDir took ms: " & (stopTime - startTime).TotalMilliseconds)
+            'startTime = Date.Now
+
             listaFolderow.Sort(
                 Function(x As Vblib.OneDir, y As Vblib.OneDir)
                     Return x.fullPath.CompareTo(y.fullPath)
                 End Function)
+            'stopTime = Date.Now
+            'Await Me.MsgBoxAsync("sort took ms: " & (stopTime - startTime).TotalMilliseconds)
 
+            startTime = Date.Now
             uiListaKatalogow.ItemsSource = listaFolderow
+            stopTime = Date.Now
+            'Await Me.MsgBoxAsync("wstawienie do UI dirs took ms: " & (stopTime - startTime).TotalMilliseconds)
         Else
             ' kasujemy ewentualny poprzedni
             uiListaKatalogow.ItemsSource = Nothing
         End If
 
 
+        'stopTime = Date.Now
+
+        ' w 21 tysiącach, szukanie -JA to niecałe 3 ms, 'gdziekolwiek' podobnie,
+        ' zaś konwersja katalogów: 4.5 sekundy! - a, ale dopiero wtedy pewnie szuka :)
+        ' Await Me.MsgBoxAsync("Konwersja katalogów took ms: " & (stopTime - startTime).TotalMilliseconds)
+
         If iCount > 1000 Then
             If Not Await Me.DialogBoxYNAsync($"{iCount} to dużo elementów, pokazać listę mimo to?") Then Return
         End If
 
+        startTime = Date.Now
+
         ' pokazanie rezultatów
         uiLista.ItemsSource = _queryResults 'From c In _queryResults
 
+        stopTime = Date.Now
+        'Await Me.MsgBoxAsync("wstawienie do UI files took ms: " & (stopTime - startTime).TotalMilliseconds)
 
 
     End Sub

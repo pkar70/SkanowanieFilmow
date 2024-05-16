@@ -305,7 +305,7 @@ Drobne:
 * addpeer - automatycznie wedle kwd, badz pole login.autoAllowKwds
 
 Duże:
-* dodatkowe typy: foto, scan, +internet, +screenshot
+* dodatkowe typy: +screenshot
 * import ze screenshot (katalogu tamtejszego, path z systemu brany)
 * optymalizacja search
  search step x, kwd x, current count x
@@ -314,9 +314,7 @@ Duże:
 for each kwd in query
  lista = lista.where( x.sumkwd.contains(kwd) )
 ewentualnie if kwd.begins("|") lista = lista.concatenate(poprzlista.where())
-* ewentulanie klasa onepic.descr.add, itp., properties: sumofdescr, list(of onedescr)
 * zmiana wtedy w thumbs (likwidacja pól sum), i przepiecie dymkow na to z onepic
-* dopilnować by nie manipulowac descriptions poza klasą onepic
 * automatyczne tagowanie wielkanocy? (=KalWlk)
 
 !!!! One more important difference is you can access ObservableCollection only from thread on which it was created where as list can be accessed fromany thread.

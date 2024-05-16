@@ -88,9 +88,12 @@ Public NotInheritable Class PicMenuSetDate
         Vblib.DumpMessage($"Offset: {offset}")
 
         Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
-        oExif.DateMin = datemin
-        oExif.DateMax = datemax
-        oExif.DateTimeOriginal = dateorg.ToExifString
+        If dateorg.IsDateValid Then
+            oExif.DateTimeOriginal = dateorg.ToExifString
+        Else
+            oExif.DateMin = datemin
+            oExif.DateMax = datemax
+        End If
 
         oPic.ReplaceOrAddExif(oExif)
     End Sub
@@ -251,7 +254,7 @@ Public NotInheritable Class PicMenuSetDate
             min = -min
         End If
 
-        AdjustOffset(TimeSpan.FromMinutes(hr * 60 + min))
+        AdjustOffset(TimeSpan.FromMinutes(min))
 
     End Sub
 

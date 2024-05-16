@@ -260,11 +260,8 @@ Public Class BufferSortowania
         End Sub
 
         Public Sub RecalcSumsy()
-            For Each oItem As OnePic In _list
-                oItem.sumOfDescr = oItem.GetSumOfDescriptionsText
-            Next
+            ForEach(Sub(x) x.RecalcSumsy())
         End Sub
-
 
     End Class
 

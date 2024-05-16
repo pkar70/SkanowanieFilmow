@@ -239,6 +239,7 @@ Public Class OnePic
             Exifs.Remove(oExif)
         Next
 
+        RecalcSumsy() ' choć chyba tylko sumKwd trzeba
     End Sub
 
     ''' <summary>
@@ -286,6 +287,7 @@ Public Class OnePic
         If oOldExif IsNot Nothing Then Exifs.Remove(oOldExif)
 
         Exifs.Add(oExifTag)
+        RecalcSumsy() ' choć chyba tylko sumKwd trzeba
     End Sub
 
 
@@ -503,7 +505,6 @@ Public Class OnePic
 
 #Region "descriptionsy"
 
-
     ''' <summary>
     ''' dodaje jeden description, gdy nie ma daty to go datuje na Now
     ''' </summary>
@@ -512,7 +513,7 @@ Public Class OnePic
         If descriptions Is Nothing Then descriptions = New List(Of OneDescription)
         ' If String.IsNullOrEmpty(opis.data) Then opis.data = Date.Now.ToString("yyyy.MM.dd HH:mm")
         descriptions.Add(opis)
-        sumOfDescr = GetSumOfDescriptionsText()
+        RecalcSumsy()
 
         TagsChanged = True
     End Sub
@@ -531,7 +532,7 @@ Public Class OnePic
     Public Sub ReplaceAllDescriptions(sDesc As String)
         descriptions = New List(Of OneDescription)
         AddDescription(New OneDescription(sDesc, ""))
-        sumOfDescr = GetSumOfDescriptionsText()
+        RecalcSumsy()
     End Sub
 
     Public Function GetSumOfDescriptionsText(Optional separator As String = " | ") As String
@@ -587,7 +588,7 @@ Public Class OnePic
         End If
         ' If String.IsNullOrEmpty(opis.data) Then opis.data = Date.Now.ToString("yyyy.MM.dd HH:mm")
         AddDescription(opis)
-        sumOfDescr = GetSumOfDescriptionsText()
+        RecalcSumsy()
 
         TagsChanged = True
     End Sub
@@ -630,8 +631,7 @@ Public Class OnePic
             descriptions.Remove(oItem)
         Next
 
-        sumOfDescr = GetSumOfDescriptionsText()
-
+        RecalcSumsy()
     End Sub
 
 #End Region
@@ -1048,7 +1048,7 @@ Public Class OnePic
         If Not String.IsNullOrWhiteSpace(PicGuid) Then tempGUID = PicGuid & ";"
 
         If serno > 0 Then
-            tempGUID &= GetFormattedSerNo()
+            tempGUID &= FormattedSerNo()
         Else
             tempGUID &= "#" & sSuggestedFilename
         End If
@@ -1059,20 +1059,23 @@ Public Class OnePic
     ''' <summary>
     ''' zwraca serno uzupełnione odpowiednio '0', albo #?? jeśli nie ma ustawionego
     ''' </summary>
-    ''' <returns></returns>
-    Public Function GetFormattedSerNo() As String
-        If serno > 0 Then
-            Dim tempNum As String = serno
-            Dim brakuje As Integer = GetSettingsInt("uiSerNoDigits") - tempNum.Length
-            For iLp = 1 To brakuje
-                'tempNum = Space(brakuje).Replace(" ", "0") ' Space nie ma w .Net Std 1.4 :)
-                tempNum = "0" & tempNum
-            Next
-            Return "#" & tempNum
-        Else
-            Return "#??"
-        End If
-    End Function
+    <Newtonsoft.Json.JsonIgnore>
+    Public ReadOnly Property FormattedSerNo() As String
+        Get
+            If serno > 0 Then
+                Dim tempNum As String = serno
+                Dim brakuje As Integer = GetSettingsInt("uiSerNoDigits") - tempNum.Length
+                For iLp = 1 To brakuje
+                    'tempNum = Space(brakuje).Replace(" ", "0") ' Space nie ma w .Net Std 1.4 :)
+                    tempNum = "0" & tempNum
+                Next
+                Return "#" & tempNum
+            Else
+                Return "#??"
+            End If
+
+        End Get
+    End Property
 
     ''' <summary>
     ''' sprowadza wszystkie EXIFy do jednego - ale dalej jeszcze z dodatkowymi polami!
@@ -1146,47 +1149,64 @@ Public Class OnePic
     End Function
 
     ''' <summary>
-    ''' pobiera (poprzez Flatten) wszystkie keywords, ale robi na tym uniq
+    ''' pobiera (poprzez Flatten) wszystkie keywords, ale robi na tym uniq - nie używa SumKwd!
     ''' </summary>
-    ''' <returns>string zawierający słowa kluczowe rozdzielone spacjami</returns>
+    ''' <returns>string zawierający słowa kluczowe rozdzielone spacjami, ze spacją na końcu - bądź EMPTY gdy nie ma słów kluczowych</returns>
     Public Function GetAllKeywords() As String
 
-        Dim oFlat As ExifTag = FlattenExifs(False)
-        Dim temp As String() = oFlat.Keywords.Replace(",", "").Split(" ")
+        'Dim oFlat As ExifTag = FlattenExifs(False) ' to szuka geotag, i w ogóle - za dużo problemu (a głównie: czasu)
+
+        Dim sumKwd As String = ""
+        If Exifs IsNot Nothing Then
+            For Each oExif As ExifTag In Exifs
+                sumKwd = sumKwd.ConcatenateWithComma(oExif.Keywords)
+            Next
+        End If
+
+        If descriptions IsNot Nothing Then
+            For Each oDesc As OneDescription In descriptions
+                sumKwd = sumKwd.ConcatenateWithComma(oDesc.keywords)
+            Next
+        End If
+
+        If sumKwd = "" Then Return ""
+
+        Dim temp As String() = sumKwd.Replace(",", "").Split(" ")
 
         Dim ret As String = ""
         For Each kwd As String In From c In temp Distinct
             ret = ret & kwd & " "
         Next
 
-        Return ret.Trim
+        Return ret
     End Function
 
     Public Function HasKeyword(oKey As OneKeyword) As Boolean
-        If Exifs Is Nothing Then Return False
+        'If Exifs Is Nothing Then Return False
 
-        For Each oExif As ExifTag In Exifs
-            If oExif.Keywords.Contains(oKey.sId) Then Return True
-        Next
+        'For Each oExif As ExifTag In Exifs
+        '    If oExif.Keywords.Contains(oKey.sId) Then Return True
+        'Next
 
-        Return False
+        'Return False
+        Return sumOfKwds.Contains(oKey.sId & " ")
     End Function
 
     Public Function HasKeyword(sKey As String) As Boolean
-        If Exifs Is Nothing Then Return False
+        'If Exifs Is Nothing Then Return False
 
-        For Each oExif As ExifTag In Exifs
-            If oExif.Keywords IsNot Nothing AndAlso oExif.Keywords.Contains(sKey) Then Return True
-        Next
+        'For Each oExif As ExifTag In Exifs
+        '    If oExif.Keywords IsNot Nothing AndAlso oExif.Keywords.Contains(sKey) Then Return True
+        'Next
 
-        Return False
+        'Return False
+        Return sumOfKwds.Contains(sKey & " ")
+
     End Function
 
     ''' <summary>
-    ''' sprawdza czy spełnione są warunki keywords (z ! jako zaprzeczeniem)
+    ''' sprawdza czy spełnione są warunki keywords (z ! jako zaprzeczeniem), używa SumOfKwd
     ''' </summary>
-    ''' <param name="aTags"></param>
-    ''' <returns></returns>
     Public Function MatchesKeywords(aTags As String()) As Boolean
         For Each sTag As String In aTags
             If String.IsNullOrWhiteSpace(sTag) Then Continue For
@@ -1286,7 +1306,7 @@ Public Class OnePic
         If PeerIsForLogin(peer) Then Return
 
         If PeerIsForcedDeny(peer) Then
-            peer.exclusions = peer.exclusions.Replace(GetFormattedSerNo(), "")
+            peer.exclusions = peer.exclusions.Replace(FormattedSerNo(), "")
             Return
         End If
 
@@ -1301,7 +1321,7 @@ Public Class OnePic
             Return
         End If
 
-        peer.exclusions = peer.exclusions & GetFormattedSerNo() & ";"
+        peer.exclusions = peer.exclusions & FormattedSerNo() & ";"
     End Sub
 
     ''' <summary>
@@ -1341,7 +1361,7 @@ Public Class OnePic
 
     Public Function PeerIsForcedDeny(oLogin As ShareLogin) As Boolean
         If oLogin?.exclusions Is Nothing Then Return False
-        Return oLogin.exclusions.Contains(GetFormattedSerNo() & ";")
+        Return oLogin.exclusions.Contains(FormattedSerNo() & ";")
     End Function
 
     Public Function PeerIsForLogin(oLogin As ShareLogin) As Boolean
@@ -2007,8 +2027,13 @@ Public Class OnePic
 
 #End Region
 
-
-
+    ''' <summary>
+    ''' wylicza wszystkie "summary", pola ktore nie są zapisywane
+    ''' </summary>
+    Public Sub RecalcSumsy()
+        sumOfDescr = GetSumOfDescriptionsText()
+        sumOfKwds = GetAllKeywords() & " " ' zapewnienie spacji do szukania
+    End Sub
 
 End Class
 
