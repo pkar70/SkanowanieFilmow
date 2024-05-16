@@ -110,8 +110,25 @@ Public Class DatabaseJSON
 
         If Not IsLoaded Then Return Nothing
 
+        ' *TODO* optymalizacja query, przez użycie x.SumKwds.Contains(query.tags), i dopiero na koncu to co zostanie idzie wedlug pelnego szukania - pozniej bedzie dobre dla SQLa
+
+        Dim lista As IEnumerable(Of OnePic) = _allItems
+
+        ' etap 1 - słowa kluczowe
+        If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
+            For Each kwd As String In query.ogolne.Tags.Split(" ")
+                lista = lista.Where(Function(x) If(x?.sumOfKwds.Contains(kwd), False))
+            Next
+        End If
+
+        ' etap 2 - wedle serno
+        If query.ogolne.serno > 0 Then
+            lista = lista.Where(Function(x) If(x?.serno, 0) = query.ogolne.serno)
+        End If
+
+        ' etap LAST - dalsze szukanie
         ' dziwne, ale 5 razy takie wyszło (null) - dwa przecinki pod rząd, pewnie przy dodawaniu do archiwumm
-        Return _allItems.Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
+        Return lista.Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
 
     End Function
 
@@ -224,9 +241,7 @@ Public Class DatabaseJSON
         If bRet Then
             _IsLoaded = True
             ' recalculate sums
-            For Each oItem As OnePic In _allItems
-                oItem.sumOfDescr = oItem.GetSumOfDescriptionsText
-            Next
+            _allItems.ForEach(Sub(x) x.RecalcSumsy())
         End If
         Return bRet
     End Function
