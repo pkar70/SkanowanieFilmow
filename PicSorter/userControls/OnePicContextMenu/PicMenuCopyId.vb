@@ -49,7 +49,7 @@ Public NotInheritable Class PicMenuCopyId
     End Sub
 
     Private Sub uiCopyPicSerNo_Click(sender As Object, e As RoutedEventArgs)
-        GetFromDataContext.GetFormattedSerNo.SendToClipboard
+        GetFromDataContext.FormattedSerNo.SendToClipboard
     End Sub
 
     Private Sub uiCopyPicGUID_Click(sender As Object, e As RoutedEventArgs)

@@ -43,12 +43,12 @@
                             <DataTemplate >
                                 <Grid HorizontalAlignment="Stretch" ToolTip="{Binding sumOfDescr}">
                                     <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="50" Name="naID" />
+                                        <ColumnDefinition Width="60" Name="naID" />
                                         <ColumnDefinition Width="*" Name="naFolder" />
                                         <ColumnDefinition Width="*" Name="naName" />
                                     </Grid.ColumnDefinitions>
 
-                                    <TextBlock Text="{Binding serno}" HorizontalAlignment="Right" />
+                                    <TextBlock Text="{Binding FormattedSerNo}" />
                                     <TextBlock Text="{Binding TargetDir}" Grid.Column="1" Margin="5,0,5,0"/>
                                     <TextBlock Text="{Binding sSuggestedFilename}" Grid.Column="2"/>
 
