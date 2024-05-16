@@ -72,7 +72,7 @@ Public Class Process_EmbedExif
         End If
 
         ' identyfikator
-        Dim tempGUID As String = oPic.GetFormattedSerNo
+        Dim tempGUID As String = oPic.FormattedSerNo
         If Not String.IsNullOrWhiteSpace(tempGUID) Then
             oExifLib.SetTagValue(CompactExifLib.ExifTag.ImageUniqueId, tempGUID, CompactExifLib.StrCoding.UsAscii)
         End If
@@ -176,7 +176,7 @@ Public Class Process_EmbedBasicExif
         End If
 
         ' identyfikator
-        Dim tempGUID As String = oPic.GetFormattedSerNo
+        Dim tempGUID As String = oPic.FormattedSerNo
         If String.IsNullOrWhiteSpace(tempGUID) Then tempGUID = oPic.sSuggestedFilename
         If Not String.IsNullOrWhiteSpace(tempGUID) Then
             oExifLib.SetTagValue(CompactExifLib.ExifTag.ImageUniqueId, tempGUID, CompactExifLib.StrCoding.UsAscii)
