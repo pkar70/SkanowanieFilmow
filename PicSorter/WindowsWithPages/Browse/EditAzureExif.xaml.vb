@@ -18,7 +18,7 @@
         ' bez zmian
         If _orgExifJSON = uiExif.Text Then Return
 
-        Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
+        Dim oPicek As ProcessBrowse.ThumbPicek = uiPinUnpin.EffectiveDatacontext
 
         Dim _oNewExif As Vblib.ExifTag
 
@@ -38,9 +38,12 @@
     End Sub
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
-        Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
+
+        If uiPinUnpin.IsPinned Then Return
+
+        Dim oPicek As ProcessBrowse.ThumbPicek = uiPinUnpin.EffectiveDatacontext
         Me.Title = "EXIF: " & _ExifSource
-        uiFileName.Text = oPicek.oPic.sSuggestedFilename
+        'uiFileName.Text = oPicek.oPic.sSuggestedFilename
 
         Dim oExif As Vblib.ExifTag = oPicek.oPic.GetExifOfType(_ExifSource)?.Clone ' żeby UserComment się nie wyzerowało w oryginale
 

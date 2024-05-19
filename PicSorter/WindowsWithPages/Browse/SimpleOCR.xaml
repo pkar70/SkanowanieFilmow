@@ -12,7 +12,7 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <TextBlock Name="uiFileName" FontWeight="Bold"/>
+        <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
         <TextBox Name="uiAllOCR" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" Margin="5,5,5,5" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"/>
         <Button Content="Apply" Grid.Row="2" HorizontalAlignment="Right" Click="uiApply_Click" Name="uiApply"/>
     </Grid>

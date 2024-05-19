@@ -13,8 +13,8 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-            <TextBlock Name="uiFileName" FontWeight="Bold"/>
-            <TextBox Grid.Row="1" Name="uiExif" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AcceptsReturn="True" Margin="5,5,5,5" />
+        <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
+        <TextBox Grid.Row="1" Name="uiExif" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AcceptsReturn="True" Margin="5,5,5,5" />
             <Button Grid.Row="2"  Content="Apply" HorizontalAlignment="Right" Click="uiApply_Click" Name="uiApply"/>
         </Grid>
 

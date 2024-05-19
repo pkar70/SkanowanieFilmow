@@ -14,6 +14,7 @@
         <local:KonwersjaFileDiscrVisibility x:Key="KonwersjaFileDiscrVisibility"/>
         <local:KonwersjaVisibility x:Key="KonwersjaVisibility"/>
         <local:KonwersjaSourcePath2Podpis x:Key="KonwersjaSourcePath2Podpis" />
+        <local:KonwersjaDescrIgnoreNewLine x:Key="KonwersjaDescrIgnoreNewLine" />
     </Window.Resources>
     
     <Grid Margin="5,5,5,5">
@@ -141,6 +142,7 @@
                     </Menu.ItemsPanel>
                         <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
                         <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
+                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
                         <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" UseSelectedItems="True"/>
                         <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
                         <!--<MenuItem Header="Add link" Click="uiAddLink_Click" />-->
@@ -211,6 +213,7 @@
                                         <!-- sequence step KEYWORDs -->
                                         <!-- sequence step DESCRIBE -->
                                         <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" />
+                                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDymkuj" />
                                         <local:PicMenuDescribe MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" />
                                         <!-- sequence step TARGET -->
                                         <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged"  />
@@ -257,7 +260,7 @@
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sSourceName}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSource, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sSuggestedFilename}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisFilename, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sumOfKwds}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisKeywords, Converter={StaticResource KonwersjaVisibility}}" />
-                            <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sumOfDescr}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDescription, Converter={StaticResource KonwersjaVisibility}}" />
+                            <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sumOfDescr, Converter={StaticResource KonwersjaDescrIgnoreNewLine}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDescription, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sInSourceID, Converter={StaticResource KonwersjaSourcePath2Podpis}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSrcPath, Converter={StaticResource KonwersjaVisibility}}" HorizontalAlignment="Left"/>
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.TargetDir}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisTarget, Converter={StaticResource KonwersjaVisibility}}" />
                         </StackPanel>

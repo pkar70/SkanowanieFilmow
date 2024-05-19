@@ -8,11 +8,12 @@ Imports pkar.UI.Configs
 Public Class BrowseKeywordsWindow
 
     ' Private _myKeywordsList As New List(Of Vblib.OneKeyword)
-    Private _oPic As ProcessBrowse.ThumbPicek
+    ' Private _oPic As ProcessBrowse.ThumbPicek
     Private _oNewExif As New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
     Private _readonly As Boolean
 
     Public Sub New(bReadOnly As Boolean)
+        Me.InitDialogs
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -24,22 +25,25 @@ Public Class BrowseKeywordsWindow
 #Region "UI events"
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+
+        If uiPinUnpin.IsPinned Then Return
+
         'Public Sub InitForPic(oPic As ProcessBrowse.ThumbPicek)
         'If oPic Is Nothing Then Return
         '_oPic = oPic
-        _oPic = DataContext
-        If _oPic IsNot Nothing Then
-            Me.Title = IO.Path.GetFileName(_oPic.oPic.InBufferPathName)
-        Else
-            Me.Title = "Keywords"
-        End If
+        '_oPic = DataContext
+        'If _oPic IsNot Nothing Then
+        '    Me.Title = IO.Path.GetFileName(_oPic.oPic.InBufferPathName)
+        'Else
+        '    Me.Title = "Keywords"
+        'End If
 
         _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
 
         ' bo jak nie ma żadnych tagów, to nie kasował oznaczeń
         Application.GetKeywords.ToFlatList.ForEach(Sub(x) x.bChecked = False)
 
-        Dim currentFlatKwds As String = _oPic?.oPic.GetAllKeywords
+        Dim currentFlatKwds As String = uiPinUnpin.EffectiveDatacontext?.oPic.GetAllKeywords
         uiSelectedKwds.Text = If(currentFlatKwds, "")
         UstalCheckboxy(currentFlatKwds)    ' 50 ms
         ZablokujNiezgodne() ' 200 ms
@@ -55,7 +59,7 @@ Public Class BrowseKeywordsWindow
         uiApply.IsEnabled = Not _readonly
         uiHideKeywords.GetSettingsBool
 
-        If _oPic IsNot Nothing Then Return
+        If uiPinUnpin.EffectiveDatacontext IsNot Nothing Then Return
 
         uiEdit.IsEnabled = False
         uiClear.IsEnabled = False
@@ -162,17 +166,17 @@ Public Class BrowseKeywordsWindow
     Private Async Sub uiApply_Click(sender As Object, e As RoutedEventArgs)
 
         ' jeśli nie było obrazka startowego, to zamykamy - i można sobie wziąć listę keywordsów
-        If _oPic Is Nothing Then Me.Close()
+        If uiPinUnpin.EffectiveDatacontext Is Nothing Then Me.Close()
 
         Application.ShowWait(True)
 
         Dim lKeys As List(Of Vblib.OneKeyword) = GetListOfSelectedKeywords()
         ApplyKeywordsToExif(_oNewExif, lKeys)
-        Await SetTargetDirByKeywords(_oPic, lKeys)
+        Await SetTargetDirByKeywords(uiPinUnpin.EffectiveDatacontext, lKeys)
 
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
-        oBrowserWnd.ChangedKeywords(_oNewExif, _oPic)
+        oBrowserWnd.ChangedKeywords(_oNewExif, uiPinUnpin.EffectiveDatacontext)
 
         Application.ShowWait(False)
 
@@ -301,8 +305,8 @@ Public Class BrowseKeywordsWindow
     Private Sub ZablokujNiezgodneWedlePic()
         vb14.DumpCurrMethod()
 
-        Dim minDate As Date = _oPic.oPic.GetMinDate ' Date.MaxValue
-        Dim maxDate As Date = _oPic.oPic.GetMaxDate ' Date.MinValue
+        Dim minDate As Date = uiPinUnpin.EffectiveDatacontext.oPic.GetMinDate ' Date.MaxValue
+        Dim maxDate As Date = uiPinUnpin.EffectiveDatacontext.oPic.GetMaxDate ' Date.MinValue
 
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
             ZablokujNiezgodneWedleDat(oItem, minDate, maxDate)
@@ -390,7 +394,9 @@ Public Class BrowseKeywordsWindow
     Private Sub uiEditKeyTree_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New SettingsKeywords
         oWnd.ShowDialog()
-        Me.DataContext = _oPic
+
+        ' po co była ta linia?
+        'Me.DataContext = uiPinUnpin.EffectiveDatacontext
         ' InitForPic(_oPic)
     End Sub
 

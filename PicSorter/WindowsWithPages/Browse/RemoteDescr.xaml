@@ -11,7 +11,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <TextBox Name="uiFileName" FontWeight="Bold" IsReadOnly="True" BorderThickness="0" />
+        <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
 
         <ListView Name="uiLista" Grid.Row="1">
             <ListView.ItemContainerStyle>

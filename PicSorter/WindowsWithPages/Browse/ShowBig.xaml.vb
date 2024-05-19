@@ -12,6 +12,7 @@ Imports pkar
 Imports MediaDevices
 Imports pkar.DotNetExtensions
 Imports pkar.UI.Extensions
+Imports System.Runtime.CompilerServices
 
 Public Class ShowBig
 
@@ -161,6 +162,8 @@ Public Class ShowBig
             uiIkonkaTypu.Content = _picek.oPic.fileTypeDiscriminator
 
             If _picek.oPic.fileTypeDiscriminator = "✋" Then
+                ' nie zmieniamy obrazka przy NAR
+                uipinunpin.ispinned = True
                 uiFullPicture.ContextMenu = Nothing
             End If
         End If
@@ -336,6 +339,7 @@ Public Class ShowBig
                 _MojeDataContextChange = True
                 ' to okno
                 _picek = picek
+                uiPinUnpin.IsPinned = False
                 DataContext = _picek.oPic
                 Window_Loaded(Nothing, Nothing)
                 _MojeDataContextChange = False
@@ -740,20 +744,20 @@ Public Class ShowBig
 
     Private _inRotateInit As Boolean = False
 
-    Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
+    'Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
 
-        _inRotateInit = True
-        Await SprawdzCzyJestEdycja(EditModeEnum.rotate)
+    '    _inRotateInit = True
+    '    Await SprawdzCzyJestEdycja(EditModeEnum.rotate)
 
-        ShowHideEditControls(EditModeEnum.rotate)
+    '    ShowHideEditControls(EditModeEnum.rotate)
 
-        uiRotateUp.IsChecked = True
-        uiRotateDown.IsChecked = False
-        uiRotateLeft.IsChecked = False
-        uiRotateRight.IsChecked = False
+    '    uiRotateUp.IsChecked = True
+    '    uiRotateDown.IsChecked = False
+    '    uiRotateLeft.IsChecked = False
+    '    uiRotateRight.IsChecked = False
 
-        _inRotateInit = False
-    End Sub
+    '    _inRotateInit = False
+    'End Sub
 
     Private Async Function uiRotateMenu2UI(bLeft As Boolean, bDown As Boolean, bRight As Boolean) As Task
         _inRotateInit = True
@@ -964,6 +968,10 @@ Public Class ShowBig
     Private _MojeDataContextChange As Boolean
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+
+        If uiPinUnpin.IsPinned Then Return
+
+
         If _editMode <> EditModeEnum.none Then Return
         If DataContext Is Nothing Then Return
         If _bitmap Is Nothing Then Return   ' jeszcze przed inicjalizacją pierwszego - obsługujemy jak dotychczas

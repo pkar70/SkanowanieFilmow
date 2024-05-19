@@ -35,9 +35,12 @@
     End Sub
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
-        Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
 
-        uiFileName.Text = oPicek.oPic.sSuggestedFilename
+        If uiPinUnpin.IsPinned Then Return
+
+        Dim oPicek As ProcessBrowse.ThumbPicek = uiPinUnpin.EffectiveDatacontext
+
+        'uiFileName.Text = oPicek.oPic.sSuggestedFilename
 
         Dim oExif As Vblib.ExifTag = oPicek.oPic.GetExifOfType(Vblib.ExifSource.AutoWinOCR)
         If oExif Is Nothing Then

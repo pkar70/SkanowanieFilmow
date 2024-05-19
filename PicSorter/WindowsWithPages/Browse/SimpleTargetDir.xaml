@@ -7,7 +7,7 @@
         mc:Ignorable="d"
         Title="Target dir" Height="90" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow">
     <StackPanel Margin="5,2,5,2">
-        <TextBlock Name="uiFileName" FontWeight="Bold"/>
+        <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
         <TextBox Name="uiAllKeywords" HorizontalAlignment="Stretch" Margin="5,5,5,5" />
     </StackPanel>
 </Window>

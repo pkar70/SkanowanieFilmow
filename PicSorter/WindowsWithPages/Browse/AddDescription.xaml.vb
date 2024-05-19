@@ -25,7 +25,10 @@ Public Class AddDescription
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
 
-        If _picek IsNot Nothing Then uiTitle.Text = _picek.sSuggestedFilename
+        If _picek IsNot Nothing Then
+            uiTitle.DataContext = _picek
+            'uiTitle.Text = _picek.sSuggestedFilename
+        End If
 
         If _picek?.descriptions IsNot Nothing Then
             If _picek.descriptions.Count = 1 Then

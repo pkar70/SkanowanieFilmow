@@ -7,6 +7,7 @@
 ' 2) pełniejszy przegląd, później
 
 ' FUNKCJONALNOŚCI:
+' FUNKCJONALNOŚCI:
 ' 2) crop
 ' 3) rotate - ze skasowaniem z EXIF informacji o obrocie
 ' 4) resize
@@ -797,6 +798,7 @@ Public Class ProcessBrowse
         pic0.oPic.DeleteAllTempFiles()
         IO.File.Delete(pic0.oPic.InBufferPathName)
         pic0.oPic.InBufferPathName = packZipName
+        pic0.oPic.Archived = "" ' takiej wersji na pewno nie było zarchiwizowanej :)
         pic0.oPic.sSuggestedFilename = IO.Path.GetFileName(packZipName)
         pic0.oPic.SetDefaultFileTypeDiscriminator() ' ikonka przy picku
 
@@ -2967,6 +2969,16 @@ Public Class KonwersjaSourcePath2Podpis
         Return str.Substring(iInd + 1)
     End Function
 End Class
+
+Public Class KonwersjaDescrIgnoreNewLine
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim str As String = CType(value, String)
+        Return str.Replace(vbCrLf, " | ")
+    End Function
+End Class
+
 
 Public Enum SplitBeforeEnum
     none

@@ -12,15 +12,18 @@ Public Class RemoteDescr
 
         _inArch = inarch
 
-        Grid_DataContextChanged(Nothing, Nothing)
+        'Grid_DataContextChanged(Nothing, Nothing)
     End Sub
 
     Private Sub Grid_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
         ' thumb.oImageSrc mamy obrazek size 400 - ale chyba nie warto tu go pokazywać... od tego jest ShowBig
-        _thumb = DataContext
+
+        If uiPinUnpin.IsPinned Then Return
+
+        _thumb = uiPinUnpin.EffectiveDatacontext
         Vblib.DumpCurrMethod($"(pic={_thumb.oPic.sSuggestedFilename}")
 
-        uiFileName.Text = _thumb.oPic.sSuggestedFilename
+        'uiFileName.Text = _thumb.oPic.sSuggestedFilename   
 
         RefreshLista()
     End Sub

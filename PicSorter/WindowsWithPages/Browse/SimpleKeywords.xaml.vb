@@ -35,9 +35,11 @@
     End Sub
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
-        Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
+        If uiPinUnpin.IsPinned Then Return
 
-        uiFileName.Text = oPicek.oPic.sSuggestedFilename
+        Dim oPicek As ProcessBrowse.ThumbPicek = uiPinUnpin.EffectiveDatacontext
+
+        'uiFileName.Text = oPicek.oPic.sSuggestedFilename
 
         _orgKeywords = oPicek.oPic.GetAllKeywords
         'uiAllKeywords.Text = _orgKeywords

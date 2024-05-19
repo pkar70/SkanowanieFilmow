@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow" Loaded="Window_Loaded" KeyUp="Window_KeyUp">
     <StackPanel Margin="5,2,5,2">
-        <TextBox Name="uiFileName" FontWeight="Bold" IsReadOnly="True" BorderThickness="0" />
+        <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
+        <!--<TextBox Name="uiFileName" FontWeight="Bold" IsReadOnly="True" BorderThickness="0" />-->
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />

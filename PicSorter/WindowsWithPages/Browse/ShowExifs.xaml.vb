@@ -109,22 +109,32 @@ Public Class ShowExifs
     End Function
 
     Private Function GetOnePicFromDataContext()
+        If uiPinUnpin.EffectiveDatacontext Is Nothing Then Return Nothing
         ' próbujemy czy zadziała casting z ThumbPicek na OnePic - NIE
-        If Me.DataContext.GetType Is GetType(Vblib.OnePic) Then
-            Return Me.DataContext
-        ElseIf Me.DataContext.GetType Is GetType(ProcessBrowse.ThumbPicek) Then
-            Return TryCast(Me.DataContext, ProcessBrowse.ThumbPicek)?.oPic
+        If uiPinUnpin.EffectiveDatacontext.GetType Is GetType(Vblib.OnePic) Then
+            Return uiPinUnpin.EffectiveDatacontext
+        ElseIf uiPinUnpin.EffectiveDatacontext.GetType Is GetType(ProcessBrowse.ThumbPicek) Then
+            Return TryCast(uiPinUnpin.EffectiveDatacontext, ProcessBrowse.ThumbPicek)?.oPic
         Else
             ' nieznany typ
             Return Nothing
         End If
     End Function
 
-    Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+    Private Async Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
         ' *TODO* być może jakoś trzeba wywołać też dla mybase
 
+        ' idziemy dalej, bo czasem sam przeładowywuję (bez zmiany DataContext, jedynie przerysowanie full/ograniczone)
+        If uiPinUnpin.IsPinned Then Return
+
         Dim oPic As Vblib.OnePic = GetOnePicFromDataContext()
-        uiTitle.Text = oPic.sSuggestedFilename
+        If oPic Is Nothing Then
+            ' to jako jedyne okno daje taki numer, że szybciej jest Window_DataContextChanged niż uiPinUnpin_DataContextChanged ...
+            Await Task.Delay(10)
+            oPic = GetOnePicFromDataContext()
+        End If
+        'uiTitle.Text = oPic.sSuggestedFilename
+        If oPic Is Nothing Then Return
 
         If _bRealExif Then
             _fullOpis = GetRealExifDump(oPic)

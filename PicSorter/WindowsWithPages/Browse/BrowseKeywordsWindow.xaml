@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="BrowseKeywords" Height="800" Width="250" Loaded="Window_Loaded" DataContextChanged="Window_DataContextChanged" >
+        Title="Browse Keywords" Height="800" Width="250" Loaded="Window_Loaded" DataContextChanged="Window_DataContextChanged" >
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" Name="naComboGrup" />
@@ -15,7 +15,10 @@
             <RowDefinition Height="Auto" Name="naApply" />
         </Grid.RowDefinitions>
 
+        <StackPanel>
+            <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
         <ComboBox Name="uiGrupy" SelectionChanged="uiGrupy_SelectionChanged" />
+        </StackPanel>
 
         <CheckBox Name="uiHideKeywords" Content="Hide inactive keywords" Margin="0,3,0,3" Grid.Row="1" Checked="uiHideKeywords_Checked" Unchecked="uiHideKeywords_Checked"/>
 

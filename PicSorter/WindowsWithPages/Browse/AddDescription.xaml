@@ -13,7 +13,8 @@
     </Window.Resources>-->
     
     <StackPanel Margin="5,5,5,5">
-        <TextBox Name="uiTitle" HorizontalAlignment="Center" IsReadOnly="True" BorderThickness="0"/>
+        <local:MetaWndFilename x:Name="uiTitle" />
+        <!--<TextBox Name="uiTitle" HorizontalAlignment="Center" IsReadOnly="True" BorderThickness="0"/>-->
         <Grid>
             <TextBlock FontWeight="Bold" Text="Keywords:" />
             <Button Content=" + " HorizontalAlignment="Right" Name="uiAdd" Click="uiAdd_Click"/>

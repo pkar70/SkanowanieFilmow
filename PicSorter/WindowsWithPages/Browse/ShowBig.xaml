@@ -55,6 +55,7 @@
         <ScrollViewer Grid.Row="1" Grid.Column="1" Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
             <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
                 <!--<Grid Name="uiUsunLeft" HorizontalAlignment="Left" Opacity="0.5" VerticalAlignment="Stretch" />-->
+                <local:UserControlPinUnpin HorizontalAlignment="Right" VerticalAlignment="Top" IsPinned="False" x:Name="uiPinUnpin" />
                 <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center" Width="100" Height="100">
                     <Image.ContextMenu>
                         <ContextMenu>
@@ -74,7 +75,7 @@
                                     <MenuItem Header="↶ anticlockwise ⇉" FontSize="16" Click="uiRotateRight_Click"/>
                                     <MenuItem Header="↺ 180° ⇊" FontSize="15" Click="uiRotateDown_Click"/>
                                     <MenuItem Header="↷ clockwise ⇇" FontSize="14" Click="uiRotateLeft_Click"/>
-                                    <MenuItem Header="Rotate UI" Click="uiRotate_Click" />
+                                    <!--<MenuItem Header="Rotate UI" Click="uiRotate_Click" />-->
                                 </MenuItem>
                                 <MenuItem Header="Flip ⇔ " Click="uiFlipHoriz_Click" />
                                 <Separator/>
@@ -89,6 +90,7 @@
                             <!-- sequence step KEYWORDs -->
                             <!-- sequence step DESCRIBE -->
                             <local:PicMenuDescribe x:Name="uiDescribe" MetadataChanged="uiMetadataChanged" />
+                            <local:PicMenuOCR MetadataChanged="uiMetadataChanged" />
                             <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step TARGET -->
                             <!-- sequence step PUBLISH, ARCHIVE -->

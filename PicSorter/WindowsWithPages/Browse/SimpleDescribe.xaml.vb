@@ -33,7 +33,7 @@ Public Class SimpleDescribe
         ' bez zmian
         If _orgDescribe <> uiAllDescribe.Text Then
 
-            Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
+            Dim oPicek As ProcessBrowse.ThumbPicek = uiPinUnpin.EffectiveDatacontext
             Dim descr As String = uiAllDescribe.Text.Trim
             AddToMenu(descr)
 
@@ -68,7 +68,10 @@ Public Class SimpleDescribe
 
         End If
 
-        If uiDescribeSetAndNext.IsChecked Then GoNextPic()
+        If uiDescribeSetAndNext.IsChecked Then
+            uiPinUnpin.IsPinned = False ' no bo teraz zmienimy DataContext i chcemy to zrobić :)
+            GoNextPic()
+        End If
 
         uiAllDescribe.Focus()
     End Sub
@@ -99,10 +102,11 @@ Public Class SimpleDescribe
     End Sub
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+
+        If uiPinUnpin.IsPinned Then Return
+
         Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
         vb14.DumpCurrMethod($"(pic={oPicek.oPic.sSuggestedFilename}")
-
-        uiFileName.Text = oPicek.oPic.sSuggestedFilename
 
         _orgDescribe = oPicek.oPic.GetSumOfDescriptionsText
         uiAllDescribe.Text = _orgDescribe
@@ -123,13 +127,16 @@ Public Class SimpleDescribe
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
 
-        Dim picek As ProcessBrowse.ThumbPicek = oBrowserWnd.FromBig_Next(DataContext, False, False)
-        If picek Is Nothing Then
-            Me.Close()  ' koniec obrazków
-        Else
-            Me.DataContext = picek
-            ' Window_DataContextChanged chyba się samo odpali?
-        End If
+        ' to już odpali wszystkie zmiany w Owned windows
+        oBrowserWnd.FromBig_Next(DataContext, False, False)
+
+        'Dim picek As ProcessBrowse.ThumbPicek = oBrowserWnd.FromBig_Next(DataContext, False, False)
+        'If picek Is Nothing Then
+        '    Me.Close()  ' koniec obrazków
+        'Else
+        '    Me.DataContext = picek
+        '    ' Window_DataContextChanged chyba się samo odpali?
+        'End If
 
     End Sub
 
