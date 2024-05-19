@@ -49,6 +49,7 @@
 
         <TextBlock Text="Nie zamazuj twarzy dla zdjęć starszych niż lat:" />
         <TextBox Name="uiWinFaceMaxAge" InputScope="Digits" Width="50" HorizontalAlignment="Left" />
+        <CheckBox Name="uiUseSpellCheck" Margin="0,2,0,2" Content="Użyj spellcheck w oknie OCR" />
 
         <!--<TextBlock Text="Datowane katalogi na zdjęcia:" Margin="0,5,0,0" />
         <CheckBox Name="uiTree0Dekada" Content="198x" />

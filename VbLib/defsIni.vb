@@ -29,6 +29,7 @@ uiJsonEnabled=True
 uiSqlInstance=(localdb)\MSSQLLocalDB
 
 uiWinFaceMaxAge=90
+uiSpellCheck=True
 # remark
 ' remark
 ; remark
