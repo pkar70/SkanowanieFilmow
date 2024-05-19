@@ -13,7 +13,13 @@
             <RowDefinition Height="Auto" Name="_naOpis"/>
             <RowDefinition Height="Auto" Name="_naButtony"/>
         </Grid.RowDefinitions>
-        <TextBlock Name="uiSourceFilename" FontWeight="Bold" HorizontalAlignment="Center" />
+        <TextBlock Name="uiSourceFilename" FontWeight="Bold" HorizontalAlignment="Center" >
+            <TextBlock.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="Refresh" Click="uiRefresh_Click" ToolTip="przeładowanie strony - odczytanie aktualnie najnowszego zdjęcia"/>
+                </ContextMenu>
+            </TextBlock.ContextMenu>
+        </TextBlock>
         <Image Grid.Row="1" Name="uiPicek" MaxHeight="300" MaxWidth="300" HorizontalAlignment="Center">
             <Image.ContextMenu>
                 <ContextMenu>
