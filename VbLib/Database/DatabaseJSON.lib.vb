@@ -117,7 +117,12 @@ Public Class DatabaseJSON
         ' etap 1 - słowa kluczowe
         If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
             For Each kwd As String In query.ogolne.Tags.Split(" ")
-                lista = lista.Where(Function(x) If(x?.sumOfKwds.Contains(kwd), False))
+                If kwd.Substring(0, 1) = "!" Then
+                    Dim notkwd As String = kwd.Substring(1)
+                    lista = lista.Where(Function(x) Not If(x?.sumOfKwds.Contains(notkwd), False))
+                Else
+                    lista = lista.Where(Function(x) If(x?.sumOfKwds.Contains(kwd), False))
+                End If
             Next
         End If
 
