@@ -1,4 +1,6 @@
-﻿Public Class SimpleTargetDir
+﻿
+
+Public Class SimpleExifProp
 
 
     Private Async Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
@@ -8,11 +10,8 @@
         Dim thumb As ProcessBrowse.ThumbPicek = TryCast(uiPinUnpin.EffectiveDatacontext, ProcessBrowse.ThumbPicek)
         If thumb?.oPic Is Nothing Then Return
 
-        uiPropEditor.DataContext = thumb.oPic
+        uiPropEditor.DataContext = thumb.oPic.FlattenExifs(False)
 
-        'Dim oPicek As ProcessBrowse.ThumbPicek = uiPinUnpin.EffectiveDatacontext
-
-        'uiFileName.Text = oPicek.oPic.sSuggestedFilename
-        'uiAllKeywords.Text = oPicek.oPic.TargetDir
     End Sub
+
 End Class

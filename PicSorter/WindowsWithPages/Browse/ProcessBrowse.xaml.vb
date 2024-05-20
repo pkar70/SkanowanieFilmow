@@ -1671,6 +1671,7 @@ Public Class ProcessBrowse
 
     End Sub
 
+#If False Then
 
     Private Sub uiPodpisTo_Click(sender As Object, e As RoutedEventArgs)
         uiPodpisWybor.IsOpen = False
@@ -1714,6 +1715,7 @@ Public Class ProcessBrowse
 
         RefreshMiniaturki(False)
     End Sub
+#End If
 
     Private Sub uiSplitMode_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AutoSplitWindow
@@ -2513,6 +2515,10 @@ Public Class ProcessBrowse
         OpenSubWindow(New SimpleTargetDir)
     End Sub
 
+    Private Sub uiOknaExifProp_Click(sender As Object, e As RoutedEventArgs)
+        OpenSubWindow(New SimpleExifProp)
+    End Sub
+
     Private Sub uiOknaManualAzureExif_Click(sender As Object, e As RoutedEventArgs)
         OpenSubWindow(New EditOneExif(Vblib.ExifSource.AutoAzure, _inArchive))
 
@@ -2541,7 +2547,7 @@ Public Class ProcessBrowse
         Public Property dymekSplit As String = ""
         Public Property opacity As Double = 1   ' czyli normalnie pokazany
 
-        Public Property podpis As String = ""
+        'Public Property podpis As String = ""
         'Public Property AllKeywords As String
         'Public Property SumOfDescriptionsText As String
         Public Property nrkol As Integer

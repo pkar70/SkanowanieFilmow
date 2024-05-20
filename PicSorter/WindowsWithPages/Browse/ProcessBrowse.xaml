@@ -129,6 +129,7 @@
                         <MenuItem Header="Manual Exif" Click="uiOknaManualExif_Click" />
                         <MenuItem Header="Azure Exif" Click="uiOknaManualAzureExif_Click" />
                         <MenuItem Header="Target dir" Click="uiOknaTargetDir_Click" Name="uiOknaTargetDir" />
+                        <MenuItem Header="Photo date" Click="uiOknaExifProp_Click" />
                         <MenuItem Header="Remote desc" Click="uiOknaRemoteDesc_Click" Name="uiOknaRemoteDesc" />
                     </Menu>
                 </Popup>

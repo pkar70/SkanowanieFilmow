@@ -1,14 +1,14 @@
-﻿<Window x:Class="SimpleTargetDir"
+﻿<Window x:Class="SimpleExifProp"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="Picture property viewer" Height="90" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow">
+        Title="EXIF property viewer" Height="90" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow">
     <StackPanel Margin="5,2,5,2">
         <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
-        <!--bez toProcessed, bo i tak zwykle będzie NULL, oraz bez sumOfDescr - bo wielolinijkowe -->
-        <local:UserPropString IsReadOnly="True" DefaultSelect="TargetDir" x:Name="uiPropEditor" DataContext="{Binding oPic}" SkipNames="|toProcessed|sumOfDescr|" />
+        <!--bez UserComment, bo to wielolinijkowe-->
+        <local:UserPropString IsReadOnly="True" DefaultSelect="DateTimeOriginal" x:Name="uiPropEditor" SkipNames="|UserComment|" />
     </StackPanel>
 </Window>

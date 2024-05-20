@@ -134,8 +134,6 @@ AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
 AUTOTAG: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 
 AUTOTAG: rozpoznawanie zwierząt, roślin, samochodów
-AUTOTAG:FACES nie usuwa twarzy dla zdjęć ponad 50 (albo from settings) lat?
-
 
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
 BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
@@ -143,7 +141,6 @@ BROWSER MAPOGRAM  jak histogram - pinezki na mapie ze zdjęć
 BROWSER: skalowanie typeFile, bo dla 1000 itemów jest stanowczo za duże :)
 BROWSER SET-TARGET-DIR:po [+] nie ma refresh comboboxa?
 BROWSER SET-TARGET-DIR:jakos weryfikacja czy już nie ma takiego (żeby się nie pokryło)
-BROWSER: #Wnd KWD SMALL: dodanie Kwd, razem z opisem może jednak, bo do SEARCH byłoby dobrze mieć "Kurcz" w opisie
 BROWSER action:keywords, brakuje jednego poziomu słów kliczowych?
 BROWSER.Action: LOCK/UNLOCK - tych zdjec nie wysyla nigdzie
 BROWSER: DRAG&drop, może z odpalaniem dedykowanego publish? (o nazwie "drag") - ale czy to potrzebne po dodaniu email?
@@ -174,8 +171,6 @@ DIRTREE: użyć structlist.MaintainCopy
 
 IMPORT: nowa funkcjonalność, import, podaje się zakres dat, browse folder, i ściaga z foldertree podpadające zdjęcia
 IMPORT: razem z drzewkiem, jakoś tak by przyjmować zdjęcia już sortowane (analogowe)
-IMPORT dodawanie zdjec z facebooka - osobny dir narzucany? jakis reel, albo cos takiego?
-IMPORT ale fotka wymaga login, wiec i tak trzeba sciagnac na dysk. Moze "import last from downloads"?
 
 KEYWORDS/GEO: może przy dodawaniu manual geo automatycznie dopisywać keywordy?
 
@@ -275,8 +270,6 @@ TEMP konwersja z 'dateprefix' na min/max, 1970, 1970.05, 1970.05.23, 1970.05.23 
 STRUCT.ROLL (REEL) Add roll: okienko na prefix, i up/down (tzn. "127.01", i dodaje ".01" w górę, albo ".xx" w dół do ".01")
 STRUCT.ROLL dodawanie tego do EXIFbasic, oraz w ogole do EXIF - to już jest, bo jest takie pole, ale nie w OnePic tylko w ExifTag
 
-TARGETDIR: brak podzialu date niech robi brak podzialu geo
-
 sharesrv.uploadprocessing
 archive.processing
 
@@ -307,23 +300,11 @@ Drobne:
 Duże:
 * dodatkowe typy: +screenshot
 * import ze screenshot (katalogu tamtejszego, path z systemu brany)
-* optymalizacja search
- search step x, kwd x, current count x
- proste query: sumOfKwd (bez -NO:), sumOfDscr (bez Azure), date exact min max, id, target, suggestedFilename, ewent. OCR
-* profiler na search puścić, gdzie najwięcej czasu spędza
-for each kwd in query
- lista = lista.where( x.sumkwd.contains(kwd) )
-ewentualnie if kwd.begins("|") lista = lista.concatenate(poprzlista.where())
-* zmiana wtedy w thumbs (likwidacja pól sum), i przepiecie dymkow na to z onepic
 * automatyczne tagowanie wielkanocy? (=KalWlk)
 
 !!!! One more important difference is you can access ObservableCollection only from thread on which it was created where as list can be accessed fromany thread.
 zdaje ise ze obsColl sam z siebie umie tylko add/remove sygnalizowac, a pozostale (change) to trzeba przez SetItem
  
-
-
-
-
 
 * WPF i Store, może ten cmdline instalator? clickonce? tak by picsort:// od razu wpisywał do serwerów, bym mógł ten program propagować dając link picsort w SSC na przykład
 
