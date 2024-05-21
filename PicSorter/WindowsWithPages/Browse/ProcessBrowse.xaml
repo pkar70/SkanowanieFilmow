@@ -167,6 +167,10 @@
                         <local:PicMenuCopyOut  UseSelectedItems="True"/>
                         <MenuItem Header="Get files size" Click="uiGetFileSize_Click" />
                         <Separator/>
+                        <MenuItem Header="new window from filter" Click="uiActionNewWndFltr_Click" />
+                        <MenuItem Header="new wnd from selection" Click="uiActionNewWndSelection_Click" />
+                        <MenuItem Header="save as contactsheet" Click="uiSaveContactSheet_Click" />
+                        <Separator/>
                         <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
                         <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
                         <local:PicMenuDeleteTemps UseSelectedItems="True"/>

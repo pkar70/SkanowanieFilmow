@@ -18,17 +18,12 @@
 ' EXIF per oglądany obrazek, oraz per zaznaczone (EXIFSource: MANUAL & yyMMdd-HHmmss)
 
 
-'Imports System.Security.Policy
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar
 Imports pkar.DotNetExtensions
-Imports System.Runtime.InteropServices.WindowsRuntime
-'Imports Org.BouncyCastle.Math.EC
 Imports System.IO
 Imports pkar.UI.Extensions
-'Imports System.Runtime.Intrinsics
-'Imports System.ComponentModel
 
 Public Class ProcessBrowse
 
@@ -972,8 +967,41 @@ Public Class ProcessBrowse
 
 #End Region
 
+    Private Async Sub uiSaveContactSheet_Click(sender As Object, e As RoutedEventArgs)
 
+        Dim picker As New Microsoft.Win32.SaveFileDialog
+        picker.DefaultExt = ".jpg"
+        picker.Filter = "Obrazy (.jpg)|*.jpg"
+        If Not picker.ShowDialog Then Return
 
+        Dim bmp As New RenderTargetBitmap(uiPicList.ActualWidth, uiPicList.ActualHeight, 96, 96, PixelFormats.Pbgra32)
+        bmp.Render(uiPicList)
+
+        ' zapisujemy
+        Dim encoder As New JpegBitmapEncoder()
+        'encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
+        encoder.Frames.Add(BitmapFrame.Create(bmp))
+
+        Using fileStream = IO.File.Create(picker.FileName)
+            encoder.Save(fileStream)
+        End Using
+
+    End Sub
+
+    Private Sub uiActionNewWndFltr_Click(sender As Object, e As RoutedEventArgs)
+        uiActionSelectFilter_Click(Nothing, Nothing)
+        uiActionNewWndSelection_Click(Nothing, Nothing)
+    End Sub
+    Private Sub uiActionNewWndSelection_Click(sender As Object, e As RoutedEventArgs)
+        Dim lista As New Vblib.BufferFromQuery()
+
+        For Each oPic As ThumbPicek In uiPicList.SelectedItems
+            lista.AddFile(oPic.oPic)
+        Next
+
+        Dim oWnd As New ProcessBrowse(lista, True, "Selected")
+        oWnd.Show()
+    End Sub
 
 
 #If POPRZ_WCZYTAJOBRAZEK Then
