@@ -5,16 +5,22 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="Statystyka" Height="400" Width="320">
+        Title="Statystyka" Height="400" Width="320" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <TextBlock Name="uiStatTitle" />
 
-        <ListView Name="uiLista" Grid.Row="1">
+        <local:StretchedGrid Cols="A,*" Grid.Row="1">
+            <TextBlock Text="Filter: " VerticalAlignment="Center"/>
+            <TextBox Name="uiFilterek" Grid.Column="1" TextChanged="uiFilterek_TextChanged"/>
+        </local:StretchedGrid>
+        
+        <ListView Name="uiLista" Grid.Row="2">
             <ListView.ItemContainerStyle>
                 <Style TargetType="ListViewItem">
                     <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
@@ -42,7 +48,11 @@
                                     <MenuItem Header="by day/night" Click="uiPicByDayNight_Click" />
                                     <MenuItem Header="by DayOfWeek" Click="uiPicByDOW_Click" />
                                 </MenuItem>
-                                <MenuItem  Header="by keyword" Click="uiPicByKeyword_Click" IsEnabled="False"/>
+                                <MenuItem  Header="by keyword"  >
+                                    <MenuItem Header="person ('-')" Click="uiPicByKeywordO_Click" />
+                                    <MenuItem Header="place ('#')" Click="uiPicByKeywordM_Click" />
+                                    <MenuItem Header="other ('=')" Click="uiPicByKeywordI_Click" />
+                                </MenuItem>
                                 <MenuItem  Header="by Camera" Click="uiPicByCamera_Click"/>
                                 <MenuItem  Header="by Author" Click="uiPicByAutor_Click"/>
                                 <MenuItem Header="weather" >
@@ -61,8 +71,9 @@
                                     <MenuItem Header="by faces count" Click="uiPicByFaces_Click" />
                                     <MenuItem Header="by dominantFgcolor" Click="uiPicByDomFgColor_Click"  />
                                     <MenuItem Header="by dominantBgcolor" Click="uiPicByDomBgColor_Click"  />
-                                    <MenuItem Header="by tags" Click="uiPicByAzureTag_Click" IsEnabled="False" />
-                                    <MenuItem Header="by objects" Click="uiPicByAzureObjects_Click" IsEnabled="False" />
+                                    <MenuItem Header="by tags" Click="uiPicByAzureTag_Click"  />
+                                    <MenuItem Header="by objects" Click="uiPicByAzureObjects_Click"  />
+                                    <MenuItem Header="by brands" Click="uiPicByAzureBrands_Click"  />
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Header="Miniaturki" Click="uiShowThumbs_Click" />
@@ -73,7 +84,7 @@
             </ListView.ItemTemplate>
         </ListView>
 
-        <Button Grid.Row="2" Content="Stat to Clip" HorizontalAlignment="Left" Margin="10,5,10,5" Click="uiStatToClip_Click" />
+        <Button Grid.Row="3" Content="Stat to Clip" HorizontalAlignment="Left" Margin="10,5,10,5" Click="uiStatToClip_Click" />
 
     </Grid>
 </Window>

@@ -1,11 +1,11 @@
-﻿Imports Org.BouncyCastle.Asn1.Utilities
-Imports pkar
+﻿Imports pkar
 Imports Vblib
-Imports Windows.Security.EnterpriseData
+Imports pkar.UI.Extensions
 
 Public Class PokazStatystyke
 
     Private _history As String
+    Private _entries As List(Of StatEntry)
 
     ''' <summary>
     ''' pokaż statystykę zawartą w entries
@@ -19,52 +19,66 @@ Public Class PokazStatystyke
         InitializeComponent()
 
         _history = history
+        _entries = entries
+    End Sub
 
-        If entries Is Nothing Then
+    Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
+        Me.ProgRingInit(True, False)
+
+        If _entries Is Nothing Then
             If Not Application.gDbase.IsLoaded Then
 
-                Application.ShowWait(True)
-                Application.gDbase.Load()
-                Application.ShowWait(False)
+                Me.ProgRingShow(True)
+                Me.ProgRingSetText("Reading database...")
+                Await Task.Run(Sub() Application.gDbase.Load())
+                Me.ProgRingShow(False)
 
                 If Not Application.gDbase.IsLoaded Then
                     '  Vblib.DialogBox("Niestety, nie udało się wczytać żadnej bazy danych")
                     Me.Close()
                 End If
             End If
-
-            history = ""
-                Dim entry As New StatEntry
+            'history = ""
+            Dim entry As New StatEntry
             entry.label = "Root"
             entry.lista = Application.gDbase.GetFirstLoaded.GetAll
-                entry.licznik = entry.lista.Count
-                entries = New List(Of StatEntry)
-                entries.Add(entry)
-            End If
-
-            Dim licznik As Integer
-
-        For Each entry In entries
-            licznik += entry.lista.Count
-        Next
+            entry.licznik = entry.lista.Count
+            entry.total = entry.licznik ' na początek mamy tyle samo
+            _entries = New List(Of StatEntry)
+            _entries.Add(entry)
+        End If
 
         ' policz procenty
-        For Each entry In entries
-            entry.percent = Math.Round(100 * entry.licznik / licznik).ToString("##0") & "%"
+        For Each entry In _entries
+            uiStatTitle.Text = _history & " (" & entry.total & ")"
+            entry.percent = Math.Round(100 * entry.licznik / entry.total).ToString("##0") & "%"
         Next
 
-        uiLista.ItemsSource = entries
-        uiStatTitle.Text = _history & " (" & licznik & ")"
+        uiLista.ItemsSource = _entries
 
+        uiFilterek.IsEnabled = _entries.Count > 10
+
+    End Sub
+
+
+    Private Sub uiFilterek_TextChanged(sender As Object, e As TextChangedEventArgs)
+
+        uiLista.ItemsSource = Nothing
+        If uiFilterek.Text = "" Then
+            uiLista.ItemsSource = _entries
+        Else
+            uiLista.ItemsSource = _entries.Where(Function(x) x.label.ContainsCI(uiFilterek.Text))
+        End If
     End Sub
 
     Private Sub uiStatToClip_Click(sender As Object, e As RoutedEventArgs)
 
-        If uiLista.ItemsSource Is Nothing Then Return
+        If _entries Is Nothing Then Return
 
         Dim sTxt As String = _history & vbCrLf & vbCrLf
 
-        For Each entry As StatEntry In uiLista.ItemsSource
+        For Each entry As StatEntry In _entries
             sTxt &= entry.label & ":" & vbTab & entry.licznik & vbTab & entry.percent & vbCrLf
         Next
 
@@ -78,12 +92,12 @@ Public Class PokazStatystyke
         If entry Is Nothing Then Return
 
         If entry.licznik > 2000 Then
-            Vblib.DialogBox("Za dużo zdjęć")
+            Me.MsgBox("Za dużo zdjęć")
             Return
         End If
 
         If entry.licznik > 500 Then
-            If Not Await Vblib.DialogBoxYNAsync("Na pewno? Jest dużo zdjęć, to trochę potrwa...") Then Return
+            If Not Await Me.DialogBoxYNAsync("Na pewno? Jest dużo zdjęć, to trochę potrwa...") Then Return
         End If
 
         ' ten fragment jest przeróbką z SearchWindow.uiGoMiniaturki_Click
@@ -252,7 +266,7 @@ Public Class PokazStatystyke
 
 
     Private Async Sub uiPicByDistance_Click(sender As Object, e As RoutedEventArgs)
-        If Not Await Vblib.DialogBoxYNAsync("To trwa dość długo, kontynuować?") Then Return
+        If Not Await Me.DialogBoxYNAsync("To trwa dość długo, kontynuować?") Then Return
         ZrobStatystyke(sender, AddressOf ExtractDistance)
     End Sub
     Private Function ExtractDistance(picek As Vblib.OnePic) As String
@@ -311,14 +325,124 @@ Public Class PokazStatystyke
     End Function
 
     Private Sub uiPicByAzureTag_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        If oFE Is Nothing Then Return
+        Dim entry As StatEntry = oFE.DataContext
+        If entry Is Nothing Then Return
 
+        Dim tagi As New List(Of String)
+
+        ' wyciągnij listę tagów
+        For Each oPic As Vblib.OnePic In entry.lista
+            Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+            If azurek?.AzureAnalysis?.Tags Is Nothing Then Continue For
+
+            For Each oTag In azurek.AzureAnalysis.Tags.GetList
+                If tagi.Contains(oTag.tekst) Then Continue For
+
+                tagi.Add(oTag.tekst)
+            Next
+        Next
+
+        StatystykaAzureWgListy(entry, tagi, AddressOf AzureByTag)
     End Sub
+
+    Private Sub StatystykaAzureWgListy(entry As StatEntry, tagi As List(Of String), wyszukiwacz As Func(Of OnePic, String, Boolean))
+
+        Dim stats As New List(Of StatEntry)
+        Dim total As Integer = entry.lista.Count
+
+        For Each tag As String In tagi.OrderBy(Of String)(Function(x) x)
+            Dim withKwd As New StatEntry With {.label = tag}
+            withKwd.lista = entry.lista.Where(Function(x) wyszukiwacz(x, tag))
+            withKwd.licznik = withKwd.lista.Count
+            withKwd.total = total
+            ' withKwd.percent będzie policzone przy nowym oknie 
+            stats.Add(withKwd)
+        Next
+
+        Dim oWnd As New PokazStatystyke(_history & ":" & entry.label, stats)
+        oWnd.Show()
+    End Sub
+
+    Private Function AzureByTag(oPic As Vblib.OnePic, tag As String) As Boolean
+        Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+        If azurek?.AzureAnalysis?.Tags Is Nothing Then Return False
+        Return azurek.AzureAnalysis.Tags.GetList.Any(Function(x) x.tekst = tag)
+    End Function
+
 
     Private Sub uiPicByAzureObjects_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        If oFE Is Nothing Then Return
+        Dim entry As StatEntry = oFE.DataContext
+        If entry Is Nothing Then Return
+
+        Dim tagi As New List(Of String)
+
+        Dim dstart = Date.Now
+
+        ' wyciągnij listę tagów
+        For Each oPic As Vblib.OnePic In entry.lista
+            Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+            If azurek?.AzureAnalysis?.Objects Is Nothing Then Continue For
+
+            For Each oTag In azurek.AzureAnalysis.Objects.GetList
+                If tagi.Contains(oTag.tekst) Then Continue For
+
+                tagi.Add(oTag.tekst)
+            Next
+        Next
+
+        'Dim dend = Date.Now
+        'Dim msec = (dend - dstart).TotalMilliseconds
+        'Me.MsgBox("Wynajdowanie wszystkich objektów: " & msec & " msec")
+
+        StatystykaAzureWgListy(entry, tagi, AddressOf AzureByObject)
 
     End Sub
 
+    Private Function AzureByObject(oPic As Vblib.OnePic, tag As String) As Boolean
+        Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+        If azurek?.AzureAnalysis?.Objects Is Nothing Then Return False
+        Return azurek.AzureAnalysis.Objects.GetList.Any(Function(x) x.tekst = tag)
+    End Function
 
+    Private Sub uiPicByAzureBrands_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        If oFE Is Nothing Then Return
+        Dim entry As StatEntry = oFE.DataContext
+        If entry Is Nothing Then Return
+
+        Dim tagi As New List(Of String)
+
+        Dim dstart = Date.Now
+
+        ' wyciągnij listę tagów
+        For Each oPic As Vblib.OnePic In entry.lista
+            Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+            If azurek?.AzureAnalysis?.Brands Is Nothing Then Continue For
+
+            For Each oTag In azurek.AzureAnalysis.Brands.GetList
+                If tagi.Contains(oTag.tekst) Then Continue For
+
+                tagi.Add(oTag.tekst)
+            Next
+        Next
+
+        'Dim dend = Date.Now
+        'Dim msec = (dend - dstart).TotalMilliseconds
+        'Me.MsgBox("Wynajdowanie wszystkich objektów: " & msec & " msec")
+
+        StatystykaAzureWgListy(entry, tagi, AddressOf AzureByBrand)
+
+    End Sub
+
+    Private Function AzureByBrand(oPic As Vblib.OnePic, tag As String) As Boolean
+        Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+        If azurek?.AzureAnalysis?.Brands Is Nothing Then Return False
+        Return azurek.AzureAnalysis.Brands.GetList.Any(Function(x) x.tekst = tag)
+    End Function
 #End Region
 
     Private Sub uiPicByCamera_Click(sender As Object, e As RoutedEventArgs)
@@ -334,9 +458,39 @@ Public Class PokazStatystyke
         Return ""
     End Function
 
+    Private Sub PicByKeyword(sender As Object, prefix As String)
+        Dim oFE As FrameworkElement = sender
+        If oFE Is Nothing Then Return
+        Dim entry As StatEntry = oFE.DataContext
+        If entry Is Nothing Then Return
 
-    Private Sub uiPicByKeyword_Click(sender As Object, e As RoutedEventArgs)
+        Dim stats As New List(Of StatEntry)
+        Dim total As Integer = entry.lista.Count
 
+        For Each oKey As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+            If Not oKey.sId.StartsWith(prefix) Then Continue For
+
+            Dim withKwd As New StatEntry With {.label = oKey.sId}
+            withKwd.lista = entry.lista.Where(Function(x) x.sumOfKwds.Contains(oKey.sId))
+            withKwd.licznik = withKwd.lista.Count
+            withKwd.total = total
+            ' withKwd.percent będzie policzone przy nowym oknie 
+            stats.Add(withKwd)
+        Next
+
+        Dim oWnd As New PokazStatystyke(_history & ":" & entry.label, stats)
+        oWnd.Show()
+    End Sub
+
+
+    Private Sub uiPicByKeywordO_Click(sender As Object, e As RoutedEventArgs)
+        PicByKeyword(sender, "-")
+    End Sub
+    Private Sub uiPicByKeywordM_Click(sender As Object, e As RoutedEventArgs)
+        PicByKeyword(sender, "=")
+    End Sub
+    Private Sub uiPicByKeywordI_Click(sender As Object, e As RoutedEventArgs)
+        PicByKeyword(sender, "=")
     End Sub
 
     Private Sub uiPicByAutor_Click(sender As Object, e As RoutedEventArgs)
@@ -356,15 +510,19 @@ Public Class PokazStatystyke
         Dim entry As StatEntry = oFE.DataContext
         If entry Is Nothing Then Return
 
+        Dim total As Integer = entry.lista.Count
+
         Dim stats = entry.lista.GroupBy(keySel,
                         Function(picek) picek,
-                        Function(label, lista) New StatEntry With {.label = label, .licznik = lista.Count, .lista = lista}).
+                        Function(label, lista) New StatEntry With {.label = label, .licznik = lista.Count, .lista = lista, .total = total}).
                  OrderBy(Function(entry1) entry1.label).ToList
 
         Dim oWnd As New PokazStatystyke(_history & ":" & entry.label, stats)
         oWnd.Show()
 
     End Sub
+
+
 
 #End Region
 
@@ -373,6 +531,7 @@ End Class
 Public Class StatEntry
     Public Property label As String
     Public Property licznik As Integer
+    Public Property total As Integer
     Public Property percent As String
     Public Property lista As IEnumerable(Of Vblib.OnePic)
 End Class
