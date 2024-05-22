@@ -24,7 +24,9 @@ Public Class BrowseKeywordsWindow
 
 #Region "UI events"
 
-    Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+    Private Async Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+
+        Await Task.Delay(20)    ' na zmianę po stronie uiPinUnpin
 
         If uiPinUnpin.IsPinned Then Return
 
@@ -304,6 +306,8 @@ Public Class BrowseKeywordsWindow
 
     Private Sub ZablokujNiezgodneWedlePic()
         vb14.DumpCurrMethod()
+
+        If uiPinUnpin?.EffectiveDatacontext?.oPic Is Nothing Then Return
 
         Dim minDate As Date = uiPinUnpin.EffectiveDatacontext.oPic.GetMinDate ' Date.MaxValue
         Dim maxDate As Date = uiPinUnpin.EffectiveDatacontext.oPic.GetMaxDate ' Date.MinValue
