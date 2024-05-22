@@ -124,6 +124,7 @@ Public Class ShowExifs
     Private Async Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
         ' *TODO* być może jakoś trzeba wywołać też dla mybase
 
+        Await Task.Delay(20)    ' na zmianę po stronie uiPinUnpin
         ' idziemy dalej, bo czasem sam przeładowywuję (bez zmiany DataContext, jedynie przerysowanie full/ograniczone)
         If uiPinUnpin.IsPinned Then Return
 

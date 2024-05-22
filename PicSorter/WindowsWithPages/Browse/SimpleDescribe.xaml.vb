@@ -101,8 +101,9 @@ Public Class SimpleDescribe
         uiAllDescribe.Focus()
     End Sub
 
-    Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+    Private Async Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
 
+        Await Task.Delay(20)    ' na zmianę po stronie uiPinUnpin
         If uiPinUnpin.IsPinned Then Return
 
         Dim oPicek As ProcessBrowse.ThumbPicek = DataContext

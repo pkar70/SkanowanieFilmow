@@ -15,9 +15,10 @@ Public Class RemoteDescr
         'Grid_DataContextChanged(Nothing, Nothing)
     End Sub
 
-    Private Sub Grid_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+    Private Async Sub Grid_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
         ' thumb.oImageSrc mamy obrazek size 400 - ale chyba nie warto tu go pokazywać... od tego jest ShowBig
 
+        Await Task.Delay(20)    ' na zmianę po stronie uiPinUnpin
         If uiPinUnpin.IsPinned Then Return
 
         _thumb = uiPinUnpin.EffectiveDatacontext

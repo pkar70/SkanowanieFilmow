@@ -974,8 +974,26 @@ Public Class ProcessBrowse
         picker.Filter = "Obrazy (.jpg)|*.jpg"
         If Not picker.ShowDialog Then Return
 
-        Dim bmp As New RenderTargetBitmap(uiPicList.ActualWidth, uiPicList.ActualHeight, 96, 96, PixelFormats.Pbgra32)
-        bmp.Render(uiPicList)
+        Dim szerok As Integer = uiPicList.ActualWidth
+        Dim wysok As Integer = uiPicList.ActualHeight
+        Dim scrVwr As FrameworkElement = GetDescendantByType(uiPicList, GetType(ItemsPresenter))
+        If scrVwr IsNot Nothing Then
+            'wysok = scrVwr.ExtentHeight
+            wysok = scrVwr.RenderSize.Height
+        End If
+
+        Dim dpi As Integer = 96
+        Dim bmp As New RenderTargetBitmap(szerok, wysok, dpi, dpi, PixelFormats.Pbgra32) 'Bgr24, Rgb24
+        'bmp.Render(scrVwr)
+
+        Dim sourceBrush As New VisualBrush(scrVwr)
+        Dim drawVis As New DrawingVisual()
+        Using drawCntx As DrawingContext = drawVis.RenderOpen()
+            'drawCntx .PushTransform(New ScaleTransform(zoom, zoom))
+            drawCntx.DrawRectangle(sourceBrush, Nothing, New Rect(New Point(0, 0), New Point(szerok, wysok)))
+        End Using
+
+        bmp.Render(drawVis)
 
         ' zapisujemy
         Dim encoder As New JpegBitmapEncoder()
@@ -987,6 +1005,27 @@ Public Class ProcessBrowse
         End Using
 
     End Sub
+
+    Public Shared Function GetDescendantByType(element As Visual, szukanyTyp As Type) As Visual
+
+        If element Is Nothing Then Return Nothing
+
+        If element.GetType() = szukanyTyp Then Return element
+
+        Dim foundElement As Visual = Nothing
+            '          If element Is FrameworkElement Then
+            '  (element as FrameworkElement).ApplyTemplate();
+            'End If
+
+            For iLp As Integer = 0 To VisualTreeHelper.GetChildrenCount(element) - 1
+                Dim vsl As Visual = VisualTreeHelper.GetChild(element, iLp)
+                foundElement = GetDescendantByType(vsl, szukanyTyp)
+                If foundElement IsNot Nothing Then Return foundElement
+            Next
+
+            Return foundElement
+End Function
+
 
     Private Sub uiActionNewWndFltr_Click(sender As Object, e As RoutedEventArgs)
         uiActionSelectFilter_Click(Nothing, Nothing)

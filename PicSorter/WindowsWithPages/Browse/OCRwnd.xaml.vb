@@ -121,7 +121,9 @@ Public Class OCRwnd
 
     End Sub
 
-    Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+    Private Async Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+        Await Task.Delay(20)    ' na zmianę po stronie uiPinUnpin
+
         Dim oPic As Vblib.OnePic = e.NewValue
         If oPic Is Nothing Then Return
         _oPic = oPic
