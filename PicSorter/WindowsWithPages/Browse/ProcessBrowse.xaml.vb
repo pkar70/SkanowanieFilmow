@@ -967,7 +967,38 @@ Public Class ProcessBrowse
 
 #End Region
 
-    Private Async Sub uiSaveContactSheet_Click(sender As Object, e As RoutedEventArgs)
+#If False Then
+    Private Async Sub uiSaveContactSheetScroll_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim picker As New Microsoft.Win32.SaveFileDialog
+        picker.DefaultExt = ".jpg"
+        picker.Filter = "Obrazy (.jpg)|*.jpg"
+        If Not picker.ShowDialog Then Return
+
+        Dim szerok As Integer = uiPicList.ActualWidth
+        Dim wysok As Integer = uiPicList.ActualHeight
+        Dim scrVwr As ScrollViewer = GetDescendantByType(uiPicList, GetType(ScrollViewer))
+        If scrVwr IsNot Nothing Then
+            wysok = scrVwr.ExtentHeight
+        End If
+
+        Dim dpi As Integer = 96
+        Dim bmp As New RenderTargetBitmap(szerok, wysok, dpi, dpi, PixelFormats.Pbgra32) 'Bgr24, Rgb24
+        bmp.Render(scrVwr)
+
+        ' zapisujemy
+        Dim encoder As New JpegBitmapEncoder()
+        'encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
+        encoder.Frames.Add(BitmapFrame.Create(bmp))
+
+        Using fileStream = IO.File.Create(picker.FileName)
+            encoder.Save(fileStream)
+        End Using
+
+    End Sub
+#End If
+
+    Private Sub uiSaveContactSheetItems_Click(sender As Object, e As RoutedEventArgs)
 
         Dim picker As New Microsoft.Win32.SaveFileDialog
         picker.DefaultExt = ".jpg"
@@ -984,16 +1015,23 @@ Public Class ProcessBrowse
 
         Dim dpi As Integer = 96
         Dim bmp As New RenderTargetBitmap(szerok, wysok, dpi, dpi, PixelFormats.Pbgra32) 'Bgr24, Rgb24
-        'bmp.Render(scrVwr)
 
-        Dim sourceBrush As New VisualBrush(scrVwr)
         Dim drawVis As New DrawingVisual()
         Using drawCntx As DrawingContext = drawVis.RenderOpen()
-            'drawCntx .PushTransform(New ScaleTransform(zoom, zoom))
-            drawCntx.DrawRectangle(sourceBrush, Nothing, New Rect(New Point(0, 0), New Point(szerok, wysok)))
+            Dim pedzelek As New SolidColorBrush(Colors.White)
+            drawCntx.DrawRectangle(pedzelek, Nothing, New Rect(New Point(), New Size(szerok, wysok)))
         End Using
-
         bmp.Render(drawVis)
+        bmp.Render(scrVwr)
+
+        'Dim sourceBrush As New VisualBrush(scrVwr)
+        'Dim drawVis As New DrawingVisual()
+        'Using drawCntx As DrawingContext = drawVis.RenderOpen()
+        '    'drawCntx .PushTransform(New ScaleTransform(zoom, zoom))
+        '    drawCntx.DrawRectangle(sourceBrush, Nothing, New Rect(New Point(0, 0), New Point(szerok, wysok)))
+        'End Using
+
+        'bmp.Render(drawVis)
 
         ' zapisujemy
         Dim encoder As New JpegBitmapEncoder()
@@ -1005,6 +1043,7 @@ Public Class ProcessBrowse
         End Using
 
     End Sub
+
 
     Public Shared Function GetDescendantByType(element As Visual, szukanyTyp As Type) As Visual
 

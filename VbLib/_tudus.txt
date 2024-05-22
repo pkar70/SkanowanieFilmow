@@ -229,7 +229,6 @@ SEARCHBYPIC: Bing umie http://, ale nie umie z portu
 
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
-SETTINGS: keywords: statystyka
 SETTINGS: cloudpubl, exif - nie pokazuje aktualnego stanu (C)
 SETTINGS: cmdline -name xxx : zmiana nazwy folderu z settingsami, by mogło być kilka instancji
 SETTINGS: umożliwienie kilku instancji jednocześsnie
@@ -272,9 +271,6 @@ STRUCT.ROLL dodawanie tego do EXIFbasic, oraz w ogole do EXIF - to już jest, bo
 
 sharesrv.uploadprocessing
 archive.processing
-
-STYKOWKI: plik JPG i do niego HTML, z MAP, co by dawalo link (<a href) do konkretnego obrazka oraz dymek z czymś-tam (moze nie tylko nazwą)?
-STYKOWKI: na górze folder..., stykówki robione per folder, osobny button może być (nie przy archiwizacji), nazwa pliku - skracana do "uniq" (tylko tyle ile trzeba by było jednoznaczne)
 
 SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę zastępczą?
 
@@ -831,14 +827,6 @@ App do Shutterfly:
 *) opisanie tagami z filename/EXIFa
 
 shutterstock - jak to wygląda jeszcze raz sprawdzić
-
-app zarządzania fotkami:
-*) synchro między storage (l:\fotovideo - JPGi, ext10G:\fotovideo - calosc, extFoto:\fotovideo całość)
-  *) wrzuć TIFFy na zewnatrz
-  *) zrób stykówki/refresh stykówki
-*) rename JPGa, i migracja -KEY do EXIF:Tags, aktualizacja w SQL:StoreFiles (i mirrorach!), Shutterfly
-*) wyszukiwanie wedle Tags, i robienie z tego virtual folder z obrazkami
-*) wrzucanie do Shutterfly, i ewentualnie do Shutterstock
 
 osobna SQL:Table na te tagi/dane fotek? może w ogóle niezaleznie od StoreFiles, moze tych fotek tam nie dawać?
 
