@@ -5,6 +5,7 @@ Imports pkar.UI.Extensions
 Imports PicSorterNS.ProcessBrowse
 Imports System.Text.RegularExpressions
 Imports System.IO
+Imports Microsoft.EntityFrameworkCore
 
 
 Public Class ProcessDownloadInternet
@@ -106,8 +107,9 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
         ' MANUAL_TAG, ale z pełnym opisem, a także z GeoTag jak trzeba
         _picek.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(uiKeywords.uiSlowka.Text))
-        'Dim descr As New OneDescription(uiDescription.Text, uiKeywords.Text)
-        '_picek.AddDescription(descr)
+
+        Dim descr As New OneDescription(uiDescription.Text, "")
+        _picek.AddDescription(descr)
 
         Dim linek As New OneLink() With {.link = uiLink.Text, .opis = "source"}
         _picek.AddLink(linek)
@@ -152,7 +154,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         Dim iInd As Integer = tekst.IndexOf("&")
         If iInd < 1 Then Return
 
-        uiLink.Text = tekst.Substring(0, iInd - 1)
+        uiLink.Text = tekst.Substring(0, iInd)
 
     End Sub
 
@@ -180,6 +182,14 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         Dim mam As Match = Regex.Match(tekst, "[0-3][0-9].[0-1][0-9].[12][0-9][0-9][0-9]")
         If mam.Success Then
             If Date.TryParseExact(mam.Value, "dd.MM.yyyy", Nothing, Globalization.DateTimeStyles.None, data) Then
+                uiDateRange.RangeAsText = data.ToString("yyyy.MM.dd")
+                Return
+            End If
+        End If
+
+        mam = Regex.Match(tekst, "[12][0-9][0-9][0-9].[0-1][0-9].[0-3][0-9]")
+        If mam.Success Then
+            If Date.TryParseExact(mam.Value, "yyyy.MM.dd", Nothing, Globalization.DateTimeStyles.None, data) Then
                 uiDateRange.RangeAsText = data.ToString("yyyy.MM.dd")
                 Return
             End If
@@ -242,6 +252,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         _lastgeo = Nothing
         uiSameGeo.IsEnabled = False
         uiGeo.Content = " Change "
+        uiGeo.ToolTip = _lastgeo.GeoTag.FormatLink("%lat / %lon")
     End Sub
 
     Private Sub uiRefresh_Click(sender As Object, e As RoutedEventArgs)
@@ -283,6 +294,11 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         ' tak byc nie moze, bo sharing violation
         'Dim content As String = IO.File.ReadAllText(lastlog)
         Dim iInd As Integer = content.LastIndexOf("https://www.facebook.com/photo/?")
+        If iInd < 1 Then
+            uiLink.Text = "???"
+            Return
+        End If
+
         content = content.Substring(iInd)
 
         Dim pageaddr As String = ""
@@ -294,5 +310,20 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
         Vblib.DumpMessage("Ostatni URL to " & pageaddr)
         uiLink.Text = pageaddr
+    End Sub
+
+    Private Sub uiAddAuthor_Click(sender As Object, e As RoutedEventArgs)
+
+        ' próba dopisania autora
+        Dim newAutor As String = uiAutor.Text
+        For Each autor As String In _autorzy
+            If autor.EqualsCI(newAutor) Then Return ' już mamy
+        Next
+
+        Dim sPath As String = IO.Path.Combine(App.GetDataFolder, "inetauthors.txt")
+        IO.File.AppendAllLines(sPath, {newAutor})
+
+        _autorzy = IO.File.ReadAllLines(sPath)
+
     End Sub
 End Class

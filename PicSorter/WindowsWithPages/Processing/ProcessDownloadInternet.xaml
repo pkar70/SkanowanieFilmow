@@ -44,7 +44,8 @@
             <TextBlock Grid.Row="0" Text="Description " />
             <TextBox Grid.Row="0" Grid.Column="1" Name="uiDescription" AcceptsReturn="True" TextChanged="uiDescription_TextChanged" ToolTip="Wklej opis do zdjęcia - zmiany linii zostaną automatycznie usunięte, oraz spróbuje rozpoznać autora (wedle listy autorów Internet) i datę"/>
             <TextBlock Grid.Row="1" Text="Autor " />
-            <TextBox Grid.Row="1" Grid.Column="1" Name="uiAutor" />
+            <TextBox Grid.Row="1" Grid.Column="1" Name="uiAutor" HorizontalAlignment="Left" Margin="0,0,25,0"/>
+            <Button Grid.Row="1" Grid.Column="1" Content="+" HorizontalAlignment="Right" Name="uiAddAuthor" Click="uiAddAuthor_Click" ToolTip="Dopisz do listy autorów (dbając by nie powtarzać)"/>
             <TextBlock Grid.Row="2" Text="Date range " />
             <local:UserDateRange Grid.Row="2"  Grid.Column="1" x:Name="uiDateRange"/>
             <TextBlock Grid.Row="3" Text="Link " />
