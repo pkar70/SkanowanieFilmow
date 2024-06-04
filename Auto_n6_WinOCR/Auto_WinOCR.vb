@@ -7,9 +7,17 @@ Imports System.IO
 Imports Vblib
 Imports pkar.DotNetExtensions
 
+Public MustInherit Class AutoTagOCR_Base
+    Inherits Vblib.AutotaggerBase
+
+    Public CurrLang As String = "pl-PL"
+
+End Class
+
+
 
 Public Class AutoTag_WinOCR
-    Inherits Vblib.AutotaggerBase
+    Inherits AutoTagOCR_Base
     Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
     Public Overrides ReadOnly Property Nazwa As String = ExifSource.AutoWinOCR ' "AUTO_WINOCR"
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
@@ -38,7 +46,7 @@ Public Class AutoTag_WinOCR
         If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
 
         ' jakby Create zajmowa³o wiêcej czasu - a przecie¿ moze byæ setki zdjêæ do OCR po kolei
-        If _OcrEngine Is Nothing Then _OcrEngine = OcrEngine.TryCreateFromLanguage(New Windows.Globalization.Language("pl-PL"))
+        If _OcrEngine Is Nothing Then _OcrEngine = OcrEngine.TryCreateFromLanguage(New Windows.Globalization.Language(CurrLang))
 
         Dim rOCR As OcrResult
 
