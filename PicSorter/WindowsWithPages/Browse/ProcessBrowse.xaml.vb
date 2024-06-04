@@ -141,6 +141,10 @@ Public Class ProcessBrowse
         'DescriptionToDescription
     End Sub
 
+    Public Function GetPicCount() As Integer
+        Return _thumbsy.Count
+    End Function
+
     ''' <summary>
     ''' przepisanie DESCRIPT.ION:UserComment do Pic.Descriptions
     ''' </summary>
@@ -366,7 +370,7 @@ Public Class ProcessBrowse
     End Sub
 
     ''' <summary>
-    ''' teraz tylko aktualizacja licznika - też do przesunięcia na "po delete" i po "read"
+    ''' odnawia ItemsSource na posortowane, też do przesunięcia na "po delete" i po "read"
     ''' </summary>
     Private Sub PokazThumbsy()
         ' *PROBA* - nieudana!
@@ -1279,7 +1283,12 @@ End Function
         Dim oNext As ThumbPicek = FromBig_Next(oPic, False, False)
         DeletePicture(oPic)
         SaveMetaData()
-        _redrawPending = True
+        ' PROBA - bo zdaje się samo się usuwa ładnie z miniaturek (via ObservableList), więc może nie trzeba przerysowywać na GotFocus
+        '_redrawPending = True
+
+        ' popraw licznik w tytule okna
+        Me.Title = $"{_title} ({_thumbsy.Count} images)"
+
         Return oNext
     End Function
 
@@ -2092,6 +2101,50 @@ End Function
         KoniecFiltrowania(bMamy, True)
     End Sub
 
+    Private Sub uiFilterAzureTag_Click(sender As Object, e As RoutedEventArgs)
+        ShowFilterAzureTag("Tags")
+    End Sub
+    Private Sub uiFilterAzureObject_Click(sender As Object, e As RoutedEventArgs)
+        ShowFilterAzureTag("Objects")
+    End Sub
+    Private Sub uiFilterAzureBrand_Click(sender As Object, e As RoutedEventArgs)
+        ShowFilterAzureTag("Brands")
+    End Sub
+    Private Sub uiFilterAzureLandmarks_Click(sender As Object, e As RoutedEventArgs)
+        ShowFilterAzureTag("Landmarks")
+    End Sub
+    Private Sub uiFilterAzureCategories_Click(sender As Object, e As RoutedEventArgs)
+        ShowFilterAzureTag("Categories")
+    End Sub
+
+    Private Async Sub ShowFilterAzureTag(listaPropName As String)
+        uiFilterPopup.IsOpen = False
+
+        Me.ProgRingShow(True)
+
+        Dim tagi As List(Of String) = PokazStatystyke.WyciagnijListeMozliwych(listaPropName, _oBufor.GetList)
+
+        Dim oTB As New TextBox With
+            {
+            .AcceptsReturn = True,
+            .IsReadOnly = True,
+            .HorizontalAlignment = HorizontalAlignment.Stretch,
+            .Height = 250,
+            .Text = String.Join(vbCrLf, tagi.OrderBy(Of String)(Function(x) x)),
+            .VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+            }
+
+        Dim oSP As New StackPanel
+        oSP.Children.Add(oTB)
+        oSP.Children.Add(New Button With {.Content = " OK ", .IsDefault = True, .HorizontalAlignment = HorizontalAlignment.Center})
+
+        Me.ProgRingShow(False)
+
+        Dim oWnd As New Window With {.Content = oSP, .Width = 200, .Height = 290}
+        oWnd.Show()
+
+    End Sub
+
     Private Sub uiFilterNoDescr_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "no desc"
@@ -2239,27 +2292,27 @@ End Function
         _searchWnd.Show()
     End Sub
 
-    Public Function FilterSearchCallback(query As SearchQuery, usun As Boolean)
+    Public Sub FilterSearchCallback(query As SearchQuery, usun As Boolean)
 
-        Dim bWas As Boolean = False
+        Me.ProgRingShow(True)
         For Each thumb As ThumbPicek In _thumbsy
 
             'If SearchWindow.CheckIfOnePicMatches(thumb.oPic, query) Then
             If thumb.oPic.CheckIfMatchesQuery(query) Then
-
                 If usun Then
                     thumb.opacity = _OpacityWygas
                 Else
-                    bWas = True
                     thumb.opacity = 1
                 End If
             End If
+
         Next
+        Me.ProgRingShow(False)
 
-        KoniecFiltrowania(bWas, True)
+        ' to jest z FullSearch, znaczy dodawanie/usuwanie zaznaczeń, więc "nie ma takich" jest bez sensu - dlatego pierwszy parametr jest TRUE
+        KoniecFiltrowania(True, True)
 
-        Return True
-    End Function
+    End Sub
 
 
     Public Sub WypelnMenuFilterSharing()
@@ -2558,7 +2611,8 @@ End Function
 
         End If
 
-        RefreshMiniaturki(True)
+        ' PROBA czy bedzie OK przez re-ItemsSource
+        ' RefreshMiniaturki(True)
 
         SaveMetaData()
 
@@ -2640,7 +2694,7 @@ End Function
 
 
     Public Class ThumbPicek
-        Private Const THUMB_SUFIX As String = ".PicSortThumb.jpg"
+        Public Const THUMB_SUFIX As String = ".PicSortThumb.jpg"
 
         Public Property oPic As Vblib.OnePic
         Public Property sDymek As String 'XAML dymekCount
@@ -2754,13 +2808,13 @@ End Function
             Select Case sExt
                 Case ".nar", ".zip"
                     Using strumyk As Stream = oPic.SinglePicFromMulti()
+                        If strumyk Is Nothing Then Return Nothing
                         Dim bitmapa As New BitmapImage()
-                        bitmapa.BeginInit()
-                        bitmapa.DecodePixelHeight = 400
-                        bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-                        bitmapa.StreamSource = strumyk
-                        bitmapa.EndInit()
-
+                            bitmapa.BeginInit()
+                            bitmapa.DecodePixelHeight = 400
+                            bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                            bitmapa.StreamSource = strumyk
+                            bitmapa.EndInit()
                         Return bitmapa
                     End Using
                 Case ".jps"
@@ -2923,48 +2977,55 @@ End Function
 
             Dim sExt As String = IO.Path.GetExtension(oPic.InBufferPathName).ToLowerInvariant
 
+            Try
 
-            If OnePic.ExtsMovie.ContainsCI(sExt) Then
-                ' mamy filmik
-                Dim firstFrame As String = ThumbGetFilename() & ".png"
+                If OnePic.ExtsMovie.ContainsCI(sExt) Then
+                    ' mamy filmik
+                    Dim firstFrame As String = ThumbGetFilename() & ".png"
 
-                If IO.File.Exists(firstFrame) Then
-                    Dim bitmapa As New BitmapImage()
-                    bitmapa.BeginInit()
-                    bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-                    bitmapa.UriSource = New Uri(firstFrame)
-                    bitmapa.EndInit()
-
-                    Return bitmapa
-                End If
-                ' jeśli nie mamy firstframe, to znaczy że nie wolno jej tworzyć - byłaby stworzona przez ProcessBrowse
-                Return Await ThumbCreateFromMovie(False)
-            End If
-
-            Select Case sExt
-                Case ".nar", ".zip"
-                    Using strumyk As Stream = oPic.SinglePicFromMulti(Vblib.GetSettingsBool("uiStereoBigAnaglyph"))
+                    If IO.File.Exists(firstFrame) Then
                         Dim bitmapa As New BitmapImage()
                         bitmapa.BeginInit()
                         bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-                        bitmapa.StreamSource = strumyk
+                        bitmapa.UriSource = New Uri(firstFrame)
                         bitmapa.EndInit()
 
                         Return bitmapa
-                    End Using
+                    End If
+                    ' jeśli nie mamy firstframe, to znaczy że nie wolno jej tworzyć - byłaby stworzona przez ProcessBrowse
+                    Return Await ThumbCreateFromMovie(False)
+                End If
 
-                    'Case ".jps"
-                Case Else
-                    Dim bitmapa As New BitmapImage()
-                    bitmapa.BeginInit()
-                    bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-                    bitmapa.Rotation = iRotation
-                    bitmapa.UriSource = New Uri(oPic.InBufferPathName)
-                    bitmapa.EndInit()
+                Select Case sExt
+                    Case ".nar", ".zip"
+                        Using strumyk As Stream = oPic.SinglePicFromMulti(Vblib.GetSettingsBool("uiStereoBigAnaglyph"))
+                            If strumyk Is Nothing Then Return Nothing
+                            Dim bitmapa As New BitmapImage()
+                            bitmapa.BeginInit()
+                            bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                            bitmapa.StreamSource = strumyk
+                            bitmapa.EndInit()
 
-                    Return bitmapa
+                            Return bitmapa
+                        End Using
 
-            End Select
+                        'Case ".jps"
+                    Case Else
+                        Dim bitmapa As New BitmapImage()
+                        bitmapa.BeginInit()
+                        bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                        bitmapa.Rotation = iRotation
+                        bitmapa.UriSource = New Uri(oPic.InBufferPathName)
+                        bitmapa.EndInit()
+
+                        Return bitmapa
+
+                End Select
+
+            Catch ex As Exception
+                Return Nothing
+            End Try
+
 
         End Function
 

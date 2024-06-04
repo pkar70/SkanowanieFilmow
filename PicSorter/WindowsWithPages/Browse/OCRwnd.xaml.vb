@@ -1,10 +1,13 @@
-﻿Imports pkar.UI.Configs
+﻿Imports Auto_WinOCR
+Imports pkar.UI.Configs
 Imports pkar.UI.Extensions
 
 Public Class OCRwnd
 
     Private _oExif As Vblib.ExifTag
     Private _oPic As Vblib.OnePic
+
+    Private Shared _lastLang As String
 
     Public Sub New(oExif As Vblib.ExifTag)
 
@@ -47,7 +50,20 @@ Public Class OCRwnd
         End If
 
         uiSpellCheck.GetSettingsBool
-        uiLang_SelectionChanged(Nothing, Nothing)
+
+        If String.IsNullOrWhiteSpace(_lastLang) Then
+            uiLang_SelectionChanged(Nothing, Nothing)
+            Return
+        End If
+
+        ' wybierz to co było ostatnio
+        For Each oCBitem As ComboBoxItem In uiLang.Items
+            If oCBitem.Content = _lastLang Then
+                oCBitem.IsSelected = True
+                Exit For
+            End If
+        Next
+
     End Sub
     Private Async Sub uiDoOCR_Click(sender As Object, e As RoutedEventArgs)
         If _oPic Is Nothing Then
@@ -59,6 +75,11 @@ Public Class OCRwnd
         For Each engine As Vblib.AutotaggerBase In Application.gAutoTagery
             If Not engine.Nazwa.Contains("OCR") Then Continue For
 
+            Dim oEngOCR As AutoTagOCR_Base = TryCast(engine, AutoTagOCR_Base)
+            If oEngOCR IsNot Nothing Then
+                oEngOCR.CurrLang = uiOCR.Language.ToString
+            End If
+
             Dim newOCR As Vblib.ExifTag = Await engine.GetForFile(_oPic)
             If newOCR Is Nothing Then Continue For
 
@@ -67,6 +88,7 @@ Public Class OCRwnd
             Else
                 uiOCR.Text = newOCR.UserComment.Replace("|", vbCrLf)
             End If
+            uiCopy.IsEnabled = True
             Return
         Next
 
@@ -78,6 +100,7 @@ Public Class OCRwnd
         Dim oCI As ComboBoxItem = TryCast(uiLang.SelectedItem, ComboBoxItem)
         Dim jezyk As String = TryCast(oCI?.Content, String)
         If String.IsNullOrWhiteSpace(jezyk) Then Return
+        _lastLang = jezyk
 
         If uiOCR Is Nothing Then Return
         uiOCR.Language = Markup.XmlLanguage.GetLanguage(jezyk)
@@ -85,6 +108,10 @@ Public Class OCRwnd
 
     Private Sub uiCopy_Click(sender As Object, e As RoutedEventArgs)
         PicMenuOCR._myClip = uiOCR.Text
+        uiCopy.IsEnabled = False
+        Dim dymek As String = uiOCR.Text
+        If dymek.Length > 30 Then dymek = dymek.Substring(0, 30) & "..."
+        uiCopy.ToolTip = dymek
     End Sub
 
     Private Sub uiSendClip_Click(sender As Object, e As RoutedEventArgs)
@@ -130,5 +157,9 @@ Public Class OCRwnd
         _oExif = oPic.GetExifOfType(Vblib.ExifSource.AutoWinOCR)
 
         Window_Loaded(Nothing, Nothing)
+    End Sub
+
+    Private Sub uiOCR_TextChanged(sender As Object, e As TextChangedEventArgs)
+        uiCopy.IsEnabled = True
     End Sub
 End Class

@@ -9,6 +9,8 @@ Public Class CloudArchiving
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.ProgRingInit(True, True)
+        Me.InitDialogs
+
         uiWithTargetDir.Maximum = Application.GetBuffer.Count
         _withTargetDir = CountWithTargetDir()
         uiWithTargetDir.Value = _withTargetDir

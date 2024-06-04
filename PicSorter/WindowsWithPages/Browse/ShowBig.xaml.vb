@@ -113,11 +113,23 @@ Public Class ShowBig
 
         '_bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
         _bitmap = Await _picek.PicForBig(iObrot)
-        If _bitmap Is Nothing Then Return
+        If _bitmap Is Nothing Then
+            Me.MsgBox("Picture is probably corrupted")
+            Return
+        End If
 
         Me.Title = _picek.oPic.InBufferPathName &
-            $" ({_bitmap.Width.ToString("F0")}×{_bitmap.Height.ToString("F0")})" &
-            $" [{_picek.nrkol}/{_picek.maxnum}]"
+            $" ({_bitmap.Width.ToString("F0")}×{_bitmap.Height.ToString("F0")})"
+        ' $" [{_picek.nrkol}/{_picek.maxnum}]"
+
+        ' ale to nie tak, bo nrkol jest ustawiany razem z maxnum, i jak jest seria kasowana to może numer wyjść x/y gdzie y byłoby mniejsze niż x
+        Dim oBrowserWnd As ProcessBrowse = Me.Owner
+        If oBrowserWnd IsNot Nothing Then
+            Me.Title &= $" [{_picek.nrkol}/{oBrowserWnd.GetPicCount}]"
+        Else
+            Me.Title &= $" [{_picek.nrkol}/{_picek.maxnum}]"
+        End If
+
 
         UpdateClipRegion() ' tym razem, gdyż editmode=none, likwidacja crop
 
@@ -841,10 +853,16 @@ Public Class ShowBig
 
                         Dim sJpgFileName As String = IO.Path.Combine(IO.Path.GetTempPath, oInArch.Name)
                         File.Delete(sJpgFileName)
-                        Using oWrite As Stream = IO.File.Create(sJpgFileName)
-                            Await oInArch.Open.CopyToAsync(oWrite)
-                            Await oWrite.FlushAsync()
-                        End Using
+
+                        Try
+
+                            Using oWrite As Stream = IO.File.Create(sJpgFileName)
+                                Await oInArch.Open.CopyToAsync(oWrite)
+                                Await oWrite.FlushAsync()
+                            End Using
+                        Catch ex As Exception
+                            Continue For ' jeśli nieudany ten pic ("A local file header is corrupt")
+                        End Try
 
                         Dim newPic As New OnePic("NAR extract", _picek.oPic.InBufferPathName, oInArch.Name)
                         newPic.InBufferPathName = sJpgFileName

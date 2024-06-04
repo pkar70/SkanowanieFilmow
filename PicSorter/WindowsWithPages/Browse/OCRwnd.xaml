@@ -22,14 +22,14 @@
             <CheckBox Content="(compact)" VerticalAlignment="Center" Name="uiUseCompact" Click="uiUseCompact_Click" ToolTip="Zmienia między '|' a newline" Margin="10,0,0,0" />
         </StackPanel>
         
-        <TextBox AcceptsReturn="True" Name="uiOCR" SpellCheck.IsEnabled="{Binding IsChecked, ElementName=uiSpellCheck}" Grid.Row="3" Margin="2,5,2,10"/>
+        <TextBox AcceptsReturn="True" Name="uiOCR" SpellCheck.IsEnabled="{Binding IsChecked, ElementName=uiSpellCheck}" Grid.Row="3" Margin="2,5,2,10" TextChanged="uiOCR_TextChanged"/>
 
         <local:StretchedGrid Grid.Row="4" Cols="*,*,*" Margin="10,0,10,2">
             <StackPanel Orientation="Horizontal" Grid.Column="0" HorizontalAlignment="Left">
-            <Button Content=" Set "  Name="uiSetPicOCR" Click="uiSetPicOCR_Click" />
+            <Button Content=" Set "  Name="uiSetPicOCR" Click="uiSetPicOCR_Click" ToolTip="Set picture OCR exiftag" />
                 <Button Content=" Set as Desc"  Name="uiSetPicDesc" Click="uiSetPicDesc_Click" Margin="3,0,0,0"/>
             </StackPanel>
-            <Button Grid.Column="1" Content=" Copy " HorizontalAlignment="Center" ToolTip="Zapisz do własnego clipboard" Click="uiCopy_Click"/>
+            <Button Grid.Column="1" Content=" Copy " HorizontalAlignment="Center" ToolTip="Zapisz do własnego clipboard" Click="uiCopy_Click" Name="uiCopy"/>
             <Button Grid.Column="2" Content=" Clip " HorizontalAlignment="Right" ToolTip="Skopiuj do clipboard" Click="uiSendClip_Click"/>
         </local:StretchedGrid>
         

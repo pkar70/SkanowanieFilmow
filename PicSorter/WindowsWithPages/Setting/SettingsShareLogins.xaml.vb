@@ -41,7 +41,8 @@ Class SettingsShareLogins
 
         ' wysłanie email
         Dim subject As String = "Dane logowania do mojego PicSort"
-        Dim body As String = $"PicSort://{adres}/{oLogin.login}"
+        Dim body As String = "Pełny dostęp:" & vbCrLf & $"PicSort://{adres}/{oLogin.login}"
+        body &= vbCrLf & "Dostęp via WWW:" & vbCrLf & $"http://{adres}:20563/webbuf?guid={oLogin.login}"
         Dim email As New AsNuget_UseMapi.SendFileTo.MAPI
         email.SendMailPopup(subject, body)
 
@@ -112,19 +113,6 @@ Class SettingsShareLogins
         oCB.ItemsSource = _channels
     End Sub
 
-    'Private Sub uiDelChannel_Click(sender As Object, e As RoutedEventArgs)
-    '    Dim oFE As FrameworkElement = sender
-    '    Dim oLogin As ShareChannel = oFE?.DataContext
-    '    If oLogin Is Nothing Then Return
-
-    '    Dim oLogin As ShareLogin = uiEditLogin.DataContext
-    '    oLogin.channels.Remove(oLogin)
-
-    '    uiListaKanalow.ItemsSource = Nothing
-    '    uiListaKanalow.ItemsSource = oLogin.channels
-    'End Sub
-
-
     Private Sub uiDelChannel_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
         Dim oQuery As ShareChannelProcess = oFE?.DataContext
@@ -143,7 +131,7 @@ Class SettingsShareLogins
         Dim oLogin As ShareLogin = oFE?.DataContext
         If oLogin Is Nothing Then Return
 
-        If Not uiPeerID.IsReadOnly Then
+        If uiPeerID.IsEnabled Then
             ' a więc mamy do czynienia z NEW
             If String.IsNullOrWhiteSpace(oLogin.ID) Then
                 Me.MsgBox("Musisz nadać identyfikator dla tego loginu")
@@ -155,13 +143,16 @@ Class SettingsShareLogins
                 Me.MsgBox($"Taki ID już istnieje (dla '{peer.displayName}')")
                 Return
             End If
-
-            ' tylko przy new, bo EDIT i tak bezpośrednio na obiekcie jest
-            Application.GetShareLogins.Add(oLogin)
+        Else
+            ' usuwamy aktualny
+            Dim peer As ShareLogin = Application.GetShareLogins.FindByID(oLogin.ID)
+            If peer IsNot Nothing Then Application.GetShareLogins.Remove(peer)
         End If
+        ' tylko przy new, bo EDIT i tak bezpośrednio na obiekcie jest
+        Application.GetShareLogins.Add(oLogin)
 
-        ' tu mamy Clone oryginału, którego nie zmieniamy
-        uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
+            ' tu mamy Clone oryginału, którego nie zmieniamy
+            uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
         With Application.GetShareLogins
             .ReResolveChannels()
             .Save(True)

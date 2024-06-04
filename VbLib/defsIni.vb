@@ -30,6 +30,9 @@ uiSqlInstance=(localdb)\MSSQLLocalDB
 
 uiWinFaceMaxAge=90
 uiSpellCheck=True
+
+uiWebBuffPicLimit=99
+
 # remark
 ' remark
 ; remark
