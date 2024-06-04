@@ -64,8 +64,24 @@
             </Expander>
 
             <Expander Header="Azure" ToolTip="Dane Azure, ignorowane dla zdjęć bez AzureAnalysis" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
-                    <local:UserControlTxtNum DataContext="{Binding Azure}" HasNumFld="False" DataDisplayName="danych Azure" FieldsList="azure"/>
-            </Expander>
+                    <StackPanel>
+                        <local:StretchedGrid Cols="A,*" Rows="A,A,A,A,A">
+                            <TextBlock Grid.Row="0" Text="Brands" />
+                            <TextBlock Grid.Row="1" Text="Categories" />
+                            <TextBlock Grid.Row="2" Text="Objects" />
+                            <TextBlock Grid.Row="3" Text="Landmarks" />
+                            <TextBlock Grid.Row="4" Text="Tags" />
+
+                            <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding AzureBrands}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding AzureCategories}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding AzureObjects}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding AzureLandmarks}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+                            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding AzureTags}" ToolTip="Space separated fragments, prefixed with '!' to negate" />
+
+                        </local:StretchedGrid>
+                        <local:UserControlTxtNum DataContext="{Binding Azure}" HasNumFld="False" DataDisplayName="danych Azure" FieldsList="azure"/>
+                    </StackPanel>
+                </Expander>
 
             <Expander Header="Pogoda" ToolTip="Różne dane pogodowe" BorderThickness="1" BorderBrush="Blue" Margin="0,4,0,0">
                 <StackPanel>

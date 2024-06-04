@@ -22,6 +22,11 @@ Public Class SearchQuery
 
     Public Property faces As New QueryFaces
     Public Property Azure As New QueryTxtNum
+    Public Property AzureBrands As String = ""
+    Public Property AzureCategories As String = ""
+    Public Property AzureObjects As String = ""
+    Public Property AzureLandmarks As String = ""
+    Public Property AzureTags As String = ""
 
     Public Property VCross As New QueryTxtNum
 
@@ -85,7 +90,7 @@ Public Class QueryFaces
 End Class
 
 Public Class QueryTxtNum
-    Public Property AlsoEmpty As Boolean = True
+    Public Property AlsoEmpty As Boolean
     Public Property FldTxt As New QueryPolaTxt4
     'Public Property _HasNum As Boolean
     Public Property FldNum As New QueryPolaNum4

@@ -59,6 +59,12 @@
                             <MenuItem Header="person" Click="uiFilterAzure_Click" />
                             <MenuItem Header="no person" Click="uiFilterAzure_Click" />
                             <Separator/>
+                            <MenuItem Header="by tag..." Click="uiFilterAzureTag_Click" />
+                            <MenuItem Header="by object..." Click="uiFilterAzureObject_Click" />
+                            <MenuItem Header="by brand..." Click="uiFilterAzureBrand_Click" />
+                            <MenuItem Header="by category..." Click="uiFilterAzureCategories_Click" />
+                            <MenuItem Header="by landmark..." Click="uiFilterAzureLandmarks_Click" />
+                            <Separator/>
                             <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
                         </MenuItem>
                         <MenuItem Header="no Description" Click="uiFilterNoDescr_Click" Name="uiFilterNoDescr"/>

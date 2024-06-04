@@ -325,36 +325,83 @@ Public Class PokazStatystyke
     End Function
 
     Private Sub uiPicByAzureTag_Click(sender As Object, e As RoutedEventArgs)
+        PicByAzureListProperty(sender, "Tags")
+    End Sub
+
+    Private Sub uiPicByAzureCategories_Click(sender As Object, e As RoutedEventArgs)
+        PicByAzureListProperty(sender, "Categories")
+    End Sub
+    Private Sub uiPicByAzureLandmarks_Click(sender As Object, e As RoutedEventArgs)
+        PicByAzureListProperty(sender, "Landmarks")
+    End Sub
+    Private Sub uiPicByAzureObjects_Click(sender As Object, e As RoutedEventArgs)
+        PicByAzureListProperty(sender, "Objects")
+    End Sub
+    Private Sub uiPicByAzureBrands_Click(sender As Object, e As RoutedEventArgs)
+        PicByAzureListProperty(sender, "Brands")
+    End Sub
+
+    Private Sub PicByAzureListProperty(sender As Object, listaPropName As String)
         Dim oFE As FrameworkElement = sender
         If oFE Is Nothing Then Return
         Dim entry As StatEntry = oFE.DataContext
         If entry Is Nothing Then Return
 
-        Dim tagi As New List(Of String)
-
         ' wyciągnij listę tagów
-        For Each oPic As Vblib.OnePic In entry.lista
-            Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
-            If azurek?.AzureAnalysis?.Tags Is Nothing Then Continue For
-
-            For Each oTag In azurek.AzureAnalysis.Tags.GetList
-                If tagi.Contains(oTag.tekst) Then Continue For
-
-                tagi.Add(oTag.tekst)
-            Next
-        Next
-
-        StatystykaAzureWgListy(entry, tagi, AddressOf AzureByTag)
+        Dim tagi As List(Of String) = WyciagnijListeMozliwych(listaPropName, entry.lista)
+        StatystykaAzureWgListy(entry, tagi, listaPropName)
     End Sub
 
-    Private Sub StatystykaAzureWgListy(entry As StatEntry, tagi As List(Of String), wyszukiwacz As Func(Of OnePic, String, Boolean))
+    Public Shared Function WyciagnijListeMozliwych(listaPropName As String, lista As IEnumerable(Of Vblib.OnePic)) As List(Of String)
+
+        Dim tagi As New List(Of String)
+
+        For Each oPic As Vblib.OnePic In lista
+            Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+            If azurek?.AzureAnalysis Is Nothing Then Continue For
+
+            Dim listaProb As ListTextWithProbability = TryCast(azurek.AzureAnalysis.GetType.GetProperty(listaPropName).GetValue(azurek.AzureAnalysis), ListTextWithProbability)
+            Dim listaProbBox As ListTextWithProbabAndBox = TryCast(azurek.AzureAnalysis.GetType.GetProperty(listaPropName).GetValue(azurek.AzureAnalysis), ListTextWithProbabAndBox)
+
+            If listaProb Is Nothing AndAlso listaProbBox Is Nothing Then Continue For
+
+            If listaProb IsNot Nothing Then
+                For Each oTag In listaProb.GetList
+                    If tagi.Contains(oTag.tekst) Then Continue For
+                    tagi.Add(oTag.tekst)
+                Next
+            Else
+                For Each oTag In listaProbBox.GetList
+                    If tagi.Contains(oTag.tekst) Then Continue For
+                    tagi.Add(oTag.tekst)
+                Next
+            End If
+
+        Next
+
+        Return tagi
+    End Function
+
+    Private Sub StatystykaAzureWgListy(entry As StatEntry, tagi As List(Of String), listaPropName As String)
 
         Dim stats As New List(Of StatEntry)
         Dim total As Integer = entry.lista.Count
 
         For Each tag As String In tagi.OrderBy(Of String)(Function(x) x)
             Dim withKwd As New StatEntry With {.label = tag}
-            withKwd.lista = entry.lista.Where(Function(x) wyszukiwacz(x, tag))
+            withKwd.lista = entry.lista.Where(Function(x)
+                                                  Dim azurek As Vblib.ExifTag = x.GetExifOfType(Vblib.ExifSource.AutoAzure)
+                                                  If azurek?.AzureAnalysis Is Nothing Then Return False
+                                                  Dim listaProb As ListTextWithProbability = TryCast(azurek.AzureAnalysis.GetType.GetProperty(listaPropName).GetValue(azurek.AzureAnalysis), ListTextWithProbability)
+                                                  Dim listaProbBox As ListTextWithProbabAndBox = TryCast(azurek.AzureAnalysis.GetType.GetProperty(listaPropName).GetValue(azurek.AzureAnalysis), ListTextWithProbabAndBox)
+
+                                                  If listaProb Is Nothing AndAlso listaProbBox Is Nothing Then Return False
+                                                  If listaProb IsNot Nothing Then
+                                                      Return listaProb.GetList.Any(Function(y) y.tekst = tag)
+                                                  Else
+                                                      Return listaProbBox.GetList.Any(Function(y) y.tekst = tag)
+                                                  End If
+                                              End Function)
             withKwd.licznik = withKwd.lista.Count
             withKwd.total = total
             ' withKwd.percent będzie policzone przy nowym oknie 
@@ -365,84 +412,6 @@ Public Class PokazStatystyke
         oWnd.Show()
     End Sub
 
-    Private Function AzureByTag(oPic As Vblib.OnePic, tag As String) As Boolean
-        Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
-        If azurek?.AzureAnalysis?.Tags Is Nothing Then Return False
-        Return azurek.AzureAnalysis.Tags.GetList.Any(Function(x) x.tekst = tag)
-    End Function
-
-
-    Private Sub uiPicByAzureObjects_Click(sender As Object, e As RoutedEventArgs)
-        Dim oFE As FrameworkElement = sender
-        If oFE Is Nothing Then Return
-        Dim entry As StatEntry = oFE.DataContext
-        If entry Is Nothing Then Return
-
-        Dim tagi As New List(Of String)
-
-        Dim dstart = Date.Now
-
-        ' wyciągnij listę tagów
-        For Each oPic As Vblib.OnePic In entry.lista
-            Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
-            If azurek?.AzureAnalysis?.Objects Is Nothing Then Continue For
-
-            For Each oTag In azurek.AzureAnalysis.Objects.GetList
-                If tagi.Contains(oTag.tekst) Then Continue For
-
-                tagi.Add(oTag.tekst)
-            Next
-        Next
-
-        'Dim dend = Date.Now
-        'Dim msec = (dend - dstart).TotalMilliseconds
-        'Me.MsgBox("Wynajdowanie wszystkich objektów: " & msec & " msec")
-
-        StatystykaAzureWgListy(entry, tagi, AddressOf AzureByObject)
-
-    End Sub
-
-    Private Function AzureByObject(oPic As Vblib.OnePic, tag As String) As Boolean
-        Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
-        If azurek?.AzureAnalysis?.Objects Is Nothing Then Return False
-        Return azurek.AzureAnalysis.Objects.GetList.Any(Function(x) x.tekst = tag)
-    End Function
-
-    Private Sub uiPicByAzureBrands_Click(sender As Object, e As RoutedEventArgs)
-        Dim oFE As FrameworkElement = sender
-        If oFE Is Nothing Then Return
-        Dim entry As StatEntry = oFE.DataContext
-        If entry Is Nothing Then Return
-
-        Dim tagi As New List(Of String)
-
-        Dim dstart = Date.Now
-
-        ' wyciągnij listę tagów
-        For Each oPic As Vblib.OnePic In entry.lista
-            Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
-            If azurek?.AzureAnalysis?.Brands Is Nothing Then Continue For
-
-            For Each oTag In azurek.AzureAnalysis.Brands.GetList
-                If tagi.Contains(oTag.tekst) Then Continue For
-
-                tagi.Add(oTag.tekst)
-            Next
-        Next
-
-        'Dim dend = Date.Now
-        'Dim msec = (dend - dstart).TotalMilliseconds
-        'Me.MsgBox("Wynajdowanie wszystkich objektów: " & msec & " msec")
-
-        StatystykaAzureWgListy(entry, tagi, AddressOf AzureByBrand)
-
-    End Sub
-
-    Private Function AzureByBrand(oPic As Vblib.OnePic, tag As String) As Boolean
-        Dim azurek As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
-        If azurek?.AzureAnalysis?.Brands Is Nothing Then Return False
-        Return azurek.AzureAnalysis.Brands.GetList.Any(Function(x) x.tekst = tag)
-    End Function
 #End Region
 
     Private Sub uiPicByCamera_Click(sender As Object, e As RoutedEventArgs)

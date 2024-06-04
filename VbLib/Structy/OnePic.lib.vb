@@ -1411,7 +1411,7 @@ Public Class OnePic
             If oExifDate Is Nothing Then oExifDate = oExif
 
             ' jeśli istnieje data zrobienia zdjęcia, to ją bierzemy, jeśli nie - to zakres ze słów kluczowych itp.
-            If oExifDate IsNot Nothing AndAlso oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital Then
+            If oExifDate IsNot Nothing AndAlso (oExif Is Nothing OrElse oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital) Then
                 picMaxDate = oExifDate.DateTimeOriginal
                 picMinDate = oExifDate.DateTimeOriginal
             Else
@@ -1660,6 +1660,13 @@ Public Class OnePic
         If oExif?.AzureAnalysis Is Nothing Then
             If Not query.Azure.AlsoEmpty Then Return False
         Else
+
+            If Not CheckStringList(oExif?.AzureAnalysis?.Brands?.GetList, query.AzureBrands) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Categories?.GetList, query.AzureCategories) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Objects?.GetList, query.AzureObjects) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Landmarks?.GetList, query.AzureLandmarks) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Tags?.GetList, query.AzureTags) Then Return False
+
             Dim sTextDump As String = oExif.AzureAnalysis.ToUserComment
             If Not CheckFieldsTxtValue(sTextDump, query.Azure.FldTxt) Then Return False
 
@@ -1720,6 +1727,32 @@ Public Class OnePic
         End If
 
         Return True
+    End Function
+
+    Private Function CheckStringList(lista As List(Of TextWithProbAndBox), queryMask As String) As Boolean
+        If String.IsNullOrWhiteSpace(queryMask) Then Return True
+        If lista Is Nothing Then Return False
+
+        Dim sklejka As String = ""
+        For Each oEntry As TextWithProbAndBox In lista
+            sklejka = sklejka & " " & oEntry.tekst & " "
+        Next
+
+        Return CheckStringMasks(sklejka, queryMask)
+
+    End Function
+
+    Private Function CheckStringList(lista As List(Of TextWithProbability), queryMask As String) As Boolean
+        If String.IsNullOrWhiteSpace(queryMask) Then Return True
+        If lista Is Nothing Then Return False
+
+        Dim sklejka As String = ""
+        For Each oEntry As TextWithProbability In lista
+            sklejka = sklejka & " " & oEntry.tekst & " "
+        Next
+
+        Return CheckStringMasks(sklejka, queryMask)
+
     End Function
 
     Private Shared Function CheckFieldsTxtValue(textDump As String, fields As QueryPolaTxt4) As Boolean
@@ -1975,12 +2008,17 @@ Public Class OnePic
         Vblib.DumpCurrMethod()
         If Not IO.Path.GetExtension(InBufferPathName).EqualsCI(".nar") Then Return Nothing
 
-        Using oArchive = IO.Compression.ZipFile.OpenRead(InBufferPathName)
-            For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
-                If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
-                Return SingePicFromZipEntry(oInArch)
-            Next
-        End Using
+        ' ominięcie problemu z błędem w NAR (czasem się zdarza po restarcie telefonu)
+        Try
+            Using oArchive = IO.Compression.ZipFile.OpenRead(InBufferPathName)
+                For Each oInArch As IO.Compression.ZipArchiveEntry In oArchive.Entries
+                    If Not IO.Path.GetExtension(oInArch.Name).EqualsCI(".jpg") Then Continue For
+                    Return SingePicFromZipEntry(oInArch)
+                Next
+            End Using
+        Catch ex As Exception
+
+        End Try
 
         Return Nothing
     End Function
