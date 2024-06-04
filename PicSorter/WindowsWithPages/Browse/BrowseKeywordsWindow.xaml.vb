@@ -12,6 +12,10 @@ Public Class BrowseKeywordsWindow
     Private _oNewExif As New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
     Private _readonly As Boolean
 
+    Private _recenty As New List(Of Vblib.OneKeyword)
+
+    Private Const RECENT_LABEL As String = "(recent)"
+
     Public Sub New(bReadOnly As Boolean)
         Me.InitDialogs
 
@@ -174,13 +178,20 @@ Public Class BrowseKeywordsWindow
 
         Dim lKeys As List(Of Vblib.OneKeyword) = GetListOfSelectedKeywords()
         ApplyKeywordsToExif(_oNewExif, lKeys)
+
         Await SetTargetDirByKeywords(uiPinUnpin.EffectiveDatacontext, lKeys)
+
+        ' dodaj do Recent, jeśli tam nie ma (bo .Add daje z duplikatami)
+        For Each kwd As Vblib.OneKeyword In lKeys
+            If Not _recenty.Contains(kwd) Then _recenty.Add(kwd)
+        Next
 
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
         oBrowserWnd.ChangedKeywords(_oNewExif, uiPinUnpin.EffectiveDatacontext)
 
         Application.ShowWait(False)
+
 
     End Sub
 
@@ -192,8 +203,16 @@ Public Class BrowseKeywordsWindow
     Private Sub RefreshLista()
 
         If uiGrupy.SelectedItem Is Nothing Then Return
-        ' step 1: znajdź sId
+
         Dim sId As String = uiGrupy.SelectedItem.Trim
+
+        If sId = RECENT_LABEL Then
+            uiLista.ItemsSource = _recenty
+            Return
+        End If
+
+        ' step 1: znajdź sId
+
         Dim iInd As Integer = sId.IndexOfOrdinal(" ")
         If iInd > 0 Then sId = sId.Substring(0, iInd)
 
@@ -226,6 +245,8 @@ Public Class BrowseKeywordsWindow
 
     Private Sub WypelnCombo()
         uiGrupy.Items.Clear()
+
+        uiGrupy.Items.Add(RECENT_LABEL)
 
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords
             If oItem.SubItems Is Nothing Then Continue For
