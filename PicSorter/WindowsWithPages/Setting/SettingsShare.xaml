@@ -5,8 +5,8 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:PicSorterNS"
       mc:Ignorable="d" 
-      Title="SettingsShare" Loaded="Page_Loaded">
-    <StackPanel Width="170">
+      Title="SettingsShare" Loaded="Page_Loaded" Unloaded="Page_Unloaded">
+    <StackPanel Width="200">
         <TextBlock HorizontalAlignment="Center" FontSize="18" Text="Współpraca" Margin="5,1,5,10"/>
 
         <TextBlock FontSize="14" Text="As a server:" FontWeight="SemiBold" Margin="5,1,5,0"/>
@@ -36,8 +36,8 @@
 
         </Grid>
 
-        
-        
+        <local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="127" />
+
         <TextBlock FontSize="14" Text="As a client:" FontWeight="SemiBold" Margin="5,20,5,0"/>
 
         <Button Content="Servers" Margin="5,10,5,5" FontSize="18" Click="uiShareServers_Click"/>

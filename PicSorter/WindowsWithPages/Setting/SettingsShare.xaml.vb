@@ -24,6 +24,7 @@ Class SettingsShare
         uiMyName.Text = Environment.MachineName
         uiLastAccess.DataContext = Application.gLastLoginSharing
         uiSharingAutoUploadComment.GetSettingsBool
+        uiWebBuffPicLimit.GetSettingsInt()
         _loading = False
     End Sub
 
@@ -55,5 +56,10 @@ Class SettingsShare
 
     Private Sub uiSharingAutoUploadComment_Checked(sender As Object, e As RoutedEventArgs)
         uiSharingAutoUploadComment.SetSettingsBool
+    End Sub
+
+    Private Sub Page_Unloaded(sender As Object, e As RoutedEventArgs)
+        uiWebBuffPicLimit.SetSettingsInt()
+
     End Sub
 End Class
