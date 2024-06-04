@@ -11,8 +11,15 @@ Imports Vblib
 Public Class AutoTags
 
     Private _lista As List(Of JedenEngine)
+    Private _stopArchiving As Boolean
 
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
+
+        If uiGetAll.Content = " STOP " Then
+            _stopArchiving = True
+            Me.ProgRingSetText("stopping")
+            Return
+        End If
 
         Dim iSelected As Integer = 0
         For Each oSrc As JedenEngine In _lista
@@ -68,7 +75,7 @@ Public Class AutoTags
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
-        Me.ProgRingInit(True, False)
+        Me.ProgRingInit(True, True)
 
         _lista = New List(Of JedenEngine)
         Dim iMax As Integer = Application.GetBuffer.Count
@@ -114,9 +121,8 @@ Public Class AutoTags
         Me.ProgRingShow(True)
         Me.ProgRingSetText(oSrc.engine.Nazwa)
 
-        uiProgBarInEngine.Maximum = oSrc.maxCount
-        uiProgBarInEngine.Value = 0
-        uiProgBarInEngine.Visibility = Visibility.Visible
+        Me.ProgRingSetMax(oSrc.maxCount)
+        Me.ProgRingSetVal(0)
 
         'If oSrc.engine.Nazwa = "AUTO_GUID" Then
         '    Dim bAny As Boolean = Application.GetBuffer.GetList.Any(Function(x) Not String.IsNullOrWhiteSpace(x.PicGuid))
@@ -138,6 +144,8 @@ Public Class AutoTags
         '        End If
         '    End If
         'End If
+
+        uiGetAll.Content = " STOP "
 
         ' musi być tutaj, bo inaczej pierwszy błąd z GetForFile kończy sprawdzanie :) 
         Auto_AzureTest._AzureExceptionsGuard = 2 ' po 4 exception ma przestać sprawdzać
@@ -166,9 +174,11 @@ Public Class AutoTags
 
             ' tu dodawać True Or jakby miały być powtarzane przebiegi po zmianie w kodzie
             If oItem.GetExifOfType(oSrc.nazwa) Is Nothing Then
+
                 ' dla AUTO_GUID zawsze wejdzie, ale to obsłużymy w GetForFile
-                Dim oExif As Vblib.ExifTag = Await oSrc.engine.GetForFile(oItem)
+                Dim oExif As Vblib.ExifTag = Await Task.Run(Async Function() Await oSrc.engine.GetForFile(oItem))
                 ' dla AUTO_GUID będzie NULL, ale i tak zmienione tagi są
+
                 If oExif IsNot Nothing Then
                     oItem.ReplaceOrAddExif(oExif)
                     oItem.TagsChanged = True
@@ -179,10 +189,12 @@ Public Class AutoTags
                 maxGuard -= 1
                 If maxGuard < 1 Then Exit For
             End If
-            uiProgBarInEngine.Value += 1
+            Me.ProgRingInc
+
+            If _stopArchiving Then Exit For
         Next
 
-        uiProgBarInEngine.Visibility = Visibility.Collapsed
+        'uiProgBarInEngine.Visibility = Visibility.Collapsed
 
         ' Application.ShowWait(False)
         Me.ProgRingShow(False)
