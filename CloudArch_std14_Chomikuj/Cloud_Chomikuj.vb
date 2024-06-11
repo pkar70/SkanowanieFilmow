@@ -1,9 +1,8 @@
 
-Imports System.Net.Mime
-Imports System.Runtime.CompilerServices
-Imports System.Text
+Imports Chomikuj
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.DotNetExtensions
 
 ' chomikuj: https://github.com/brogowski/ChomikujApi
 
@@ -21,37 +20,59 @@ Public Class Cloud_Chomikuj
 
     Public Overrides Property sProvider As String = PROVIDERNAME
 
+    Private _lastTargetDir As String
+    Private _lastChomikDir As Chomikuj.ChomikujDirectory
+    Private _lastChomikFiles As List(Of ChomikujFile)
+
     Public Overrides Async Function SendFileMain(oPic As Vblib.OnePic) As Task(Of String)
 
         If Not _loggedIn Then Await Login()
         If Not _loggedIn Then Return "ERROR cannot login"
 
-        Dim oDir As Chomikuj.ChomikujDirectory = TryCreateDirectoryTree(GetFolderForFile(oPic))
-        If oDir Is Nothing Then Return "ERROR: cannot get/create dirs path"
-
-        Dim oFile As New Chomikuj.NewFileRequest
-        oFile.FileName = oPic.sSuggestedFilename
-        oPic._PipelineOutput.Seek(0, IO.SeekOrigin.Begin)
-        oFile.FileStream = oPic._PipelineOutput
-        ' oFile.ContentType = "image/" ' jpeg, png, tiff, avi, itp.
-        oFile.ContentType = MimeTypes.MimeTypeMap.GetMimeType(IO.Path.GetExtension(oPic.InBufferPathName))
-
-        oDir.UploadFile(oFile)
-
-        Dim oRemoteFile As Chomikuj.ChomikujFile = oDir.GetFile(oPic.sSuggestedFilename)
-        If oRemoteFile Is Nothing Then
-            ' 2024.03.07 mo¿e jednak siê uda³o, tylko trzeba by³o poczekaæ
-            Await Task.Delay(2 * 1000)
-            oRemoteFile = oDir.GetFile(oPic.sSuggestedFilename)
-            If oRemoteFile Is Nothing Then Return "ERROR: unsuccessfull upload"
-            DumpMessage("siê jednak uda³o, po odczekaniu 2 sekund")
+        Dim currFolder As String = GetFolderForFile(oPic)
+        Dim oDir As Chomikuj.ChomikujDirectory
+        If _lastTargetDir = currFolder Then
+            oDir = _lastChomikDir
+        Else
+            oDir = TryCreateDirectoryTree(currFolder)
+            If oDir IsNot Nothing Then
+                _lastTargetDir = currFolder
+                _lastChomikDir = oDir
+                _lastChomikFiles = oDir.GetFiles.ToList
+            End If
         End If
 
-        Dim sCaption As String = oPic.GetDescriptionForCloud
-        sCaption = sCaption & vbCrLf & "Keywords: " & oPic.GetAllKeywords
-        sCaption = sCaption & vbCrLf & "Full data: " & vbCrLf & oPic.DumpAsJSON
+        If oDir Is Nothing Then Return "ERROR: cannot get/create dirs path"
 
-        If Not String.IsNullOrWhiteSpace(sCaption) Then oRemoteFile.AddComment(sCaption)
+        If _lastChomikFiles.Any(Function(x) x.Title.EqualsCI(oPic.sSuggestedFilename)) Then
+            ' jeœli ju¿ plik mamy, to nie wysy³amy ponownie (stan mo¿liwy po crash po wys³aniu wielu)
+            DumpMessage($"Plik {oPic.sSuggestedFilename} in {oPic.TargetDir} ju¿ jest cloudniêty")
+        Else
+            Dim oFile As New Chomikuj.NewFileRequest
+            oFile.FileName = oPic.sSuggestedFilename
+            oPic._PipelineOutput.Seek(0, IO.SeekOrigin.Begin)
+            oFile.FileStream = oPic._PipelineOutput
+            ' oFile.ContentType = "image/" ' jpeg, png, tiff, avi, itp.
+            oFile.ContentType = MimeTypes.MimeTypeMap.GetMimeType(IO.Path.GetExtension(oPic.InBufferPathName))
+
+            oDir.UploadFile(oFile)
+
+            Dim oRemoteFile As Chomikuj.ChomikujFile = oDir.TryGetFileFromNewest(oPic.sSuggestedFilename)
+            If oRemoteFile Is Nothing Then
+                ' 2024.03.07 mo¿e jednak siê uda³o, tylko trzeba by³o poczekaæ - albo w pe³nej liœcie trzeba sprawdziæ
+                Await Task.Delay(2 * 1000)
+                oRemoteFile = oDir.GetFile(oPic.sSuggestedFilename)
+                If oRemoteFile Is Nothing Then Return "ERROR: unsuccessfull upload"
+                DumpMessage("siê jednak uda³o, po odczekaniu 2 sekund")
+            End If
+
+            Dim sCaption As String = oPic.GetDescriptionForCloud
+            sCaption = sCaption & vbCrLf & "Keywords: " & oPic.GetAllKeywords
+            sCaption = sCaption & vbCrLf & "Full data: " & vbCrLf & oPic.DumpAsJSON
+
+            If Not String.IsNullOrWhiteSpace(sCaption) Then oRemoteFile.AddComment(sCaption)
+
+        End If
 
         oPic.AddCloudArchive(konfiguracja.nazwa)
 
@@ -283,5 +304,16 @@ Module Extensions
 
         Return Nothing
     End Function
+
+    <Runtime.CompilerServices.Extension>
+    Public Function TryGetFileFromNewest(ByVal oDir As Chomikuj.ChomikujDirectory, sFilename As String) As Chomikuj.ChomikujFile
+        vb14.DumpCurrMethod($"(oDir={oDir.Title}, {sFilename}")
+        For Each oFile As Chomikuj.ChomikujFile In oDir.GetNewestFiles
+            If oFile.Title.ToLower = sFilename.ToLower Then Return oFile
+        Next
+
+        Return Nothing
+    End Function
+
 
 End Module
