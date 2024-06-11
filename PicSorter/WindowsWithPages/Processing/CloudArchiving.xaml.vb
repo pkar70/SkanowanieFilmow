@@ -164,7 +164,10 @@ Public Class CloudArchiving
         'Dim serNoLastArchived As Integer = vb14.GetSettingsInt("serNoLastArchived")
         'Dim serNoLastArchivedInit As Integer = serNoLastArchived
 
+        Dim iCntSend As Integer = 0
+
         For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            If _stopArchiving Then Exit For
             Dim sErr1 As String = ""
             Me.ProgRingInc
 
@@ -210,8 +213,16 @@ Public Class CloudArchiving
                 Continue For ' nieudane!
             End If
 
+            iCntSend += 1
+            If iCntSend > 200 Then
+                ' zapisywanie co x zdjęć - żeby się zabezpieczyć przed CRASH
+                Me.ProgRingSetText("saving metadata...")
+                Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
+                Me.ProgRingSetText(oSrc.nazwa)
+                iCntSend = 0
+            End If
+
             Await Task.Delay(2) ' na wszelki wypadek, żeby był czas na przerysowanie progbar
-            If _stopArchiving Then Exit For
         Next
 
         'If serNoLastArchivedInit <> serNoLastArchived Then
