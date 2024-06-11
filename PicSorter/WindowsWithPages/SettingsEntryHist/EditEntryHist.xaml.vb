@@ -36,8 +36,7 @@ Public Class EditEntryHist
         For Each item As String In _lista.GetList
             lLista.Add(New StringToList(item))
         Next
-
-        uiLista.ItemsSource = lLista
+        uiLista.ItemsSource = lLista.OrderBy(Of String)(Function(x) x.itemText)
     End Sub
 
     Private Async Sub uiAdd_Click(sender As Object, e As RoutedEventArgs)
