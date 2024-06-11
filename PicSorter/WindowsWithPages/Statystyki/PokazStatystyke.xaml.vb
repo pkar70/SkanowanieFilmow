@@ -340,6 +340,9 @@ Public Class PokazStatystyke
     Private Sub uiPicByAzureBrands_Click(sender As Object, e As RoutedEventArgs)
         PicByAzureListProperty(sender, "Brands")
     End Sub
+    Private Sub uiPicByAzureCelebrities_Click(sender As Object, e As RoutedEventArgs)
+        PicByAzureListProperty(sender, "Celebrities")
+    End Sub
 
     Private Sub PicByAzureListProperty(sender As Object, listaPropName As String)
         Dim oFE As FrameworkElement = sender

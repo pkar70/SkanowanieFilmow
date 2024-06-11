@@ -76,6 +76,7 @@
                                     <MenuItem Header="by brands" Click="uiPicByAzureBrands_Click"  />
                                     <MenuItem Header="by categories" Click="uiPicByAzureCategories_Click"  />
                                     <MenuItem Header="by landmarks" Click="uiPicByAzureLandmarks_Click"  />
+                                    <MenuItem Header="by celebrities" Click="uiPicByAzureCelebrities_Click"  />
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Header="Miniaturki" Click="uiShowThumbs_Click" />
