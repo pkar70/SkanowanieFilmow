@@ -188,22 +188,28 @@ Public Class SearchWindow
         _query = Await uiKwerenda.QueryValidityCheck
         If _query Is Nothing Then Return
 
+
+
         ' przeniesienie z UI do _query - większość się zrobi samo, ale daty - nie
         Dim iCount As Integer
         'If _inputList Is Nothing Then
         '    iCount = Szukaj(_fullArchive.GetList, _query)
         'Else
+        Dim dtStart As Date = Date.Now
         iCount = Await Szukaj(_inputList, _query)
         'End If
+        Dim dtEnd As Date = Date.Now
+
+        Dim msec As String = $"[{(dtEnd - dtStart).TotalSeconds.ToString("F1")} sec]"
 
         If iCount < 1 Then
             uiLista.ItemsSource = Nothing
             uiListaKatalogow.ItemsSource = Nothing
-            uiResultsCount.Text = $"Nic nie znalazłem (w {_initialCount})."
+            uiResultsCount.Text = $"Nic nie znalazłem (w {_initialCount}) {msec}."
             Return
         End If
 
-        uiResultsCount.Text = $"Found {iCount} items (from {_initialCount})."
+        uiResultsCount.Text = $"Found {iCount} items (from {_initialCount}) {msec}."
 
         Dim startTime As Date = Date.Now
 
@@ -222,7 +228,17 @@ Public Class SearchWindow
             Dim listaFolderow As New List(Of Vblib.OneDir)
             For Each nazwa As String In From c In listaNazwFolderow Order By c Distinct
                 Dim oFolder As Vblib.OneDir = Application.GetDirTree.GetDirFromTargetDir(nazwa)
-                If oFolder IsNot Nothing Then listaFolderow.Add(oFolder)
+                If oFolder Is Nothing Then
+                    oFolder = New Vblib.OneDir
+                    oFolder.fullPath = nazwa
+                    'Public Property sId As String
+                    ''Public Property sDisplayName As String
+                    'Public Property notes As String: nie ma
+                    'Public Property denyPublish As Boolean
+                    'Public Property SubItems As List(Of OneDir)
+                    'Public Property sParentId As String
+                End If
+                listaFolderow.Add(oFolder)
             Next
 
             'stopTime = Date.Now
@@ -274,7 +290,7 @@ Public Class SearchWindow
 
 
     Private Sub uiSubSearch_Click(sender As Object, e As RoutedEventArgs)
-        vb14.DialogBox("jeszcze nie umiem")
+        Me.msgBox("jeszcze nie umiem")
     End Sub
 
     Private Sub uiGoMiniaturki_Click(sender As Object, e As RoutedEventArgs)
@@ -283,7 +299,9 @@ Public Class SearchWindow
 
         Dim lista As New Vblib.BufferFromQuery()
 
-        For Each oPic As Vblib.OnePic In _queryResults
+        ' = _queryResults
+
+        For Each oPic As Vblib.OnePic In uiLista.SelectedItems
 
             For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
                 'vb14.DumpMessage($"trying archive {oArch.StorageName}")
