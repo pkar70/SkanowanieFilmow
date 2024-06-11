@@ -65,6 +65,15 @@ namespace Chomikuj
             return IsSinglePage(html) ? GetFilesFromPage(html) : GetFilesFromAllPages();
         }
 
+        // PKAR, nie by³o takiej funkcji
+        public IEnumerable<ChomikujFile> GetNewestFiles()
+        {
+            var response = _base.RestClient.Get(new Request(Link));
+            var html = new HtmlDocument();
+            html.LoadHtml(response.Content);
+            return GetFilesFromPage(html) ;
+        }
+
         public void CreateSubDirectory(NewFolderRequest newFolder)
         {
             var request = BuildNewFolderRequest(newFolder);
@@ -228,7 +237,8 @@ namespace Chomikuj
         private bool IsLastPage(HtmlDocument html)
         {
             //return html.DocumentNode.QuerySelectorAll(".right.disabled").Any();
-            return html.DocumentNode.SelectNodes("//.right.disabled").Any();
+            //return html.DocumentNode.SelectNodes("//.right.disabled").Any();
+            return !(html.DocumentNode.SelectSingleNode(".//span[@class='right disabled']") == null);
         }
 
         private Request GetPageRequest(int pageNr, SortType sortType, OrderBy orderBy)
@@ -274,8 +284,9 @@ namespace Chomikuj
 
         private bool IsSinglePage(HtmlDocument html)
         {
-            return html.DocumentNode.SelectSingleNode(".//@paginator") == null;
             // return html.DocumentNode.QuerySelector(".paginator") == null;
+            //return html.DocumentNode.SelectSingleNode(".//@paginator") == null;
+            return html.DocumentNode.SelectSingleNode(".//div[contains(@class,'paginator')]") == null;
         }
 
 
