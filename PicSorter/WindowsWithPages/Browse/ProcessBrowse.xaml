@@ -45,7 +45,6 @@
                                 <VirtualizingStackPanel Orientation="Vertical"/>
                             </ItemsPanelTemplate>
                         </Menu.ItemsPanel>
-                        <MenuItem Header="all" Click="uiFilterAll_Click" />
                         <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
                         <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" />
                         <MenuItem Header="bez realdate" Click="uiFilterNoRealDate_Click" />
@@ -64,6 +63,7 @@
                             <MenuItem Header="by brand..." Click="uiFilterAzureBrand_Click" />
                             <MenuItem Header="by category..." Click="uiFilterAzureCategories_Click" />
                             <MenuItem Header="by landmark..." Click="uiFilterAzureLandmarks_Click" />
+                            <MenuItem Header="by celebrities..." Click="uiFilterAzureCelebrities_Click" />
                             <Separator/>
                             <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
                         </MenuItem>
@@ -77,11 +77,14 @@
                             <MenuItem Header="Cudze" Click="uiFilterCudze_Click" />
                             <MenuItem Header="remote desc" Click="uiFilterRemoteDesc_Click" />
                         </MenuItem>
-                        <MenuItem Header="Full search" Click="uiFilterSearch_Click" />
-                        <MenuItem Header="reverse" Click="uiFilterReverse_Click" />
-                        <MenuItem Header="none" Click="uiFilterNone_Click" />
+                        <MenuItem Header="addytywne »">
+                            <MenuItem Header="none" Click="uiFilterNone_Click" />
+                            <MenuItem Header="Full search" Click="uiFilterSearch_Click" />
+                            <MenuItem Header="reverse" Click="uiFilterReverse_Click" />
+                            <MenuItem Header="all" Click="uiFilterAll_Click" />
+                        </MenuItem>
                     </Menu>
-                    </Popup>
+                </Popup>
 
                 <ComboBox Name="uiComboSize" Margin="15,0,15,0" SelectionChanged="uiComboSize_SelectionChanged">
                     <ComboBoxItem Content="fit all" IsSelected="true" />
@@ -150,7 +153,7 @@
                         <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
                         <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
                         <local:PicMenuOCR MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
-                        <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" UseSelectedItems="True"/>
+                        <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" UseSelectedItems="True"/>
                         <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
                         <!--<MenuItem Header="Add link" Click="uiAddLink_Click" />-->
                         <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiGeotagMetadataChanged" UseSelectedItems="True" />
@@ -245,7 +248,7 @@
                                             <local:PicMenuBatchProc UseProgBar="True" MetadataChanged="uiMetadataChanged" />
                                             <!-- sequence step GEOTAG -->
                                             <local:PicMenuGeotag MetadataChanged="uiGeotagMetadataChanged" />
-                                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" />
+                                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" />
                                             <!-- sequence step AUTOTAGs -->
                                             <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
                                             <!-- sequence step PUBLISH, ARCHIVE -->
@@ -270,10 +273,10 @@
                             <!--<TextBlock Margin="0,1,0,2" Text="{Binding podpis}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding podpis, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sSourceName}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSource, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sSuggestedFilename}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisFilename, Converter={StaticResource KonwersjaVisibility}}" />
-                            <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sumOfKwds}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisKeywords, Converter={StaticResource KonwersjaVisibility}}" />
-                            <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sumOfDescr, Converter={StaticResource KonwersjaDescrIgnoreNewLine}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDescription, Converter={StaticResource KonwersjaVisibility}}" />
+                            <TextBlock Margin="0,0,0,0" Text="{Binding sumOfKwds}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisKeywords, Converter={StaticResource KonwersjaVisibility}}" />
+                            <TextBlock Margin="0,0,0,0" Text="{Binding sumOfDescr, Converter={StaticResource KonwersjaDescrIgnoreNewLine}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDescription, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sInSourceID, Converter={StaticResource KonwersjaSourcePath2Podpis}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSrcPath, Converter={StaticResource KonwersjaVisibility}}" HorizontalAlignment="Left"/>
-                            <TextBlock Margin="0,0,0,0" Text="{Binding oPic.TargetDir}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisTarget, Converter={StaticResource KonwersjaVisibility}}" />
+                            <TextBlock Margin="0,0,0,0" Text="{Binding TargetDir}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisTarget, Converter={StaticResource KonwersjaVisibility}}" />
                         </StackPanel>
                     </StackPanel>
                 </DataTemplate>

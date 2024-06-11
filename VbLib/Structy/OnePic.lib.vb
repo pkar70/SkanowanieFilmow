@@ -85,6 +85,11 @@ Public Class OnePic
     <Newtonsoft.Json.JsonIgnore>
     Public Property sumOfDescr As String
 
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sumOfUserComment As String
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sumOfGeo As BasicGeoposWithRadius
+
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()
         sSourceName = sourceName
@@ -1530,7 +1535,10 @@ Public Class OnePic
             If geotag Is Nothing Then
                 If Not query.ogolne.geo.AlsoEmpty Then Return False
             Else
-                If Not geotag.IsInsideCircle(query.ogolne.geo.Location) Then Return False
+                ' używam Clone, bo w ten sposób kasuję niepewność zdjęcia - zostawiając niepewność z query.Geo
+                Dim klongeo As BasicGeoposWithRadius = geotag.Clone
+                If query.ogolne.geo.OnlyExact Then klongeo.Radius = 10
+                If Not klongeo.IsInsideCircle(query.ogolne.geo.Location) Then Return False
             End If
         End If
 
@@ -1661,19 +1669,25 @@ Public Class OnePic
             If Not query.Azure.AlsoEmpty Then Return False
         Else
 
-            If Not CheckStringList(oExif?.AzureAnalysis?.Brands?.GetList, query.AzureBrands) Then Return False
-            If Not CheckStringList(oExif?.AzureAnalysis?.Categories?.GetList, query.AzureCategories) Then Return False
-            If Not CheckStringList(oExif?.AzureAnalysis?.Objects?.GetList, query.AzureObjects) Then Return False
-            If Not CheckStringList(oExif?.AzureAnalysis?.Landmarks?.GetList, query.AzureLandmarks) Then Return False
-            If Not CheckStringList(oExif?.AzureAnalysis?.Tags?.GetList, query.AzureTags) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Brands?.GetList, query.Azure.Brands) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Categories?.GetList, query.Azure.Categories) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Objects?.GetList, query.Azure.Objects) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Landmarks?.GetList, query.Azure.Landmarks) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Tags?.GetList, query.Azure.Tags) Then Return False
+
+            If Not CheckStringList(oExif?.AzureAnalysis?.Celebrities?.GetList, query.Azure.Celebrities) Then Return False
+            If Not CheckStringList(oExif?.AzureAnalysis?.Captions?.GetList, query.Azure.Captions) Then Return False
+            If Not CheckStringMasks(oExif?.AzureAnalysis?.Colors?.DominantColorBackground, query.Azure.DominantColorBackground) Then Return False
+            If Not CheckStringMasks(oExif?.AzureAnalysis?.Colors?.DominantColorForeground, query.Azure.DominantColorForeground) Then Return False
+            If Not CheckStringMasks(oExif?.AzureAnalysis?.Colors?.DominantColors, query.Azure.DominantColors) Then Return False
+            If Not CheckStringMasks(oExif?.AzureAnalysis?.Wiekowe, query.Azure.Wiekowe) Then Return False
 
             Dim sTextDump As String = oExif.AzureAnalysis.ToUserComment
-            If Not CheckFieldsTxtValue(sTextDump, query.Azure.FldTxt) Then Return False
 
             ' wspóne - tekst w paru miejscach: Descriptions,  Folder, Filename, OCR, Azure description
-            If Not String.IsNullOrEmpty(query.ogolne.Gdziekolwiek) Then
-                If Not CheckStringMasksNegative(sTextDump, query.ogolne.Gdziekolwiek) Then Return False
-                If CheckStringMasks(sTextDump, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
+            If Not String.IsNullOrEmpty(query.Azure.Anywhere) Then
+                If Not CheckStringMasksNegative(sTextDump, query.Azure.Anywhere) Then Return False
+                If CheckStringMasks(sTextDump, query.Azure.Anywhere) Then bGdziekolwiekMatch = True
             End If
 
         End If
@@ -2065,12 +2079,49 @@ Public Class OnePic
 
 #End Region
 
+    Private Function GetSumOfUserComment() As String
+        '5053 "ExifSource": "MANUAL_TAG" - opisy słów kluczowych
+        '   1100ExifSource" "MANUAL_TAG",
+
+        '   7487ExifSource": "AUTO_AZURE",
+        '   15853"ExifSource": "AUTO_AZURE",
+
+        '   1    "ExifSource": "AUTO_OCR",
+        '   15951"ExifSource": "AUTO_WINOCR",
+        '   8438ExifSource": "AUTO_WINOCR",
+
+        '   8837ExifSource" "SOURCE_DEFAULT",
+
+        '   3745 "ExifSource": "SOURCE_FILEATTR",
+        '   2289ExifSource" "SOURCE_FILEATTR",
+
+        '   6    "ExifSource": "AUTO_EXIF",
+
+        '   14593"ExifSource": "SOURCE_DEFAULT",
+        '   2615ExifSource": "SOURCE_DESCRIPT.ION",
+        '   4076 "ExifSource": "SOURCE_DESCRIPT.ION",
+
+        Dim sumKwd As String = ""
+        If Exifs IsNot Nothing Then
+            For Each oExif As ExifTag In Exifs
+                If oExif.ExifSource = Vblib.ExifSource.AutoAzure Then Continue For
+
+                sumKwd = sumKwd.ConcatenateWithPipe(oExif.UserComment)
+            Next
+        End If
+
+        Return sumKwd
+
+    End Function
+
     ''' <summary>
     ''' wylicza wszystkie "summary", pola ktore nie są zapisywane
     ''' </summary>
     Public Sub RecalcSumsy()
         sumOfDescr = GetSumOfDescriptionsText()
         sumOfKwds = GetAllKeywords() & " " ' zapewnienie spacji do szukania
+        sumOfUserComment = GetSumOfUserComment()
+        sumOfGeo = GetGeoTag()
     End Sub
 
 End Class

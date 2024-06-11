@@ -111,6 +111,8 @@ MenuItem.SubmenuOpened Event
 * JPS: tworzenie thumb, blokada crop, do Azure/Face/OCR tylko połowę odsyła
 == SORTED:
 
+OGOLNE: robić więcej try/catch w funkcjach, z me.msgboxasync(err), i return z default (niepsującym)
+
 ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
 * wymaga zmian w archfull.json!
 * robienie tego w batchach, np. po 1000 zdjęć
@@ -121,8 +123,6 @@ ARCHIVE/PUBLISH: czemu archiwizuje png/thumbsy (czasem)? a może je tworzy przy 
 ARCHIVE/PUBLISH: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 ARCHIVE: katalog Target, oraz katalog TargetScan ?
 ARCHIVE/PUBLISH: nowy atrybut: filter, zgodny z Search/UserControl
-ARCHIVE(local): ewentulanie usuwac z IsCloudPublishMentioned entries "L:<loginguid>" przed archiwizacja, zob. newlyArchived.Add(oPic)
-ARCHIVE: progbar, i task.run
 
 AUTOEXIF tylko pilnowac autoexifów zeby nie poszly na NAR/AVI (postprocesing, itp.)
 AUTOEXIF z AVI: Windows/exiftool pokazuje np. date created, a aktualna library nie? MOV/MP4 ok. To RIFF, see below.
@@ -131,7 +131,6 @@ AUTOEXIF RAF?
 
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
-AUTOTAG: może progressbar przy pelnej archiwizacji innego koloru niz czesciowa archiwizacja? a moze wygaszanie [Run] czy tp.?
 
 AUTOTAG: rozpoznawanie zwierząt, roślin, samochodów
 
@@ -147,16 +146,12 @@ BROWSER: DRAG&drop, może z odpalaniem dedykowanego publish? (o nazwie "drag") -
 BROWSER: open folder (explorer, albo i lista w Settingsach)
 BROWSER: kasując pliki ("już wysłane") nie kasuje BAKów?
 BROWSER: drop katalogu jako adhoc
-BROWSER: add keywords, dodać gren('  ',' ') i spacja na koniec zawsze
 BROWSER: usunac wpelni zarchiwizowane, YES - to pytanie o backup config, ten sam co w Settings - tu dodac tez backupowanie bazy danych
-BROWSER: slideshow z zaznaczonych? w ten sposób można byłoby szukać niewidocznej selekcji (filter, action filter->select, action slideshow)
 BROWSER: blokować akcje InArchive gdy jest read-only
-BROWSER: do listy publisherów dodawać "sharin»", pod nim "logins/servers", z listami zdefiniowanych
 BROWSER: droptarget, zassanie pliku; a jak shellobject, to razem z metadanymi?
-BROWSER: dodawanie pliku jak z FB, z podaniem linku, informacji, itp.
 BROWSER: filtry: filtr "grdziekolwiek" jako wrapper do istniejacego 'full'
 BROWSER: kasowanie w pełni zarchiwizowanych - z progring
-
+BROWSER: rozmiar _thumbspickow? https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.sizeof?view=net-8.0
 CMDLINE: retrieve SOURCE
 CMDLINE: autotag TAGGER
 
@@ -213,7 +208,6 @@ RETRIEVE typ: chomikuj? z podanego katalogu? do dzielenia się z innymi?
 RETRIEVE: dla Purge, progressbar od nowa
 RETRIEVE: reakcja na disk full (sprawdzenie przed próbą ściągania)
 RETRIEVE Jako reakcja na drag&DROP
-RETRIEVE run AUTOEXIF gdy settings tak mówi
 RETRIEVE: bez sensu mozliwosc maxymalizacji okna
 
 
@@ -221,8 +215,9 @@ SEARCH: sekcja OPAD
 SEARCH: wirtualne katalogi z query można robić
 SEARCH: Export jako JSON i dodać to do UserGuide jako definicje tych examplów które tam są, może jako drag&drop?
 SEARCH: poza tagiem również tagi nadrzędne (-ROK dla -DW)
-SEARCH: czemu progring się zatrzymuje?
+SEARCH: czemu progring się zatrzymuje? - bo jest niby po szukaniu, ale przed zamianą IEnum na List
 SEARCH: może "copy to buffer", dla udostępniania? Z zaznaczeniem w OnePic że tego zdjęcia nie-auto-usuwać jako zarchiwizowanego
+
 
 
 SEARCHBYPIC: Bing umie http://, ale nie umie z portu
@@ -235,39 +230,22 @@ SETTINGS: umożliwienie kilku instancji jednocześsnie
 SETTINGS: PEER: gdy w Browse zaznaczam dla kogoś, to można byłoby komponować emaila (masz nowe zdjęcia), z picsort://
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
+SETTINGS:SEARCHbyAzure: próg probability konieczny do użycia przy search by tag/object (w PicMenuSearchArchive)
 
 SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
 SHOWBIG: drag source (duży plik, nie ikonka jak z Browse)
-DONE SHOWBIG home/end w showbig?
 
-
-STEREO:BUG: podczas pakowania do stereo.zip, zapisuje sobie jedną ramkę jako "purge", a to jeszcze nieprawda
-STEREO: a) save stereoimage, korzystając z clipboard (nazwa anaglyph, wraz ze ścieżką)
-STEREO: b) autoalign
-STEREO: c) save ponownie
-STEREO: - moze da sie wyslac kbd do procesu? zeby wiecej sam robił :)
-STEREO: dla Publish, jeśli są Processing, to wyciąga z wnętrza JPGa (nar, zip); oLogin.processing
 STEREO: * klatka z przystawki, left=right=jps
-STEREO: * belplasca: left+rigt = jps ## DONE
 STEREO: * anaglyph z sieci
 STEREO: * jps z sieci
-STEREO: * telefony rowne  ## DONE
-STEREO: * telefony różne
 
-TEMP serno - żeby nie psuło w SQL! (DatabaseSQL, 3 wystąpienia)
-TEMP uiSerNoDigits
-TEMP wyszukiwanie dla peer nowszych - wedle serno teraz mozna zawsze, nie tylko w SQL :)
-TEMP  - zmiana protokolu
-TEMP skoro SQL ma wlasna definicje OnePic, sprawdzic co jeszcze sie zmienilo :) [inherits?]
-TEMP sprawdzic eksport do SQL czy zadziala
-TEMP przesledzic dopisywanie remote description do bufora - tak zeby to zadzialalo
-TEMP uniqid - moj w OnePic, ale w EXIF tez, bo mozna odczytac (i wstawic do AUTOEXIF), tak samo reel
-TEMP szukanie wedle guid jako most probably date
 TEMP szukanie min/max date, datetimepicker?
 TEMP konwersja z 'dateprefix' na min/max, 1970, 1970.05, 1970.05.23, 1970.05.23 17 -
 
-STRUCT.ROLL (REEL) Add roll: okienko na prefix, i up/down (tzn. "127.01", i dodaje ".01" w górę, albo ".xx" w dół do ".01")
-STRUCT.ROLL dodawanie tego do EXIFbasic, oraz w ogole do EXIF - to już jest, bo jest takie pole, ale nie w OnePic tylko w ExifTag
+STRUCT.REEL Add roll: okienko na prefix, i up/down (tzn. "127.01", i dodaje ".01" w górę, albo ".xx" w dół do ".01")
+STRUCT.REEL dodawanie tego do EXIFbasic, oraz w ogole do EXIF - to już jest, bo jest takie pole, ale nie w OnePic tylko w ExifTag
+REEL: jako film, album, pudełko - nadawane przy import z katalogu, albo potem po wczytaniu
+REEL: sortowanie dalej tematycznie (choć się rozrośnie TargetDir, a reel mogłoby być .\reel\struktura, pamiętana nawet bez ostatniego członu - dw\alb, juz bez dw\alb\alb01, i dw\127 bez dw\127\12)
 
 sharesrv.uploadprocessing
 archive.processing
@@ -281,22 +259,56 @@ TELEFON: eksporter do chomikuj różnych
 TELEFON: click po lewej stronie ekranu - prev, po prawej - next
 
 
-REEL: jako film, album, pudełko - nadawane przy import z katalogu, albo potem po wczytaniu
-REEL: sortowanie dalej tematycznie (choć się rozrośnie TargetDir, a reel mogłoby być .\reel\struktura, pamiętana nawet bez ostatniego członu - dw\alb, juz bez dw\alb\alb01, i dw\127 bez dw\127\12)
-
-
-
 Drobne:
 * nie robi kopii do OneDrive - a włączenie robienia kopii powinno robić kopię "aktualną" [bo tylko z settings.dirtree aktualizuje plik]
 * czy archive.add zmienia tylko to co na dysku, czy także to co już wczytane do pamięci?
 * nunget, me.prgringgetlevel - jak głęboko zagnieżdżony, może się kiedyś przydać
-* add udostępnienia - fun bool, i false gdy już za dużo udostępnień (licznik zszedł do zera) oraz gdy otrzymany od tego komu się miałoby udostępnić (żeby wyłączyć pętle)
+* add udostępnienia - funct bool, i false gdy już za dużo udostępnień (licznik zszedł do zera) oraz gdy otrzymany od tego komu się miałoby udostępnić (żeby wyłączyć pętle)
 * addpeer - automatycznie wedle kwd, badz pole login.autoAllowKwds
 
 Duże:
 * dodatkowe typy: +screenshot
 * import ze screenshot (katalogu tamtejszego, path z systemu brany)
 * automatyczne tagowanie wielkanocy? (=KalWlk)
+
+* przebudowa na kilka app:
+AppDomain.CurrentDomain.UnhandledException: This event handles exceptions thrown from all threads in the AppDomain. If an unhandled exception occurs, the application terminates after catching it here.
+Dispatcher.UnhandledException: Use this event to handle exceptions thrown from a single specific UI dispatcher thread. It’s suitable when dealing with a single WPF thread.
+Application.Current.DispatcherUnhandledException: This event handles exceptions thrown from the main UI dispatcher thread in your WPF application. It’s the most common choice for handling UI exceptions1.
+
+var t = new Thread(BackgroundTask);
+t.Name = "My Thread";
+t.Priority = ThreadPriority.AboveNormal;
+t.Start("Thread");
+
+Use this approach if you need a dedicated thread running for the lifetime of your application1.
+
+https://www.markheath.net/post/starting-threads-in-dotnet
+
+
+Action<string> d = BackgroundTask;
+d.BeginInvoke("BeginInvoke", null, null);
+
+You put the code for your background thread into the DoWork event handler of the background worker:
+
+backgroundWorker1.DoWork += BackgroundWorker1OnDoWork;
+and within that function you are able to report progress:
+
+backgroundWorker1.ReportProgress(30, progressMessage);
+You can also check if the user has requested cancellation with the BackgroundWorker.CancellationPending flag.
+
+Private WithEvents backgroundWorker1 As System.ComponentModel.BackgroundWorker
+https://learn.microsoft.com/en-us/dotnet/api/system.componentmodel.backgroundworker?view=net-8.0&redirectedfrom=MSDN
+
+
+https://learn.microsoft.com/en-us/dotnet/standard/parallel-programming/task-parallel-library-tpl?redirectedfrom=MSDN
+
+System.Collections.Concurrent.ConcurrentDictionary<TKey,TValue> - serno, onepic
+System.Collections.Concurrent.ConcurrentBag<T> - onepic
+
+
+
+
 
 !!!! One more important difference is you can access ObservableCollection only from thread on which it was created where as list can be accessed fromany thread.
 zdaje ise ze obsColl sam z siebie umie tylko add/remove sygnalizowac, a pozostale (change) to trzeba przez SetItem

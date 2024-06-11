@@ -24,6 +24,7 @@ Imports pkar
 Imports pkar.DotNetExtensions
 Imports System.IO
 Imports pkar.UI.Extensions
+Imports System.ComponentModel
 
 Public Class ProcessBrowse
 
@@ -84,8 +85,8 @@ Public Class ProcessBrowse
 
         Await Bufor2Thumbsy()   ' w tym obsługa znikniętych
         SizeMe()
-        SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat!
 
+        SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat!
         RefreshMiniaturki(True)
         'PokazThumbsy() ' tylko test, czy observable zadziała
 
@@ -282,29 +283,6 @@ Public Class ProcessBrowse
 
     End Function
 
-    'Public Shared Async Function DoczytajMiniaturke(bCacheThumbs As Boolean, oThumb As ThumbPicek, Optional bRecreate As Boolean = False) As Task
-
-    '    Dim miniaturkaPathname As String = Thumb.ThumbGetFilename
-
-    '    ' wymuszone odtworzenie miniaturki
-    '    If bRecreate Then IO.File.Delete(miniaturkaPathname)
-
-    '    Dim bitmapa As BitmapImage = Await WczytajObrazek(oThumb.oPic.InBufferPathName, 400, Rotation.Rotate0)
-    '    oThumb.oImageSrc = bitmapa
-
-    '    If bCacheThumbs AndAlso Not IO.File.Exists(miniaturkaPathname) Then
-    '        Dim encoder As New JpegBitmapEncoder()
-    '        encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
-    '        encoder.Frames.Add(BitmapFrame.Create(bitmapa))
-
-    '        Using fileStream = IO.File.Create(miniaturkaPathname)
-    '            encoder.Save(fileStream)
-    '        End Using
-
-    '        FileAttrHidden(miniaturkaPathname, True)
-    '    End If
-
-    'End Function
 
     ''' <summary>
     ''' przetworzenie danych Bufor na własną listę (thumbsów), sortowane wg thumbpic.datemin = onepic.mostprobably
@@ -350,7 +328,7 @@ Public Class ProcessBrowse
             oPicek.oImageSrc = Nothing
         Next
 
-        SaveMetaData()  '  po Describe, OCR, i tak dalej - lepiej zapisać nawet jak nie było zmian niż je zgubić
+        SaveMetaData(True)  '  po Describe, OCR, i tak dalej - lepiej zapisać nawet jak nie było zmian niż je zgubić
 
         GC.Collect()    ' usuwamy, bo dużo pamięci zwolniliśmy
     End Sub
@@ -361,7 +339,7 @@ Public Class ProcessBrowse
 #Region "górny toolbox"
 
     ''' <summary>
-    ''' posortuj thumbsy wedle daty - na start, i po zmianach dat
+    ''' ustaw ItemsSource na thumbsy wedle daty - na start, i po zmianach dat - SLOW!
     ''' </summary>
     Private Sub SortujThumbsy()
         uiPicList.ItemsSource = Nothing
@@ -369,16 +347,6 @@ Public Class ProcessBrowse
         uiPicList.ItemsSource = _thumbsy
     End Sub
 
-    ''' <summary>
-    ''' odnawia ItemsSource na posortowane, też do przesunięcia na "po delete" i po "read"
-    ''' </summary>
-    Private Sub PokazThumbsy()
-        ' *PROBA* - nieudana!
-        'uiPicList.ItemsSource = Nothing
-        'uiPicList.ItemsSource = From c In _thumbsy Where c.bVisible Order By c.dateMin
-        SortujThumbsy()
-        Me.Title = $"{_title} ({_thumbsy.Count} images)"
-    End Sub
 
     Private Sub uiOpenHistoragam_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New HistogramWindow(_oBufor)
@@ -538,9 +506,20 @@ Public Class ProcessBrowse
 
 
     Private Sub uiTargetMetadataChanged(sender As Object, e As EventArgs)
+
         uiMetadataChangedDymkuj(Nothing, Nothing)
-        ' tu trzeba wraz z reapply filter
-        If _isTargetFilterApplied Then uiFilterNoTarget_Click(Nothing, Nothing)
+
+        ' teoretycznie się wygasi / zgasi samo z siebie (via Notify)
+        If _isTargetFilterApplied Then
+            ' mogliśmy zarówno skasować Target, jak i nadać
+            For Each oItem As ThumbPicek In uiPicList.SelectedItems
+                If String.IsNullOrWhiteSpace(oItem.TargetDir) Then
+                    oItem.opacity = 1
+                Else
+                    oItem.opacity = _OpacityWygas
+                End If
+            Next
+        End If
     End Sub
     Private Sub uiGeotagMetadataChanged(sender As Object, e As EventArgs)
         uiMetadataChangedDymkuj(Nothing, Nothing)
@@ -550,6 +529,7 @@ Public Class ProcessBrowse
 
     Private Sub uiMetadataChangedReparse(sender As Object, e As EventArgs)
         uiMetadataChangedDymkuj(Nothing, Nothing)
+        SortujThumbsy()
         RefreshMiniaturki(True)
     End Sub
 
@@ -559,6 +539,15 @@ Public Class ProcessBrowse
         SaveMetaData()
     End Sub
 
+    Private Sub uiMetadataChangedDescribe(sender As Object, e As EventArgs)
+        uiActionsPopup.IsOpen = False
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            oItem.ZrobDymek()
+            oItem.NotifyPropChange("sumOfDescr")
+        Next
+
+        SaveMetaData()
+    End Sub
 
 
     'Private Sub uiCopyOut_Click(sender As Object, e As System.Windows.RoutedEventArgs)
@@ -1056,18 +1045,18 @@ Public Class ProcessBrowse
         If element.GetType() = szukanyTyp Then Return element
 
         Dim foundElement As Visual = Nothing
-            '          If element Is FrameworkElement Then
-            '  (element as FrameworkElement).ApplyTemplate();
-            'End If
+        '          If element Is FrameworkElement Then
+        '  (element as FrameworkElement).ApplyTemplate();
+        'End If
 
-            For iLp As Integer = 0 To VisualTreeHelper.GetChildrenCount(element) - 1
-                Dim vsl As Visual = VisualTreeHelper.GetChild(element, iLp)
-                foundElement = GetDescendantByType(vsl, szukanyTyp)
-                If foundElement IsNot Nothing Then Return foundElement
-            Next
+        For iLp As Integer = 0 To VisualTreeHelper.GetChildrenCount(element) - 1
+            Dim vsl As Visual = VisualTreeHelper.GetChild(element, iLp)
+            foundElement = GetDescendantByType(vsl, szukanyTyp)
+            If foundElement IsNot Nothing Then Return foundElement
+        Next
 
-            Return foundElement
-End Function
+        Return foundElement
+    End Function
 
 
     Private Sub uiActionNewWndFltr_Click(sender As Object, e As RoutedEventArgs)
@@ -1371,11 +1360,32 @@ End Function
         Return Nothing
     End Function
 
+
+    Private _SaveMetaDataCounter As Integer
+    Private _SaveMetaDataTimer As System.Windows.Threading.DispatcherTimer
     ''' <summary>
     ''' shortcut do zapisania JSON indeksu (buffer.json)
     ''' </summary>
-    Public Sub SaveMetaData()
+    Public Sub SaveMetaData(Optional force As Boolean = False)
+
+        If _SaveMetaDataTimer Is Nothing Then
+            _SaveMetaDataTimer = New System.Windows.Threading.DispatcherTimer
+            AddHandler _SaveMetaDataTimer.Tick, Sub() SaveMetaData(True)
+            _SaveMetaDataTimer.IsEnabled = True
+        End If
+
+        _SaveMetaDataCounter += 1
+
+        If Not force AndAlso _SaveMetaDataCounter < 10 Then
+            _SaveMetaDataTimer.Interval = TimeSpan.FromSeconds(60)
+            _SaveMetaDataTimer.Start()
+            Return
+        End If
+
+        _SaveMetaDataTimer.Stop()
+
         _oBufor.SaveData()
+        _SaveMetaDataCounter = 0
     End Sub
 
 #End Region
@@ -1468,13 +1478,17 @@ End Function
     ''' usuwa plik "ze wszystkąd", zapisuje metadane oraz odnawia miniaturki
     ''' </summary>
     Private Sub DeletePicekMain(oPicek As ThumbPicek)
+
         _ReapplyAutoSplit = False
         DeletePicture(oPicek)   ' zmieni _Reapply, jeśli picek miał splita
 
         SaveMetaData()
 
         ' pokaz na nowo obrazki
-        RefreshMiniaturki(_ReapplyAutoSplit)
+        If _ReapplyAutoSplit Then
+            ' tu można byłoby "przesuwać" splita pomiędzy zdjęciami
+            RefreshMiniaturki(_ReapplyAutoSplit)
+        End If
     End Sub
 
     Private Async Sub uiDeleteSelected_Click(sender As Object, e As RoutedEventArgs)
@@ -1627,27 +1641,31 @@ End Function
 
 
     ''' <summary>
-    ''' przelicz i pokaż miniaturki
+    ''' autosplit, skalowanie miniaturek - duże zmiany w oknie
     ''' </summary>
     ''' <param name="bReapplyAutoSplit">przelicz także autosplit</param>
     Private Sub RefreshMiniaturki(bReapplyAutoSplit As Boolean)
         If bReapplyAutoSplit Then ApplyAutoSplit()    ' zmienia _iMaxRun
 
         SkalujRozmiarMiniaturek() ' może używać _iMaxRun
-        PokazThumbsy()
+
+        'SortujThumbsy()
+        Me.Title = $"{_title} ({_thumbsy.Count} images)"
 
     End Sub
 
+    ''' <summary>
+    ''' odświeża dymki w SelectedItems - nie przerysowuje
+    ''' </summary>
     Private Sub ReDymkuj()
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             oItem.ZrobDymek()
-            'oItem.AllKeywords = oItem.oPic.GetAllKeywords
-            ' to jest podczas wczytywania i wszystkich operacji na Descriptions
-            'oItem.SumOfDescriptionsText = oItem.oPic.GetSumOfDescriptionsText
         Next
     End Sub
 
-
+    ''' <summary>
+    ''' ustawia thumb.iDuzoscH i thumb.widthPaskow - nie przerysowuje
+    ''' </summary>
     Private Sub SkalujRozmiarMiniaturek()
 
         Dim iMaxBok As Integer
@@ -1685,55 +1703,24 @@ End Function
         If _thumbsy.Count < 1 Then Return
 
         If uiPicList.Items Is Nothing Then Return
-        If uiPicList.Items.CurrentPosition < 0 Then Return
+        If uiPicList.Items.CurrentPosition < 0 Then
+            ' Me.MsgBox("uiPicList.Items.CurrentPosition < 0")
+            Return
+        End If
 
         ' ominięcie podwójnego OnSelectionChanged, które się łączyło z:
         ' System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'ListViewItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
         Dim sRequest As String = TryCast(uiComboSize.SelectedValue, ComboBoxItem).Content
         If String.IsNullOrWhiteSpace(sRequest) Then Return
+
         If _lastSizeOption = sRequest Then Return
         _lastSizeOption = sRequest
 
         If uiPicList.SelectedItems IsNot Nothing AndAlso uiPicList.SelectedItems.Count > 0 Then
             _oFirstVisible = uiPicList.SelectedItems(0)
         End If
-        'Dim clientArea = New Rect(0.0, 0.0, uiPicList.ActualWidth, uiPicList.ActualHeight)
-        ' border.scrollviewer.itemspresenter.wrappanel.listviewitem
-        'For Each oItem In uiPicList.Items ' tu mamy ThumbPicki
-        '    Dim oLVI As ListViewItem = TryCast(oItem, ListViewItem)
-        '    If oLVI Is Nothing Then Continue For
-        '    Dim bounds As Rect =
-        '        oItem.TransformToAncestor(uiPicList).TransformBounds(New Rect(0.0, 0.0, oItem.ActualWidth, oItem.ActualHeight))
-        '    If clientArea.Contains(bounds.TopLeft) OrElse clientArea.Contains(bounds.BottomRight) Then
-        '        oFirstVisible = oItem
-        '        Exit For
-        '    End If
-        'Next
-        '    ' https://stackoverflow.com/questions/2926722/get-first-visible-item-in-wpf-listview-c-sharp
-        '    For Each oThumb As ThumbPicek In uiPicList.ItemsSource
-        '        Dim bounds As Rect =
-        '    oThumb.TransformToAncestor(Container).TransformBounds(New Rect(0.0, 0.0, element.ActualWidth, element.ActualHeight));
-        'var Rect = New Rect(0.0, 0.0, container.ActualWidth, container.ActualHeight);
-        'Return Rect.Contains(bounds.TopLeft) || rect.Contains(bounds.BottomRight);
-        '    Next
 
-        ' https://stackoverflow.com/questions/11187382/get-listview-visible-items  
-        '    ScrollViewer ScrollViewer = ListView.GetVisualChild < ScrollViewer > (); //Extension method
-        'If (ScrollViewer!= null) Then
-        '            {
-        '    ScrollBar scrollBar = ScrollViewer.Template.FindName("PART_VerticalScrollBar", ScrollViewer) as ScrollBar;
-        '    If (scrollBar!= null) Then
-        '                    {
-        '        scrollBar.ValueChanged += delegate
-        '        {
-        '            //VerticalOffset And ViweportHeight Is actually what you want if UI virtualization Is turned on.
-        '            Console.WriteLine("Visible Item Start Index:{0}", ScrollViewer.VerticalOffset);
-        '            Console.WriteLine("Visible Item Count:{0}", ScrollViewer.ViewportHeight);
-        '        };
-        '    }
-        '}
-
-        RefreshMiniaturki(False)
+        SkalujRozmiarMiniaturek()
 
         If _oFirstVisible IsNot Nothing Then uiPicList.ScrollIntoView(_oFirstVisible)
     End Sub
@@ -1786,51 +1773,6 @@ End Function
 
     End Sub
 
-#If False Then
-
-    Private Sub uiPodpisTo_Click(sender As Object, e As RoutedEventArgs)
-        uiPodpisWybor.IsOpen = False
-
-        Dim oMI As MenuItem = sender
-        If oMI Is Nothing Then Return
-
-        Dim mode As String = oMI.Header
-        Select Case mode.ToLowerInvariant
-            Case "filename"
-                For Each oThumb In _thumbsy
-                    oThumb.podpis = oThumb.oPic.sSuggestedFilename
-                Next
-            Case "keywords"
-                For Each oThumb In _thumbsy
-                    oThumb.podpis = oThumb.oPic.GetAllKeywords
-                Next
-            Case "description"
-                For Each oThumb In _thumbsy
-                    oThumb.podpis = oThumb.oPic.GetSumOfDescriptionsText
-                Next
-            Case "targetdir"
-                For Each oThumb In _thumbsy
-                    oThumb.podpis = oThumb.oPic.TargetDir
-                Next
-            Case "source"
-                For Each oThumb In _thumbsy
-                    oThumb.podpis = oThumb.oPic.sSourceName
-                Next
-
-            Case Else ' w tym "none"
-                For Each oThumb In _thumbsy
-                    oThumb.podpis = ""
-                Next
-
-        End Select
-
-        For Each oMI In uiPodpisMenu.Items
-            oMI.IsChecked = (oMI.Header = mode)
-        Next
-
-        RefreshMiniaturki(False)
-    End Sub
-#End If
 
     Private Sub uiSplitMode_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AutoSplitWindow
@@ -1880,7 +1822,7 @@ End Function
         _isTargetFilterApplied = False
 
         '*PROBA* nieudana zakomentownia
-        RefreshMiniaturki(False)
+        'RefreshMiniaturki(False)
     End Sub
 
     Private Sub uiFilterReverse_Click(sender As Object, e As RoutedEventArgs)
@@ -1892,7 +1834,7 @@ End Function
         Next
 
         '*PROBA* nieudana zakomentownia
-        RefreshMiniaturki(False)
+        'RefreshMiniaturki(False)
     End Sub
 
     Private Sub uiFilterNone_Click(sender As Object, e As RoutedEventArgs)
@@ -1907,7 +1849,7 @@ End Function
         _isTargetFilterApplied = False
 
         '*PROBA* nieudana zakomentownia
-        RefreshMiniaturki(False)
+        'RefreshMiniaturki(False)
     End Sub
 
 
@@ -2116,6 +2058,9 @@ End Function
     Private Sub uiFilterAzureCategories_Click(sender As Object, e As RoutedEventArgs)
         ShowFilterAzureTag("Categories")
     End Sub
+    Private Sub uiFilterAzureCelebrities_Click(sender As Object, e As RoutedEventArgs)
+        ShowFilterAzureTag("Celebrities")
+    End Sub
 
     Private Async Sub ShowFilterAzureTag(listaPropName As String)
         uiFilterPopup.IsOpen = False
@@ -2170,20 +2115,22 @@ End Function
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "no dir"
 
+        _isGeoFilterApplied = False
+        _isTargetFilterApplied = True
+
         Dim bMamy As Boolean = False
 
         For Each oItem As ThumbPicek In _thumbsy
-            If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then
-                oItem.opacity = 1
-                bMamy = True
-            Else
-                oItem.opacity = _OpacityWygas
-            End If
-        Next
+                If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then
+                    oItem.opacity = 1
+                    bMamy = True
+                Else
+                    oItem.opacity = _OpacityWygas
+                End If
+            Next
 
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = True
         KoniecFiltrowania(bMamy, sender IsNot Nothing)
+
     End Sub
 
     Private Sub uiFilterNAR_Click(sender As Object, e As RoutedEventArgs)
@@ -2248,7 +2195,7 @@ End Function
             Me.MsgBox("Nie ma takich zdjęć, wyłączam filtrowanie")
             uiFilterAll_Click(Nothing, Nothing)
         Else
-            RefreshMiniaturki(False)
+            'RefreshMiniaturki(False)
 
             If bScrollIntoView Then
                 ' scroll do pierwszego niewygaszonego
@@ -2266,17 +2213,6 @@ End Function
     Private Sub uiFilterSearch_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "query"
-
-        ' nic nie daje pamiętanie tego okna, bo i tak po zamknięciu do niego nie wraca
-        'If _searchWnd IsNot Nothing Then
-        '    Try
-        '        _searchWnd.Show()
-        '        _searchWnd.Activate()
-        '        Return
-        '    Catch ex As Exception
-        '        _searchWnd = Nothing
-        '    End Try
-        'End If
 
         ' jeśli takie mamy, to go aktywujemy
         For Each oWnd As Window In Me.OwnedWindows
@@ -2557,6 +2493,7 @@ End Function
             oPic1.oPic.ReplaceOrAddExif(oExif)
             oPic1.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
             oPic1.ZrobDymek()
+            oPic1.NotifyPropChange("sumOfKwds")
 
         Else
             Dim aKwds As String() = oExif.Keywords.Replace("|", " ").Split(" ")
@@ -2606,7 +2543,7 @@ End Function
                 oPic.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
 
                 oPic.ZrobDymek()
-
+                oPic.NotifyPropChange("sumOfKwds")
             Next
 
         End If
@@ -2694,24 +2631,107 @@ End Function
 
 
     Public Class ThumbPicek
+        Implements INotifyPropertyChanged
+
+
         Public Const THUMB_SUFIX As String = ".PicSortThumb.jpg"
+
+        Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
 
         Public Property oPic As Vblib.OnePic
         Public Property sDymek As String 'XAML dymekCount
         Public Property oImageSrc As BitmapImage = Nothing ' XAML image
-        Public Property iDuzoscH As Integer ' XAML height
         Public Property bVisible As Boolean = True
         Public Property dateMin As Date ' kopiowane z oThumb.Exifs(..)
+
+        Private _splitBefore As Integer
         Public Property splitBefore As Integer
+            Get
+                Return _splitBefore
+            End Get
+            Set(value As Integer)
+                Dim bChange As Boolean = value <> _splitBefore
+                _splitBefore = value
+                If bChange Then NotifyPropChange("splitBefore")
+            End Set
+        End Property
+
+        Private _dymekSplit As String = ""
+        Public Property dymekSplit
+            Get
+                Return _dymekSplit
+            End Get
+            Set(value)
+                Dim bChange As Boolean = value <> _dymekSplit
+                _dymekSplit = value
+                If bChange Then NotifyPropChange("dymekSplit")
+            End Set
+        End Property
+
+        Private _opacity As Double = 1 ' czyli normalnie pokazany
+        Public Property opacity As Double
+            Get
+                Return _opacity
+            End Get
+            Set(value As Double)
+                Dim bChange As Boolean = value <> _opacity
+                _opacity = value
+                If bChange Then NotifyPropChange("opacity")
+            End Set
+        End Property
+
+        Private _iDuzoscH As Integer
+        Public Property iDuzoscH As Integer ' XAML height
+            Get
+                Return _iDuzoscH
+            End Get
+            Set(value As Integer)
+                Dim bChange As Boolean = value <> _iDuzoscH
+                _iDuzoscH = value
+                If bChange Then NotifyPropChange("iDuzoscH")
+            End Set
+        End Property
+
+        Private _widthPaskow As Integer
         Public Property widthPaskow As Integer
-        Public Property dymekSplit As String = ""
-        Public Property opacity As Double = 1   ' czyli normalnie pokazany
+            Get
+                Return _widthPaskow
+            End Get
+            Set(value As Integer)
+                Dim bChange As Boolean = value <> _widthPaskow
+                _widthPaskow = value
+                If bChange Then NotifyPropChange("widthPaskow")
+            End Set
+        End Property
+
 
         'Public Property podpis As String = ""
         'Public Property AllKeywords As String
         'Public Property SumOfDescriptionsText As String
         Public Property nrkol As Integer
         Public Property maxnum As Integer
+
+        Public ReadOnly Property TargetDir As String
+            ' proxy dla oPic, tak by działało Notify
+            Get
+                Return oPic.TargetDir
+            End Get
+        End Property
+
+        Public ReadOnly Property sumOfKwds As String
+            ' proxy dla oPic, tak by działało Notify
+            Get
+                Return oPic.sumOfKwds
+            End Get
+        End Property
+
+        Public ReadOnly Property sumOfDescr As String
+            ' proxy dla oPic, tak by działało Notify
+            Get
+                Return oPic.sumOfDescr
+            End Get
+        End Property
+
 
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek
@@ -2724,22 +2744,23 @@ End Function
         End Function
 
         Public Sub ZrobDymek()
-            sDymek = oPic.sSuggestedFilename
+
+            Dim newDymek = oPic.sSuggestedFilename
 
             ' line 0: jeśli przybywa "skądś"
             If Not String.IsNullOrWhiteSpace(oPic.sharingFromGuid) Then
-                sDymek &= vbCrLf & GetLastSharePeer()?.displayName & "\" & oPic.sSourceName
+                newDymek &= vbCrLf & GetLastSharePeer()?.displayName & "\" & oPic.sSourceName
             Else
-                If oPic.sSourceName.EqualsCI("adhoc") Then sDymek = sDymek & vbCrLf & "Src: " & oPic.sSourceName
+                If oPic.sSourceName.EqualsCI("adhoc") Then newDymek = newDymek & vbCrLf & "Src: " & oPic.sSourceName
             End If
 
             ' line 1: data
             Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
             If oExifTag IsNot Nothing Then
-                sDymek = sDymek & vbCrLf & "Taken: " & oExifTag.DateTimeOriginal
+                newDymek = newDymek & vbCrLf & "Taken: " & oExifTag.DateTimeOriginal
             Else
                 oExifTag = oPic.GetExifOfType(Vblib.ExifSource.SourceFile)
-                sDymek = sDymek & vbCrLf & "(file: " & oExifTag.DateMin.ToExifString & ")"
+                newDymek = newDymek & vbCrLf & "(file: " & oExifTag.DateMin.ToExifString & ")"
             End If
 
             ' line 2: geoname / lat&lon
@@ -2752,28 +2773,33 @@ End Function
                 Dim oPos As BasicGeopos = oPic.GetGeoTag
                 If oPos IsNot Nothing Then sGeo = $"[{oPos.StringLat}, {oPos.StringLon}]"
             End If
-            If sGeo <> "" Then sDymek = sDymek & vbCrLf & sGeo
+            If sGeo <> "" Then newDymek = newDymek & vbCrLf & sGeo
 
             ' line 3: Azure caption
             oExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
             If oExifTag IsNot Nothing Then
                 Dim sCaption As String = oExifTag.AzureAnalysis?.Captions?.GetList(0).ToDisplay
-                sDymek = sDymek & vbCrLf & sCaption
+                newDymek = newDymek & vbCrLf & sCaption
             End If
 
             ' line 4: descriptions
-            sDymek = sDymek & vbCrLf & "Descriptions: " & oPic.GetSumOfDescriptionsText & vbCrLf
+            newDymek = newDymek & vbCrLf & "Descriptions: " & oPic.GetSumOfDescriptionsText & vbCrLf
 
             ' line 5: keywords
-            sDymek = sDymek & "Keywords: " & oPic.sumOfKwds & vbCrLf
+            newDymek = newDymek & "Keywords: " & oPic.sumOfKwds & vbCrLf
 
             ' line 6: targetdir
             If Not String.IsNullOrWhiteSpace(oPic.TargetDir) Then
-                sDymek = sDymek & vbCrLf & "► " & oPic.TargetDir
+                newDymek = newDymek & vbCrLf & "► " & oPic.TargetDir
             End If
 
             ' line 7: picid - właściwie tylko do picków z archiwum
-            sDymek = sDymek & vbCrLf & oPic.FormattedSerNo
+            newDymek = newDymek & vbCrLf & oPic.FormattedSerNo
+
+            If newDymek <> sDymek Then
+                sDymek = newDymek
+                NotifyPropChange("sDymek")
+            End If
 
         End Sub
 
@@ -2810,11 +2836,11 @@ End Function
                     Using strumyk As Stream = oPic.SinglePicFromMulti()
                         If strumyk Is Nothing Then Return Nothing
                         Dim bitmapa As New BitmapImage()
-                            bitmapa.BeginInit()
-                            bitmapa.DecodePixelHeight = 400
-                            bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-                            bitmapa.StreamSource = strumyk
-                            bitmapa.EndInit()
+                        bitmapa.BeginInit()
+                        bitmapa.DecodePixelHeight = 400
+                        bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                        bitmapa.StreamSource = strumyk
+                        bitmapa.EndInit()
                         Return bitmapa
                     End Using
                 Case ".jps"
@@ -3030,6 +3056,12 @@ End Function
         End Function
 
 
+        Public Sub NotifyPropChange(propertyName As String)
+            ' ale do niektórych to onepic się zmienia, więc niby rekurencyjnie powinno być :)
+            Dim evChProp As New PropertyChangedEventArgs(propertyName)
+            RaiseEvent PropertyChanged(Me, evChProp)
+        End Sub
+
     End Class
 
     Private Sub uiPicList_KeyUp(sender As Object, e As KeyEventArgs)
@@ -3148,6 +3180,7 @@ Public Class KonwersjaDescrIgnoreNewLine
 
     Protected Overrides Function Convert(value As Object) As Object
         Dim str As String = CType(value, String)
+        If String.IsNullOrWhiteSpace(str) Then Return ""
         Return str.Replace(vbCrLf, " | ")
     End Function
 End Class
