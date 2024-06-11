@@ -51,6 +51,8 @@ Public NotInheritable Class PicMenuShareUpload
 
             oMI.IsEnabled = True
 
+            If oPic Is Nothing Then Continue For ' gdy otwieramy dla SelectedItems
+
             ' 1) wymuszony DENY: można go wyłączyć
             If oPic.PeerIsForcedDeny(oLogin) Then
                 oMI.IsChecked = True
@@ -85,6 +87,8 @@ Public NotInheritable Class PicMenuShareUpload
             Dim oPic As Vblib.OnePic = GetFromDataContext()
 
             oMI.IsEnabled = True
+
+            If oPic Is Nothing Then Continue For ' gdy otwieramy dla SelectedItems
 
             ' 1) wymuszony DENY: z Allow nic nie można zrobić
             If oPic.PeerIsForcedDeny(oLogin) Then
