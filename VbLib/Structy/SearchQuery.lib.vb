@@ -21,12 +21,7 @@ Public Class SearchQuery
     Public Property astro As New QueryAstro
 
     Public Property faces As New QueryFaces
-    Public Property Azure As New QueryTxtNum
-    Public Property AzureBrands As String = ""
-    Public Property AzureCategories As String = ""
-    Public Property AzureObjects As String = ""
-    Public Property AzureLandmarks As String = ""
-    Public Property AzureTags As String = ""
+    Public Property Azure As New QueryAzure
 
     Public Property VCross As New QueryTxtNum
 
@@ -78,6 +73,7 @@ Public Class QueryGeo
     Public Property AlsoEmpty As Boolean = True
     Public Property Location As BasicGeoposWithRadius
     Public Property Name As String = ""
+    Public Property OnlyExact As Boolean
 End Class
 
 
@@ -89,8 +85,28 @@ Public Class QueryFaces
 
 End Class
 
-Public Class QueryTxtNum
+Public Class QueryAzure
     Public Property AlsoEmpty As Boolean
+    Public Property Brands As String = ""
+    Public Property Categories As String = ""
+    Public Property Objects As String = ""
+    Public Property Landmarks As String = ""
+    Public Property Tags As String = ""
+    Public Property Celebrities As String = ""
+    Public Property Captions As String = ""
+    Public Property DominantColorBackground As String = ""
+    Public Property DominantColorForeground As String = ""
+    Public Property DominantColors As String = ""
+    Public Property Wiekowe As String = ""
+
+    Public Property Anywhere As String = ""
+
+    'IsBW
+
+End Class
+
+Public Class QueryTxtNum
+    Public Property AlsoEmpty As Boolean = True
     Public Property FldTxt As New QueryPolaTxt4
     'Public Property _HasNum As Boolean
     Public Property FldNum As New QueryPolaNum4

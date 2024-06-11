@@ -43,7 +43,7 @@
         <TextBox Text="{Binding Descriptions, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, from Descriptions or Comments, or '!' to search for empty" />
 
             <TextBlock Text="Gdziegolwiek" Margin="0,5,0,0"/>
-        <TextBox Text="{Binding Gdziekolwiek, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, to be searched in Descriptions, Comments, Folder, Filename, OCR, Azure description" />
+        <TextBox Text="{Binding Gdziekolwiek, Mode=TwoWay}" ToolTip="Space separated fragments, prefixed with '!' to negate, to be searched in Descriptions, Comments, Folder, Filename, OCR" />
 
             <Expander Header="Geography" ToolTip="Dane geograficzne" BorderThickness="1" BorderBrush="Blue" Margin="2,2,2,2">
                 <local:UserControlGeo DataContext="{Binding geo, Mode=TwoWay}" />
