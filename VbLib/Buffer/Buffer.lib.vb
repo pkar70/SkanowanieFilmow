@@ -286,9 +286,9 @@ Public Class BufferFromQuery
 
         lista.Load()
         ' recalc sumsy
-        For Each oItem As OnePic In _pliki
-            oItem.sumOfDescr = oItem.GetSumOfDescriptionsText
-        Next
+        'For Each oItem As OnePic In _pliki
+        '    oItem.sumOfDescr = oItem.GetSumOfDescriptionsText
+        'Next
 
         _pliki = New List(Of OnePic)
 
