@@ -6,6 +6,7 @@ Imports PicSorterNS.ProcessBrowse
 Imports System.Text.RegularExpressions
 Imports System.IO
 Imports Microsoft.EntityFrameworkCore
+Imports System.Drawing
 
 
 Public Class ProcessDownloadInternet
@@ -31,9 +32,10 @@ Public Class ProcessDownloadInternet
     End Sub
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
-        Me.Title = "Importing for " & _source.SourceName
+        Me.InitDialogs
+        Me.ProgRingInit(True, False)
 
-        Me.MsgBox("włącz kontrolę - bo wszystkie zdjęcia mają takie same dane w OnePic!")
+        Me.Title = "Importing for " & _source.SourceName
 
         If Not String.IsNullOrWhiteSpace(_source.Path) Then
             Dim urik As New Uri(_source.Path)
@@ -83,7 +85,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
         uiDescription.Focus()
 
-        uiSameGeo.IsEnabled = _lastgeo IsNot Nothing
+        uiMenuGeo.IsEnabled = _lastgeo IsNot Nothing
     End Sub
 
     Private Sub uiEnd_Click(sender As Object, e As RoutedEventArgs)
@@ -208,6 +210,18 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
             Dim tempInt As Integer
             If Integer.TryParse(mam.Value, tempInt) Then
                 uiDateRange.RangeAsText = mam.Value
+
+                Try
+
+                Catch ex As Exception
+                    Dim iInd As Integer = tekst.LastIndexOf(" ", mam.Index - 2)
+                    Dim prevWyraz As String = tekst.Substring(iInd, mam.Index - 2 - iInd).Trim
+                    Dim month As Integer = TryWyraz2Miesiac(prevWyraz)
+                    If month > 0 Then
+                        uiDateRange.RangeAsText = mam.Value & "." & month
+                    End If
+                End Try
+
                 Return
             End If
         End If
@@ -234,7 +248,47 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
             End If
         End If
 
+        mam = Regex.Match(tekst, "ata '[0-9]0")
+        If mam.Success Then
+            Dim tempInt As Integer
+            If Integer.TryParse(mam.Value.Replace("ata '", ""), tempInt) Then
+                uiDateRange.RangeAsText = 1900 + tempInt * 10
+                Return
+            End If
+        End If
     End Sub
+
+    Private Function TryWyraz2Miesiac(wyraz As String) As Integer
+        ' wedle liczby rzymskiej lub nazwy
+        Select Case wyraz.ToLowerInvariant
+            Case "stycznia", "styczeń"
+                Return 1
+            Case "lutego", "luty", "ii"
+                Return 2
+            Case "marca", "marzec", "iii"
+                Return 3
+            Case "kwietnia", "kwiecień", "iv"
+                Return 4
+            Case "maja", "maj", "v"
+                Return 5
+            Case "czerwca", "czerwiec", "vi"
+                Return 6
+            Case "lipca", "lipiec", "vii"
+                Return 7
+            Case "sierpnia", "sierpień", "viii"
+                Return 8
+            Case "września", "wrzesień", "ix"
+                Return 9
+            Case "października", "październik", "x"
+                Return 10
+            Case "listopada", "listopad", "xi"
+                Return 11
+            Case "grudnia", "grudzień", "xii"
+                Return 12
+        End Select
+
+        Return 0
+    End Function
 
     Private Sub SprobujRozpoznacAutora(tekst As String)
         If _autorzy Is Nothing Then Return
@@ -247,13 +301,6 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         Next
     End Sub
 
-    Private Sub uiSameGeo_Click(sender As Object, e As RoutedEventArgs)
-        _picek.ReplaceOrAddExif(_lastgeo)
-        _lastgeo = Nothing
-        uiSameGeo.IsEnabled = False
-        uiGeo.Content = " Change "
-        uiGeo.ToolTip = _lastgeo.GeoTag.FormatLink("%lat / %lon")
-    End Sub
 
     Private Sub uiRefresh_Click(sender As Object, e As RoutedEventArgs)
         NextPic()
@@ -326,4 +373,59 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         _autorzy = IO.File.ReadAllLines(sPath)
 
     End Sub
+
+    Private Sub uiMenuGeo_Click(sender As Object, e As RoutedEventArgs)
+        uiMenuGeoMenu.IsOpen = Not uiMenuGeoMenu.IsOpen
+    End Sub
+
+    Private Async Sub uiSearchArch_Click(sender As Object, e As RoutedEventArgs)
+        uiMenuGeoMenu.IsOpen = False
+
+        Dim query As New Vblib.SearchQuery
+        query.ogolne.adv.TargetDir = "inet\" & _source.SourceName
+        query.ogolne.geo.AlsoEmpty = False
+        query.ogolne.geo.OnlyExact = True
+        query.ogolne.geo.Location = New BasicGeoposWithRadius(_lastgeo.GeoTag, 200)
+
+        Dim _queryResults As IEnumerable(Of Vblib.OnePic) ' wynik szukania
+
+        Me.ProgRingShow(True)
+
+        Await Task.Run(Sub() _queryResults = Application.gDbase.Search(query))
+
+        If _queryResults Is Nothing OrElse _queryResults.Count < 1 Then
+            Me.MsgBox("Nie znalazłem takich zdjęć")
+            Me.ProgRingShow(False)
+            Return
+        End If
+
+        Dim lista As New Vblib.BufferFromQuery()
+        For Each oPic As Vblib.OnePic In _queryResults
+
+            For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
+                'vb14.DumpMessage($"trying archive {oArch.StorageName}")
+                Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
+                If Not String.IsNullOrWhiteSpace(sRealPath) Then
+                    Dim oPicNew As Vblib.OnePic = oPic.Clone
+                    oPic.InBufferPathName = sRealPath
+                    Await lista.AddFile(oPic)
+                    Exit For
+                End If
+            Next
+        Next
+
+        Dim oWnd As New ProcessBrowse(lista, True, "Found")
+        oWnd.Show()
+
+    End Sub
+
+    Private Sub uiSameGeo_Click(sender As Object, e As RoutedEventArgs)
+        uiMenuGeoMenu.IsOpen = False
+
+        _picek.ReplaceOrAddExif(_lastgeo)
+
+        uiGeo.Content = " Change "
+        uiGeo.ToolTip = _lastgeo.GeoTag.FormatLink("%lat / %lon")
+    End Sub
+
 End Class

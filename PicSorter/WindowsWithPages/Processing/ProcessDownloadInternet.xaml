@@ -44,7 +44,7 @@
             <TextBlock Grid.Row="0" Text="Description " />
             <TextBox Grid.Row="0" Grid.Column="1" Name="uiDescription" AcceptsReturn="True" TextChanged="uiDescription_TextChanged" ToolTip="Wklej opis do zdjęcia - zmiany linii zostaną automatycznie usunięte, oraz spróbuje rozpoznać autora (wedle listy autorów Internet) i datę"/>
             <TextBlock Grid.Row="1" Text="Autor " />
-            <TextBox Grid.Row="1" Grid.Column="1" Name="uiAutor" HorizontalAlignment="Left" Margin="0,0,25,0"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Name="uiAutor" HorizontalAlignment="Stretch" Margin="0,0,25,0"/>
             <Button Grid.Row="1" Grid.Column="1" Content="+" HorizontalAlignment="Right" Name="uiAddAuthor" Click="uiAddAuthor_Click" ToolTip="Dopisz do listy autorów (dbając by nie powtarzać)"/>
             <TextBlock Grid.Row="2" Text="Date range " />
             <local:UserDateRange Grid.Row="2"  Grid.Column="1" x:Name="uiDateRange"/>
@@ -54,8 +54,20 @@
             <local:UserKwdEditButton Grid.Row="4" Grid.Column="1" x:Name="uiKeywords" ToolTip="słowa kluczowe (np. miejsca)" />
             <!--<TextBox Grid.Row="4" Grid.Column="1" Name="uiKeywords" ToolTip="słowa kluczowe (np. miejsca)"/>-->
             <TextBlock Grid.Row="5" Text="Geotag " />
-            <Button Grid.Row="5" Grid.Column="1" Content="..." Click="uiSetGeo_Click" Name="uiGeo" Width="Auto" HorizontalAlignment="Center"/>
-            <Button Grid.Row="5" Grid.Column="1" Content=" use last " Click="uiSameGeo_Click" Name="uiSameGeo" Width="Auto" HorizontalAlignment="Right" ToolTip="użyj poprzednio ustawionego geotag"/>
+            <Button Grid.Row="5" Grid.Column="1" Content="create" Click="uiSetGeo_Click" Name="uiGeo" Width="Auto" HorizontalAlignment="Center"/>
+
+            <Button Content=" ... " FontWeight="Bold" Click="uiMenuGeo_Click" Name="uiMenuGeo" Margin="2,2,2,2" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="1"/>
+            <Popup IsOpen="False" Name="uiMenuGeoMenu" PlacementTarget="{Binding ElementName=uiMenuGeo}">
+                <Menu>
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                    <MenuItem Header="Use last" Click="uiSameGeo_Click" />
+                    <MenuItem Header="Search arch" Click="uiSearchArch_Click" />
+                </Menu>
+            </Popup>
         </Grid>
 
 
