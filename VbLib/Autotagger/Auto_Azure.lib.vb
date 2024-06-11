@@ -149,7 +149,8 @@ Public Class Auto_AzureTest
         oStream.Dispose()
 
         If oNew.AzureAnalysis Is Nothing Then Return Nothing
-        oNew.UserComment = oNew.AzureAnalysis.ToUserComment
+        ' jednak nie potrzebujemy mieć wersji jednolinijkowej, bo szukamy w Query dokładniej
+        ' oNew.UserComment = oNew.AzureAnalysis.ToUserComment
 
         Return oNew
 
