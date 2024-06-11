@@ -290,7 +290,7 @@ Public Class TargetDir
 
         oPicek.oPic.TargetDir = oDir.fullPath.DropAccents
         oPicek.ZrobDymek()
-
+        oPicek.NotifyPropChange("TargetDir")
     End Sub
 
     Private Function GetKatalogExisting() As OneDir
