@@ -24,7 +24,7 @@ Imports pkar
 Imports pkar.DotNetExtensions
 Imports System.IO
 Imports pkar.UI.Extensions
-Imports System.ComponentModel
+Imports System.ComponentModel   ' dla PropertyChangedEventHandler i podobnych
 
 Public Class ProcessBrowse
 
@@ -36,6 +36,7 @@ Public Class ProcessBrowse
     Private _oBufor As Vblib.IBufor
     Private _inArchive As Boolean  ' to będzie wyłączać różne funkcjonalności
     Private _title As String
+    Private _memSizeKb As Integer
 
     ' Private _MetadataWindow As ShowExifs
 
@@ -73,6 +74,11 @@ Public Class ProcessBrowse
         uiDeleteThumbsSelected.Visibility = oVis
     End Sub
 
+    Private Function GetMegabytes() As Long
+        'Return GC.GetTotalAllocatedBytes(False) / 1024 / 1024
+        Return Process.GetCurrentProcess.WorkingSet64 / 1024 / 1024
+    End Function
+
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
         Me.ProgRingInit(True, False)
@@ -83,8 +89,12 @@ Public Class ProcessBrowse
         ' przenoszę na początek, żeby nie wczytywać tysiąca obrazków które już są do usunięcia
         Await EwentualneKasowanieArchived()
 
+        Dim initMem As Integer = GetMegabytes() ' Windows.System.MemoryManager.AppMemoryUsage
+
         Await Bufor2Thumbsy()   ' w tym obsługa znikniętych
         SizeMe()
+
+        _memSizeKb = GetMegabytes() - initMem + 1
 
         SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat!
         RefreshMiniaturki(True)
@@ -159,7 +169,7 @@ Public Class ProcessBrowse
 
             If picek.GetSumOfDescriptionsText.ContainsCI(oExif.UserComment) Then Continue For
 
-            picek.AddDescription(New OneDescription(oExif.UserComment, ""))
+            picek.AddDescription(New Vblib.OneDescription(oExif.UserComment, ""))
         Next
 
         _oBufor.SaveData()
@@ -599,7 +609,7 @@ Public Class ProcessBrowse
 
         If Not e.LeftButton = MouseButtonState.Pressed Then Return
         _lastMouseDownTime = e.Timestamp
-        DumpMessage($"lastMouseDownTime = {_lastMouseDownTime}")
+        vb14.DumpMessage($"lastMouseDownTime = {_lastMouseDownTime}")
     End Sub
 
     Private Sub uiPicList_MouseMove(sender As Object, e As MouseEventArgs) Handles uiPicList.MouseMove
@@ -701,7 +711,7 @@ Public Class ProcessBrowse
 
         'End If
 
-        DumpMessage($"mam liste {lista.Count} plików")
+        vb14.DumpMessage($"mam liste {lista.Count} plików")
         If lista.Count < 1 Then Return
 
         Dim data As New DataObject
@@ -838,14 +848,14 @@ Public Class ProcessBrowse
         ' sprawdzenie różnic w EXIFach
         Dim roznice As String = ""
 
-        For Each oExif0 As ExifTag In pic0.oPic.Exifs
+        For Each oExif0 As Vblib.ExifTag In pic0.oPic.Exifs
             ' SOURCE_DEFAULT: autor, copyright
             ' SOURCE_FILEATTR: daty
             ' AUTO_EXIF: CameraModel, daty, geotag
             ' AUTO_GUID: oczywiste :)
             ' AUTO_FULLEXIF: jak EXIF, plus daty, obiektyw, naswietlanie i cała seria
             If "SOURCE_DEFAULT|SOURCE_FILEATTR|AUTO_EXIF|AUTO_FULLEXIF|AUTO_GUID".Contains(oExif0.ExifSource) Then Continue For
-            Dim oExif1 As ExifTag = pic1.oPic.GetExifOfType(oExif0.ExifSource)
+            Dim oExif1 As Vblib.ExifTag = pic1.oPic.GetExifOfType(oExif0.ExifSource)
             If oExif1 Is Nothing Then Continue For
 
             If oExif0.DumpAsJSON.EqualsCIAI(oExif1.DumpAsJSON) Then Continue For
@@ -853,11 +863,11 @@ Public Class ProcessBrowse
             roznice &= ", " & oExif0.ExifSource
         Next
 
-        For Each oExif1 As ExifTag In pic1.oPic.Exifs
+        For Each oExif1 As Vblib.ExifTag In pic1.oPic.Exifs
             If "SOURCE_DEFAULT|SOURCE_FILEATTR|AUTO_EXIF|AUTO_FULLEXIF|AUTO_GUID".Contains(oExif1.ExifSource) Then Continue For
             If roznice.ContainsCI(oExif1.ExifSource) Then Continue For
 
-            Dim oExif0 As ExifTag = pic0.oPic.GetExifOfType(oExif1.ExifSource)
+            Dim oExif0 As Vblib.ExifTag = pic0.oPic.GetExifOfType(oExif1.ExifSource)
             If oExif0 Is Nothing Then Continue For
 
             If oExif0.DumpAsJSON.EqualsCIAI(oExif1.DumpAsJSON) Then Continue For
@@ -940,7 +950,7 @@ Public Class ProcessBrowse
 
         Dim retVal As New List(Of String)
 
-        Dim metadane As New BaseList(Of OnePic)(stereopackfolder, "picsort.json")
+        Dim metadane As New BaseList(Of Vblib.OnePic)(stereopackfolder, "picsort.json")
         If Not metadane.Load Then Return retVal.ToArray
 
         If metadane.Count < 2 Then Return retVal.ToArray
@@ -1276,7 +1286,7 @@ Public Class ProcessBrowse
         '_redrawPending = True
 
         ' popraw licznik w tytule okna
-        Me.Title = $"{_title} ({_thumbsy.Count} images)"
+        Me.Title = $"{_title} ({_thumbsy.Count} images, memsize {_memSizeKb} MiB)"
 
         Return oNext
     End Function
@@ -1650,7 +1660,7 @@ Public Class ProcessBrowse
         SkalujRozmiarMiniaturek() ' może używać _iMaxRun
 
         'SortujThumbsy()
-        Me.Title = $"{_title} ({_thumbsy.Count} images)"
+        Me.Title = $"{_title} ({_thumbsy.Count} images, memsize {_memSizeKb} MiB)"
 
     End Sub
 
@@ -2228,7 +2238,7 @@ Public Class ProcessBrowse
         _searchWnd.Show()
     End Sub
 
-    Public Sub FilterSearchCallback(query As SearchQuery, usun As Boolean)
+    Public Sub FilterSearchCallback(query As Vblib.SearchQuery, usun As Boolean)
 
         Me.ProgRingShow(True)
         For Each thumb As ThumbPicek In _thumbsy
@@ -2277,7 +2287,7 @@ Public Class ProcessBrowse
         For Each thumb As ThumbPicek In _thumbsy
             thumb.opacity = _OpacityWygas
 
-            For Each query As ShareQueryProcess In oChannel.queries
+            For Each query As Vblib.ShareQueryProcess In oChannel.queries
 
                 If thumb.oPic.CheckIfMatchesQuery(query.query) Then
                     bWas = True
@@ -2339,8 +2349,8 @@ Public Class ProcessBrowse
         For Each thumb As ThumbPicek In _thumbsy
             thumb.opacity = _OpacityWygas
 
-            For Each oChannel As ShareChannelProcess In oLogin.channels
-                For Each query As ShareQueryProcess In oChannel.channel.queries
+            For Each oChannel As Vblib.ShareChannelProcess In oLogin.channels
+                For Each query As Vblib.ShareQueryProcess In oChannel.channel.queries
 
                     If thumb.oPic.CheckIfMatchesQuery(query.query) Then
                         thumb.opacity = 1
@@ -2439,7 +2449,7 @@ Public Class ProcessBrowse
 
 
     Private Sub uiPicList_SelChanged(sender As Object, e As SelectionChangedEventArgs)
-        DumpCurrMethod()
+        vb14.DumpCurrMethod()
 
         Dim ile As Integer = uiPicList.SelectedItems.Count
         If ile < 1 Then
@@ -2620,7 +2630,7 @@ Public Class ProcessBrowse
         OpenSubWindow(New EditOneExif(Vblib.ExifSource.AutoAzure, _inArchive))
 
         Dim b As New ThumbPicek(Nothing, 10)
-        Dim c As OnePic = b
+        Dim c As Vblib.OnePic = b
 
     End Sub
 
@@ -2827,7 +2837,7 @@ Public Class ProcessBrowse
 
             Dim sExt As String = IO.Path.GetExtension(oPic.InBufferPathName).ToLowerInvariant
 
-            If OnePic.ExtsMovie.ContainsCI(sExt) Then
+            If Vblib.OnePic.ExtsMovie.ContainsCI(sExt) Then
                 Return Await ThumbCreateFromMovie(bCacheThumbs)
             End If
 
