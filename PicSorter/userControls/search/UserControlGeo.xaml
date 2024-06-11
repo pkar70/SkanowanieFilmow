@@ -10,28 +10,16 @@
     <StackPanel >
         <CheckBox Content="Dołącz zdjęcia z nieznaną lokalizacją" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia których lokalizacja jest nieznana" IsChecked="{Binding AlsoEmpty, Mode=TwoWay}" />
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-
+        <local:StretchedGrid Cols="*,A">
             <TextBox Name="uiLatLon" IsReadOnly="true"/>
             <Button Content=" ... " Grid.Column="1" Click="uiGetGeo_Click" />
-        </Grid>
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        </local:StretchedGrid>
+        <local:StretchedGrid Cols="A,*" Rows="A,A,A">
             <TextBlock Text="Radius (km): " Grid.Row="0"/>
             <TextBox Name="uiGeoRadius" Grid.Row="0" Grid.Column="1" InputScope="Digits" TextChanged="uiGeoRadius_TextChanged" ToolTip="Tu wpisana odległość będzie dodawana do precyzji pozycji w metadanych zdjęcia (100 m lub 20 km)"/>
-            <TextBlock Text="Nazwa: " Grid.Row="1"/>
-            <TextBox Grid.Row="1" Grid.Column="1" ToolTip="Space separated fragments, prefixed with '!' to negate, or '!' to search for empty" Text="{Binding Name, Mode=TwoWay}"/>
-        </Grid>
+            <CheckBox Grid.Row="1" Grid.ColumnSpan="2" Content="Ignoruj niepewność geo zdjęcia" ToolTip="Zaznacz gdy chcesz by przy porównaniu nie uwzględniać niepewności lokalizacji z metadanych zdjęcia " IsChecked="{Binding OnlyExact, Mode=TwoWay}" />
+            <TextBlock Text="Nazwa: " Grid.Row="2"/>
+            <TextBox Grid.Row="2" Grid.Column="2" ToolTip="Space separated fragments, prefixed with '!' to negate, or '!' to search for empty" Text="{Binding Name, Mode=TwoWay}"/>
+        </local:StretchedGrid>
     </StackPanel>
 </UserControl>
