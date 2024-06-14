@@ -152,7 +152,7 @@ Public Class DatabaseJSON
         End If
 
         ' filename
-        If Not String.IsNullOrWhiteSpace(query.ogolne.adv.Filename) Then
+        If Not String.IsNullOrWhiteSpace(query.ogolne.adv.Filename) AndAlso query.ogolne.adv.Filename <> "*" Then
             lista = lista.Where(Function(x) x.MatchesMasks(query.ogolne.adv.Filename, ""))
         End If
 

@@ -1,11 +1,7 @@
-﻿Imports System.Security.Policy
-Imports Microsoft.EntityFrameworkCore.Internal
-Imports pkar
-Imports Vblib
-Imports Windows.UI.Core
+﻿Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
-
+'Imports pkar.UI.Extensions
 
 Public Class UserControlSearch
 
@@ -21,7 +17,7 @@ Public Class UserControlSearch
     Private Sub FillQueriesCombo()
         uiComboQueries.Items.Clear()
 
-        For Each oItem As SearchQuery In Application.GetQueries.OrderBy(Function(x) x.nazwa)
+        For Each oItem As Vblib.SearchQuery In Application.GetQueries.OrderBy(Function(x) x.nazwa)
             uiComboQueries.Items.Add(New ComboBoxItem With {.Content = oItem.nazwa})
         Next
     End Sub
@@ -33,13 +29,13 @@ Public Class UserControlSearch
 
     Private Async Sub uiSaveQuery_Click(sender As Object, e As RoutedEventArgs)
 
-        Dim query As SearchQuery = Await QueryValidityCheck() ' w tym duże litery dla słów kluczowych
+        Dim query As Vblib.SearchQuery = Await QueryValidityCheck() ' w tym duże litery dla słów kluczowych
         If query Is Nothing Then Return
 
         Dim nazwa As String = Await vb14.DialogBoxInputAllDirectAsync("Podaj nazwę kwerendy")
         If String.IsNullOrWhiteSpace(nazwa) Then Return
 
-        For Each oItem As SearchQuery In Application.GetQueries
+        For Each oItem As Vblib.SearchQuery In Application.GetQueries
             If oItem.nazwa = nazwa Then
                 If Not Await vb14.DialogBoxYNAsync("Taka nazwa już istnieje, zamienić?") Then
                     Return
@@ -72,7 +68,7 @@ Public Class UserControlSearch
         Dim currName As String = TryCast(uiComboQueries.SelectedItem, String)
         If currName Is Nothing Then Return
 
-        For Each oItem As SearchQuery In Application.GetQueries
+        For Each oItem As Vblib.SearchQuery In Application.GetQueries
             If oItem.nazwa = currName Then
                 ' klon - tak żeby grzebanie w danych nie zmieniło oryginału!
                 DataContext = oItem.Clone
@@ -88,7 +84,7 @@ Public Class UserControlSearch
 #End Region
 
     Private Sub UserControl_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
-        Dim query As SearchQuery = DataContext
+        Dim query As Vblib.SearchQuery = DataContext
 
         If query.source_type < 0 Then Return
 
@@ -121,7 +117,7 @@ Public Class UserControlSearch
 
     Private Sub uiComboDevType_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
 
-        Dim query As SearchQuery = DataContext
+        Dim query As Vblib.SearchQuery = DataContext
         If query Is Nothing Then Return
         query.source_type = -1
         Dim sDevType As String = TryCast(uiComboDevType.SelectedValue, String)
@@ -134,8 +130,8 @@ Public Class UserControlSearch
     ''' zwróć Query z ewent. dodatkami z kontroli, lub NULL gdy query nie ma sensu
     ''' </summary>
     ''' <returns></returns>
-    Public Async Function QueryValidityCheck() As Task(Of SearchQuery)
-        Dim query As SearchQuery = FromUiToQuery()
+    Public Async Function QueryValidityCheck() As Task(Of Vblib.SearchQuery)
+        Dim query As Vblib.SearchQuery = FromUiToQuery()
 
         ' robimy tak, bo chcemy update w UI oraz w _query; a Binding nie przeniesie przy zmianie od strony kodu
         If Not String.IsNullOrEmpty(query.ogolne.Tags) AndAlso query.ogolne.Tags.ToLowerInvariant = query.ogolne.Tags Then
@@ -179,8 +175,8 @@ Public Class UserControlSearch
     'End Sub
 
 
-    Private Function FromUiToQuery() As SearchQuery
-        Dim query As SearchQuery = DataContext
+    Private Function FromUiToQuery() As Vblib.SearchQuery
+        Dim query As Vblib.SearchQuery = DataContext
 
         ' daty - UI ma NULL dla nie-selected, a my chcemy mieć wartości
         If Not query.ogolne.MinDateCheck OrElse Not query.ogolne.MaxDate.IsDateValid Then

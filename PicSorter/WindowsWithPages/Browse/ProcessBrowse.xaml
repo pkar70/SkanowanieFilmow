@@ -81,8 +81,8 @@
                             <MenuItem Header="none" Click="uiFilterNone_Click" />
                             <MenuItem Header="Full search" Click="uiFilterSearch_Click" />
                             <MenuItem Header="reverse" Click="uiFilterReverse_Click" />
-                            <MenuItem Header="all" Click="uiFilterAll_Click" />
                         </MenuItem>
+                        <MenuItem Header="all" Click="uiFilterAll_Click" />
                     </Menu>
                 </Popup>
 
@@ -152,7 +152,7 @@
                     </Menu.ItemsPanel>
                         <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
                         <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
-                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
+                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" UseSelectedItems="True" />
                         <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" UseSelectedItems="True"/>
                         <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
                         <!--<MenuItem Header="Add link" Click="uiAddLink_Click" />-->
@@ -227,8 +227,8 @@
                                         <!-- sequence step KEYWORDs -->
                                         <!-- sequence step DESCRIBE -->
                                         <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" />
-                                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDymkuj" />
-                                        <local:PicMenuDescribe MetadataChanged="uiMetadataChangedDymkuj" UseOwner="True" />
+                                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" />
+                                        <local:PicMenuDescribe MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" />
                                         <!-- sequence step TARGET -->
                                         <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged"  />
                                         <!-- sequence step PUBLISH, ARCHIVE -->

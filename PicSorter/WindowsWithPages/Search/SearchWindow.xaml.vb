@@ -139,30 +139,10 @@ Public Class SearchWindow
     Private Async Function Szukaj(lista As IEnumerable(Of Vblib.OnePic), query As Vblib.SearchQuery) As Task(Of Integer)
 
         _queryResults = New List(Of Vblib.OnePic)
-        Dim iCount As Integer = 0
 
         Me.ProgRingShow(True)
         Me.ProgRingSetText("searching...")
         Await Task.Delay(100)
-
-        'For Each oPicek As Vblib.OnePic In lista
-        '    If Not CheckIfOnePicMatches(oPicek, query) Then Continue For
-
-        '    _queryResults.Add(oPicek)
-        '    iCount += 1
-        'Next
-
-        ' konwersja subtagów - ale to jest skomplikowane, i niekoniecznie tak zadziała, odkładam na później do przemyślenia
-        'query.ogolne.AllSubTags = new ....Clear()
-        'If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
-        '    For Each sKwd As String In query.ogolne.Tags.Split(" ")
-        '        If Not sKwd.StartsWithCS("!") Then
-        '            query.ogolne.AllSubTags.Add(Application.GetKeywords.GetAllChilds(sKwd))
-        '        End If
-        '    Next
-        'End If
-
-        Dim startTime As Date = Date.Now
 
         If lista Is Nothing Then
             ' po pełnym
@@ -171,14 +151,16 @@ Public Class SearchWindow
             ' po już ograniczonym
             Await Task.Run(Sub() _queryResults = lista.Where(Function(x) x.CheckIfMatchesQuery(query)))
         End If
-        Me.ProgRingShow(False)
 
-        Dim stopTime As Date = Date.Now
+        Dim iCount As Integer = _queryResults.ToList.Count
+
+        ' w ten sposób najpierw jest ToList, collapse z IEnumerable, dopiero potem stop
+        Me.ProgRingShow(False)
 
         ' w 21 tysiącach, -JA to niecałe 3 ms, 'gdziekolwiek' podobnie, ale czas jest bardzo długi PO tym msgbox do wyświetlenia!
         'Await Me.MsgBoxAsync("Szukanie zajęło ms: " & (stopTime - startTime).TotalMilliseconds)
 
-        Return _queryResults.ToList.Count
+        Return iCount
         'Return iCount
     End Function
 
@@ -187,8 +169,6 @@ Public Class SearchWindow
         ' clickcli
         _query = Await uiKwerenda.QueryValidityCheck
         If _query Is Nothing Then Return
-
-
 
         ' przeniesienie z UI do _query - większość się zrobi samo, ale daty - nie
         Dim iCount As Integer
@@ -301,7 +281,14 @@ Public Class SearchWindow
 
         ' = _queryResults
 
-        For Each oPic As Vblib.OnePic In uiLista.SelectedItems
+        Dim inputList As IEnumerable(Of Vblib.OnePic)
+        If uiLista.SelectedItems.count > 0 Then
+            inputList = uiLista.SelectedItems
+        Else
+            inputList = uiLista.itemssource
+        End If
+
+        For Each oPic As Vblib.OnePic In inputList
 
             For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
                 'vb14.DumpMessage($"trying archive {oArch.StorageName}")

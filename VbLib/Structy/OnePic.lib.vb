@@ -1502,9 +1502,12 @@ Public Class OnePic
         If Not CheckStringMasks(CloudArchived, query.ogolne.adv.CloudArchived) Then Return False
 
         If Not String.IsNullOrWhiteSpace(query.ogolne.adv.Published) Then
-            Dim publishy As String = ""
+
+            If Published Is Nothing Then Return False
+
+            Dim publishy As String = " "
             For Each item In Published
-                publishy = publishy & " " & item.Key
+                publishy = publishy & item.Key & " "
             Next
 
             If query.ogolne.adv.Published = "!" Then If Not String.IsNullOrWhiteSpace(publishy) Then Return False

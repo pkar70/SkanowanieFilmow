@@ -25,6 +25,10 @@ Imports pkar.DotNetExtensions
 Imports System.IO
 Imports pkar.UI.Extensions
 Imports System.ComponentModel   ' dla PropertyChangedEventHandler i podobnych
+Imports System.Linq
+Imports Windows.UI.Notifications
+Imports Windows.ApplicationModel.Background
+Imports Microsoft.EntityFrameworkCore.Internal
 
 Public Class ProcessBrowse
 
@@ -300,7 +304,7 @@ Public Class ProcessBrowse
     Private Async Function Bufor2Thumbsy() As Task
         vb14.DumpCurrMethod()
 
-        _iMaxRun = _oBufor.Count
+        _iMaxRun = _oBufor.Count.Max(1)
 
         uiProgBar.Maximum = _iMaxRun
         uiProgBar.Visibility = Visibility.Visible
@@ -2131,13 +2135,13 @@ Public Class ProcessBrowse
         Dim bMamy As Boolean = False
 
         For Each oItem As ThumbPicek In _thumbsy
-                If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then
-                    oItem.opacity = 1
-                    bMamy = True
-                Else
-                    oItem.opacity = _OpacityWygas
-                End If
-            Next
+            If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then
+                oItem.opacity = 1
+                bMamy = True
+            Else
+                oItem.opacity = _OpacityWygas
+            End If
+        Next
 
         KoniecFiltrowania(bMamy, sender IsNot Nothing)
 
@@ -2240,18 +2244,11 @@ Public Class ProcessBrowse
 
     Public Sub FilterSearchCallback(query As Vblib.SearchQuery, usun As Boolean)
 
+        Dim targetOpactity As Double = If(usun, _OpacityWygas, 1)
+
         Me.ProgRingShow(True)
-        For Each thumb As ThumbPicek In _thumbsy
-
-            'If SearchWindow.CheckIfOnePicMatches(thumb.oPic, query) Then
-            If thumb.oPic.CheckIfMatchesQuery(query) Then
-                If usun Then
-                    thumb.opacity = _OpacityWygas
-                Else
-                    thumb.opacity = 1
-                End If
-            End If
-
+        For Each thumb As ThumbPicek In _thumbsy.Where(Function(x) x.oPic.CheckIfMatchesQuery(query))
+            thumb.opacity = targetOpactity
         Next
         Me.ProgRingShow(False)
 
@@ -2282,6 +2279,10 @@ Public Class ProcessBrowse
         Dim oChannel As Vblib.ShareChannel = oFE?.DataContext
         If oChannel Is Nothing Then Return
 
+        If oChannel.queries Is Nothing Then
+            Me.MsgBox("Ten channel nie ma żadnego query?")
+            Return
+        End If
 
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy

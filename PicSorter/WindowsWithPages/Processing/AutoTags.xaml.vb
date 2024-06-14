@@ -203,6 +203,7 @@ Public Class AutoTags
             Me.MsgBox(Auto_AzureTest._AzureExceptionMsg)
         End If
 
+        uiGetAll.Content = " Run selected "
 
 
 

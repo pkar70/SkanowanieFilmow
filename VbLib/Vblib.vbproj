@@ -22,7 +22,7 @@
     <PackageReference Include="pkar.DotNetExts" Version="1.2.5" />
     <PackageReference Include="pkar.Localize" Version="1.0.2" />
     <PackageReference Include="pkar.NetConfigs" Version="1.0.3" />
-    <PackageReference Include="pkar.StructList" Version="1.6.0" />
+    <PackageReference Include="pkar.StructList" Version="1.6.1" />
     <PackageReference Include="System.ComponentModel" Version="4.3.0" />
   </ItemGroup>
 

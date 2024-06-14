@@ -212,14 +212,17 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
                 uiDateRange.RangeAsText = mam.Value
 
                 Try
-
-                Catch ex As Exception
                     Dim iInd As Integer = tekst.LastIndexOf(" ", mam.Index - 2)
-                    Dim prevWyraz As String = tekst.Substring(iInd, mam.Index - 2 - iInd).Trim
-                    Dim month As Integer = TryWyraz2Miesiac(prevWyraz)
-                    If month > 0 Then
-                        uiDateRange.RangeAsText = mam.Value & "." & month
+                    If iInd > -1 Then
+                        Dim prevWyraz As String = tekst.Substring(iInd, mam.Index - 1 - iInd).Trim
+                        Dim month As Integer = TryWyraz2Miesiac(prevWyraz)
+                        If month > 0 Then
+                            Dim smonth As String = month
+                            If month < 10 Then smonth = "0" & smonth
+                            uiDateRange.RangeAsText = mam.Value & "." & smonth
+                        End If
                     End If
+                Catch ex As Exception
                 End Try
 
                 Return

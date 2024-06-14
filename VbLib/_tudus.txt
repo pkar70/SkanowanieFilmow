@@ -131,8 +131,8 @@ AUTOEXIF RAF?
 
 AUTOTAG: po nim można próbować odswiezyc miniaturki (wygaszanie ich)
 AUTOTAG: wedle Settings, zgoda na dopisywanie tagów post-factum (do archfull)
-
 AUTOTAG: rozpoznawanie zwierząt, roślin, samochodów
+AUTOTAG: new(IBuffor), tak żeby moglo pójść take na archive? I dodawanie Azure tam gdzie go nie ma (jedna seria FBkrakow na pewno nie ma)
 
 BROWSER: opcja "Clean buffer folder", z wszystkich tempów i BAKów?
 BROWSER: Mark thumb, dzielnik innego typu, jako "dotad sprawdziłem".
@@ -152,6 +152,9 @@ BROWSER: droptarget, zassanie pliku; a jak shellobject, to razem z metadanymi?
 BROWSER: filtry: filtr "grdziekolwiek" jako wrapper do istniejacego 'full'
 BROWSER: kasowanie w pełni zarchiwizowanych - z progring
 BROWSER: rozmiar _thumbspickow? https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.sizeof?view=net-8.0
+
+BROWSER: przejęcie UnHandledException i zapisanie na nim buffor.json?
+
 CMDLINE: retrieve SOURCE
 CMDLINE: autotag TAGGER
 
@@ -164,8 +167,11 @@ CONFIG: combo z publisherami do email?
 DIRTREE: 'copy to onedrive' teraz jest tylko z okna katalogów, a tam sie teraz rzadziej wchodzi (tworzenie dirsów w trakcie)
 DIRTREE: użyć structlist.MaintainCopy
 
+HTTP: log, loginów oraz zdjęć. Uzupełnianie OnePic? Ale do archiwum niekoniecznie to miałoby sens, przy OneLogin na pewno bez sensu (za długi plik)
+
 IMPORT: nowa funkcjonalność, import, podaje się zakres dat, browse folder, i ściaga z foldertree podpadające zdjęcia
 IMPORT: razem z drzewkiem, jakoś tak by przyjmować zdjęcia już sortowane (analogowe)
+IMPORT: internet ogólny, bez FB i ograniczenia lastpage na facebook
 
 KEYWORDS/GEO: może przy dodawaniu manual geo automatycznie dopisywać keywordy?
 
@@ -218,15 +224,11 @@ SEARCH: poza tagiem również tagi nadrzędne (-ROK dla -DW)
 SEARCH: czemu progring się zatrzymuje? - bo jest niby po szukaniu, ale przed zamianą IEnum na List
 SEARCH: może "copy to buffer", dla udostępniania? Z zaznaczeniem w OnePic że tego zdjęcia nie-auto-usuwać jako zarchiwizowanego
 
-
-
 SEARCHBYPIC: Bing umie http://, ale nie umie z portu
 
 SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.json:TargetDir -> dirtree?
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 SETTINGS: cloudpubl, exif - nie pokazuje aktualnego stanu (C)
-SETTINGS: cmdline -name xxx : zmiana nazwy folderu z settingsami, by mogło być kilka instancji
-SETTINGS: umożliwienie kilku instancji jednocześsnie
 SETTINGS: PEER: gdy w Browse zaznaczam dla kogoś, to można byłoby komponować emaila (masz nowe zdjęcia), z picsort://
 
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
@@ -258,6 +260,8 @@ SOURCE: czy browse potrafi pokazać RAF z Fuji? Czy będzie pokazywał ikonkę z
 TELEFON: eksporter do chomikuj różnych
 TELEFON: click po lewej stronie ekranu - prev, po prawej - next
 
+OGOLNE:
+* IKONKA programu z menu, z pokazywaniem 'lastlogin http'?
 
 Drobne:
 * nie robi kopii do OneDrive - a włączenie robienia kopii powinno robić kopię "aktualną" [bo tylko z settings.dirtree aktualizuje plik]
