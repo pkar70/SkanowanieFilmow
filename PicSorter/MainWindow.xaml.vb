@@ -1,29 +1,48 @@
 ﻿
 
-
-'Imports Org.BouncyCastle.Asn1
-Imports System.Globalization
-Imports System.Net.Http.Json
-Imports System.Text
-Imports CsvHelper
-Imports FacebookApiSharp.Classes.Responses
-'Imports Org.BouncyCastle.Utilities
 Imports pkar
 Imports Vblib
 Imports pkar.UI.Extensions
+Imports System.Windows.Interop
 
 Class MainWindow
     Inherits Window
+
+    ''' <summary>
+    ''' Sprawdzenie czy już nie działa, jak tak to upewnia się że ma być druga instancja, jeśli nie - zamyka app
+    ''' </summary>
+    Private Async Function CheckIfRunning() As Task
+        Dim currentProcess As Process = Process.GetCurrentProcess()
+
+        Dim runningProcess As Process = (From process In Process.GetProcessesByName(currentProcess.ProcessName)
+                                         Where
+                                    process.Id <> currentProcess.Id
+                                         Select process).FirstOrDefault()
+
+        If runningProcess Is Nothing Then Return
+
+        ' mamy poprzednią instancję
+        If Await Me.DialogBoxYNAsync("To byłoby drugie uruchomienie app, zamknąć się?") Then
+            ' ewentualnie ShowWindow(runningProcess.MainWindowHandle, SW_SHOWMAXIMIZED)
+            ' przy [DllImport("user32.dll")]
+            ' Private Static extern Boolean ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+
+            Application.Current.Shutdown()
+            Return
+        End If
+
+    End Function
 
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         InitLib(Nothing)
         Page_Loaded(Nothing, Nothing)    ' tak prościej, bo wklejam tu zawartość dawnego Page
+
         lib14_httpClnt.httpKlient._machineName = Environment.MachineName    ' musi być tak, bo lib jest też używana w std 1.4, a tam nie ma machinename
 
         ' https://stackoverflow.com/questions/50858209/system-notsupportedexception-no-data-is-available-for-encoding-1252
         ' z nugetem System.Text.Encoding.CodePages
-        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)
+        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance)
 
         ' narzucona nazwa instancji (warning)
         Dim appname As String = GetSettingsString("name")
@@ -163,7 +182,7 @@ Class MainWindow
     Private Async Function CmdLineRunToolData(toolName As String, toolParam As String) As Task(Of String)
 
         Dim data As Date
-        If Not Date.TryParseExact(toolParam, "yyyy.MM.dd", CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, data) Then
+        If Not Date.TryParseExact(toolParam, "yyyy.MM.dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AllowWhiteSpaces, data) Then
             Console.WriteLine("Chyba zły format daty - ma być yyyy.MM.dd")
             Return ""
         End If
@@ -198,6 +217,7 @@ Class MainWindow
 
 
 #Region "zamykanie i ikonka"
+
     Private Async Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
 
         If Vblib.GetSettingsBool("uiServerEnabled") AndAlso Application.gWcfServer IsNot Nothing Then
@@ -208,7 +228,7 @@ Class MainWindow
                 msg += " (last request " & datediff.ToStringDHMS & " seconds ago)"
             End If
 
-            If Not Await Vblib.DialogBoxYNAsync(msg & ", zamknąć go?") Then
+            If Not Await Me.DialogBoxYNAsync(msg & ", zamknąć go?") Then
                 If e IsNot Nothing Then e.Cancel = True
                 Return
             End If
@@ -227,17 +247,100 @@ Class MainWindow
         ' https://www.codeproject.com/Articles/36468/WPF-NotifyIcon-2
 
         ' podmieniamy na ikonke tylko gdy jest jedno okno - inaczej zwykła miniaturyzacja
-        If Application.Current.Windows.Count < 2 Then
-            If Me.WindowState = WindowState.Minimized Then
-                If Await Vblib.pkarlibmodule14.DialogBoxYNAsync("Zamknąć do SysTray?") Then
-                    myNotifyIcon.Visibility = Visibility.Visible
-                    myNotifyIcon.Icon = New System.Drawing.Icon("icons/trayIcon1.ico")
-                    Me.Hide()
-                End If
-            End If
+        If Application.Current.Windows.Count > 1 Then Return
+        If Me.WindowState <> WindowState.Minimized Then Return
+        If Not Await Me.DialogBoxYNAsync("Zamknąć do SysTray?") Then Return
+
+        IkonkujMnie()
+    End Sub
+
+    Private Sub IkonkujMnie()
+        myNotifyIcon.Visibility = Visibility.Visible
+        If myNotifyIcon.Icon Is Nothing Then
+            myNotifyIcon.Icon = New System.Drawing.Icon("icons/trayIcon1.ico")
+            myNotifyIcon.ContextMenu = CreateIconContextMenu()
         End If
 
+        Me.Hide()
     End Sub
+
+    Private Sub JeslimSamToPokaz()
+        If Application.Current.Windows.Count > 2 Then Return
+        Me.Show()
+    End Sub
+
+    Private _ctxSettings As MenuItem
+
+    Private Function CreateIconContextMenu() As ContextMenu
+
+        Dim ctxMenu As New ContextMenu
+        ctxMenu.Items.Add(CreateMenuItem("Process", "Porządkowanie zdjęć", AddressOf uiProcess_Click))
+
+        Dim archMI As New MenuItem With {.Header = "Archiwum", .ToolTip = "obsługa archiwum"}
+        archMI.Items.Add(CreateMenuItem("Browse", "Przeglądanie archiwum wg katalogów", AddressOf uiBrowseArch_Click))
+        archMI.Items.Add(CreateMenuItem("Search", "Wyszukiwanie w archiwum", AddressOf uiSearch_Click))
+        archMI.Items.Add(CreateMenuItem("Statistics", "Statystyki zdjęć w archiwum", AddressOf uiStats_Click))
+        archMI.Items.Add(New Separator)
+        archMI.Items.Add(CreateMenuItem("Status", "", AddressOf ArchStatus_Click))
+        ' * freemem - zwolnienie Archive.OnePic
+        ctxMenu.Items.Add(archMI)
+
+        If Vblib.GetSettingsBool("uiServerEnabled") Then
+            Dim srvMI As New MenuItem With {.Header = "Server", .ToolTip = "PicSort jako serwer"}
+            srvMI.Items.Add(CreateMenuItem("start/stop", "Uruchamianie/zatrzymywanie serwera", AddressOf SrvStartStop_Click))
+            srvMI.Items.Add(CreateMenuItem("status", "Ostatnie połączenia", AddressOf SrvLastLog_Click))
+            ctxMenu.Items.Add(srvMI)
+        End If
+
+
+        _ctxSettings = CreateMenuItem("Settings", "Ustawienia", AddressOf uiSettings_Click)
+        ctxMenu.Items.Add(_ctxSettings)
+
+        ctxMenu.Items.Add(CreateMenuItem("About", "O programie", AddressOf About_Click))
+
+        Return ctxMenu
+    End Function
+
+    Private Async Sub SrvStartStop_Click(sender As Object, e As RoutedEventArgs)
+        If Application.gWcfServer Is Nothing Then
+            If Not Await Me.DialogBoxYNAsync("Uruchomić serwer?") Then Return
+            SettingsShare.StartServicing()
+        Else
+            If Not Await Me.DialogBoxYNAsync("Zatrzymać serwer?") Then Return
+            Application.gWcfServer.StopSvc()
+            Application.gWcfServer = Nothing
+        End If
+    End Sub
+
+    Private Sub About_Click(sender As Object, e As RoutedEventArgs)
+        Me.MsgBox(GetAppVers() & " (" & BUILD_TIMESTAMP & ")")
+    End Sub
+
+    Private Sub SrvLastLog_Click(sender As Object, e As RoutedEventArgs)
+        ' *TODO* ma być pełny log pokazywany
+
+        Dim datediff As TimeSpan = Date.Now - Application.gWcfServer._lastNetAccess
+        If datediff.TotalDays > 365 Then
+            Me.MsgBox("No recent logins")
+        Else
+            Me.MsgBox("Last request " & datediff.ToStringDHMS & " seconds ago")
+        End If
+    End Sub
+
+    Private Sub ArchStatus_Click(sender As Object, e As RoutedEventArgs)
+        ' *TODO* rozmiar pamięci, oraz możliwość zwolnienia jej
+        If Application.gDbase.IsLoaded Then
+            Me.MsgBox($"Loaded, {Application.gDbase.Count} items")
+        Else
+            Me.MsgBox("Nie mam bazy wczytanej")
+        End If
+    End Sub
+
+    Private Function CreateMenuItem(hdr As String, dymek As String, handlerek As RoutedEventHandler) As MenuItem
+        Dim oNew As New MenuItem With {.Header = hdr, .ToolTip = dymek}
+        If handlerek IsNot Nothing Then AddHandler oNew.Click, handlerek
+        Return oNew
+    End Function
 
     Private Sub uiTrayIcon_DoubleClick(sender As Object, e As RoutedEventArgs)
         Show()
@@ -247,8 +350,10 @@ Class MainWindow
     End Sub
 #End Region
 
-    Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+    Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
+
+        Await CheckIfRunning()
 
         ' jednak podstawowy folder musi istnieć, sami go sobie stworzymy jakby co.
         If Vblib.GetSettingsString("uiFolderBuffer") = "" Then
@@ -302,12 +407,26 @@ Class MainWindow
 
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
-        'UsunDefaultyArch()
+        'ArchRemoveAzureUserComment()
 
     End Sub
 
 
 #Region "poprawianie plików"
+
+    Private Sub ArchRemoveAzureUserComment()
+        Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
+        arch.Load()
+
+        For Each oPic As Vblib.OnePic In arch
+            Dim oAzure As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+            If oAzure IsNot Nothing Then oAzure.UserComment = Nothing
+        Next
+
+        arch.Save(True)
+
+    End Sub
+
 
 #If False Then
 
@@ -628,36 +747,60 @@ Class MainWindow
 #Region "guziki przejścia do stron/okien"
 
     Private Sub uiSettings_Click(sender As Object, e As RoutedEventArgs)
+        IkonkujMnie()
         uiSettings.IsEnabled = False
+        _ctxSettings.IsEnabled = False
         Dim oWnd As New SettingsWindow
+        oWnd.Owner = Me
         oWnd.ShowDialog()
         uiSettings.IsEnabled = True
+        _ctxSettings.IsEnabled = True
+        JeslimSamToPokaz()
     End Sub
 
     Private Sub uiProcess_Click(sender As Object, e As RoutedEventArgs)
+        IkonkujMnie()
         uiProcess.IsEnabled = False
-        Dim oWnd As New ProcessPic
+
+        Dim oWnd As ProcessPic = Nothing
+
+        For Each oWin In OwnedWindows
+            oWnd = TryCast(oWin, ProcessPic)
+            If oWnd IsNot Nothing Then Exit For
+        Next
+
+        If oWnd Is Nothing Then
+            oWnd = New ProcessPic
+            oWnd.Owner = Me
+        End If
         oWnd.Show()
+        oWnd.Activate()   ' bring to front
+        AddHandler oWnd.Closed, AddressOf ZamykamPodokno
         uiProcess.IsEnabled = True
     End Sub
 
-
+    Private Sub ZamykamPodokno(sender As Object, e As EventArgs)
+        JeslimSamToPokaz()
+    End Sub
 
     Private Sub uiBrowseArch_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New SettingsDirTree(False)
-        oWnd.Show()
+        PokazSubWindow(New SettingsDirTree(False))
     End Sub
 
     Private Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New SearchWindow
-        oWnd.Show()
+        PokazSubWindow(New SearchWindow)
     End Sub
 
     Private Sub uiStats_Click(sender As Object, e As RoutedEventArgs)
-        'Dim oWnd As New StatystykiWindow
-        'oWnd.Show()
-        Dim oWnd As New PokazStatystyke("",Nothing)
-        oWnd.Show
+        PokazSubWindow(New PokazStatystyke("", Nothing))
+    End Sub
+
+    Private Sub PokazSubWindow(oWnd As Window)
+        IkonkujMnie()
+        oWnd.Owner = Me
+        AddHandler oWnd.Closed, AddressOf ZamykamPodokno
+
+        oWnd.Show()
     End Sub
 
 #End Region
