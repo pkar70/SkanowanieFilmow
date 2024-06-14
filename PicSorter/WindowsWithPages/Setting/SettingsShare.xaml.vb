@@ -25,6 +25,7 @@ Class SettingsShare
         uiLastAccess.DataContext = Application.gLastLoginSharing
         uiSharingAutoUploadComment.GetSettingsBool
         uiWebBuffPicLimit.GetSettingsInt()
+        uiHttpLog.GetSettingsBool
         _loading = False
     End Sub
 
@@ -39,10 +40,6 @@ Class SettingsShare
         End If
     End Sub
 
-    Private Sub uiUploadBlocked_Check(sender As Object, e As RoutedEventArgs)
-        uiUploadBlocked.SetSettingsBool
-    End Sub
-
     Public Shared Sub StartServicing()
         Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(
                 Application.GetShareLogins, Application.gDbase,
@@ -54,12 +51,18 @@ Class SettingsShare
 
     End Sub
 
-    Private Sub uiSharingAutoUploadComment_Checked(sender As Object, e As RoutedEventArgs)
-        uiSharingAutoUploadComment.SetSettingsBool
-    End Sub
-
     Private Sub Page_Unloaded(sender As Object, e As RoutedEventArgs)
         uiWebBuffPicLimit.SetSettingsInt()
+        uiHttpLog.SetSettingsBool
+        uiSharingAutoUploadComment.SetSettingsBool
+        uiUploadBlocked.SetSettingsBool
+    End Sub
 
+    Private Sub uiOpenLog_Click(sender As Object, e As RoutedEventArgs)
+        Dim logpath As String = Application.gWcfServer.GetLogDir
+        If String.IsNullOrWhiteSpace(logpath) Then Return
+
+        Dim storFolder As New StorageFolder(logpath)
+        storFolder.OpenExplorer()
     End Sub
 End Class

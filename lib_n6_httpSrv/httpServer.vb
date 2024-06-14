@@ -34,6 +34,8 @@ Public Class ServerWrapper
         _dataFolder = dataFolder
     End Sub
 
+#Region "start/stop"
+
     Public Sub StartSvc()
         DumpCurrMethod()
 
@@ -137,6 +139,23 @@ Public Class ServerWrapper
         _host.Stop()
         _host.Close()
         _host = Nothing
+    End Sub
+#End Region
+
+    Public Function GetLogDir() As String
+        Dim folder As String = IO.Path.Combine(_dataFolder, "HttpLog")
+        If Not IO.Directory.Exists(folder) Then IO.Directory.CreateDirectory(folder)
+        Return folder
+    End Function
+
+    Private Sub AppendLog(oLogin As Vblib.ShareLogin, msg As String)
+        If Not Vblib.GetSettingsBool("uiHttpLog") Then Return
+        Dim currFile As String = IO.Path.Combine(GetLogDir, Date.Now.ToString("yyyy-MM") & ".log")
+        Dim linia As String = Date.Now.ToExifString & " "
+        If oLogin IsNot Nothing Then linia &= oLogin.displayName & " "
+        linia &= msg & vbCrLf
+        ' *TODO* niezbyt to efektywne, bo w kó³ko zapisuje log, bez buforowania - ale na razie rzadko to robimy :)
+        IO.File.AppendAllText(currFile, linia)
     End Sub
 
 #Region "real work"
@@ -278,11 +297,13 @@ Public Class ServerWrapper
 
 
             Case "webbuf"
+                AppendLog(oLogin, "webbuf")
                 Return WebPageForLogin(oLogin, RequestAllowsPL(request))
             Case "webthumb"
                 Await WyslijFotke(oLogin, queryString.Item("serno"), response, False)
                 Return "NOTXTRESPONSE"
             Case "webpic"
+                AppendLog(oLogin, $"webpic #{queryString.Item("serno")}")
                 Await WyslijFotke(oLogin, queryString.Item("serno"), response, True)
                 Return "NOTXTRESPONSE"
             Case Else
