@@ -323,6 +323,7 @@ Partial Class Application
         New Process_ResizeHalf,
         New Process_FlipHorizontal,
         New Process_EmbedBasicExif,
+        New Process_EmbedGeoExif,
         New Process_EmbedExif,
         New Process_RemoveExif,
         New Process_Signature.Process_FaceRemove,

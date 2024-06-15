@@ -4,6 +4,8 @@ Imports winstreams = Windows.Storage.Streams
 Imports wingraph = Windows.Graphics.Imaging
 Imports vb14 = Vblib.pkarlibmodule14
 Imports Vblib
+Imports pkar
+Imports MetadataExtractor
 
 Public Class Process_EmbedExif
     Inherits Vblib.PostProcBase
@@ -199,6 +201,64 @@ Public Class Process_EmbedBasicExif
 
 End Class
 
+Public Class Process_EmbedGeoExif
+    Inherits Vblib.PostProcBase
+
+    Public Overrides Property Nazwa As String = "EmbedGeoExif"
+
+    Public Overrides Property dymekAbout As String = "Wklejenie geolokalizacji do EXIF zdjęcia"
+
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
+        If Not OperatingSystem.IsWindows Then Return False
+        If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
+
+        Dim bRet As Boolean = False
+
+        oPic.InitEdit(bPipeline)
+
+        Dim geo As BasicGeoposWithRadius = oPic.GetGeoTag
+        If geo Is Nothing Then
+            oPic.SkipEdit()
+            Return True
+        End If
+
+        Using oStream As New winstreams.InMemoryRandomAccessStream
+
+            Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
+
+            oEncoder.SetSoftwareBitmap(Await Process_AutoRotate.LoadSoftBitmapAsync(oPic))
+
+            ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
+            Await oEncoder.FlushAsync()
+            '    oStream.Seek(0)
+
+            Process_AutoRotate.SaveSoftBitmap(oStream, oPic)
+        End Using
+
+        oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
+        Dim oExifLib As New CompactExifLib.ExifData(oPic._PipelineInput)
+
+
+        Dim exifGeo As CompactExifLib.GeoCoordinate = CompactExifLib.GeoCoordinate.FromDecimal(geo.Longitude, False)
+        oExifLib.SetGpsLongitude(exifGeo)
+        exifGeo = CompactExifLib.GeoCoordinate.FromDecimal(geo.Latitude, True)
+        oExifLib.SetGpsLatitude(exifGeo)
+
+        '' https://exiftool.org/TagNames/GPS.html
+        'Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoImgw)
+        'If oExif Is Nothing Then oExif = oPic.GetExifOfType(Vblib.ExifSource.AutoOSM)
+        'If oExif IsNot Nothing Then
+        '    oExifLib.SetTagValue(CompactExifLib.ExifTag.GpsAreaInformation, oExif.GeoName, CompactExifLib.StrCoding.IdCode_Utf16)
+        'End If
+
+        oPic.EndEdit(False, False)
+
+        'End Using
+
+        Return True
+    End Function
+
+End Class
 
 Public Class Process_RemoveExif
     Inherits Vblib.PostProcBase
