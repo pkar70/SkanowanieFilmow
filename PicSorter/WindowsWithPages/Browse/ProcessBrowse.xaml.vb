@@ -27,8 +27,8 @@ Imports pkar.UI.Extensions
 Imports System.ComponentModel   ' dla PropertyChangedEventHandler i podobnych
 Imports System.Linq
 Imports Windows.UI.Notifications
-Imports Windows.ApplicationModel.Background
-Imports Microsoft.EntityFrameworkCore.Internal
+'Imports Windows.ApplicationModel.Background
+'Imports Microsoft.EntityFrameworkCore.Internal
 
 Public Class ProcessBrowse
 
@@ -104,7 +104,7 @@ Public Class ProcessBrowse
         RefreshMiniaturki(True)
         'PokazThumbsy() ' tylko test, czy observable zadziała
 
-        WypelnMenuFilterSharing()
+        'WypelnMenuFilterSharing()
         'WypelnMenuActionSharing()
 
         ' zaczynamy od wygaszonego stereopack - dla archiwum, oraz gdy nie znamy SPM
@@ -1815,10 +1815,7 @@ Public Class ProcessBrowse
     End Sub
 
 #Region "filtry"
-    ' na przyszłość, pewnie z jakichś automatów by to było
-    'Private Sub WypelnMenuFiltrow()
-    '    uiMenuFilters.Items.Clear()
-    'End Sub
+
 
     Private _isGeoFilterApplied As Boolean = False
     Private _isTargetFilterApplied As Boolean = False
@@ -2258,16 +2255,44 @@ Public Class ProcessBrowse
     End Sub
 
 
-    Public Sub WypelnMenuFilterSharing()
+    'Public Sub WypelnMenuFilterSharing()
 
-        Dim iCnt As Integer = WypelnMenuFilterSharingChannels()
-        iCnt += WypelnMenuFilterSharingLogins()
+    '    Dim iCnt As Integer = WypelnMenuFilterSharingChannels()
+    '    iCnt += WypelnMenuFilterSharingLogins()
 
-        If iCnt < 1 Then
-            uiFilterSharing.Visibility = Visibility.Collapsed
-        Else
-            uiFilterSharing.Visibility = Visibility.Visible
-        End If
+    '    If iCnt < 1 Then
+    '        uiFilterSharing.Visibility = Visibility.Collapsed
+    '    Else
+    '        uiFilterSharing.Visibility = Visibility.Visible
+    '    End If
+    'End Sub
+
+    Private Sub uiFilterSharing_SubmenuOpened(sender As Object, e As RoutedEventArgs)
+        WypelnMenuFilterQuery()
+        WypelnMenuFilterSharingChannels()
+        WypelnMenuFilterSharingLogins()
+    End Sub
+
+
+    Private Sub WypelnMenuFilterQuery()
+        uiFilterQuery.Items.Clear()
+
+        Dim iCnt As Integer = 0
+
+        For Each oQuery As Vblib.SearchQuery In From c In Application.GetQueries Order By c.nazwa
+
+            'Dim oNew As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
+            'AddHandler oNew.Click, AddressOf FilterSharingLogin
+            'uiFilterLogins.Items.Add(oNew)
+            iCnt += 1
+
+            Dim oNewMarked As New MenuItem With {.Header = oQuery.nazwa, .DataContext = oQuery}
+            AddHandler oNewMarked.Click, AddressOf FilterSharingQueryMarked
+            uiFilterQuery.Items.Add(oNewMarked)
+
+        Next
+
+        uiFilterQuery.IsEnabled = (iCnt > 0)
     End Sub
 
 
@@ -2337,6 +2362,31 @@ Public Class ProcessBrowse
         KoniecFiltrowania(bWas, True)
 
     End Sub
+
+    Private Sub FilterSharingQueryMarked(sender As Object, e As RoutedEventArgs)
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = "query"
+
+        Dim oFE As FrameworkElement = sender
+        Dim oItem As Vblib.SearchQuery = oFE?.DataContext
+        If oItem Is Nothing Then Return
+
+
+        Dim bWas As Boolean = False
+        For Each thumb As ThumbPicek In _thumbsy
+            thumb.opacity = _OpacityWygas
+
+            If thumb.oPic.CheckIfMatchesQuery(oItem) Then
+                thumb.opacity = 1
+                bWas = True
+            End If
+        Next
+
+        KoniecFiltrowania(bWas, True)
+    End Sub
+
+
+
     Private Sub FilterSharingLogin(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "login"
@@ -2394,7 +2444,7 @@ Public Class ProcessBrowse
 
         Dim iCnt As Integer = 0
 
-        For Each oChannel As Vblib.ShareChannel In Application.GetShareChannels
+        For Each oChannel As Vblib.ShareChannel In From c In Application.GetShareChannels Order By c.nazwa
             Dim oNew As New MenuItem
             oNew.Header = oChannel.nazwa
             oNew.DataContext = oChannel
@@ -2411,12 +2461,11 @@ Public Class ProcessBrowse
     End Function
 
     Public Function WypelnMenuFilterSharingLogins() As Integer
-        'uiFilterLogins.Items.Clear()
         uiFilterLoginsMarked.Items.Clear()
 
         Dim iCnt As Integer = 0
 
-        For Each oLogin As Vblib.ShareLogin In Application.GetShareLogins
+        For Each oLogin As Vblib.ShareLogin In From c In Application.GetShareLogins Order By c.displayName
 
             'Dim oNew As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
             'AddHandler oNew.Click, AddressOf FilterSharingLogin
@@ -3100,6 +3149,7 @@ Public Class ProcessBrowse
         SaveMetaData()
 
     End Sub
+
 End Class
 
 Public Class KonwersjaPasekKolor

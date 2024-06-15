@@ -230,7 +230,8 @@ SETTINGS: new Page, Recovery, i w nim rózne takie odtwarzania danych? buffer.js
 SETTINGS: DIRTREE: dymek z nazwa vbCrLf opis na pozycji
 SETTINGS: cloudpubl, exif - nie pokazuje aktualnego stanu (C)
 SETTINGS: PEER: gdy w Browse zaznaczam dla kogoś, to można byłoby komponować emaila (masz nowe zdjęcia), z picsort://
-
+SETTINGS:LOGINS:AddChannel - [+] jako menu, o ile mniej niz iles tam...
+SETTINGS:CHANNELS:AddQuery - [+] jako menu, o ile mniej niz iles tam...
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 SETTINGS:SEARCHbyAzure: próg probability konieczny do użycia przy search by tag/object (w PicMenuSearchArchive)
 
