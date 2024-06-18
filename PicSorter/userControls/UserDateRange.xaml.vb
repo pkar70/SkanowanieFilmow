@@ -1,4 +1,6 @@
-﻿Public Class UserDateRange
+﻿Imports pkar.DotNetExtensions
+
+Public Class UserDateRange
 
     Private _inChange As Boolean
 
@@ -51,32 +53,41 @@
         If _inChange Then Return
         _inChange = True
 
-        Dim rok, mies, dzien As Integer
-        Dim zakres As String = uiDateRange.Text
+        Try
 
-        If zakres.Length > 3 AndAlso Integer.TryParse(zakres.Substring(0, 4), rok) Then
-            uiDateMin.SelectedDate = New Date(rok, 1, 1)
-            uiDateMax.SelectedDate = New Date(rok, 12, 31, 23, 59, 59)
+            Dim rok, mies, dzien As Integer
+            Dim zakres As String = uiDateRange.Text
 
-            If zakres.Length > 6 AndAlso Integer.TryParse(zakres.Substring(5, 2), mies) Then
-                uiDateMin.SelectedDate = New Date(rok, mies, 1)
-                uiDateMax.SelectedDate = New Date(rok, mies + 1, 1).AddSeconds(-2)
+            If zakres.Length > 3 AndAlso Integer.TryParse(zakres.Substring(0, 4), rok) Then
+                uiDateMin.SelectedDate = New Date(rok, 1, 1)
+                uiDateMax.SelectedDate = New Date(rok, 12, 31, 23, 59, 59)
 
-                If zakres.Length > 9 AndAlso Integer.TryParse(zakres.Substring(8, 2), dzien) Then
-                    uiDateMin.SelectedDate = New Date(rok, mies, dzien)
-                    uiDateMax.SelectedDate = New Date(rok, mies, dzien, 23, 59, 59)
+                If zakres.Length > 6 AndAlso Integer.TryParse(zakres.Substring(5, 2), mies) Then
+                    uiDateMin.SelectedDate = New Date(rok, mies, 1)
+                    If mies = 12 Then
+                        uiDateMax.SelectedDate = New Date(rok + 1, 1, 1).AddSeconds(-2)
+                    Else
+                        uiDateMax.SelectedDate = New Date(rok, mies + 1, 1).AddSeconds(-2)
+                    End If
+
+                    If zakres.Length > 9 AndAlso Integer.TryParse(zakres.Substring(8, 2), dzien) Then
+                        uiDateMin.SelectedDate = New Date(rok, mies, dzien)
+                        uiDateMax.SelectedDate = New Date(rok, mies, dzien, 23, 59, 59)
+                    End If
+
                 End If
+
+            ElseIf zakres.Length > 2 AndAlso Integer.TryParse(zakres.Substring(0, 3), rok) Then
+                ' dekada
+                uiDateMin.SelectedDate = New Date(rok * 10, 1, 1)
+                uiDateMax.SelectedDate = New Date(rok * 10 + 9, 12, 31, 23, 59, 59)
+
 
             End If
 
-        ElseIf zakres.Length > 2 AndAlso Integer.TryParse(zakres.Substring(0, 3), rok) Then
-            ' dekada
-            uiDateMin.SelectedDate = New Date(rok * 10, 1, 1)
-            uiDateMax.SelectedDate = New Date(rok * 10 + 9, 12, 31, 23, 59, 59)
+        Catch ex As Exception
 
-
-        End If
-
+        End Try
 
         _inChange = False
     End Sub
@@ -111,5 +122,6 @@
     Private Sub UserControl_Loaded(sender As Object, e As RoutedEventArgs)
         uiDateMin.DisplayDateStart = New Date(1800, 1, 1)
         uiDateMax.DisplayDateEnd = Date.Now.AddHours(5)
+        uiDateRange.Focus()
     End Sub
 End Class
