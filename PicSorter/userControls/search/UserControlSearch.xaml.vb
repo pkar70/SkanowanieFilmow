@@ -18,7 +18,7 @@ Public Class UserControlSearch
         uiComboQueries.Items.Clear()
 
         For Each oItem As Vblib.SearchQuery In Application.GetQueries.OrderBy(Function(x) x.nazwa)
-            uiComboQueries.Items.Add(New ComboBoxItem With {.Content = oItem.nazwa})
+            uiComboQueries.Items.Add(New ComboBoxItem With {.Content = oItem.nazwa, .DataContext = oItem})
         Next
     End Sub
 
@@ -65,25 +65,22 @@ Public Class UserControlSearch
     End Sub
 
     Private Sub uiLoadQuery_Click(sender As Object, e As RoutedEventArgs)
-        Dim currName As String = TryCast(uiComboQueries.SelectedItem, String)
-        If currName Is Nothing Then Return
+        Dim cbi As ComboBoxItem = TryCast(uiComboQueries.SelectedItem, ComboBoxItem)
+        Dim oQuery As Vblib.SearchQuery = TryCast(cbi?.DataContext, Vblib.SearchQuery)
+        If oQuery Is Nothing Then Return
 
-        For Each oItem As Vblib.SearchQuery In Application.GetQueries
-            If oItem.nazwa = currName Then
-                ' klon - tak żeby grzebanie w danych nie zmieniło oryginału!
-                DataContext = oItem.Clone
-                Return
-            End If
-        Next
-
-        vb14.DialogBox("Coś nie tak, nie mogę znaleźć wybranego query?")
-
+        DataContext = oQuery.Clone
+        uiLoadQuery.IsEnabled = False
     End Sub
 
+    Private Sub uiComboQueries_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
+        uiLoadQuery.IsEnabled = True
+    End Sub
 
 #End Region
 
     Private Sub UserControl_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
+
         Dim query As Vblib.SearchQuery = DataContext
 
         If query.source_type < 0 Then Return
@@ -154,26 +151,6 @@ Public Class UserControlSearch
 
     End Function
 
-    'Private Async Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
-
-    '    ' przeniesienie z UI do _query - większość się zrobi samo, ale daty - nie
-    '    Dim query As SearchQuery = FromUiToQuery()
-
-    '    ' robimy tak, bo chcemy update w UI oraz w _query; a Binding nie przeniesie przy zmianie od strony kodu
-    '    If Not String.IsNullOrEmpty(query.ogolne.Tags) AndAlso query.ogolne.Tags.ToLowerInvariant = query.ogolne.Tags Then
-    '        If Await vb14.DialogBoxYNAsync("Keywords ma tylko małe litery, czy zmienić na duże?") Then
-    '            'uiTags.Text = uiTags.Text.ToUpper
-    '            query.ogolne.Tags = query.ogolne.Tags.ToUpper
-    '        End If
-    '    End If
-
-    '    Try
-    '        RaiseEvent Szukajmy(Me, Nothing)
-    '    Catch ex As Exception
-
-    '    End Try
-    'End Sub
-
 
     Private Function FromUiToQuery() As Vblib.SearchQuery
         Dim query As Vblib.SearchQuery = DataContext
@@ -208,4 +185,5 @@ Public Class UserControlSearch
         Return query
 
     End Function
+
 End Class

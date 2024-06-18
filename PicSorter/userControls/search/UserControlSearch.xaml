@@ -21,8 +21,8 @@
                     </Grid.ColumnDefinitions>
 
                     <Button Content="SaveAs" Click="uiSaveQuery_Click" />
-                    <ComboBox Grid.Column="1" Name="uiComboQueries" Margin="10,0,5,0"/>
-                    <Button Grid.Column="2" Content="Load" Click="uiLoadQuery_Click" />
+                    <ComboBox Grid.Column="1" Name="uiComboQueries" Margin="10,0,5,0" SelectionChanged="uiComboQueries_SelectionChanged"/>
+                    <Button Grid.Column="2" Content="Load" Click="uiLoadQuery_Click" Name="uiLoadQuery"/>
                 </Grid>
             </Expander>
             <!-- query editor-->
