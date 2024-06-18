@@ -222,6 +222,16 @@ Public Class AutoTag_EXIF
         ' table 7, F
         oNewExif.DateTimeOriginal = oRdr.GetDate(CompactExifLib.ExifTag.DateTimeOriginal) ' ASCII(20)?
 
+        If String.IsNullOrWhiteSpace(oNewExif.DateTimeOriginal) Then
+            oNewExif.DateTimeOriginal = oRdr.GetDate(CompactExifLib.ExifTag.DateTime)
+        End If
+        ' Fuji S7000
+        'File Creation Date/Time         :  2007:12:31 23:00:16+01:00
+        'Modify Date (0x132)                     :  2007:04:29 17:20:35
+        'Create Date                     :  2007:04:29 17:20:35
+        'Profile Date Time               :  1998:02:09 06:49:00
+        'Date/ Time Original (0x9003)              : 2007:04:29 15:20:35Z
+
         'If Not String.IsNullOrWhiteSpace(oNewExif.DateTimeOriginal) AndAlso oNewExif.DateTimeOriginal.Length > 15 Then
         '    ' 2022.05.06 12:27:47 
         '    oFile.sortOrder = oNewExif.DateTimeOriginal
@@ -241,6 +251,9 @@ Public Class AutoTag_EXIF
         oNewExif.Author = oRdr.GetString(CompactExifLib.ExifTag.Artist) ' 315 = 013b ASCII(ANY)
         oNewExif.Copyright = oRdr.GetString(CompactExifLib.ExifTag.Copyright) ' 33432 = 8298 ASCII(ANY)
         oNewExif.Keywords = oRdr.GetString(CompactExifLib.ExifTag.ImageDescription)  ' tylko ASCII, 010e ASCII(ANY)
+
+        oNewExif.Keywords = oNewExif.Keywords?.Replace("EPSON scanner image", "") ' ze skanera są takie keywordsy, usuwam je bo bez sensu
+
         oNewExif.CameraModel = AddSecondTagString(
             oRdr.GetString(CompactExifLib.ExifTag.Make), ' ASCII(ANY)
             oRdr.GetString(CompactExifLib.ExifTag.Model), ' 272 = 0110 ASCII(ANY)
