@@ -10,7 +10,7 @@ Class SettingsShareLogins
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
-        uiLista.ItemsSource = Application.GetShareLogins '.OrderBy(Function(x) x.displayName)
+        uiLista.ItemsSource = Application.GetShareLogins.OrderBy(Function(x) x.displayName)
         uiAdresOverride.GetSettingsString
         Dim adres As String = Await vb14_GetMyIP.GetMyIP.GetIPString
         _channels = Application.GetShareChannels.Select(Of String)(Function(x) x.nazwa).ToList

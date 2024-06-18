@@ -8,9 +8,9 @@
       mc:Ignorable="d" 
       d:DesignHeight="500" d:DesignWidth="350"
       Title="SettingsShareLogins" Loaded="Page_Loaded">
-    <Page.Resources>
+    <!--<Page.Resources>
         <local:KonwersjaStringListString x:Key="KonwersjaStringListString"/>
-    </Page.Resources>
+    </Page.Resources>-->
 
     <Grid  Margin="2,2,2,2">
         <Grid.RowDefinitions>
@@ -50,7 +50,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
-                            <CheckBox IsChecked="{Binding enabled, Mode=TwoWay}" MinWidth="20" Checked="uiEnabled_Checked" Unchecked="uiEnabled_Checked"/>
+                            <CheckBox IsChecked="{Binding enabled, Mode=TwoWay}" MinWidth="20" Checked="uiEnabled_Checked" Unchecked="uiEnabled_Checked" ToolTip="Odznaczenie spowoduje zablokowanie logowania przez sieć"/>
                             <TextBlock Text="{Binding displayName, Mode=OneTime}"  Grid.Column="1"/>
                             <Button Content=" Edit " Grid.Column="2" Click="uiEdit_Click" Margin="5,0,5,0" />
                             <Button Content=" Email " Grid.Column="3" Click="uiEmail_Click" Margin="5,0,5,0" />
@@ -66,7 +66,7 @@
         <Grid Name="uiEditLogin" Margin="10,10,10,2" Grid.Row="3" Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*" />
-                <RowDefinition Height="*" />
+                <RowDefinition Height="1" /> <!-- exclusions, było: * , ale denied przechodzi z oLogin do OnePic-->
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -117,14 +117,14 @@
             </Grid>
 
             <!-- edit box z lista exclusions -->
-            <Grid Grid.Row="1">
+            <!--<Grid Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
                 <TextBlock Text="Exclusions: (GUIDs)" />
-                <TextBox VerticalScrollBarVisibility="Auto" Name="uiKanalExclusions" AcceptsReturn="True" Text="{Binding exclusions, Mode=TwoWay, Converter={StaticResource KonwersjaStringListString}}" Grid.Row="1" ToolTip="Lista GUID plików które nie powinny być pokazane - każdy w oddzielnej linii"/>
-            </Grid>
+                <TextBox VerticalScrollBarVisibility="Auto" Name="uiKanalExclusions" AcceptsReturn="True" Text="{Binding exclusions, Mode=TwoWay}" Grid.Row="1" ToolTip="Lista serno plików które nie powinny być pokazane - każdy w oddzielnej linii"/>
+            </Grid>-->
 
             <!-- postprocess wspolny dla login -->
             <Grid Grid.Row="2">
