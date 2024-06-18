@@ -255,13 +255,41 @@ Class MainWindow
     End Sub
 
     Private Sub IkonkujMnie()
-        myNotifyIcon.Visibility = Visibility.Visible
-        If myNotifyIcon.Icon Is Nothing Then
-            myNotifyIcon.Icon = New System.Drawing.Icon("icons/trayIcon1.ico")
-            myNotifyIcon.ContextMenu = CreateIconContextMenu()
+
+        If Me.Visibility = Visibility.Hidden Then Return
+
+        Dim ikonka As System.Drawing.Icon = Nothing
+
+        Try
+            ikonka = New System.Drawing.Icon("icons/trayIcon1.ico")
+        Catch ex As Exception
+
+        End Try
+
+        If ikonka Is Nothing Then
+            Dim localIcon As String = IO.Path.Combine(Application.GetDataFolder, "trayIcon1.ico")
+            If Not IO.File.Exists(localIcon) Then
+                ' ściągnij z mojego serwera?
+            End If
+
+            Try
+                ikonka = New System.Drawing.Icon(localIcon)
+            Catch ex As Exception
+
+            End Try
         End If
 
-        Me.Hide()
+        Try
+            myNotifyIcon.Visibility = Visibility.Visible
+            If myNotifyIcon.Icon Is Nothing Then
+                myNotifyIcon.Icon = ikonka
+                myNotifyIcon.ContextMenu = CreateIconContextMenu()
+            End If
+
+            Me.Hide()
+        Catch ex As Exception
+            Me.MsgBox("Chciałem się przełączyć do ikonki, ale: " & vbCrLf & ex.Message)
+        End Try
     End Sub
 
     Private Sub JeslimSamToPokaz()
@@ -407,12 +435,28 @@ Class MainWindow
 
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
-        'ArchRemoveAzureUserComment()
+        'PoprawReelFromTarget
 
     End Sub
 
 
 #Region "poprawianie plików"
+
+#If False Then
+
+    Private Sub PoprawReelFromTarget()
+
+        For Each oFile In Application.GetBuffer.GetList
+
+            Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.SourceDefault)
+            If oExif Is Nothing Then Continue For
+
+            oExif.ReelName = oFile.TargetDir.Replace("reel\", "").Replace("\", "_")
+
+        Next
+        Application.GetBuffer.SaveData()
+
+    End Sub
 
     Private Sub ArchRemoveAzureUserComment()
         Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
@@ -427,8 +471,6 @@ Class MainWindow
 
     End Sub
 
-
-#If False Then
 
     Private Sub UsunDefaultyArch()
         Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
@@ -726,6 +768,10 @@ Class MainWindow
 
 #End Region
 
+    ''' <summary>
+    '''  to miało ustalać MaxThumbs z ilości RAM, ale ponieważ to nie działa, to na sztywno 1000
+    ''' </summary>
+    ''' <returns></returns>
     Private Shared Function CalculateMaxThumbCount() As Integer
         ' policz ile zdjęć można mieć
         ' zakładam jeden thumb to 500 KiB (tak zapisałem kiedyś w userGuide)
