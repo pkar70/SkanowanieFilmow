@@ -86,7 +86,7 @@ Public Class QueryFaces
 End Class
 
 Public Class QueryAzure
-    Public Property AlsoEmpty As Boolean
+    Public Property AlsoEmpty As Boolean = True
     Public Property Brands As String = ""
     Public Property Categories As String = ""
     Public Property Objects As String = ""
