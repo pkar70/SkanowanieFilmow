@@ -50,6 +50,10 @@ Public MustInherit Class SharePeer
     Public Property displayName As String ' widać go jako...
     Public Property ID As String
 
+    ''' <summary>
+    ''' zwraca +{ID}, nie login (guid) tylko ID
+    ''' </summary>
+    ''' <returns></returns>
     Public Function GetIdForSharing() As String
         Return $"+{ID};"
     End Function

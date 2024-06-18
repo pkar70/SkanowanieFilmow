@@ -47,6 +47,7 @@ Public Class OnePic
     Public Property sharingLockSharing As Boolean
 
     Public Property allowedPeers As String
+    Public Property deniedPeers As String
 
     Public Property serno As Integer
 
@@ -304,6 +305,7 @@ Public Class OnePic
         Dim dDateMin As Date = Date.MinValue
 
         For Each oItem As ExifTag In Exifs
+            If oItem.ExifSource = ExifSource.SourceFile Then Continue For
             'If oItem.ExifSource = ExifSource.ManualTag Then
             If oItem.DateMin.IsDateValid Then dDateMin = dDateMin.Max(oItem.DateMin)
             'End If
@@ -1326,7 +1328,7 @@ Public Class OnePic
             Return
         End If
 
-        peer.exclusions = peer.exclusions & FormattedSerNo() & ";"
+        deniedPeers &= peer.GetIdForSharing
     End Sub
 
     ''' <summary>
@@ -1351,6 +1353,7 @@ Public Class OnePic
         'Public Property sharingFromGuid As String   ' a'la UseNet Path, tyle ┼╝e rozdzielana ";"; GUIDy kolejne; wpsywane przez httpserver.lib; prefiksy: "L:" z loginu, "S:" z serwera
         sharingLockSharing = False
         allowedPeers = Nothing
+        deniedPeers = Nothing
 
         ' te i tak są Ignored, więc nie przejdą przez Clone
         'Public Property toProcessed As String
@@ -1365,8 +1368,10 @@ Public Class OnePic
     End Function
 
     Public Function PeerIsForcedDeny(oLogin As ShareLogin) As Boolean
-        If oLogin?.exclusions Is Nothing Then Return False
-        Return oLogin.exclusions.Contains(FormattedSerNo() & ";")
+        ' If oLogin?.exclusions Is Nothing Then Return False
+        If String.IsNullOrWhiteSpace(deniedPeers) Then Return False
+        Return deniedPeers.Contains(oLogin.GetIdForSharing)
+        ' Return oLogin.exclusions.Contains(FormattedSerNo() & ";")
     End Function
 
     Public Function PeerIsForLogin(oLogin As ShareLogin) As Boolean
