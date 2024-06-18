@@ -299,7 +299,8 @@ Public MustInherit Class PicSourceBase
 			Dim oExif As ExifTag = oFile.GetExifOfType(ExifSource.SourceFile)
 			If oExif Is Nothing Then Continue For
 
-			If oExif.DateMax > sinceDate Then
+			' dla skanów nie ma sprawdzania daty, bo można dużo później wczytywać
+			If oExif.DateMax > sinceDate OrElse Typ = PicSourceType.Reel Then
 				_lastIDreturned = iLp
 				OpenFile(oFile)
 				TryDescrptIon(oFile)
@@ -356,7 +357,7 @@ Public MustInherit Class PicSourceBase
 			Dim oExif As ExifTag = oFile.GetExifOfType(ExifSource.SourceFile)
 			If oExif Is Nothing Then Continue For
 
-			If oExif.DateMax > _sinceDate Then
+			If oExif.DateMax > _sinceDate OrElse Typ = PicSourceType.Reel Then
 				_lastIDreturned = iLp
 				OpenFile(oFile)
 				TryDescrptIon(oFile)
