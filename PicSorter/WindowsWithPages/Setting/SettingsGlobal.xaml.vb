@@ -1,6 +1,4 @@
 ﻿
-Imports System.Linq.Expressions
-Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.UI.Configs.Extensions
 
 Imports pkar.UI.Extensions
@@ -87,7 +85,7 @@ Class SettingsGlobal
         Next
 
         If iMax < 512 * 1024 * 1024 Then
-            vb14.DialogBox("Nie masz dysku z choćby 512 MB?")
+            Me.MsgBox("Nie masz dysku z choćby 512 MB?")
             Return
         End If
 
@@ -95,6 +93,8 @@ Class SettingsGlobal
     End Sub
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
+
         uiFolderBuffer.GetSettingsString()
         'uiFolderData.GetSettingsString()
         uiUseOneDrive.GetSettingsBool
@@ -132,12 +132,12 @@ Class SettingsGlobal
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
 
         If Not CheckDirsExists(uiFolderBuffer) Then
-            vb14.DialogBox("ERROR: popraw katalogi - muszą istnieć")
+            Me.MsgBox("ERROR: popraw katalogi - muszą istnieć")
             Return
         End If
 
         If Not CheckDirsOnFixed(uiFolderBuffer) Then
-            vb14.DialogBox("ERROR: popraw katalogi - muszą być na dyskach wewnętrznych")
+            Me.MsgBox("ERROR: popraw katalogi - muszą być na dyskach wewnętrznych")
             Return
         End If
 

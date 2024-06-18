@@ -152,6 +152,7 @@ BROWSER: droptarget, zassanie pliku; a jak shellobject, to razem z metadanymi?
 BROWSER: filtry: filtr "grdziekolwiek" jako wrapper do istniejacego 'full'
 BROWSER: kasowanie w pełni zarchiwizowanych - z progring
 BROWSER: rozmiar _thumbspickow? https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.sizeof?view=net-8.0
+BROWSER: sharing:force deny/allow, nie jest zapisywane do logins.json (a allow to do onepic chyba). Może przenieść exclusion do OnePic?
 
 BROWSER: przejęcie UnHandledException i zapisanie na nim buffor.json?
 
@@ -234,6 +235,8 @@ SETTINGS:LOGINS:AddChannel - [+] jako menu, o ile mniej niz iles tam...
 SETTINGS:CHANNELS:AddQuery - [+] jako menu, o ile mniej niz iles tam...
 SETTINGS:DIRTREE:nowy dir, ID nie może być taki jak innych, bo wtedy się skleją przy płaskiej strukturze publish
 SETTINGS:SEARCHbyAzure: próg probability konieczny do użycia przy search by tag/object (w PicMenuSearchArchive)
+
+SHARING:logins:tymczasowe i długotrwałe "forcedeny"?
 
 SHOWBIG: ^D jako "describe" i tak dalej? ale okienko otwierane jest niestąd
 SHOWBIG: drag source (duży plik, nie ikonka jak z Browse)
