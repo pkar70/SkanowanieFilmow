@@ -2,6 +2,7 @@ Imports System.Collections.Specialized
 Imports System.IO
 Imports System.Net
 Imports System.Runtime.CompilerServices
+Imports pkar
 Imports pkar.DotNetExtensions
 
 Imports Vblib
@@ -297,12 +298,15 @@ Public Class ServerWrapper
 
 
             Case "webbuf"
+                If Not Vblib.GetSettingsBool("uiAsWebServer") Then Return "Web interface is disabled"
                 AppendLog(oLogin, "webbuf")
                 Return WebPageForLogin(oLogin, RequestAllowsPL(request))
             Case "webthumb"
+                If Not Vblib.GetSettingsBool("uiAsWebServer") Then Return "Web interface is disabled"
                 Await WyslijFotke(oLogin, queryString.Item("serno"), response, False)
                 Return "NOTXTRESPONSE"
             Case "webpic"
+                If Not Vblib.GetSettingsBool("uiAsWebServer") Then Return "Web interface is disabled"
                 AppendLog(oLogin, $"webpic #{queryString.Item("serno")}")
                 Await WyslijFotke(oLogin, queryString.Item("serno"), response, True)
                 Return "NOTXTRESPONSE"
@@ -335,10 +339,42 @@ Public Class ServerWrapper
         Dim byloCos As Boolean = False
 
         Dim guard As Integer = Vblib.GetSettingsInt("uiWebBuffPicLimit")
-        For Each oPic As Vblib.OnePic In _buffer.GetList.Where(Function(x) Not x.sharingLockSharing AndAlso x.PeerIsForLogin(oLogin)).Take(49)
+        For Each oPic As Vblib.OnePic In _buffer.GetList.Where(Function(x) Not x.sharingLockSharing AndAlso x.PeerIsForLogin(oLogin)).Take(guard)
             sPage &= "<tr>"
             sPage &= $"<td><a href='webpic?guid={oLogin.login}&serno={oPic.serno}'><img src='webthumb?guid={oLogin.login}&serno={oPic.serno}'></a>"
-            sPage &= $"<td>{oPic.sumOfDescr}"
+            sPage &= "<td>"
+
+            If Vblib.GetSettingsBool("uiAsWebPrintFilename") Then
+                sPage &= oPic.sSuggestedFilename & "<br />"
+            End If
+
+            If Vblib.GetSettingsBool("uiAsWebPrintSerno") Then
+                sPage &= "#serno: " & oPic.serno & "<br />"
+            End If
+
+            Try
+                If Vblib.GetSettingsBool("uiAsWebPrintDates") Then
+                    sPage &= $"Date: {oPic.GetMinDate.ToExifString} .. {oPic.GetMaxDate.ToExifString}" & "<br />"
+                End If
+            Catch ex As Exception
+
+            End Try
+
+            If Vblib.GetSettingsBool("uiAsWebPrintKwd") Then
+                sPage &= oPic.sumOfKwds & "<br />"
+            End If
+
+            If Vblib.GetSettingsBool("uiAsWebPrintDescr") Then
+                sPage &= oPic.sumOfDescr & "<br />"
+            End If
+
+            If Vblib.GetSettingsBool("uiAsWebPrintGeo") Then
+                Dim geo As pkar.BasicGeoposWithRadius = oPic.GetGeoTag
+                If geo IsNot Nothing Then
+                    sPage &= $"<a href='{geo.ToOSMLink}'>mapa</a>"
+                End If
+            End If
+
             sPage &= "</tr>" & vbCrLf
             byloCos = True
             guard -= 1

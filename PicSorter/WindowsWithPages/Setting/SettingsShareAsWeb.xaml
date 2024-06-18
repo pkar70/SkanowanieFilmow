@@ -1,0 +1,33 @@
+﻿<Page x:Class="SettingsShareAsWeb"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PicSorterNS"
+      mc:Ignorable="d" 
+      d:DesignHeight="500" d:DesignWidth="350"
+      Title="SettingsShareAsWeb" Loaded="Page_Loaded">
+    <StackPanel>
+
+        <local:TextBlockPageTitle Text="As web server" />
+
+        <CheckBox Name="uiAsWebServer" Content="act as a web server" Margin="0,10,0,20"/>
+        
+        <local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="199" IsEnabled="{Binding IsChecked, ElementName=uiAsWebServer}"/>
+
+        <CheckBox Name="uiAsWebPrintFilename" Content="show filename" />
+        <CheckBox Name="uiAsWebPrintSerno" Content="show #serno" />
+        <CheckBox Name="uiAsWebPrintDates" Content="show dates" />
+        <CheckBox Name="uiAsWebPrintKwd" Content="show keywords" />
+        <CheckBox Name="uiAsWebPrintDescr" Content="show descriptions" />
+        <CheckBox Name="uiAsWebPrintGeo" Content="show geo link" />
+
+        <local:StretchedGrid Cols="*,A">
+            <CheckBox Name="uiHttpLog" Content="Maintain log" />
+            <Button Content=" Open logs " Click="uiOpenLog_Click" Grid.Column="1"/>
+        </local:StretchedGrid>
+
+        <Button Content=" Save " HorizontalAlignment="Center" Margin="0,20,0,0" Click="uiOK_Click" />
+
+    </StackPanel>
+</Page>
