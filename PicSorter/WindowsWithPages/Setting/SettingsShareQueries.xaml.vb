@@ -1,0 +1,3 @@
+﻿Class SettingsShareQueries
+
+End Class

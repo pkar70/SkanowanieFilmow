@@ -15,6 +15,13 @@ Class SettingsShare
         Me.NavigationService.Navigate(New SettingsShareServers)
     End Sub
 
+    Private Sub uiShareAsWeb_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsShareAsWeb)
+    End Sub
+    Private Sub uiShareQueries_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsShareQueries)
+    End Sub
+
     Dim _loading As Boolean = True
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
@@ -24,8 +31,8 @@ Class SettingsShare
         uiMyName.Text = Environment.MachineName
         uiLastAccess.DataContext = Application.gLastLoginSharing
         uiSharingAutoUploadComment.GetSettingsBool
-        uiWebBuffPicLimit.GetSettingsInt()
-        uiHttpLog.GetSettingsBool
+        'uiWebBuffPicLimit.GetSettingsInt()
+        'uiHttpLog.GetSettingsBool
         _loading = False
     End Sub
 
@@ -52,8 +59,8 @@ Class SettingsShare
     End Sub
 
     Private Sub Page_Unloaded(sender As Object, e As RoutedEventArgs)
-        uiWebBuffPicLimit.SetSettingsInt()
-        uiHttpLog.SetSettingsBool
+        'uiWebBuffPicLimit.SetSettingsInt()
+        'uiHttpLog.SetSettingsBool
         uiSharingAutoUploadComment.SetSettingsBool
         uiUploadBlocked.SetSettingsBool
     End Sub
@@ -65,4 +72,5 @@ Class SettingsShare
         Dim storFolder As New StorageFolder(logpath)
         storFolder.OpenExplorer()
     End Sub
+
 End Class

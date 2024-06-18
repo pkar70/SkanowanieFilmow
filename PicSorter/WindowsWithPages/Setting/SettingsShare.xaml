@@ -13,8 +13,10 @@
         <CheckBox Name="uiServerEnabled" Content="accept connections" Checked="uiSrvEnable_Check" Unchecked="uiSrvEnable_Check"/>
         <CheckBox Name="uiUploadBlocked" Content="block uploads"/>
         <!--<Button Content="Queries" Margin="5,10,5,5" FontSize="18" Click="uiShareQueries_Click"/>-->
+        <Button Content="Queries" Margin="5,10,5,5" FontSize="18" Click="uiShareQueries_Click"/>
         <Button Content="Channels" Margin="5,10,5,5" FontSize="18" Click="uiShareChannels_Click"/>
         <Button Content="Logins" Margin="5,10,5,5" FontSize="18" Click="uiShareLogins_Click"/>
+        <Button Content="As web" Margin="5,10,5,5" FontSize="18" Click="uiShareAsWeb_Click"/>
 
         <Grid Name="uiLastAccess" Margin="5,5,5,5">
             <Grid.ColumnDefinitions>
@@ -36,12 +38,12 @@
 
         </Grid>
 
-        <local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="127" />
+        <!--<local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="127" />
 
         <local:StretchedGrid Cols="*,A">
             <CheckBox Name="uiHttpLog" Content="Maintain log" />
             <Button Content=" Open log" Click="uiOpenLog_Click" Grid.Column="1"/>
-        </local:StretchedGrid>
+        </local:StretchedGrid>-->
 
         <TextBlock FontSize="14" Text="As a client:" FontWeight="SemiBold" Margin="5,20,5,0"/>
 
