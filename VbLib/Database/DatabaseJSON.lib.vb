@@ -4,6 +4,7 @@
 
 Imports System.IO
 Imports pkar.DotNetExtensions
+Imports System.Linq
 
 Public Class DatabaseJSON
     Implements DatabaseInterface
@@ -176,10 +177,10 @@ Public Class DatabaseJSON
 
                 ' ten fragment musi wystąpić - ale może gdziekolwiek wystąpić, więc appendujemy wystąpienia z różnych miejsc
                 Dim newlista As New List(Of OnePic)
-                newlista = lista.Where(Function(x) If(x?.TargetDir.ContainsCI(kwd), True))
-                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sSuggestedFilename.ContainsCI(kwd), True)))
-                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sumOfDescr?.ContainsCI(kwd), True)))
-                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sumOfUserComment?.ContainsCI(kwd), True)))
+                newlista = lista.Where(Function(x) If(x?.TargetDir.ContainsCI(kwd), True)).ToList
+                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sSuggestedFilename.ContainsCI(kwd), True)).ToList).ToList
+                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sumOfDescr?.ContainsCI(kwd), True)).ToList).ToList
+                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sumOfUserComment?.ContainsCI(kwd), True)).ToList).ToList
 
                 lista = newlista
             Next
