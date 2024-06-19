@@ -17,17 +17,17 @@
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <local:StretchedGridBlue Cols="*,A,*,A,20,A,A">
-                        <TextBlock Text="{Binding fromDir}" />
+                        <TextBlock Text="{Binding fromDir}" ToolTip="directory in source folder"/>
                         <TextBlock Text=" → .\reel\" Grid.Column="1" />
-                        <TextBox Text="{Binding toDir, Mode=TwoWay}"  Grid.Column="2"/>
+                        <TextBox Text="{Binding toDir, Mode=TwoWay}"  Grid.Column="2" ToolTip="target directory"/>
                         <TextBlock Text=", files: " Grid.Column="3" ToolTip="{Binding dymek}"/>
                         <TextBlock Text="{Binding counter}" Grid.Column="4" ToolTip="{Binding dymek}"/>
                         <TextBlock Text=", rename " Grid.Column="5" />
-                        <ComboBox SelectedValue="{Binding renameMode}" Grid.Column="6">
-                            <ComboBoxItem Content="prefix + ASC" />
-                            <ComboBoxItem Content="prefix + DESC" />
-                            <ComboBoxItem Content="prefix" IsSelected="True"/>
-                            <ComboBoxItem Content="none" />
+                        <ComboBox SelectedValue="{Binding renameMode, Mode=TwoWay}" Grid.Column="6">
+                            <ComboBoxItem Content="prefix" ToolTip="nazwa pliku będzie poprzedzona reel name"/>
+                            <ComboBoxItem Content="prefix + ASC" ToolTip="nazwa pliku będzie utworzona z reel name i numeru kolejnego" />
+                            <ComboBoxItem Content="prefix + DESC" ToolTip="nazwa pliku będzie utworzona z reel name i numeru kolejnego"/>
+                            <ComboBoxItem Content="none" IsSelected="True" ToolTip="bez zmian nazw plików"/>
                         </ComboBox>
                     </local:StretchedGridBlue>
                 </DataTemplate>

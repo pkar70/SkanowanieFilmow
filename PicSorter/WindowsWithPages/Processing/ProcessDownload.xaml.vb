@@ -196,6 +196,7 @@ Public Class ProcessDownload
             Case PicSourceType.PeerSrv
                 retval = Await RetrieveFromPeer(oSrc)
             Case PicSourceType.Reel
+                Await Me.MsgBoxAsync("Najlepiej z debuggerem, bo coś jest nie tak w renames/target/reel")
                 retval = Await RetrieveFromReel(oSrc)
             Case Else
                 retval = Await RetrieveFromDisk(oSrc)
