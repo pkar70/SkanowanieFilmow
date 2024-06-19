@@ -13,7 +13,7 @@
 
         <CheckBox Name="uiAsWebServer" Content="act as a web server" Margin="0,10,0,20"/>
         
-        <local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="199" IsEnabled="{Binding IsChecked, ElementName=uiAsWebServer}"/>
+        <local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="399" IsEnabled="{Binding IsChecked, ElementName=uiAsWebServer}"/>
 
         <CheckBox Name="uiAsWebPrintFilename" Content="show filename" />
         <CheckBox Name="uiAsWebPrintSerno" Content="show #serno" />
