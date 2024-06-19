@@ -223,9 +223,9 @@ Class MainWindow
         If Vblib.GetSettingsBool("uiServerEnabled") AndAlso Application.gWcfServer IsNot Nothing Then
             ' *TODO* YNCancel, zamknąć, zikonizować, cancel
             Dim msg As String = "Program działa jako serwer"
-            Dim datediff As TimeSpan = Date.Now - Application.gWcfServer._lastNetAccess
-            If datediff.TotalDays < 0 Then
-                msg += " (last request " & datediff.ToStringDHMS & " seconds ago)"
+            Dim lastaccess As String = Application.gWcfServer._lastNetAccess.GetString
+            If Not lastaccess.StartsWithCI("No") Then
+                msg += " " & lastaccess
             End If
 
             If Not Await Me.DialogBoxYNAsync(msg & ", zamknąć go?") Then
@@ -346,13 +346,7 @@ Class MainWindow
 
     Private Sub SrvLastLog_Click(sender As Object, e As RoutedEventArgs)
         ' *TODO* ma być pełny log pokazywany
-
-        Dim datediff As TimeSpan = Date.Now - Application.gWcfServer._lastNetAccess
-        If datediff.TotalDays > 365 Then
-            Me.MsgBox("No recent logins")
-        Else
-            Me.MsgBox("Last request " & datediff.ToStringDHMS & " seconds ago")
-        End If
+        Me.MsgBox(Application.gWcfServer._lastNetAccess.GetString)
     End Sub
 
     Private Sub ArchStatus_Click(sender As Object, e As RoutedEventArgs)

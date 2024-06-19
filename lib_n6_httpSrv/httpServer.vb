@@ -22,7 +22,7 @@ Public Class ServerWrapper
     ''' <summary>
     ''' Kiedy ostatnio coœ siê komunikowa³o
     ''' </summary>
-    Public Shared _lastNetAccess As Date
+    Public Shared _lastNetAccess As New LastNetAccess
 
     Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDescIn As pkar.BaseList(Of Vblib.ShareDescription), shareDescOut As pkar.BaseList(Of Vblib.ShareDescription), postProcs As Vblib.PostProcBase(), dataFolder As String)
         _loginy = loginy
@@ -107,7 +107,8 @@ Public Class ServerWrapper
                 Dim request As HttpListenerRequest = context?.Request
                 If request Is Nothing Then Exit Do   ' takie zabezpieczenie to tylko u³atwienie gdy jest pod debuggerem podczas wy³¹czania programu
 
-                _lastNetAccess = Date.Now
+                _lastNetAccess.Zapisz("??", "??")
+
                 Vblib.DumpMessage("Mam request: " & request.RawUrl) ' on jest typu: /canupload?guid=xxx&clientHost=Hxxxx
 
                 Dim response As HttpListenerResponse = context.Response
@@ -153,7 +154,7 @@ Public Class ServerWrapper
         If Not Vblib.GetSettingsBool("uiHttpLog") Then Return
         Dim currFile As String = IO.Path.Combine(GetLogDir, Date.Now.ToString("yyyy-MM") & ".log")
         Dim linia As String = Date.Now.ToExifString & " "
-        If oLogin IsNot Nothing Then linia &= oLogin.displayName & " "
+        If oLogin IsNot Nothing Then linia &= oLogin.displayName.Replace(" ", "_") & " "
         linia &= msg & vbCrLf
         ' *TODO* niezbyt to efektywne, bo w kó³ko zapisuje log, bez buforowania - ale na razie rzadko to robimy :)
         IO.File.AppendAllText(currFile, linia)
@@ -172,6 +173,7 @@ Public Class ServerWrapper
 
         ' bez logowania jest wysy³ka do celów "BING search by pic"
         If command.StartsWith("/bufpic/") Then
+            _lastNetAccess.Zapisz("(websearch)", "bufpic")
             Return Await SendMarkedPicDataFromBuff(Nothing, command.Replace("/bufpic/", ""), response)
         End If
 
@@ -199,6 +201,7 @@ Public Class ServerWrapper
 
         ' /JakasKomenda -> jakaskomenda
         command = command.Substring(1).ToLowerInvariant
+        _lastNetAccess.Zapisz(oLogin.displayName, command)
 
         Select Case command
 
@@ -740,4 +743,26 @@ Public Class ServerWrapper
 #End Region
 
 
+End Class
+
+Public Class LastNetAccess
+    Private Property kiedy As Date
+    Private Property kto As String
+    Private Property cmd As String
+
+    Public Sub Zapisz(kto As String, cmd As String)
+        kiedy = Date.Now
+        Me.kto = kto
+        Me.cmd = cmd
+    End Sub
+
+    Public Function GetString() As String
+        Dim datediff As TimeSpan = Date.Now - kiedy
+        If datediff.TotalDays > 365 Then
+            Return "No recent logins"
+        Else
+            Return $"Last request: {kto}:{cmd} @{(Date.Now - kiedy).ToStringDHMS} ago"
+        End If
+
+    End Function
 End Class
