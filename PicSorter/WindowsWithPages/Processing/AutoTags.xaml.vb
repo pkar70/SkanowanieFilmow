@@ -13,6 +13,9 @@ Public Class AutoTags
     Private _lista As List(Of JedenEngine)
     Private _stopArchiving As Boolean
 
+
+    Private Const MAX_BATCH_SAVE_METADATA As Integer = 100
+
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
 
         If uiGetAll.Content = " STOP " Then
@@ -124,27 +127,6 @@ Public Class AutoTags
         Me.ProgRingSetMax(oSrc.maxCount)
         Me.ProgRingSetVal(0)
 
-        'If oSrc.engine.Nazwa = "AUTO_GUID" Then
-        '    Dim bAny As Boolean = Application.GetBuffer.GetList.Any(Function(x) Not String.IsNullOrWhiteSpace(x.PicGuid))
-        '    If bAny Then
-        '        Dim bFixed As Boolean = Application.GetBuffer.GetList.Any(Function(x) Not String.IsNullOrWhiteSpace(x.PicGuid) AndAlso (Not String.IsNullOrEmpty(x.CloudArchived) OrElse Not String.IsNullOrEmpty(x.Archived)))
-
-        '        Dim bKasuj As Boolean = False
-        '        If Not bFixed Then
-        '            bKasuj = Await Me.DialogBoxYNAsync("Istnieją przydzielone GUIDy, i tylko w plikach z których mogę usunąć, skasować je?")
-        '        Else
-        '            Dim bEditable As Boolean = Application.GetBuffer.GetList.Any(Function(x) Not String.IsNullOrWhiteSpace(x.PicGuid) AndAlso String.IsNullOrEmpty(x.CloudArchived) AndAlso String.IsNullOrEmpty(x.Archived))
-        '            If bEditable Then
-        '                bKasuj = Await Me.DialogBoxYNAsync("Istnieją przydzielone GUIDy, i tylko w plikach z których tylko NIEKTÓRE mogę usunąć, skasować je?")
-        '            End If
-        '        End If
-
-        '        If bKasuj Then
-        '            UsunGUIDandSerNo()
-        '        End If
-        '    End If
-        'End If
-
         uiGetAll.Content = " STOP "
 
         ' musi być tutaj, bo inaczej pierwszy błąd z GetForFile kończy sprawdzanie :) 
@@ -163,6 +145,8 @@ Public Class AutoTags
 
 
         Dim autoTagLock As String = GetAutoTagDisableKwd(oSrc)
+
+        Dim iBatchMax As Integer = MAX_BATCH_SAVE_METADATA
 
         For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
@@ -185,6 +169,15 @@ Public Class AutoTags
                 Else
                     If Auto_AzureTest._AzureExceptionsGuard < 1 Then Exit For  ' po 4 exception ma przestać sprawdzać
                 End If
+
+                If oSrc.engine.IsWeb Then
+                    iBatchMax -= 1
+                    If iBatchMax < 0 Then
+                        Application.GetBuffer.SaveData()
+                        iBatchMax = MAX_BATCH_SAVE_METADATA
+                    End If
+                End If
+
                 Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
                 maxGuard -= 1
                 If maxGuard < 1 Then Exit For
