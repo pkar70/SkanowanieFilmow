@@ -1,8 +1,10 @@
 ﻿Imports PicSorterNS.ProcessBrowse
 Imports Vblib
 Imports pkar.UI.Extensions
+Imports System.IO.Compression
+Imports System.Text.RegularExpressions
 
-Public Class PicMenLinksWeb
+Public Class PicMenuLinksWeb
     Inherits PicMenuBase
 
     Private _itemLinki As MenuItem
@@ -14,10 +16,10 @@ Public Class PicMenLinksWeb
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Links", "Operacje na linkach", True) Then Return
+        If Not InitEnableDisable("Pic links", "Przywołane zdjęcia", True) Then Return
 
         Me.Items.Clear()
-        Me.Items.Add(NewMenuItem("Add new", "Dodaj link", AddressOf uiAddLink_Click))
+        Me.Items.Add(NewMenuItem("Add new", "Dodaj zdjęcie", AddressOf uiAddLink_Click))
 
         AddHandler Me.SubmenuOpened, AddressOf OpeningMenu ' .ContextMenuOpening
         _itemLinki = New MenuItem With {.Header = "Open"}
@@ -54,16 +56,29 @@ Public Class PicMenLinksWeb
 
         Dim alldesc As String = oPic.GetSumOfDescriptionsText
         If Not String.IsNullOrWhiteSpace(alldesc) Then
-            Dim iInd As Integer = alldesc.IndexOf("http")
-            If iInd > 0 Then
+
+            Dim znajdy = Regex.Matches(alldesc, "http")
+            Dim licznik As Integer = 0
+            For Each traf As Match In znajdy
                 Dim oLink As New OneLink
                 oLink.opis = "from descriptions"
-                alldesc = alldesc.Substring(iInd)
-                iInd = alldesc.IndexOfAny({",", ";", "|", " "})
-                If iInd > 0 Then alldesc = alldesc.Substring(0, iInd)
-                oLink.link = alldesc
+                If licznik > 0 Then oLink.opis &= $" ({licznik})"
+                licznik += 1
+                oLink.link = alldesc.Substring(traf.Index)
+                Dim iInd As Integer = oLink.link.IndexOfAny({",", ";", "|", " "})
+                If iInd > 0 Then oLink.link = oLink.link.Substring(0, iInd)
                 DodajJedenLink(oLink)
-            End If
+            Next
+
+            znajdy = Regex.Matches(alldesc, "pic#[0-9]+")
+            For Each traf As Match In znajdy
+                Dim oLink As New OneLink
+                oLink.opis = traf.Value
+                oLink.link = traf.Value
+                DodajJedenLink(oLink)
+            Next
+
+
         End If
 
     End Sub
@@ -84,7 +99,7 @@ Public Class PicMenLinksWeb
 
     End Sub
 
-    Private Shared Function CreateLinkMenuItem(linek As OneLink) As MenuItem
+    Private Function CreateLinkMenuItem(linek As OneLink) As MenuItem
         Dim oNew As New MenuItem()
         oNew.Header = linek.opis
         oNew.DataContext = linek
@@ -92,12 +107,52 @@ Public Class PicMenLinksWeb
         Return oNew
     End Function
 
-    Private Shared Sub UzyjLinka(sender As Object, e As RoutedEventArgs)
+    Private Sub UzyjLinka(sender As Object, e As RoutedEventArgs)
         Dim linek = TryCast(TryCast(sender, MenuItem)?.DataContext, OneLink)
         If linek Is Nothing Then Return
 
-        Dim url As New Uri(linek.link)
-        url.OpenBrowser
+        If linek.link.StartsWith("pic#") Then
+            ' wywołaj to zdjęcie
+            WyszukajZdjecie(linek.link.Replace("pic#", ""))
+        Else
+            ' wywołaj stronę URL
+            Dim url As New Uri(linek.link)
+            url.OpenBrowser
+        End If
+
     End Sub
+
+    Private Async Sub WyszukajZdjecie(serno As String)
+
+        Dim oItem As Vblib.OnePic
+        oItem = Application.GetBuffer.GetList.FirstOrDefault(Function(x) x.serno = serno)
+        If oItem IsNot Nothing Then
+            ' mamy zdjęcie w buforze, więc możemy pokazać
+            Dim oWnd As New ShowBig(oItem, False, False)
+            oWnd.Show()
+            Return
+        End If
+
+        If Not Application.gDbase.IsLoaded Then
+            If Not Await Me.DialogBoxYNAsync("Baza nie jest wczytana, wczytać?") Then Return
+        End If
+        Application.ShowWait(True)
+        Application.gDbase.Load()
+
+        Dim query As New Vblib.SearchQuery
+        query.ogolne.serno = serno
+
+        Dim listka As List(Of Vblib.OnePic) = Application.gDbase.Search(query).ToList
+        Application.ShowWait(False)
+
+        If listka Is Nothing OrElse listka.Count < 1 Then
+            Me.MsgBox("Nie znalazłem takiego zdjęcia ani w buforze ani w archiwum")
+            Return
+        End If
+
+        SearchWindow.PokazBigZarchive(listka(0))
+
+    End Sub
+
 
 End Class

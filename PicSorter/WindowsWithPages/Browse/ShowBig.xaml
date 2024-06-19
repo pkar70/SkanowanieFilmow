@@ -91,7 +91,7 @@
                             <!-- sequence step DESCRIBE -->
                             <local:PicMenuDescribe x:Name="uiDescribe" MetadataChanged="uiMetadataChanged" />
                             <local:PicMenuOCR MetadataChanged="uiMetadataChanged" />
-                            <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" />
+                            <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step TARGET -->
                             <!-- sequence step PUBLISH, ARCHIVE -->
                             <!-- readonly metadata 2 -->

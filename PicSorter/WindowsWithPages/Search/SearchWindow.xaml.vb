@@ -114,6 +114,7 @@ Public Class SearchWindow
         End Try
 
         If sErr <> "" Then Me.MsgBox("Coś dziwnego, bo jakoby pusty indeks był?" & vbCrLf & sErr)
+        sErr.SendToClipboard
         Debug.WriteLine(sErr)
     End Sub
 
@@ -315,6 +316,10 @@ Public Class SearchWindow
         Dim oPic As Vblib.OnePic = oFE.DataContext
         If oPic Is Nothing Then Return
 
+        PokazBigZarchive(oPic)
+    End Sub
+
+    Public Shared Sub PokazBigZarchive(oPic As Vblib.OnePic)
         If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Return
 
         For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
@@ -330,8 +335,8 @@ Public Class SearchWindow
             End If
         Next
         vb14.DialogBox("nie mogę znaleźć pliku w żadnym archiwum")
-
     End Sub
+
 
     Private Sub uiOpenExif_Click(sender As Object, e As RoutedEventArgs)
         Dim oItem As FrameworkElement = sender

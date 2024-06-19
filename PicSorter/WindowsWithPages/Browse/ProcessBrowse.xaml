@@ -155,7 +155,7 @@
                         <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
                         <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" UseSelectedItems="True" />
                         <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" UseSelectedItems="True"/>
-                        <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
+                        <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
                         <!--<MenuItem Header="Add link" Click="uiAddLink_Click" />-->
                         <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiGeotagMetadataChanged" UseSelectedItems="True" />
                         <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" UseSelectedItems="True" />
@@ -227,7 +227,7 @@
                                         <!-- sequence step AUTOTAGs -->
                                         <!-- sequence step KEYWORDs -->
                                         <!-- sequence step DESCRIBE -->
-                                        <local:PicMenLinksWeb MetadataChanged="uiMetadataChanged" />
+                                        <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" />
                                         <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" />
                                         <local:PicMenuDescribe MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" />
                                         <!-- sequence step TARGET -->
