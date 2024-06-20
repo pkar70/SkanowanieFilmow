@@ -418,11 +418,18 @@ Public Class BrowseKeywordsWindow
 
     Private Sub uiEditKeyTree_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New SettingsKeywords
+        AddHandler oWnd.Closed, AddressOf ZmianyKiwords
+
         oWnd.ShowDialog()
 
         ' po co była ta linia?
         'Me.DataContext = uiPinUnpin.EffectiveDatacontext
         ' InitForPic(_oPic)
+    End Sub
+
+    Private Sub ZmianyKiwords(sender As Object, e As EventArgs)
+        Window_Loaded(Nothing, Nothing)
+        Window_DataContextChanged(Nothing, Nothing)
     End Sub
 
     Private Sub uiZmianaCheck(sender As Object, e As RoutedEventArgs)
