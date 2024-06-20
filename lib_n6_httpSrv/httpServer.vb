@@ -156,6 +156,7 @@ Public Class ServerWrapper
         Dim linia As String = Date.Now.ToExifString & " "
         If oLogin IsNot Nothing Then linia &= oLogin.displayName.Replace(" ", "_") & " "
         linia &= msg & vbCrLf
+        linia = linia.Depolit
         ' *TODO* niezbyt to efektywne, bo w kó³ko zapisuje log, bez buforowania - ale na razie rzadko to robimy :)
         IO.File.AppendAllText(currFile, linia)
     End Sub
