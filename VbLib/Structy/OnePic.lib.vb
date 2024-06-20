@@ -1064,7 +1064,7 @@ Public Class OnePic
     End Function
 
     ''' <summary>
-    ''' zwraca serno uzupełnione odpowiednio '0', albo #?? jeśli nie ma ustawionego
+    ''' zwraca serno uzupełnione odpowiednio '0' i prefiksowane '#', albo #?? jeśli nie ma ustawionego
     ''' </summary>
     <Newtonsoft.Json.JsonIgnore>
     Public ReadOnly Property FormattedSerNo() As String

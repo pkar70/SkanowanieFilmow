@@ -15,6 +15,7 @@
         <local:KonwersjaVisibility x:Key="KonwersjaVisibility"/>
         <local:KonwersjaSourcePath2Podpis x:Key="KonwersjaSourcePath2Podpis" />
         <local:KonwersjaDescrIgnoreNewLine x:Key="KonwersjaDescrIgnoreNewLine" />
+        <local:KonwersjaGrayOrHide x:Key="KonwersjaGrayOrHide" />
     </Window.Resources>
     
     <Grid Margin="5,5,5,5">
@@ -27,7 +28,7 @@
         <Grid Name="naGuziki" Margin="5,0,5,2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -86,8 +87,8 @@
                         <MenuItem Header="all" Click="uiFilterAll_Click" />
                     </Menu>
                 </Popup>
-
-                <ComboBox Name="uiComboSize" Margin="15,0,15,0" SelectionChanged="uiComboSize_SelectionChanged">
+                <CheckBox Name="uiGrayOrHide" ToolTip="Zaznacz jeśli ma ukryć zdjęcia, odznacz jeśli mają być szare" Margin="3,3,8,0" Checked="uiGrayOrHide_Checked" Unchecked="uiGrayOrHide_Checked" />
+                <ComboBox Name="uiComboSize" Margin="0,0,0,0" SelectionChanged="uiComboSize_SelectionChanged">
                     <ComboBoxItem Content="fit all" IsSelected="true" />
                     <ComboBoxItem Content="fit run"/>
                     <ComboBoxItem Content="400" />
@@ -95,6 +96,12 @@
                     <ComboBoxItem Content="240" />
                     <ComboBoxItem Content="160" />
                     <ComboBoxItem Content="100" />
+                </ComboBox>
+
+                <ComboBox Name="uiSortBy" SelectionChanged="uiSortBy_SelectionChanged" Margin="10,0,10,0" ToolTip="sort thumbs by">
+                    <ComboBoxItem Content="date" DataContext="1" IsSelected="True"/>
+                    <ComboBoxItem Content="serno" DataContext="2"/>
+                    <ComboBoxItem Content="fname" DataContext="3"/>
                 </ComboBox>
                 <Button Content="Podpis" Name="uiPodpis" Click="uiPodpis_Click" Margin="0,0,15,0"/>
                 <Popup IsOpen="False" PlacementTarget="{Binding ElementName=uiPodpis}" StaysOpen="False" Name="uiPodpisWybor">
@@ -202,7 +209,7 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal" >
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding opacity, Converter={StaticResource KonwersjaGrayOrHide}}">
                         <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}}" Background="{Binding splitBefore, Converter={StaticResource KonwersjaPasekKolor}}" Width="{Binding widthPaskow}" ToolTip="{Binding dymekSplit}" >
                             <Grid.Height>
                                 <MultiBinding Converter="{StaticResource KonwersjaPasekWysok}" >

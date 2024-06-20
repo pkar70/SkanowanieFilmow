@@ -64,7 +64,6 @@ Public Class ProcessBrowse
         _title = title
     End Sub
 
-
     Private Sub MenuActionReadOnly()
         Dim oVis As Visibility = If(_inArchive, Visibility.Collapsed, Visibility.Visible)
         ' jedynie dla menu w Action to zadziała, menu context obrazka - nie jest dostępne
@@ -100,7 +99,7 @@ Public Class ProcessBrowse
 
         _memSizeKb = GetMegabytes() - initMem + 1
 
-        SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat!
+        Await SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat!
         RefreshMiniaturki(True)
         'PokazThumbsy() ' tylko test, czy observable zadziała
 
@@ -355,12 +354,38 @@ Public Class ProcessBrowse
     ''' <summary>
     ''' ustaw ItemsSource na thumbsy wedle daty - na start, i po zmianach dat - SLOW!
     ''' </summary>
-    Private Sub SortujThumbsy()
+    Private Async Function SortujThumbsy() As Task
+        If uiPicList Is Nothing Then Return ' tak jest na początku, z uiSortBy_SelectionChanged
         uiPicList.ItemsSource = Nothing
-        _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.dateMin)
-        uiPicList.ItemsSource = _thumbsy
-    End Sub
 
+        Dim sortmode As Integer = 1
+        Dim oCBI As ComboBoxItem = TryCast(uiSortBy.SelectedItem, ComboBoxItem)
+        If oCBI IsNot Nothing Then
+            sortmode = oCBI.DataContext
+        End If
+
+        Me.ProgRingShow(True)
+
+        Await Task.Run(Sub()
+                           Select Case sortmode
+                               Case 2 ' serno
+                                   _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.oPic.serno)
+                               Case 3 ' 3=filename
+                                   _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.oPic.sSuggestedFilename)
+                               Case Else ' 1=date
+                                   _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.dateMin)
+                           End Select
+                       End Sub
+            )
+
+        uiPicList.ItemsSource = _thumbsy
+        Me.ProgRingShow(False)
+
+    End Function
+
+    Private Async Sub uiSortBy_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
+        Await SortujThumbsy()
+    End Sub
 
     Private Sub uiOpenHistoragam_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New HistogramWindow(_oBufor)
@@ -3150,6 +3175,47 @@ Public Class ProcessBrowse
 
     End Sub
 
+    Private Shared _GrayOrHide As Boolean
+
+    Public Shared Function GetGrayOrHide() As Boolean
+        Return _GrayOrHide
+    End Function
+
+    Private Sub uiGrayOrHide_Checked(sender As Object, e As RoutedEventArgs)
+        _GrayOrHide = uiGrayOrHide.IsChecked
+
+        Dim opac As Double = If(_GrayOrHide, 0.1, _OpacityWygas)
+
+        For Each oItem In _thumbsy
+            If oItem.opacity < 1 Then oItem.opacity = opac
+            'oItem.NotifyPropChange("opacity")
+        Next
+    End Sub
+
+End Class
+
+
+Public Class KonwersjaDescrIgnoreNewLine
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim str As String = CType(value, String)
+        If String.IsNullOrWhiteSpace(str) Then Return ""
+        Return str.Replace(vbCrLf, " | ")
+    End Function
+End Class
+
+Public Class KonwersjaGrayOrHide
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim opac As Double = CType(value, Double)
+        If opac = 1 Then Return Visibility.Visible
+
+        If ProcessBrowse.GetGrayOrHide() Then Return Visibility.Collapsed
+
+        Return Visibility.Visible
+    End Function
 End Class
 
 Public Class KonwersjaPasekKolor
@@ -3166,6 +3232,8 @@ Public Class KonwersjaPasekKolor
     End Function
 
 End Class
+
+
 
 Public Class KonwersjaPasekWysok
     Implements IMultiValueConverter
@@ -3233,16 +3301,6 @@ Public Class KonwersjaSourcePath2Podpis
         iInd = str.LastIndexOf(IO.Path.DirectorySeparatorChar, iInd - 1)
         If iInd < 1 Then Return str
         Return str.Substring(iInd + 1)
-    End Function
-End Class
-
-Public Class KonwersjaDescrIgnoreNewLine
-    Inherits ValueConverterOneWaySimple
-
-    Protected Overrides Function Convert(value As Object) As Object
-        Dim str As String = CType(value, String)
-        If String.IsNullOrWhiteSpace(str) Then Return ""
-        Return str.Replace(vbCrLf, " | ")
     End Function
 End Class
 
