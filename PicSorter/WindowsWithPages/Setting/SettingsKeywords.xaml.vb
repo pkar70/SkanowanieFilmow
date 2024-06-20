@@ -1,13 +1,15 @@
 ﻿
-
 Imports pkar
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.UI.Extensions
 
 
 Class SettingsKeywords
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        PrzeliczIpokaz(True)
+        Me.InitDialogs
+
+        PrzeliczIpokaz(True, Nothing)
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
@@ -22,7 +24,7 @@ Class SettingsKeywords
         If oItem Is Nothing Then Return
 
         If oItem.sId.Length = 1 Then
-            vb14.DialogBox("Głównego węzła nie wolno edytować")
+            Me.MsgBox("Głównego węzła nie wolno edytować")
             Return
         End If
 
@@ -120,7 +122,7 @@ Class SettingsKeywords
         If _addMode Then
             For Each oItem As Vblib.OneKeyword In Application.GetKeywords
                 If oItem.sId = uiDisplayName.Text Then
-                    vb14.DialogBox("Taka nazwa już istnieje, wybierz inną")
+                    Me.MsgBox("Taka nazwa już istnieje, wybierz inną")
                     Return
                 End If
             Next
@@ -135,7 +137,7 @@ Class SettingsKeywords
             Try
                 _editingItem.oGeo = New BasicGeopos(uiLatitude.Text, uiLongitude.Text)
             Catch ex As Exception
-                vb14.DialogBox("Błędne współrzędne geograficzne")
+                Me.MsgBox("Błędne współrzędne geograficzne")
                 Return
             End Try
             _editingItem.iGeoRadius = uiRadius.Text
@@ -153,7 +155,7 @@ Class SettingsKeywords
         If _editingItem.denyPublish <> uiDenyPublish.IsChecked AndAlso _editingItem.SubItems IsNot Nothing AndAlso _editingItem.SubItems.Count > 0 Then
             _editingItem.denyPublish = uiDenyPublish.IsChecked
 
-            If Await vb14.DialogBoxYNAsync("Zmiana zakazu publikacji, propagować w subkeys?") Then
+            If Await Me.DialogBoxYNAsync("Zmiana zakazu publikacji, propagować w subkeys?") Then
                 For Each oItem As OneKeyword In _editingItem.ToFlatList
                     oItem.denyPublish = _editingItem.denyPublish
                 Next
@@ -163,14 +165,34 @@ Class SettingsKeywords
 
 
         uiAddEdit.Visibility = Visibility.Collapsed
-        PrzeliczIpokaz(True)
+
+
+        PrzeliczIpokaz(True, _editingItem)
 
     End Sub
 
-    Private Sub PrzeliczIpokaz(bPrzelicz As Boolean)
+    Private Sub PrzeliczIpokaz(bPrzelicz As Boolean, itemToShow As Vblib.OneKeyword)
         If bPrzelicz Then Application.GetKeywords.CalculateMinMaxDateTree()
         uiTreeView.ItemsSource = Nothing
         uiTreeView.ItemsSource = Application.GetKeywords
+
+        If itemToShow Is Nothing Then Return
+
+        Dim stck As FrameworkElement = ProcessBrowse.GetDescendantByType(uiTreeView, GetType(StackPanel))
+        If stck Is Nothing Then Return
+
+        For iLp As Integer = 0 To VisualTreeHelper.GetChildrenCount(stck) - 1
+            Dim vsl As TreeViewItem = VisualTreeHelper.GetChild(stck, iLp)
+            Dim oItem As Vblib.OneKeyword = TryCast(vsl?.DataContext, Vblib.OneKeyword)
+            If oItem Is Nothing Then Continue For
+
+            If oItem.sId.StartsWith(itemToShow.sId.Substring(0, 1)) Then
+                ' vsl.ExpandSubtree() - to rozwija wszystko
+                vsl.IsExpanded = True
+                Exit For
+            End If
+        Next
+
     End Sub
 
     Private Sub uiExportItem_Click(sender As Object, e As RoutedEventArgs)
@@ -179,9 +201,8 @@ Class SettingsKeywords
 
         If oItem Is Nothing Then Return
 
-        Dim sTxt As String = oItem.DumpAsJSON
-        vb14.ClipPut(sTxt)
-        vb14.DialogBox("Eksport jest w Clipboard")
+        oItem.DumpAsJSON.SendToClipboard
+        Me.MsgBox("Eksport jest w Clipboard")
     End Sub
 
     Private Async Sub uiImportSubItem_Click(sender As Object, e As RoutedEventArgs)
@@ -190,14 +211,14 @@ Class SettingsKeywords
 
         If oItem Is Nothing Then Return
 
-        If Not Await vb14.DialogBoxYNAsync("Czy w Clipboard jest tekst do zaimportowania?") Then Return
+        If Not Await Me.DialogBoxYNAsync("Czy w Clipboard jest tekst do zaimportowania?") Then Return
 
         Dim sTxt As String = Clipboard.GetText
         Try
             Dim oNode As Vblib.OneKeyword = Newtonsoft.Json.JsonConvert.DeserializeObject(sTxt, GetType(Vblib.OneKeyword))
             If oItem.SubItems Is Nothing Then oItem.SubItems = New List(Of Vblib.OneKeyword)
             oItem.SubItems.Add(oNode)
-            PrzeliczIpokaz(True)
+            PrzeliczIpokaz(True, oItem)
         Catch ex As Exception
 
         End Try
@@ -240,7 +261,7 @@ Class SettingsKeywords
         If oItem Is Nothing Then Return
 
         If oItem.SubItems IsNot Nothing AndAlso oItem.SubItems.Count > 0 Then
-            If Not Await vb14.DialogBoxYNAsync("To słowo zawiera pod-słowa, skasować całe drzewko?") Then Return
+            If Not Await Me.DialogBoxYNAsync("To słowo zawiera pod-słowa, skasować całe drzewko?") Then Return
         End If
 
         ' we flat, sprawdzić występowanie słów kluczowych w buffor/archive
@@ -257,11 +278,16 @@ Class SettingsKeywords
 
         ' kolejne pytanie - lub w ogóle zakaz gdy użyte
         If bHasKeys Then
-            If Not Await vb14.DialogBoxYNAsync("Keyword jest używany, na pewno usunąć?") Then Return
+            If Not Await Me.DialogBoxYNAsync("Keyword jest używany, na pewno usunąć?") Then Return
         End If
+
+        Dim tatus As Vblib.OneKeyword = Application.GetKeywords.GetParentOf(oItem)
 
         ' kasowanie
         Application.GetKeywords.Remove(oItem)
+
+        PrzeliczIpokaz(True, tatus)
+
     End Sub
 End Class
 

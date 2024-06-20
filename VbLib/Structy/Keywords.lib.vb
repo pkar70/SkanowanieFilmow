@@ -1,9 +1,11 @@
 ﻿
+Imports System.ComponentModel
 Imports Newtonsoft.Json
 Imports pkar.DotNetExtensions
 
 Public Class OneKeyword
     Inherits pkar.BaseStruct
+    Implements INotifyPropertyChanged
 
     Public Property sId As String
     Public Property sDisplayName As String
@@ -34,6 +36,7 @@ Public Class OneKeyword
     Public Property bEnabled As Boolean
     <JsonIgnore>
     Public Property bChecked As Boolean
+    Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
 
 #End Region
 
@@ -64,6 +67,10 @@ Public Class OneKeyword
     Public Function IsRoot() As Boolean
         Return sId.Length = 1
     End Function
+
+    Public Sub NotifyChange(propName As String)
+        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propName))
+    End Sub
 
 End Class
 
@@ -212,6 +219,25 @@ Public Class KeywordsList
         Return sRet
     End Function
 
+    Public Function GetParentOf(oChild As OneKeyword) As OneKeyword
+        For Each oItem As OneKeyword In ToFlatList()
+            If oItem.SubItems Is Nothing Then Continue For
+
+            For Each oSubek As OneKeyword In oItem.SubItems
+                If oSubek.sId = oChild.sId Then Return oItem
+            Next
+        Next
+
+        Return Nothing
+    End Function
+
+    Public Overloads Sub Remove(oItem As OneKeyword)
+        Dim tatus As OneKeyword = GetParentOf(oItem)
+        If tatus?.SubItems Is Nothing Then Return
+
+        tatus.SubItems.Remove(oItem)
+
+    End Sub
 
 #End Region
 
