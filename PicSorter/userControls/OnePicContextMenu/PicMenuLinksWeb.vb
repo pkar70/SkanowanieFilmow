@@ -3,6 +3,8 @@ Imports Vblib
 Imports pkar.UI.Extensions
 Imports System.IO.Compression
 Imports System.Text.RegularExpressions
+Imports System.IO
+Imports pkar.DotNetExtensions
 
 Public Class PicMenuLinksWeb
     Inherits PicMenuBase
@@ -16,17 +18,82 @@ Public Class PicMenuLinksWeb
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Pic links", "Przywołane zdjęcia", True) Then Return
+        If Not InitEnableDisable("Pic links", "Operacje na linkach", True) Then Return
 
         Me.Items.Clear()
-        Me.Items.Add(NewMenuItem("Add new", "Dodaj zdjęcie", AddressOf uiAddLink_Click))
+        Me.Items.Add(NewMenuItem("Add new", "Dodaj link", AddressOf uiAddLink_Click))
 
         AddHandler Me.SubmenuOpened, AddressOf OpeningMenu ' .ContextMenuOpening
         _itemLinki = New MenuItem With {.Header = "Open"}
         Me.Items.Add(_itemLinki)
 
+        Me.Items.Add(New Separator)
+        Me.Items.Add(NewMenuItem("Połącz", "Połącz wzajemnie dwa zdjęcia", AddressOf uiWzajemnie_Click))
+
         _wasApplied = True
     End Sub
+
+    Private Sub uiWzajemnie_Click(sender As Object, e As RoutedEventArgs)
+        If GetSelectedItems().Count <> 2 Then
+            Vblib.MsgBox("Umiem łączyć tylko dwa zdjęcia")
+            Return
+        End If
+
+        Dim thumb0 = GetSelectedItems(0)
+        Dim thumb1 = GetSelectedItems(1)
+
+        Dim name0 As String = thumb0.oPic.InBufferPathName
+        Dim name1 As String = thumb1.oPic.InBufferPathName
+
+        ' najpierw przypadek gdy w nazwie któregoś występuje "rewers"
+
+        If name0.ContainsCI("rewers") AndAlso Not name1.ContainsCI("rewers") Then
+            PolaczZeSoba(thumb0, "awers", thumb1, "rewers")
+            Return
+        End If
+
+        If name1.ContainsCI("rewers") AndAlso Not name0.ContainsCI("rewers") Then
+            PolaczZeSoba(thumb1, "awers", thumb0, "rewers")
+            Return
+        End If
+
+        ' nie mozna po nazwie, to po wielkości pliku
+
+        If Not IO.File.Exists(thumb0.oPic.InBufferPathName) OrElse Not IO.File.Exists(thumb1.oPic.InBufferPathName) Then
+            Vblib.MsgBox("Oba pliki muszą być dostępne") ' raczej się nie zdarzy, bo tylko z bufora to działa
+            Return
+        End If
+
+        Dim f0 As FileInfo = New FileInfo(thumb0.oPic.InBufferPathName)
+        Dim f1 As FileInfo = New FileInfo(thumb1.oPic.InBufferPathName)
+
+        ' różnica w wielkości musi być wyraźna...
+        If f0.Length * 1.5 < f1.Length Then
+            PolaczZeSoba(thumb0, "foto", thumb1, "opis")
+            Return
+        End If
+
+        If f1.Length * 1.5 < f0.Length Then
+            PolaczZeSoba(thumb1, "foto", thumb0, "opis")
+            Return
+        End If
+
+
+        Vblib.MsgBox("Nie potrafię się zorientować które zdjęcie jest które")
+    End Sub
+
+    ''' <summary>
+    ''' uzupełnia linki o #serno, i dodaje do OnePic. Na wejściu linki mają mieć zdefiniowane opisy
+    ''' </summary>
+    Private Sub PolaczZeSoba(thumb0 As ThumbPicek, dokad0 As String, thumb1 As ThumbPicek, dokad1 As String)
+        ' # jest w Formatted
+        Dim link0 As New OneLink With {.opis = dokad0, .link = "pic" & thumb1.oPic.FormattedSerNo}
+        Dim link1 As New OneLink With {.opis = dokad1, .link = "pic" & thumb0.oPic.FormattedSerNo}
+
+        thumb0.oPic.AddLink(link0)
+        thumb1.oPic.AddLink(link1)
+    End Sub
+
 
     Private Sub uiAddLink_Click(sender As Object, e As RoutedEventArgs)
         Dim oWnd As New AddLink
@@ -122,7 +189,15 @@ Public Class PicMenuLinksWeb
 
     End Sub
 
-    Private Async Sub WyszukajZdjecie(serno As String)
+    Private Async Sub WyszukajZdjecie(sernoStr As String)
+
+        Dim serno As Integer
+        Try
+            serno = sernoStr
+        Catch ex As Exception
+            Me.MsgBox("serno nie jest liczbą?")
+            Return
+        End Try
 
         Dim oItem As Vblib.OnePic
         oItem = Application.GetBuffer.GetList.FirstOrDefault(Function(x) x.serno = serno)
