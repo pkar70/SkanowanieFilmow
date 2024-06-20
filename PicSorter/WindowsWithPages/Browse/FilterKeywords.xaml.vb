@@ -2,6 +2,7 @@
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         ' WypelnMenuKeywords()
         _lastAdd = Date.Now
+        uiKeywords.uiSlowka.Focus()
     End Sub
 
     'Private Sub WypelnMenuKeywords()

@@ -23,6 +23,6 @@
         </Grid>
         <TextBox Name="uiKeywords" />-->
         <local:UserKwdEditButton x:Name="uiKeywords" />
-        <Button Content=" Search " HorizontalAlignment="Center" Margin="5,10,5,5" Click="Button_Click" />
+        <Button Content=" Search " HorizontalAlignment="Center" Margin="5,10,5,5" Click="Button_Click" IsDefault="True"/>
     </StackPanel>
 </Window>
