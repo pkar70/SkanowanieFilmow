@@ -2711,6 +2711,11 @@ Public Class ProcessBrowse
         OpenSubWindow(New SimpleExifProp)
     End Sub
 
+    Private Sub uiOknaDatesSumm_Click(sender As Object, e As RoutedEventArgs)
+        OpenSubWindow(New DatesSummary)
+    End Sub
+
+
     Private Sub uiOknaManualAzureExif_Click(sender As Object, e As RoutedEventArgs)
         OpenSubWindow(New EditOneExif(Vblib.ExifSource.AutoAzure, _inArchive))
 
