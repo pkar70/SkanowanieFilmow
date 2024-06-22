@@ -301,9 +301,9 @@ Partial Class Application
     Public Shared gAutoTagery As Vblib.AutotaggerBase() = {
         New Vblib.AutoTag_EXIF,
         New Vblib.AutoTag_FullEXIF,
-        New Auto_std2_Astro.Auto_MoonPhase,
-        New Auto_std2_Astro.Auto_Astro,
         New Auto_std2_Astro.Auto_Pogoda,
+        New Auto_std2_Astro.Auto_Astro,
+        New Auto_std2_Astro.Auto_MoonPhase,
         New Auto_std2_Meteo.Auto_Meteo_Opad(Application.GetDataFolder),
         New Vblib.Auto_GeoNamePl(Application.GetDataFolder),
         New Vblib.Auto_OSM_POI(Application.GetDataFolder),
