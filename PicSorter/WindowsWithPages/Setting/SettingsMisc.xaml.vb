@@ -1,10 +1,12 @@
 ﻿
-Imports vb14 = Vblib.pkarlibmodule14
+'Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.UI.Configs.Extensions
-
+Imports pkar.UI.Extensions
 
 Class SettingsMisc
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
+
         uiFullJSON.GetSettingsBool
         uiNoDelConfirm.GetSettingsBool
         uiBakDelayDays.GetSettingsInt()
@@ -17,13 +19,14 @@ Class SettingsMisc
         uiDragOutThumbs.GetSettingsBool
         uiWinFaceMaxAge.GetSettingsInt
         uiUseSpellCheck.GetSettingsBool
+        uiAstroNotWhenWether.GetSettingsBool
         'uiStereoThumb.GetSettingsInt()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
 
         If uiJpgQuality.Value < 60 Then
-            vb14.DialogBox($"Za niska jakość JPG ({uiJpgQuality.Value} < 60)")
+            Me.MsgBox($"Za niska jakość JPG ({uiJpgQuality.Value} < 60)")
             Return
         End If
 
@@ -39,6 +42,7 @@ Class SettingsMisc
         uiDragOutThumbs.SetSettingsBool
         uiWinFaceMaxAge.SetSettingsInt
         uiUseSpellCheck.SetSettingsBool
+        uiAstroNotWhenWether.SetSettingsBool
         'uiStereoThumb.SetSettingsInt
 
         Me.NavigationService.GoBack()
