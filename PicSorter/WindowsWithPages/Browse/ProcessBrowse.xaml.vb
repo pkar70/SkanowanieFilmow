@@ -27,6 +27,7 @@ Imports pkar.UI.Extensions
 Imports System.ComponentModel   ' dla PropertyChangedEventHandler i podobnych
 Imports System.Linq
 Imports Windows.UI.Notifications
+Imports PicSorterNS.BrowseFullSearch
 'Imports Windows.ApplicationModel.Background
 'Imports Microsoft.EntityFrameworkCore.Internal
 
@@ -2264,14 +2265,23 @@ Public Class ProcessBrowse
         _searchWnd.Show()
     End Sub
 
-    Public Sub FilterSearchCallback(query As Vblib.SearchQuery, usun As Boolean)
-
-        Dim targetOpactity As Double = If(usun, _OpacityWygas, 1)
+    Public Sub FilterSearchCallback(query As Vblib.SearchQuery, typek As TypFilterCallbacka)
 
         Me.ProgRingShow(True)
-        For Each thumb As ThumbPicek In _thumbsy.Where(Function(x) x.oPic.CheckIfMatchesQuery(query))
-            thumb.opacity = targetOpactity
-        Next
+
+        Select Case typek
+            Case TypFilterCallbacka.Doznacz, TypFilterCallbacka.Odznacz
+                Dim targetOpactity As Double = If(typek = TypFilterCallbacka.Odznacz, _OpacityWygas, 1)
+
+                For Each thumb As ThumbPicek In _thumbsy.Where(Function(x) x.oPic.CheckIfMatchesQuery(query))
+                    thumb.opacity = targetOpactity
+                Next
+            Case TypFilterCallbacka.Zaznacz
+                For Each thumb As ThumbPicek In _thumbsy
+                    thumb.opacity = If(thumb.oPic.CheckIfMatchesQuery(query), 1, _OpacityWygas)
+                Next
+        End Select
+
         Me.ProgRingShow(False)
 
         ' to jest z FullSearch, znaczy dodawanie/usuwanie zaznaczeń, więc "nie ma takich" jest bez sensu - dlatego pierwszy parametr jest TRUE
@@ -2839,14 +2849,24 @@ Public Class ProcessBrowse
                 If oPic.sSourceName.EqualsCI("adhoc") Then newDymek = newDymek & vbCrLf & "Src: " & oPic.sSourceName
             End If
 
-            ' line 1: data
-            Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
-            If oExifTag IsNot Nothing Then
-                newDymek = newDymek & vbCrLf & "Taken: " & oExifTag.DateTimeOriginal
+            ' dateMin to GetMostProbablyDate
+            If oPic.HasRealDate Then
+                newDymek = newDymek & vbCrLf & "Using date: " & oPic.GetMostProbablyDate.ToExifString
             Else
-                oExifTag = oPic.GetExifOfType(Vblib.ExifSource.SourceFile)
-                newDymek = newDymek & vbCrLf & "(file: " & oExifTag.DateMin.ToExifString & ")"
+                newDymek = newDymek & vbCrLf & "Date range: " & oPic.GetMinDate.ToExifString & " .. " & oPic.GetMaxDate.ToExifString
+                newDymek = newDymek & vbCrLf & "Using date: " & oPic.GetMostProbablyDate.ToExifString
             End If
+
+            Dim oExifTag As Vblib.ExifTag
+
+            ' line 1: data
+            'Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+            'If oExifTag IsNot Nothing Then
+            '    newDymek = newDymek & vbCrLf & "Taken: " & oExifTag.DateTimeOriginal
+            'Else
+            '    oExifTag = oPic.GetExifOfType(Vblib.ExifSource.SourceFile)
+            '    newDymek = newDymek & vbCrLf & "(file: " & oExifTag.DateMin.ToExifString & ")"
+            'End If
 
             ' line 2: geoname / lat&lon
             Dim sGeo As String = ""

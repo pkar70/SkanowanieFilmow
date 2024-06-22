@@ -13,7 +13,8 @@
         </Grid.RowDefinitions>
         <!--<local:UserControlSearch x:Name="uiKwerenda" Szukajmy="uiSearch_Click"/>-->
         <local:UserControlSearch x:Name="uiKwerenda" />
-        <Button Content="Zaznacz" Grid.Row="1" HorizontalAlignment="Left" Margin="5,10,5,0" Click="uiSearchAdd_Click" />
+        <Button Content="Zaznacz" Grid.Row="1" HorizontalAlignment="Left" Margin="5,10,5,0" Click="uiSearchSet_Click" />
+        <Button Content="Doznacz" Grid.Row="1" HorizontalAlignment="Center" Margin="5,10,5,0" Click="uiSearchAdd_Click" />
         <Button Content="Odznacz" Grid.Row="1" HorizontalAlignment="Right" Margin="5,10,5,0" Click="uiSearchRemove_Click" />
     </Grid>
 </Window>
