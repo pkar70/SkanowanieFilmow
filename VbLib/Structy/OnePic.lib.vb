@@ -311,7 +311,7 @@ Public Class OnePic
             'End If
         Next
 
-        Return dDateMin
+        Return dDateMin.Max(New Date(1800, 1, 1))
 
     End Function
 
@@ -342,7 +342,20 @@ Public Class OnePic
     ''' <returns></returns>
     Public Function HasRealDate() As Boolean
         Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualDate)
-        If Not String.IsNullOrWhiteSpace(oExif?.DateTimeOriginal) Then Return True
+        If oExif IsNot Nothing Then
+            If Not String.IsNullOrWhiteSpace(oExif?.DateTimeOriginal) Then Return True
+            If oExif.DateMin.Year = oExif.DateMax.Year AndAlso
+                    oExif.DateMin.Month = oExif.DateMax.Month AndAlso
+                    oExif.DateMin.Day = oExif.DateMax.Day Then
+                Return True
+            End If
+        End If
+
+        ' dla nie-cyfrowych, czyli dla skanowania, możemy mieć tylko ManualDate użyte jako datę dzienną
+        oExif = GetExifOfType(ExifSource.SourceDefault)
+        If oExif IsNot Nothing Then
+            If oExif.FileSourceDeviceType <> FileSourceDeviceTypeEnum.digital Then Return False
+        End If
 
         oExif = GetExifOfType(ExifSource.FileExif)
         If Not String.IsNullOrWhiteSpace(oExif?.DateTimeOriginal) Then Return True
@@ -352,7 +365,7 @@ Public Class OnePic
 
 
     ''' <summary>
-    '''  zwraca rzeczywistą datę - z MANUAL.DateTimeOriginal (Original, lub Max-Min) albo FileExif.DateTimeOriginal
+    '''  zwraca rzeczywistą datę - z MANUAL.DateTimeOriginal (Original, jak nie ma bądź scan to Max-Min o ile mniej niż 2 dni) albo (dla type=digital)FileExif.DateTimeOriginal
     ''' </summary>
     ''' <returns></returns>
     Private Function GetRealDate() As Date
@@ -361,10 +374,14 @@ Public Class OnePic
         If oExif IsNot Nothing Then
             If Not String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then Return ExifDateToDate(oExif.DateTimeOriginal)
 
-            Dim dtdiff As TimeSpan = oExif.DateMax - oExif.DateMin
-            Return oExif.DateMin.AddMinutes(dtdiff.TotalMinutes / 2)
+            If oExif.DateMin.IsDateValid AndAlso oExif.DateMax.IsDateValid Then
+                Dim dtdiff As TimeSpan = oExif.DateMax - oExif.DateMin
+                If dtdiff.TotalDays < 2 Then Return oExif.DateMin.AddMinutes(dtdiff.TotalMinutes / 2)
+            End If
         End If
 
+        oExif = GetExifOfType(ExifSource.SourceDefault)
+        If oExif.FileSourceDeviceType <> FileSourceDeviceTypeEnum.digital Then Return Date.MinValue
 
         oExif = GetExifOfType(ExifSource.FileExif)
         If oExif Is Nothing Then Return Date.MaxValue
@@ -373,6 +390,7 @@ Public Class OnePic
         Dim retDate As Date = ExifDateToDate(oExif.DateTimeOriginal)
         Return retDate
     End Function
+
 
     ''' <summary>
     ''' Ważność: FileExif, SourceFile, ManualTag (min ze wszystkich)

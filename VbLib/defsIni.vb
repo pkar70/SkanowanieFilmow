@@ -29,6 +29,8 @@ uiJsonEnabled=True
 uiSqlInstance=(localdb)\MSSQLLocalDB
 
 uiWinFaceMaxAge=90
+uiAstroNotWhenWether=True
+
 uiSpellCheck=True
 
 uiWebBuffPicLimit=99
