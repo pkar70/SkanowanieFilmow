@@ -256,40 +256,45 @@ Class MainWindow
 
     Private Sub IkonkujMnie()
 
-        If Me.Visibility = Visibility.Hidden Then Return
+        If Me.Visibility <> Visibility.Visible Then Return
 
-        Dim ikonka As System.Drawing.Icon = Nothing
+        If myNotifyIcon.Visibility <> Visibility.Visible Then
 
-        Try
-            ikonka = New System.Drawing.Icon("icons/trayIcon1.ico")
-        Catch ex As Exception
-
-        End Try
-
-        If ikonka Is Nothing Then
-            Dim localIcon As String = IO.Path.Combine(Application.GetDataFolder, "trayIcon1.ico")
-            If Not IO.File.Exists(localIcon) Then
-                ' ściągnij z mojego serwera?
-            End If
+            Dim ikonka As System.Drawing.Icon = Nothing
 
             Try
-                ikonka = New System.Drawing.Icon(localIcon)
+                ikonka = New System.Drawing.Icon("icons/trayIcon1.ico")
             Catch ex As Exception
 
             End Try
-        End If
 
-        Try
-            myNotifyIcon.Visibility = Visibility.Visible
-            If myNotifyIcon.Icon Is Nothing Then
-                myNotifyIcon.Icon = ikonka
-                myNotifyIcon.ContextMenu = CreateIconContextMenu()
+            If ikonka Is Nothing Then
+                Dim localIcon As String = IO.Path.Combine(Application.GetDataFolder, "trayIcon1.ico")
+                If Not IO.File.Exists(localIcon) Then
+                    ' ściągnij z mojego serwera?
+                End If
+
+                Try
+                    ikonka = New System.Drawing.Icon(localIcon)
+                Catch ex As Exception
+
+                End Try
             End If
 
-            Me.Hide()
-        Catch ex As Exception
-            Me.MsgBox("Chciałem się przełączyć do ikonki, ale: " & vbCrLf & ex.Message)
-        End Try
+            Try
+                myNotifyIcon.Visibility = Visibility.Visible
+                If myNotifyIcon.Icon Is Nothing Then
+                    myNotifyIcon.Icon = ikonka
+                    myNotifyIcon.ContextMenu = CreateIconContextMenu()
+                End If
+
+            Catch ex As Exception
+                Me.MsgBox("Chciałem się przełączyć do ikonki, ale: " & vbCrLf & ex.Message)
+            End Try
+        End If
+
+        Me.Hide()
+
     End Sub
 
     Private Sub JeslimSamToPokaz()
@@ -430,13 +435,38 @@ Class MainWindow
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
         'PoprawReelFromTarget
-
+        'UsunAstroMoon
+        'Album_dw_04()
     End Sub
 
 
 #Region "poprawianie plików"
 
 #If False Then
+
+    Private Sub Album_dw_04()
+
+        For Each oFile In Application.GetBuffer.GetList
+            If oFile.sSuggestedFilename.StartsWithCI("dW_alb04") Then
+                Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.SourceDefault)
+                oExif.DateMax = New Date(1945, 1, 1)
+            End If
+        Next
+        Application.GetBuffer.SaveData()
+
+    End Sub
+
+
+    Private Sub UsunAstroMoon()
+
+        For Each oFile In Application.GetBuffer.GetList
+            oFile.RemoveExifOfType(Vblib.ExifSource.AutoMoon)
+            oFile.RemoveExifOfType(Vblib.ExifSource.AutoAstro)
+        Next
+        Application.GetBuffer.SaveData()
+
+    End Sub
+
 
     Private Sub PoprawReelFromTarget()
 
