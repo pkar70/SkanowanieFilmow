@@ -1,4 +1,5 @@
 ﻿
+Imports MediaDevices
 Imports pkar
 Imports pkar.UI.Extensions
 
@@ -21,7 +22,15 @@ Public NotInheritable Class PicMenuOnMap
         End If
 
         Try
-            SettingsMapsy.WypelnMenuMapami(TryCast(Me, MenuItem), AddressOf uiOnMap_Click)
+            Me.Items.Clear()
+
+            For Each oDictMapa In BasicGeopos.MapServices
+                Dim oNew As New MenuItem
+                oNew.Header = oDictMapa.Key
+                AddHandler oNew.Click, AddressOf uiOnMap_Click
+                Me.Items.Add(oNew)
+            Next
+            ' SettingsMapsy.WypelnMenuMapami(TryCast(Me, MenuItem), AddressOf uiOnMap_Click)
         Catch ex As Exception
 
         End Try

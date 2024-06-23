@@ -36,9 +36,11 @@ Class MainWindow
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         InitLib(Nothing)
+
         Page_Loaded(Nothing, Nothing)    ' tak prościej, bo wklejam tu zawartość dawnego Page
 
         lib14_httpClnt.httpKlient._machineName = Environment.MachineName    ' musi być tak, bo lib jest też używana w std 1.4, a tam nie ma machinename
+        SettingsMapsy.DodajMapyDoNugeta() ' lokalnie zdefiniowane mapy
 
         ' https://stackoverflow.com/questions/50858209/system-notsupportedexception-no-data-is-available-for-encoding-1252
         ' z nugetem System.Text.Encoding.CodePages

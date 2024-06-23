@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+            xmlns:local="clr-namespace:PicSorterNS"
       mc:Ignorable="d" 
       Title="Mapy" Loaded="Page_Loaded">
     <Grid Margin="5,5,5,5">
@@ -12,15 +13,15 @@
             <RowDefinition Height="Auto" x:Name="uiRowOK"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Mapy" HorizontalAlignment="Center" FontSize="18" />
+            <local:TextBlockPageTitle Text="Mapy" />
 
         <Grid Grid.Row="1" Margin="2,2,2,2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" x:Name="uiRowListaHdr"/>
                 <RowDefinition Height="*" x:Name="uiRowListaItems" />
             </Grid.RowDefinitions>
-            <TextBlock Text="Lista map:" FontWeight="Bold" />
-            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddMapa_Click" Margin="2,2,2,2"/>
+            <TextBlock Text="Lista map:" FontWeight="Bold" ToolTip="Lista zawiera zarówno mapy zdefiowane przez Ciebie, jak i znane programowi"/>
+            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddMapa_Click" Margin="2,2,2,2" ToolTip="Dodana mapa będzie aktywna w programie od razu, ale bez [OK] nie zostanie zapisana na dysku"/>
 
             <ListView Name="uiLista" Grid.Row="1">
                 <ListView.ItemContainerStyle>

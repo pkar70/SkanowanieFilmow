@@ -19,7 +19,7 @@ Public Class EnterGeoTag
     Private Function TryFromLink(sLink As String) As Boolean
         If Not sLink.StartsWithCI("http") Then Return False
 
-        Dim oPos As BasicGeopos = SettingsMapsy.Link2Geo(sLink)
+        Dim oPos As BasicGeopos = BasicGeopos.GetFromLink(sLink)
         If oPos.IsEmpty Then Return False
 
         uiLatitude.Text = oPos.Latitude
