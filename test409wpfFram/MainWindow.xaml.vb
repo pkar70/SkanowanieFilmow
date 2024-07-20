@@ -1,12 +1,9 @@
-﻿Imports System.Reflection.Metadata
-
-Class MainWindow
+﻿Class MainWindow
 
     Private Const _defaultHttpAgent As String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0"
 
+
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
-
-
         Dim oHandler As New Net.Http.HttpClientHandler With
                 {
                 .CookieContainer = New Net.CookieContainer
