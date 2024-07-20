@@ -35,6 +35,12 @@ Public Class ServerWrapper
         _dataFolder = dataFolder
     End Sub
 
+    Public Function IsRunning() As Boolean
+        If _host Is Nothing Then Return False
+        Return _host.IsListening
+    End Function
+
+
 #Region "start/stop"
 
     Public Sub StartSvc()

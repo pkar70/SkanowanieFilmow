@@ -28,7 +28,7 @@ Public Class BatchEdit
 
             Await ApplyOne(oSrc)
             uiProgBarEngines.Value += 1
-            Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+            ProcessPic.GetBuffer(Me).SaveData()  ' bo zmieniono EXIF
         Next
 
         uiProgBarEngines.Visibility = Visibility.Collapsed
@@ -43,14 +43,14 @@ Public Class BatchEdit
         If oSrc Is Nothing Then Return
 
         Await ApplyOne(oSrc)
-        Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
+        ProcessPic.GetBuffer(Me).SaveData()  ' bo zmieniono EXIF
         Window_Loaded(Nothing, Nothing)
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
 
         _lista = New List(Of JedenEngine)
-        _iMax = Application.GetBuffer.Count
+        _iMax = ProcessPic.GetBuffer(Me).Count
 
         For Each oEngine As Vblib.PostProcBase In Application.gPostProcesory
             If oEngine.Nazwa.Contains("(") Then Continue For
@@ -73,7 +73,7 @@ Public Class BatchEdit
         uiProgBarInEngine.Value = 0
         uiProgBarInEngine.Visibility = Visibility.Visible
 
-        For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
+        For Each oItem As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
 
             ' *TODO* później będzie dokładniej może, typu pytanie o Exif, i tak dalej

@@ -201,8 +201,11 @@ Public Class ProcessBrowse
 
     End Function
 
+    Private _niekasujArchived As Boolean
+
     Private Async Function EwentualneKasowanieArchived() As Task
         If _inArchive Then Return
+        If _niekasujArchived Then Return
 
         Dim iArchCount As Integer = Application.GetArchivesList.Count
         Dim iCloudArchCount As Integer = Application.GetCloudArchives.GetList.Count
@@ -216,7 +219,11 @@ Public Class ProcessBrowse
 
         If lista.Count < 1 Then Return
 
-        If Not Await Me.DialogBoxYNAsync($"Skasować pliki już w pełni zarchiwizowane? ({lista.Count})") Then Return
+        If Not Await Me.DialogBoxYNAsync($"Skasować pliki już w pełni zarchiwizowane? ({lista.Count})") Then
+            ' i nie pytaj więcej :)
+            _niekasujArchived = True
+            Return
+        End If
 
         For Each oPic As Vblib.OnePic In lista
             DeletePicture(oPic)
@@ -353,17 +360,26 @@ Public Class ProcessBrowse
 #Region "górny toolbox"
 
     ''' <summary>
+    ''' zwraca tryb sortowania: 1 daty, 2 serno, 3 filename
+    ''' </summary>
+    ''' <returns></returns>
+    Private Function GetCurrentSortMode() As Integer
+        Dim oCBI As ComboBoxItem = TryCast(uiSortBy.SelectedItem, ComboBoxItem)
+        If oCBI IsNot Nothing Then
+            Return oCBI.DataContext
+        End If
+
+        Return 1
+    End Function
+
+    ''' <summary>
     ''' ustaw ItemsSource na thumbsy wedle daty - na start, i po zmianach dat - SLOW!
     ''' </summary>
     Private Async Function SortujThumbsy() As Task
         If uiPicList Is Nothing Then Return ' tak jest na początku, z uiSortBy_SelectionChanged
         uiPicList.ItemsSource = Nothing
 
-        Dim sortmode As Integer = 1
-        Dim oCBI As ComboBoxItem = TryCast(uiSortBy.SelectedItem, ComboBoxItem)
-        If oCBI IsNot Nothing Then
-            sortmode = oCBI.DataContext
-        End If
+        Dim sortmode As Integer = GetCurrentSortMode()
 
         Me.ProgRingShow(True)
 
@@ -374,7 +390,7 @@ Public Class ProcessBrowse
                                Case 3 ' 3=filename
                                    _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.oPic.sSuggestedFilename)
                                Case Else ' 1=date
-                                   _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.dateMin)
+                                   _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.oPic.GetMostProbablyDate)
                            End Select
                        End Sub
             )
@@ -539,8 +555,14 @@ Public Class ProcessBrowse
     End Sub
 
     Private Sub uiMetadataChangedResort(sender As Object, e As EventArgs)
+        ' tu wskakuje po zmianie daty zdjęć...
         uiActionsPopup.IsOpen = False
-        SortujThumbsy()
+
+        ReDymkuj()
+
+        ' jeśli sortowanie jest wg dat, to zaktualizuj
+        If GetCurrentSortMode() = 1 Then SortujThumbsy()
+
         SaveMetaData()
     End Sub
 
@@ -787,19 +809,23 @@ Public Class ProcessBrowse
 
     Private Async Sub uiStereoPack_Click(sender As Object, e As RoutedEventArgs)
 
-        If uiPicList.SelectedItems.Count <> 2 Then
+        If uiPicList.SelectedItems.Count > 2 Then
             Me.MsgBox($"Umiem zrobić stereoskopię tylko z dwu zdjęć, a zaznaczyłeś {uiPicList.SelectedItems.Count}")
             Return
         End If
 
         Dim pic0 As ThumbPicek = uiPicList.SelectedItems(0)
-        Dim pic1 As ThumbPicek = uiPicList.SelectedItems(1)
+        Dim pic1 As ThumbPicek = Nothing
 
-        If Not Await StereoTestDaty(pic0, pic1) Then Return ' Δtime
-        If Not Await StereoTestGeo(pic0, pic1) Then Return ' Δgeo 
+        If uiPicList.SelectedItems.Count > 1 Then
+            pic1 = uiPicList.SelectedItems(1)
 
-        If Not Await StereoTestExify(pic0, pic1) Then Return ' Δexifs (choć niektóre pomija)
+            If Not Await StereoTestDaty(pic0, pic1) Then Return ' Δtime
+            If Not Await StereoTestGeo(pic0, pic1) Then Return ' Δgeo 
 
+            If Not Await StereoTestExify(pic0, pic1) Then Return ' Δexifs (choć niektóre pomija)
+
+        End If
 
         'proba stworzenia nowej nazwy - automat, a jak nie umie (nie WP_..) to zapytac
         Dim newName As String = Await StereoCreatePackName(pic0, pic1)
@@ -830,7 +856,7 @@ Public Class ProcessBrowse
         pic0.oPic.sSuggestedFilename = IO.Path.GetFileName(packZipName)
         pic0.oPic.SetDefaultFileTypeDiscriminator() ' ikonka przy picku
 
-        DeletePicekMain(pic1)   ' zmieni _Reapply, jeśli picek miał splita; ze wszystkąd usuwa
+        If pic1 IsNot Nothing Then DeletePicekMain(pic1)   ' zmieni _Reapply, jeśli picek miał splita; ze wszystkąd usuwa
 
         ' *TODO* ewentualnie stereoautoalign, własny anagl z *aligned*, ustalenie R/L, i zrobienie pliku JPS - tak by do StereoViewer wysłac pliki aligned
     End Sub
@@ -914,18 +940,24 @@ Public Class ProcessBrowse
     ''' <summary>
     ''' zwraca utworzoną nazwę - ale bez extension
     ''' </summary>
+    ''' <param name="pic1">Może być NULL</param>
     Private Async Function StereoCreatePackName(pic0 As ThumbPicek, pic1 As ThumbPicek) As Task(Of String)
-        'proba stworzenia nowej nazwy - automat, a jak nie umie (nie WP_..) to zapytac
-        If pic0.oPic.sSuggestedFilename.StartsWith("WP_") AndAlso pic1.oPic.sSuggestedFilename.StartsWith("WP_") Then
-            Return pic0.oPic.sSuggestedFilename.Substring(0, "wp_yyyymmdd_hh_mm_ss".Length)
+
+        If pic1 IsNot Nothing Then
+            'proba stworzenia nowej nazwy - automat, a jak nie umie (nie WP_..) to zapytac
+            If pic0.oPic.sSuggestedFilename.StartsWith("WP_") AndAlso pic1.oPic.sSuggestedFilename.StartsWith("WP_") Then
+                Return pic0.oPic.sSuggestedFilename.Substring(0, "wp_yyyymmdd_hh_mm_ss".Length)
+            End If
         End If
 
+        ' wersja side-by-side jest na pewno nie WP_ :) zapewne przystawka do Practica albo FBstaryKrakow
         Return Await Me.InputBoxAsync("Podaj nazwę paczki stereo", IO.Path.GetFileNameWithoutExtension(pic0.oPic.sSuggestedFilename))
     End Function
 
     ''' <summary>
     ''' utwórz TEMP folder i wkopiuj tam pliki z ThumbPicek oraz stwórz picsort.json
     ''' </summary>
+    ''' <param name="pic1">Może być NULL</param>
     ''' <returns>FALSE gdy katalog już istnieje i nie ma zgody na skasowanie</returns>
     Private Async Function StereoKopiujDoTemp(pic0 As ThumbPicek, pic1 As ThumbPicek, stereopackfolder As String) As Task(Of Boolean)
         If IO.Directory.Exists(stereopackfolder) Then
@@ -935,9 +967,11 @@ Public Class ProcessBrowse
 
         IO.Directory.CreateDirectory(stereopackfolder)
         pic0.oPic.FileCopyToDir(stereopackfolder, True)
-        pic1.oPic.FileCopyToDir(stereopackfolder, True)
+        pic1?.oPic.FileCopyToDir(stereopackfolder, True)
 
-        Dim json As String = "[" & vbCrLf & pic0.oPic.DumpAsJSON & "," & vbCrLf & pic1.oPic.DumpAsJSON & vbCrLf & "]"
+        Dim json As String = "[" & vbCrLf & pic0.oPic.DumpAsJSON & "," & vbCrLf
+        If pic1 IsNot Nothing Then json &= pic1.oPic.DumpAsJSON & vbCrLf
+        json &= "]"
         IO.File.WriteAllText(IO.Path.Combine(stereopackfolder, "picsort.json"), json)
 
         Return True
@@ -952,7 +986,7 @@ Public Class ProcessBrowse
     Public Shared Async Function StereoRunSpmOnPack(stereopackfolder As String, askIfOk As Boolean) As Task(Of Boolean)
 
         Dim twoPics As String() = StereoGetTwoPics(stereopackfolder)
-        If twoPics.Count <> 2 Then Return False
+        If twoPics.Count > 2 Then Return False
 
         Dim spmpathname As String = vb14.GetSettingsString("uiStereoSPMPath")
 
@@ -1115,150 +1149,6 @@ Public Class ProcessBrowse
     End Sub
 
 
-#If POPRZ_WCZYTAJOBRAZEK Then
-    ''' <summary>
-    ''' wczytaj ze skalowaniem do 400 na wiekszym boku
-    ''' (SzukajPicka tu ma błąd, olbrzymie ilości pamięci zjada - bo nie ma skalowania)
-    ''' </summary>
-    ''' <param name="sPathName"></param>
-    ''' <param name="iMaxSize">ograniczenie wielkości (skalowanie), 0: bez skalowania</param>
-    ''' <param name="iRotation">obrót obrazka</param>
-    ''' <returns></returns>
-    Public Shared Async Function WczytajObrazek(sPathName As String, Optional iMaxSize As Integer = 0, Optional iRotation As Rotation = Rotation.Rotate0) As Task(Of BitmapImage)
-        If Not IO.File.Exists(sPathName) Then Return Nothing
-        Dim bitmap = New BitmapImage()
-        bitmap.BeginInit()
-        If iMaxSize > 0 Then bitmap.DecodePixelHeight = iMaxSize
-        bitmap.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-        bitmap.Rotation = iRotation
-
-        Dim sExt As String = IO.Path.GetExtension(sPathName).ToLowerInvariant
-
-        If iMaxSize <> 0 AndAlso IO.File.Exists(ProcessBrowse.ThumbPicek.ThumbGetFilename(sPathName)) Then
-            ' jak mamy Thumb, i chcemy thumba, to wczytaj thumb
-            sPathName = ProcessBrowse.ThumbPicek.ThumbGetFilename(sPathName)
-        ElseIf IO.File.Exists(sPathName & THUMB_SUFIX & ".png") Then
-            ' jeśli mamy PNG, to zapewne chodzi o kadr z filmu - bierzemy niezależnie od skalowania
-            sPathName = ProcessBrowse.ThumbPicek.ThumbGetFilename(sPathName) & ".png"
-        Else
-            If sExt = ".nar" Or OnePic.ExtsMovie.Contains(sExt) Or sPathName.Contains("stereo.zip") Then
-                Dim sRet As String = Await MakeThumbFromFile(sPathName)
-                If sRet <> "" Then sPathName = sRet
-            End If
-        End If
-
-        bitmap.UriSource = New Uri(sPathName)
-        Try
-            bitmap.EndInit()
-            Await Task.Delay(1) ' na potrzeby ProgressBara
-
-            If sExt <> ".jps" Then Return bitmap
-
-
-            Dim croping As New Int32Rect(0, 0, bitmap.Width / 2, bitmap.Height)
-            Dim cropped As New CroppedBitmap(bitmap, croping)
-
-            Dim encoder As New JpegBitmapEncoder()
-            encoder.QualityLevel = vb14.GetSettingsInt("uiJpgQuality")  ' choć to raczej niepotrzebne, bo to tylko thumb
-
-            Dim newBitmap As New BitmapImage()
-
-            Using memStream As New MemoryStream()
-                encoder.Frames.Add(BitmapFrame.Create(cropped))
-                encoder.Save(memStream)
-
-                memStream.Position = 0
-                newBitmap.BeginInit()
-                newBitmap.StreamSource = memStream
-                newBitmap.EndInit()
-
-                memStream.Close()
-            End Using
-
-            Return newBitmap
-
-            'Return New CroppedBitmap()
-            ' dla JPS: tylko połówka do wczytywania
-
-        Catch ex As Exception
-            ' nieudane wczytanie miniaturki - to zapewne błąd tworzenia miniaturki, można spróbować ją utworzyć jeszcze raz
-            If sPathName.Contains(THUMB_SUFIX) Then IO.File.Delete(sPathName)
-        End Try
-
-        vb14.DumpMessage($"cannot initialize bitmap from {sExt}, using placeholder")
-
-
-        ' się nie udało tak wprost, to pokazujemy inny obrazek - file extension
-        Dim sPlaceholder As String = Application.GetDataFile("", $"placeholder{sExt}.jpg")
-        If Not IO.File.Exists(sPlaceholder) Then
-            Process_Signature.WatermarkCreate.StworzWatermarkFile(sPlaceholder, sExt, sExt)
-            FileAttrHidden(sPlaceholder, True)
-        End If
-
-        bitmap = New BitmapImage()
-        bitmap.BeginInit()
-        If iMaxSize > 0 Then bitmap.DecodePixelHeight = iMaxSize
-        bitmap.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-        bitmap.Rotation = iRotation
-        bitmap.UriSource = New Uri(sPlaceholder)
-        bitmap.EndInit()
-        Await Task.Delay(1) ' na potrzeby ProgressBara
-
-        Return bitmap
-
-
-
-    End Function
-
-#End If
-#If POPRZ_THUMB Then
-
-    ''' <summary>
-    ''' stwórz coś do pokazywania (dla nieJPG), 
-    ''' </summary>
-    ''' <param name="sPathName">obrazek źródłowy</param>
-    ''' <returns>filename do TempFile obrazka</returns>
-    Private Shared Async Function MakeThumbFromFile(sPathName As String) As Task(Of String)
-        ' THUMB_SUFIX
-
-        Dim sExt As String = IO.Path.GetExtension(sPathName).ToLowerInvariant
-
-        Dim sOutfilename As String = sPathName & THUMB_SUFIX
-        ' *TODO* skalowanie tego?
-
-        If OnePic.ExtsMovie.ContainsCI(sExt) Then
-            Dim sOutFile As String = sOutfilename & ".png"
-            If Not Await VblibStd2_mov2jpg.Mov2jpg.ExtractFirstFrame(sPathName, sOutFile) Then Return ""
-            FileAttrHidden(sOutFile, True)
-            Return sOutfilename & ".png"
-        End If
-
-        Select Case sExt
-            Case ".nar"
-                If IO.File.Exists(sOutfilename) Then
-                    Vblib.DumpMessage($"Dest file {sOutfilename} already exist, using it")
-                    Return sOutfilename
-                End If
-
-                Dim memStream As Stream = picek.SinglePicFromMulti
-                Using oWrite As Stream = IO.File.Create(sOutfilename)
-                    Await memStream.CopyToAsync(oWrite)
-                    Await oWrite.FlushAsync()
-                    'oWrite.Dispose()
-                End Using
-                Return sOutfilename
-            Case ".zip"
-                ' wcześniej jest że wejdzie tylko dla "stereo.zip", więc nie trzeba tu drugi raz testować
-
-            Case Else
-                Return ""    ' nie umiem zrobić - nie wiem co to za plik
-        End Select
-
-        Return ""    ' raczej tu nie doszedł...
-
-    End Function
-
-#End If
 #Region "ShowBig i callbacki z niego"
 #Region "double click dla ShowBig"
 
@@ -1518,6 +1408,7 @@ Public Class ProcessBrowse
     ''' usuwa plik "ze wszystkąd", zapisuje metadane oraz odnawia miniaturki
     ''' </summary>
     Private Sub DeletePicekMain(oPicek As ThumbPicek)
+        If oPicek Is Nothing Then Return
 
         _ReapplyAutoSplit = False
         DeletePicture(oPicek)   ' zmieni _Reapply, jeśli picek miał splita
@@ -2856,10 +2747,10 @@ Public Class ProcessBrowse
 
             ' dateMin to GetMostProbablyDate
             If oPic.HasRealDate Then
-                newDymek = newDymek & vbCrLf & "Using date: " & oPic.GetMostProbablyDate.ToExifString
+                newDymek = newDymek & vbCrLf & "Real date: " & oPic.GetMostProbablyDate.ToExifString
             Else
                 newDymek = newDymek & vbCrLf & "Date range: " & oPic.GetMinDate.ToExifString & " .. " & oPic.GetMaxDate.ToExifString
-                newDymek = newDymek & vbCrLf & "Using date: " & oPic.GetMostProbablyDate.ToExifString
+                newDymek = newDymek & vbCrLf & "Mid date: " & oPic.GetMostProbablyDate.ToExifString
             End If
 
             Dim oExifTag As Vblib.ExifTag

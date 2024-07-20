@@ -4,14 +4,15 @@ Imports pkar
 Imports Vblib
 Imports pkar.UI.Extensions
 Imports System.Windows.Interop
+Imports System.Threading
 
 Class MainWindow
     Inherits Window
 
     ''' <summary>
-    ''' Sprawdzenie czy już nie działa, jak tak to upewnia się że ma być druga instancja, jeśli nie - zamyka app
+    ''' Sprawdzenie czy już nie działa, jak tak to upewnia się że ma być druga instancja, jeśli nie - zamyka app (i zwraca TRUE)
     ''' </summary>
-    Private Async Function CheckIfRunning() As Task
+    Private Async Function CheckIfRunning() As Task(Of Boolean)
         Dim currentProcess As Process = Process.GetCurrentProcess()
 
         Dim runningProcess As Process = (From process In Process.GetProcessesByName(currentProcess.ProcessName)
@@ -19,7 +20,7 @@ Class MainWindow
                                     process.Id <> currentProcess.Id
                                          Select process).FirstOrDefault()
 
-        If runningProcess Is Nothing Then Return
+        If runningProcess Is Nothing Then Return False
 
         ' mamy poprzednią instancję
         If Await Me.DialogBoxYNAsync("To byłoby drugie uruchomienie app, zamknąć się?") Then
@@ -28,9 +29,10 @@ Class MainWindow
             ' Private Static extern Boolean ShowWindow(IntPtr hWnd, Int32 nCmdShow);
 
             Application.Current.Shutdown()
-            Return
+            Return True
         End If
 
+        Return False
     End Function
 
 
@@ -220,7 +222,11 @@ Class MainWindow
 
 #Region "zamykanie i ikonka"
 
+    Private _closinguje As Boolean
+
     Private Async Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
+
+        If _closinguje Then Return
 
         If Vblib.GetSettingsBool("uiServerEnabled") AndAlso Application.gWcfServer IsNot Nothing Then
             ' *TODO* YNCancel, zamknąć, zikonizować, cancel
@@ -240,6 +246,7 @@ Class MainWindow
         'If Application.Current.Windows.Count > 2 Then
         '    If Not Await Vblib.DialogBoxYNAsync("Zamknąć program?") Then Return
         ' bez tego zamyka tylko to jedno okno, a reszty już NIE
+        _closinguje = True
         Application.Current.Shutdown()
         'End If
 
@@ -309,7 +316,11 @@ Class MainWindow
     Private Function CreateIconContextMenu() As ContextMenu
 
         Dim ctxMenu As New ContextMenu
-        ctxMenu.Items.Add(CreateMenuItem("Process", "Porządkowanie zdjęć", AddressOf uiProcess_Click))
+        Dim currMI As New MenuItem With {.Header = "Current", .ToolTip = "obsługa zdjęć w buforze"}
+        currMI.Items.Add(CreateMenuItem("Browse", "Miniaturki bufora", AddressOf uiBrowseCurrent_Click))
+        currMI.Items.Add(CreateMenuItem("Import", "Wczytywanie zdjęć", AddressOf uiRetrieve_Click))
+        currMI.Items.Add(CreateMenuItem("Process", "Okno 'process'", AddressOf uiProcess_Click))
+        ctxMenu.Items.Add(currMI)
 
         Dim archMI As New MenuItem With {.Header = "Archiwum", .ToolTip = "obsługa archiwum"}
         archMI.Items.Add(CreateMenuItem("Browse", "Przeglądanie archiwum wg katalogów", AddressOf uiBrowseArch_Click))
@@ -333,8 +344,26 @@ Class MainWindow
 
         ctxMenu.Items.Add(CreateMenuItem("About", "O programie", AddressOf About_Click))
 
+        ctxMenu.Items.Add(New Separator)
+        ctxMenu.Items.Add(CreateMenuItem("Quit", "Zamknięcie programu", AddressOf uiQuit_Click))
+
         Return ctxMenu
     End Function
+
+    Private Sub uiQuit_Click(sender As Object, e As RoutedEventArgs)
+        ' potrzebne takie proxy - bo zmiana typu 'e' z RoutedEventArgs na CancelEventArgs
+        Window_Closing(Nothing, Nothing)
+    End Sub
+
+    Private Sub uiRetrieve_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New ProcessDownload
+        oWnd.Show()
+    End Sub
+
+    Private Sub uiBrowseCurrent_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New ProcessBrowse(Application.GetBuffer, False, "Buffer")
+        oWnd.Show()
+    End Sub
 
     Private Async Sub SrvStartStop_Click(sender As Object, e As RoutedEventArgs)
         If Application.gWcfServer Is Nothing Then
@@ -348,7 +377,11 @@ Class MainWindow
     End Sub
 
     Private Sub About_Click(sender As Object, e As RoutedEventArgs)
-        Me.MsgBox(GetAppVers() & " (" & BUILD_TIMESTAMP & ")")
+        Dim msg As String = "Picsort" & vbCrLf & "version" & GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
+        msg &= vbCrLf & "Memory used: " & CInt(Windows.System.MemoryManager.AppMemoryUsage / 1024 / 1024) & " MiB"
+        If Application.gDbase.IsLoaded Then msg &= vbCrLf & "Database is loaded"
+        If Application.gWcfServer.IsRunning Then msg &= vbCrLf & "Server enabled"
+        MsgBox(msg)
     End Sub
 
     Private Sub SrvLastLog_Click(sender As Object, e As RoutedEventArgs)
@@ -382,7 +415,8 @@ Class MainWindow
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
 
-        Await CheckIfRunning()
+        ' jeśli już pracuje, pomijamy całość inicjalizacji
+        If Await CheckIfRunning() Then Return
 
         ' jednak podstawowy folder musi istnieć, sami go sobie stworzymy jakby co.
         If Vblib.GetSettingsString("uiFolderBuffer") = "" Then
@@ -397,7 +431,7 @@ Class MainWindow
         ' *TODO* guziki pozostałe wyłączane jak nie ma LocalStorage
 
         Dim count As Integer = Application.GetBuffer.Count
-        uiProcess.Content = $"Process ({count})"
+        uiProcess.Content = $"Current ({count})"
         If count = 0 Then
             Dim path As String = IO.Path.Combine(Application.GetDataFolder, "buffer.json")
             If IO.File.Exists(path) Then
@@ -439,12 +473,70 @@ Class MainWindow
         'PoprawReelFromTarget
         'UsunAstroMoon
         'Album_dw_04()
+        'Await PoprawAddResolution()
     End Sub
 
 
 #Region "poprawianie plików"
 
 #If False Then
+
+    Private Async Function PoprawAddResolution() As Task
+
+        Dim engine As New Vblib.AutoTag_EXIF
+
+        For Each oFile In Application.GetBuffer.GetList
+            Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.FileExif)
+
+            Dim oNewExif As Vblib.ExifTag = Await engine.GetForFile(oFile)
+
+            If oNewExif IsNot Nothing Then
+                oExif.x = oNewExif.x
+                oExif.y = oNewExif.y
+            End If
+
+        Next
+        Application.GetBuffer.SaveData()
+
+        Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
+        arch.Load()
+
+        Dim mamNieZero As Integer = 0
+
+        For Each oFile As Vblib.OnePic In arch
+            Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.FileExif)
+            If oExif Is Nothing Then
+                Continue For
+            End If
+
+            Dim klonek As Vblib.OnePic = oFile.Clone
+            klonek.InBufferPathName = IO.Path.Combine("L:\HomeArchive\FotoVideo\PicSort", klonek.TargetDir, klonek.sSuggestedFilename)
+
+            Dim oNewExif As Vblib.ExifTag = Await engine.GetForFile(klonek)
+
+            If oNewExif IsNot Nothing AndAlso oNewExif.x > 0 Then
+                oExif.x = oNewExif.x
+                oExif.y = oNewExif.y
+                mamNieZero += 1
+            End If
+
+        Next
+
+        arch.Save(True)
+
+
+        'For Each oFile In Application.
+        '    If oFile.sSuggestedFilename.StartsWithCI("dW_alb04") Then
+        '        Dim oExif As Vblib.ExifTag = oFile.GetExifOfType(Vblib.ExifSource.SourceDefault)
+        '    oExif.DateMax = New Date(1945, 1, 1)
+        '    End If
+        'Next
+        'Application.GetBuffer.SaveData()
+
+
+    End Function
+
+
 
     Private Sub Album_dw_04()
 

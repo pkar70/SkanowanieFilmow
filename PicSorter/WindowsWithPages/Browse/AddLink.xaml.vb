@@ -17,6 +17,8 @@ Public Class AddLink
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
 
+        uiOpis.Focus()    ' jak się wkleja link, to ładnie tworzy opis, ale jakby nie robi refresh zmiennych?
+
         If linek.opis.Length < 3 Then
             MsgBox("Za krótki opis...")
             Return
@@ -38,20 +40,27 @@ Public Class AddLink
         Dim link As String = uiLink.Text
         If link = "" Then Return
 
-        If Not link.ContainsCI("wikipedia") Then Return
+        If link.StartsWith("#") Then
+            uiLink.Text = "pic" & link
+            Return
+        End If
 
+        If Not link.ContainsCI("wikipedia") Then Return
         If uiOpis.Text <> "" Then Return
 
         uiOpis.Text = "wiki"
 
         Dim iInd As Integer = link.IndexOf("wikipedia")
-        If link.Substring(iInd - 1, 1) <> "." Then Return
+        If link.Substring(iInd - 1, 1) = "." Then
 
-        link = link.Substring(0, iInd - 1)
-        iInd = link.LastIndexOf("/")
+            link = link.Substring(0, iInd - 1)
+            iInd = link.LastIndexOf("/")
 
-        uiOpis.Text &= " (" & link.Substring(iInd + 1) & ")"
+            uiOpis.Text &= " (" & link.Substring(iInd + 1) & ")"
+        End If
 
+        uiOpis.Focus() ' ominięcie "za krótki"
+        uiLink.Focus()
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)

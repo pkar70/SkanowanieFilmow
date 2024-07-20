@@ -67,6 +67,8 @@
         <CheckBox Name="uiTree2Miesiac" Content=" | + 1981.01" />
         <CheckBox Name="uiTree3DzienWeekDay" Content=" | | + 1981.01.24.sb" IsChecked="True" IsEnabled="False"/>-->
 
+        <CheckBox Name="uiAutoCrop" Content="try to auto-crop" ToolTip="gdy zaznaczone, to program wchodząc do CROP zdjęcia próbuje sam dopasować miejsce cięcia"/>
+
         <local:ButtonOkSave Margin="5,20,5,0" Click="uiOK_Click" />
     </StackPanel>
 </Page>

@@ -8,6 +8,8 @@ Public Class PicMenuOCR
     Public Shared _myClip As String = ""
     Private _miPaste As MenuItem
     Private _miPasteDesc As MenuItem
+    Private _miCopyOCRclip As MenuItem
+    Private _miCopyOCRlocal As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -22,9 +24,10 @@ Public Class PicMenuOCR
 
         Me.Items.Add(NewMenuItem("OCR window", "Otworz okno zarządzania OCR", AddressOf uiOpenOCRwnd_Click))
 
-        Me.Items.Add(NewMenuItem("OCR to Clipboard", "Wyślij OCR do clipboard", AddressOf uiOCRtoClip_Click))
-        Me.Items.Add(NewMenuItem("Copy OCR", "Skopiowanie OCR do lokalnego schowka", AddressOf uiOCRcopy_Click))
-
+        _miCopyOCRclip = NewMenuItem("OCR to Clipboard", "Wyślij OCR do clipboard", AddressOf uiOCRtoClip_Click)
+        Me.Items.Add(_miCopyOCRclip)
+        _miCopyOCRlocal = NewMenuItem("Copy OCR", "Skopiowanie OCR do lokalnego schowka", AddressOf uiOCRcopy_Click)
+        Me.Items.Add(_miCopyOCRlocal)
 
         _miPaste = NewMenuItem("Paste OCR", "Narzucenie zdjęciom OCR wg lokalnego schowka", AddressOf uiOCRpaste_Click)
         Me.Items.Add(_miPaste)
@@ -39,6 +42,13 @@ Public Class PicMenuOCR
 
         _miPasteDesc.IsEnabled = Not String.IsNullOrEmpty(_myClip)
         _miPaste.IsEnabled = Not String.IsNullOrEmpty(_myClip)
+
+        If Not UseSelectedItems Then
+            Dim oExif As Vblib.ExifTag = GetFromDataContext.GetExifOfType(Vblib.ExifSource.AutoWinOCR)
+            _miCopyOCRclip.IsEnabled = oExif IsNot Nothing
+            _miCopyOCRlocal.IsEnabled = oExif IsNot Nothing
+        End If
+
     End Sub
 
     Private Sub uiOCRpasteDescr_Click(sender As Object, e As RoutedEventArgs)

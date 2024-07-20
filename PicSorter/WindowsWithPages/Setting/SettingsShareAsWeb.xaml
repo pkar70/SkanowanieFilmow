@@ -13,7 +13,7 @@
 
         <CheckBox Name="uiAsWebServer" Content="act as a web server" Margin="0,10,0,20"/>
         
-        <local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="399" IsEnabled="{Binding IsChecked, ElementName=uiAsWebServer}"/>
+        <local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="499" IsEnabled="{Binding IsChecked, ElementName=uiAsWebServer}"/>
 
         <CheckBox Name="uiAsWebPrintFilename" Content="show filename" />
         <CheckBox Name="uiAsWebPrintSerno" Content="show #serno" />
@@ -21,6 +21,7 @@
         <CheckBox Name="uiAsWebPrintKwd" Content="show keywords" />
         <CheckBox Name="uiAsWebPrintDescr" Content="show descriptions" />
         <CheckBox Name="uiAsWebPrintGeo" Content="show geo link" />
+        <!--<CheckBox Name="uiAsWebPrintDump" Content="show 'dump metadata' link" />-->
 
         <local:StretchedGrid Cols="*,A">
             <CheckBox Name="uiHttpLog" Content="Maintain log" />

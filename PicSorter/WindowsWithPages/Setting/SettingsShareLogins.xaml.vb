@@ -102,7 +102,7 @@ Class SettingsShareLogins
         oLogin.channels.Add(oNew)
 
         uiListaKanalow.ItemsSource = Nothing
-        uiListaKanalow.ItemsSource = oLogin.channels
+        uiListaKanalow.ItemsSource = oLogin.channels.OrderBy(Of String)(Function(x) x.channelName)
 
     End Sub
 

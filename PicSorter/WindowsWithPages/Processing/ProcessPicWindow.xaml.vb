@@ -1,102 +1,81 @@
 ﻿
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.UI.Extensions
+Imports pkar.DotNetExtensions
 
 Class ProcessPic
+
+    Private _buforek As Vblib.BufferSortowania
+    Private _isDefaultBuff As Boolean
+    Private _afterInit As Boolean
 
     ' rozmiar okna - zob. AktualizujGuzikiSharingu
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Vblib.DumpCurrMethod()
+        Me.InitDialogs
+        Me.ProgRingInit(True, False)
+
+        _buforek = Application.GetBuffer
+        _isDefaultBuff = True
+
+        WypelnListeBuforow()
+        _afterInit = True
+
+        Window_Activated(Nothing, Nothing)
+
     End Sub
+
 
     Private Async Sub Window_Activated(sender As Object, e As EventArgs)
         Vblib.DumpCurrMethod()
-        Vblib.DumpCurrMethod()
+
         AktualizujGuziki()
 
         Await MozeClearPustyBufor()
     End Sub
 
-    Private Async Sub Window_GotFocus(sender As Object, e As RoutedEventArgs)
-        Vblib.DumpCurrMethod()
-        AktualizujGuziki()
-
-        Await MozeClearPustyBufor()
-
-    End Sub
+    Private _niekasujArchived As Boolean
 
     Private Async Function MozeClearPustyBufor() As Task
 
         ' czyli wróć jeśli coś jest do archiwizacji
         If uiLocalArch.IsEnabled Then Return
 
+        If _niekasujArchived Then Return
+
         ' wróć jeśli bufor jest pusty
-        If Application.GetBuffer.Count < 1 Then Return
+        If _buforek.Count < 1 Then Return
 
         ' i jeszcze prosty test: bo może nic do archiwizacji, jako że nic nie ma targetDir ustalonego
         ' krótki test, jakby następny nie był optymalizowany
-        If String.IsNullOrWhiteSpace(Application.GetBuffer.GetList.ElementAt(0).TargetDir) Then Return
+        If String.IsNullOrWhiteSpace(_buforek.GetList.ElementAt(0).TargetDir) Then Return
 
         ' lepszy test robimy: przeglądamy wszystkie TargetDiry
-        If Application.GetBuffer.GetList.Any(Function(x) String.IsNullOrEmpty(x.TargetDir)) Then Return
+        If _buforek.GetList.Any(Function(x) String.IsNullOrEmpty(x.TargetDir)) Then Return
 
-        If Not Await vb14.DialogBoxYNAsync("Wszystkie pliki są w pełni zarchiwizowane, wyczyścić bufor?") Then Return
+        If Not Await Me.DialogBoxYNAsync("Wszystkie pliki są w pełni zarchiwizowane, wyczyścić bufor?") Then
+            _niekasujArchived = True
+            Return
+        End If
 
-        ' skasowanie wszystkich plików z katalogu bufora
-        Dim sFolder As String = vb14.GetSettingsString("uiFolderBuffer")
-        If String.IsNullOrWhiteSpace(sFolder) Then Return
+        ' skasowanie wszystkich plików z katalogu bufora - szybsze niż iterowanie JSON
 
-        Application.ShowWait(True)
+        Me.ProgRingShow(True)
+        Me.ProgRingSetText("Removing files...")
 
+        _buforek.RemoveAllFiles()
 
-        Dim pliki As String() = IO.Directory.GetFiles(sFolder)
-        For Each plik As String In pliki
-            IO.File.Delete(plik)
-        Next
-
-        ' skasowanie buffer.json, i wyzerowanie tego w pamięci
-        Application.ResetBuffer()
-
-        Application.ShowWait(False)
+        Me.ProgRingShow(True)
 
         AktualizujGuziki()
 
     End Function
 
-    Public Shared Function CountDoCloudArchiwizacji() As Integer
 
-        Dim currentArchs As New List(Of String)
-        For Each oArch As Vblib.CloudArchive In Application.GetCloudArchives.GetList
-            If oArch.konfiguracja.enabled Then currentArchs.Add(oArch.konfiguracja.nazwa.ToLowerInvariant)
-        Next
-
-        If currentArchs.Count < 1 Then Return 0
+    Private Function CountDoPublishing() As Integer
 
         Dim iCnt As Integer = 0
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
-            If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
-
-            If oPic.CloudArchived Is Nothing Then
-                iCnt += 1
-            Else
-                Dim sArchiwa As String = oPic.CloudArchived.ToLowerInvariant
-                For Each sArch As String In currentArchs
-                    If Not sArchiwa.Contains(sArch) Then
-                        iCnt += 1
-                        Exit For
-                    End If
-                Next
-            End If
-
-        Next
-
-        Return iCnt
-
-    End Function
-
-    Private Shared Function CountDoPublishing() As Integer
-
-        Dim iCnt As Integer = 0
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+        For Each oPic As Vblib.OnePic In _buforek.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For  ' bo musimy wiedzieć gdzie wstawiać
             iCnt += oPic.CountPublishingWaiting
         Next
@@ -112,23 +91,25 @@ Class ProcessPic
     ''' <returns></returns>
     Private Sub AktualizujGuziki()
 
-        AktualizujGuzikiSharingu()
+        If _buforek Is Nothing Then Return
+
+        If _isDefaultBuff Then AktualizujGuzikiSharingu()
 
         ' z licznika z bufora
-        Dim counter As Integer = Application.GetBuffer.Count
-        uiBrowse.Content = $"Buffer ({counter})"
+        Dim counter As Integer = _buforek.Count
+        uiBrowse.Content = $"Browse ({counter})"
         uiAutotag.Content = $"Try autotag ({counter})"
 
         uiAutotag.IsEnabled = (counter > 0)
         uiBatchEdit.IsEnabled = (counter > 0)
 
         ' z licznika do archiwizacji
-        counter = LocalArchive.CountDoArchiwizacji()
+        counter = CountDoArchiwizacji(_buforek)
         uiLocalArch.Content = $"Local arch ({counter})"
         uiLocalArch.IsEnabled = (counter > 0)
 
         ' z licznika do web archiwizacji
-        counter = CountDoCloudArchiwizacji()
+        counter = _buforek.CountDoCloudArchiwizacji(Application.GetCloudArchives.GetList)
         uiCloudArch.Content = $"Cloud arch ({counter})"
         uiCloudArch.IsEnabled = (counter > 0)
 
@@ -143,7 +124,7 @@ Class ProcessPic
     ''' włącza/wyłącza guziki sharingu, odpowiednio zmieniając rozmiar okna
     ''' </summary>
     Private Sub AktualizujGuzikiSharingu()
-        Dim wysok As Integer = 460
+        Dim wysok As Integer = 490
 
         'uiSharingRetrieve.Visibility = Visibility.Collapsed
         uiSharingDescrips.Visibility = Visibility.Collapsed
@@ -164,53 +145,216 @@ Class ProcessPic
     End Sub
 
     Private Sub uiBrowse_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New ProcessBrowse(Application.GetBuffer, False, "Buffer")
-        oWnd.Show()
+        PokazSubWindow(New ProcessBrowse(_buforek, False, "Buffer"))
         AktualizujGuziki()
     End Sub
 
     Private Sub uiAutotag_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New AutoTags
-        oWnd.Show()
+        PokazSubWindow(New AutoTags)
     End Sub
 
     Private Sub uiBatchEdit_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New BatchEdit
-        oWnd.Show()
+        PokazSubWindow(New BatchEdit)
     End Sub
 
     Private Sub uiLocalArch_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New LocalArchive
-        oWnd.Show()
+        PokazSubWindow(New LocalArchive) ' multibuff raczej OK
     End Sub
 
     Private Sub uiCloudPublish_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New CloudPublishing
-        oWnd.Show()
+        PokazSubWindow(New CloudPublishing) ' multibuff raczej OK
     End Sub
 
     Private Sub uiCloudArch_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New CloudArchiving
-        oWnd.Show()
+        PokazSubWindow(New CloudArchiving) ' multibuff raczej OK
     End Sub
 
     Private Sub uiSequence_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New SequenceHelper
-        oWnd.Show()
+        PokazSubWindow(New SequenceHelper) ' tylko dla default buff umie to zrobić w pełni poprawnie (checkboxy)
     End Sub
 
     Private Sub uiRetrieve_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New ProcessDownload
-        oWnd.Show()
+        PokazSubWindow(New ProcessDownload) ' multibuff raczej OK
     End Sub
 
     Private Sub uiSharingDescrips_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New ShareSendDescQueue
-        oWnd.Show()
+        PokazSubWindow(New ShareSendDescQueue) ' multibuff OK
     End Sub
 
     Private Sub uiSharingRetrieve_Click(sender As Object, e As RoutedEventArgs)
 
     End Sub
+
+    Private Sub PokazSubWindow(okno As Window)
+        ' zablokuj wybieranie/zmianę bufora
+        uiZmiennikBufora.IsEnabled = False
+
+        okno.Owner = Me
+        okno.Show()
+    End Sub
+#Region "Multibuforowość"
+
+    Public Function GetCurrentBuffer() As Vblib.BufferSortowania
+        ' dla pod-okien
+        Return _buforek
+    End Function
+
+    Public Function IsDefaultBuff() As Boolean
+        Return _isDefaultBuff
+    End Function
+
+
+    Private Sub WypelnListeBuforow()
+
+        uiBufory.Items.Clear()
+
+        ' ten jest zawsze
+        uiBufory.Items.Add(New ComboBoxItem With {.Content = "(default)", .IsSelected = True})
+
+        Dim sFolder As String = vb14.GetSettingsString("uiFolderBuffer")
+        If String.IsNullOrWhiteSpace(sFolder) Then Return
+        If Not IO.Directory.Exists(sFolder) Then Return
+
+        For Each direk As String In IO.Directory.GetDirectories(sFolder)
+            Dim bufname As String = IO.Path.GetFileName(direk)
+            If Not IsValidBufferName(bufname) Then Continue For
+
+            uiBufory.Items.Add(New ComboBoxItem With {.Content = bufname})
+        Next
+
+    End Sub
+
+    ''' <summary>
+    ''' sprawdza czy dirname może być nazwą bufora (czy istnieje taki katalog, oraz plik indeksu do niego (u.FOLDER.json))
+    ''' </summary>
+    Private Function IsValidBufferName(dirname As String) As Boolean
+        Dim sFolder As String = vb14.GetSettingsString("uiFolderBuffer")
+
+        If Not IO.Directory.Exists(IO.Path.Combine(sFolder, dirname)) Then Return False
+
+        Return IO.File.Exists(IO.Path.Combine(Application.GetDataFolder, "u." & dirname & ".json"))
+    End Function
+
+    Private Sub uiBufory_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
+        If Not _afterInit Then Return
+
+        _niekasujArchived = False
+
+        Dim oCBI As ComboBoxItem = uiBufory.SelectedItem
+        Dim folderName As String = oCBI?.Content
+        If String.IsNullOrWhiteSpace(folderName) Then Return
+
+        If folderName = "(default)" Then
+            _buforek = New Vblib.BufferSortowania(Application.GetDataFolder, Application.GetKeywords)
+            _isDefaultBuff = True
+        Else
+            _buforek = New Vblib.BufferSortowania(Application.GetDataFolder, folderName, Application.GetKeywords)
+            _isDefaultBuff = False
+        End If
+
+        AktualizujGuziki()
+
+    End Sub
+
+
+    Private Async Sub uiAddBuff_Click(sender As Object, e As RoutedEventArgs)
+        Dim newFolder As String = Await Me.InputBoxAsync("Podaj nazwę nowego bufora")
+        If String.IsNullOrWhiteSpace(newFolder) Then Return
+
+        If newFolder <> newFolder.ToPOSIXportableFilename Then
+            Me.MsgBox("Nazwa zawiera niedozwolone znaki")
+            Return
+        End If
+
+        If IsValidBufferName(newFolder) Then
+            Me.MsgBox("Taki bufor już istnieje!")
+            Return
+        End If
+
+        ' *TODO* załóż nowy bufor
+        Dim sFolder As String = vb14.GetSettingsString("uiFolderBuffer")
+        IO.Directory.CreateDirectory(IO.Path.Combine(sFolder, newFolder))
+
+        _buforek = New Vblib.BufferSortowania(Application.GetDataFolder, newFolder, Application.GetKeywords)
+
+        ' musi być zapis, bo musi być plik do guzików
+        '_buforek.SaveData()  - ale nie przejdzie, bo nie robi Save gdy count = 0
+        Dim nowyCBI = New ComboBoxItem With {.Content = newFolder}
+        uiBufory.Items.Add(nowyCBI)
+        uiBufory.SelectedItem = nowyCBI
+
+        _isDefaultBuff = False
+        AktualizujGuziki()
+
+
+    End Sub
+
+#Region "callbacki dostępu do bufora"
+    Public Shared Function GetBuffer(oWnd As Window) As Vblib.BufferSortowania
+        Dim procPic As ProcessPic = GetOwner(oWnd)
+        Return procPic?.GetCurrentBuffer
+    End Function
+
+    Public Shared Function IsDefaultBuff(oWnd As Window) As Boolean
+        Dim procPic As ProcessPic = GetOwner(oWnd)
+        If procPic Is Nothing Then Return False
+        Return procPic.IsDefaultBuff
+    End Function
+
+    Public Shared Function GetOwner(oWnd As Window) As ProcessPic
+        Dim procPic As ProcessPic = TryCast(oWnd.Owner, ProcessPic)
+        If procPic Is Nothing Then
+            Vblib.MsgBox("Nie ma ownera, lub nie jest to ProcessPic, nie mam skąd wziąć bufora!")
+            Return Nothing
+        End If
+
+        Return procPic
+    End Function
+
+    Public Shared Async Function CheckSerNo(oWnd As Window) As Task(Of Boolean)
+        Dim procPic As ProcessPic = GetOwner(oWnd)
+        If procPic Is Nothing Then Return False
+
+        Dim errname As String = procPic.GetCurrentBuffer.CheckSerNo
+        If errname = "" Then Return True
+
+        Await vb14.MsgBoxAsync($"Są zdjęcia bez serno, nie mogę kontynuować! ({errname}")
+        Return False
+    End Function
+
+    Public Shared Function CountWithTargetDir(oWnd As Window) As Integer
+        Dim procPic As ProcessPic = GetOwner(oWnd)
+        If procPic Is Nothing Then Return -1
+
+        Return procPic.GetCurrentBuffer.CountWithTargetDir
+
+    End Function
+
+    Public Shared Function CountDoArchiwizacji(oWnd As Window) As Integer
+
+        Dim procPic As ProcessPic = GetOwner(oWnd)
+        If procPic Is Nothing Then Return -1
+
+        Return CountDoArchiwizacji(procPic.GetCurrentBuffer())
+
+    End Function
+
+    Private Shared Function CountDoArchiwizacji(lista As Vblib.BufferSortowania) As Integer
+
+        Dim currentArchs As New List(Of String)
+        Application.GetArchivesList.ForEach(Sub(x) If x.enabled Then currentArchs.Add(x.StorageName.ToLowerInvariant))
+
+        Return lista.CountDoArchiwizacji(currentArchs)
+
+    End Function
+
+
+
+
+#End Region
+
+
+#End Region
+
 
 End Class

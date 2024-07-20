@@ -59,6 +59,21 @@ Public Class MetaWndFilename
         RaiseEvent MouseDoubleClick(Me, e)
     End Sub
 
+    Public Shared Function GetHeaderText(picek As Vblib.OnePic) As String
+        Dim ret As String = ""
+        If Vblib.GetSettingsBool("uiTitleSerno") Then ret = picek.FormattedSerNo
+        If Vblib.GetSettingsBool("uiTitleFilename") Then
+            If ret <> "" Then
+                ret = ret & " (" & picek.sSuggestedFilename & ")"
+            Else
+                ret = picek.sSuggestedFilename
+            End If
+        End If
+
+        If ret = "" Then ret = picek.FormattedSerNo
+        Return ret
+    End Function
+
     Private Sub DataContext_Changed(sender As Object, e As DependencyPropertyChangedEventArgs)
 
         If _EffectiveDatacontext IsNot Nothing AndAlso IsPinned Then Return
@@ -67,14 +82,14 @@ Public Class MetaWndFilename
 
         Dim thumb As ProcessBrowse.ThumbPicek = TryCast(DataContext, ProcessBrowse.ThumbPicek)
         If thumb IsNot Nothing Then
-            _filenameBox.Text = thumb.oPic.sSuggestedFilename
+            _filenameBox.Text = GetHeaderText(thumb.oPic)
             _filenameBox.ToolTip = thumb.sDymek
             Return
         End If
 
         Dim picek As Vblib.OnePic = TryCast(DataContext, Vblib.OnePic)
         If picek Is Nothing Then Return
-        _filenameBox.Text = picek.sSuggestedFilename
+        _filenameBox.Text = GetHeaderText(picek)
         _filenameBox.ToolTip = ""
 
     End Sub

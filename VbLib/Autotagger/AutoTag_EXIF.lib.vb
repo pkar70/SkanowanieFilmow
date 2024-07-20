@@ -282,6 +282,8 @@ Public Class AutoTag_EXIF
         oNewExif.OriginalRAW = oRdr.GetString(CompactExifLib.ExifTag.PkarOriginalRAW) ' OriginalRawFileName
         oNewExif.CameraModel = AddSecondTagString(oNewExif.CameraModel, oRdr.GetString(&HC614)) ' UniqueCameraModel = Certo SL110
 
+        oNewExif.x = oRdr.GetInt(CompactExifLib.ExifTag.PixelXDimension)
+        oNewExif.y = oRdr.GetInt(CompactExifLib.ExifTag.PixelYDimension)
 
         Return oNewExif
     End Function
