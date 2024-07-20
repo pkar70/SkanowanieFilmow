@@ -2,14 +2,15 @@
 Imports pkar.DotNetExtensions
 
 Public Class CloudPublishing
+    'Inherits ProcessWnd_Base
 
 
     Private _lista As List(Of DisplayPublish)
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
 
-        uiWithTargetDir.Maximum = Application.GetBuffer.Count
-        uiWithTargetDir.Value = LocalArchive.CountWithTargetDir()
+        uiWithTargetDir.Maximum = ProcessPic.GetBuffer(Me).Count
+        uiWithTargetDir.Value = ProcessPic.CountWithTargetDir(Me)
         uiWithTargetDir.ToolTip = uiWithTargetDir.Value & "/" & uiWithTargetDir.Maximum
 
         ShowArchivesList()
@@ -55,12 +56,12 @@ Public Class CloudPublishing
 
 
 
-    Private Shared Sub CountPublished(oPublisher As DisplayPublish)
+    Private Sub CountPublished(oPublisher As DisplayPublish)
         Dim iCnt As Integer = 0
         Dim iMax As Integer = 0
         Dim sDir As String = ""
 
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
             If Not oPic.IsCloudPublishMentioned(oPublisher.nazwa) Then Continue For
 
             iMax += 1
@@ -103,7 +104,7 @@ Public Class CloudPublishing
 
         Dim sIndexJson As String = ""
 
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
             uiProgBarInEngine.Value += 1
 
             If Not IO.File.Exists(oPic.InBufferPathName) Then
@@ -124,7 +125,7 @@ Public Class CloudPublishing
 
         uiProgBarInEngine.Visibility = Visibility.Collapsed
 
-        Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Published
+        ProcessPic.GetBuffer(Me).SaveData()  ' bo prawdopodobnie zmiany są w oPic.Published
 
     End Function
 

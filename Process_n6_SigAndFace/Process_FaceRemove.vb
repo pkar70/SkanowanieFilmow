@@ -20,8 +20,16 @@ Public Class Process_FaceRemove
 
         oPic.InitEdit(bPipeline)
 
+        ' 2024.06.28: maxDate nie na średnią (1800..maxDate, co daje często <1900), tylko na maxDate gdy nie ma realnej daty
+        Dim maxDate As Date
+        If oPic.HasRealDate Then
+            maxDate = oPic.GetMostProbablyDate
+        Else
+            maxDate = oPic.GetMaxDate
+        End If
+
         ' 2024.05.15: limit ukrywania twarzy (default: 90 lat)
-        If (Date.Now - oPic.GetMostProbablyDate).TotalDays > 365 * Vblib.GetSettingsInt("uiWinFaceMaxAge") Then
+        If (Date.Now - maxDate).TotalDays > 365 * Vblib.GetSettingsInt("uiWinFaceMaxAge") Then
             oPic.SkipEdit()
             Return True
         End If

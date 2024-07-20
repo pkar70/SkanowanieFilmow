@@ -4,6 +4,7 @@ Imports pkar.UI.Configs.Extensions
 ' nazwy checkboxów mają uiSequence*, bo żeby się nie powtórzyło z żadnym innym Settingsem
 
 Public Class SequenceHelper
+    'Inherits ProcessWnd_Base
 
     Private _loading As Boolean = True
 
@@ -27,7 +28,7 @@ Public Class SequenceHelper
 
     Private Function CheckLocalArch() As Boolean
 
-        Dim counter As Integer = LocalArchive.CountDoArchiwizacji()
+        Dim counter As Integer = ProcessPic.CountDoArchiwizacji(Me)
         vb14.DumpMessage("Plików do archiwizacji: " & counter)
         Dim bAllOk As Boolean = counter < 1
 
@@ -38,7 +39,13 @@ Public Class SequenceHelper
 
     Private Function CheckCloudArch() As Boolean
 
-        Dim counter As Integer = ProcessPic.CountDoCloudArchiwizacji()
+        Dim counter As Integer = -1
+        Try
+            counter = ProcessPic.GetBuffer(Me).CountDoCloudArchiwizacji(Application.GetCloudArchives.GetList)
+        Catch
+            counter = -1
+        End Try
+
         vb14.DumpMessage("Plików do cloud archiwizacji: " & counter)
 
         Dim bAllOk As Boolean = counter < 1
@@ -51,8 +58,8 @@ Public Class SequenceHelper
 
     Private Function CheckTargetDir() As Boolean
         Dim bAllOk As Boolean = True
-        If App.GetBuffer.Count > 1 Then
-            For Each oFile As Vblib.OnePic In App.GetBuffer.GetList
+        If ProcessPic.GetBuffer(Me).Count > 1 Then
+            For Each oFile As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
                 If String.IsNullOrEmpty(oFile.TargetDir) Then
                     vb14.DumpMessage("Plik bez TargetDir: " & oFile.sSuggestedFilename)
 
@@ -73,28 +80,11 @@ Public Class SequenceHelper
         Return False
     End Function
 
-    'Private Function CheckGUID() As Boolean
-    '    Dim bAllOk As Boolean = True
-    '    If App.GetBuffer.Count > 1 Then
-    '        For Each oFile As Vblib.OnePic In App.GetBuffer.GetList
-    '            If String.IsNullOrEmpty(oFile.PicGuid) Then
-    '                vb14.DumpMessage("Plik bez GUID: " & oFile.sSuggestedFilename)
-
-    '                bAllOk = False
-    '                Exit For
-    '            End If
-    '        Next
-    '    End If
-
-    '    uiSequenceGUID.IsChecked = bAllOk
-
-    '    Return bAllOk
-    'End Function
 
     Private Function CheckGeoTag() As Boolean
         Dim bAllOk As Boolean = True
-        If App.GetBuffer.Count > 1 Then
-            For Each oFile As Vblib.OnePic In App.GetBuffer.GetList
+        If ProcessPic.GetBuffer(Me).Count > 1 Then
+            For Each oFile As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
                 If oFile.GetGeoTag Is Nothing Then
                     vb14.DumpMessage("Plik bez Geotag: " & oFile.sSuggestedFilename)
                     bAllOk = False
@@ -114,8 +104,8 @@ Public Class SequenceHelper
 
     Private Function CheckAutoExif() As Boolean
         Dim bAllOk As Boolean = True
-        If App.GetBuffer.Count > 1 Then
-            For Each oFile As Vblib.OnePic In App.GetBuffer.GetList
+        If ProcessPic.GetBuffer(Me).Count > 1 Then
+            For Each oFile As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
                 If oFile.GetExifOfType(Vblib.ExifSource.FileExif) Is Nothing Then
                     vb14.DumpMessage("Plik bez EXIF: " & oFile.sSuggestedFilename)
 
@@ -132,16 +122,7 @@ Public Class SequenceHelper
         'If bAllOk Then Return True
 
         If bAllOk Then uiSequenceRunAutoExif.IsChecked = bAllOk
-        'uiSequenceCropRotate.IsChecked = False
-        'uiSequenceAddGeoTag.IsChecked = False
-        'uiSequenceRunTaggers.IsChecked = False
-        'uiSequenceAddKeywords.IsChecked = False
-        'uiSequenceAddDescriptions.IsChecked = False
-        'uiSequenceAddFolder.IsChecked = False
-        'uiSequenceGUID.IsChecked = False
-        'uiSequencePublish.IsChecked = False
-        'uiSequenceCloudArch.IsChecked = False
-        'uiSequenceArchive.IsChecked = False
+
 
         Return bAllOk
     End Function

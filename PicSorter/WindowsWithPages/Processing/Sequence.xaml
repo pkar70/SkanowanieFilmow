@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="Sequence helper" Height="480" Width="220" Loaded="Page_Loaded">
+        Title="Sequence helper" Height="480" Width="220" Loaded="Page_Loaded" WindowStyle="ToolWindow" >
         <Grid Margin="5,5,5,5" Width="200" >
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />

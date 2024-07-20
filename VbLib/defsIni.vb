@@ -35,6 +35,9 @@ uiSpellCheck=True
 
 uiWebBuffPicLimit=99
 
+uiTitleSerno=True
+uiAutoCrop=True
+
 # remark
 ' remark
 ; remark

@@ -39,19 +39,40 @@ End Interface
 Public Class BufferSortowania
     Implements IBufor
 
-    Private _RootDataPath As String
+    'Private _RootDataPath As String
     Private _rootPictures As String
     Private _pliki As FilesInBuffer
 
-    Public Sub New(sRootDataPath As String)
-        _RootDataPath = sRootDataPath
-        _pliki = New FilesInBuffer(_RootDataPath)
+    ''' <summary>
+    ''' wczytuje indeks zdjęć z pliku .json
+    ''' </summary>
+    ''' <param name="sRootDataPath">ścieżka do katalogu z plikami .json</param>
+    ''' <param name="slowka">lista słów kluczowych (potrzebna w .lib)</param>
+    Public Sub New(sRootDataPath As String, slowka As KeywordsList)
+        '_RootDataPath = sRootDataPath
+        _pliki = New FilesInBuffer(sRootDataPath)
         _pliki.Load()
-        _pliki.RecalcSumsy()
+        _pliki.RecalcSumsy(slowka)
         ' AddSortBy
         'AddTyp3()
         _rootPictures = GetSettingsString("uiFolderBuffer")
     End Sub
+
+    ''' <summary>
+    ''' wczytuje indeks zdjęć z pliku JSON
+    ''' </summary>
+    ''' <param name="sRootDataPath">ścieżka do katalogu z plikami .json</param>
+    ''' <param name="bufferFolder">nazwa bufora (podkatalogu ze zdjęciami)</param>
+    ''' <param name="slowka">lista słów kluczowych (potrzebna w .lib)</param>
+    Public Sub New(sRootDataPath As String, bufferFolder As String, slowka As KeywordsList)
+        '_RootDataPath = sRootDataPath
+        _pliki = New FilesInBuffer(sRootDataPath, "u." & bufferFolder & ".json")
+        _pliki.Load()
+        _pliki.RecalcSumsy(slowka)
+
+        _rootPictures = IO.Path.Combine(GetSettingsString("uiFolderBuffer"), bufferFolder)
+    End Sub
+
 
 #If False Then
     ' *TODO* to później można wyłączyć, bo to uzupełnia to co się powinno zrobić wcześniej
@@ -131,6 +152,19 @@ Public Class BufferSortowania
         End Try
         Return False
     End Function
+
+    ''' <summary>
+    ''' usuwa wszystkie pliki z katalogu - używać ostrożnie!
+    ''' </summary>
+    Public Sub RemoveAllFiles()
+        Dim pliki As String() = IO.Directory.GetFiles(_rootPictures)
+        For Each plik As String In pliki
+            IO.File.Delete(plik)
+        Next
+
+        _pliki.Clear()
+        _pliki.Save()
+    End Sub
 
 
     ''' <summary>
@@ -252,15 +286,103 @@ Public Class BufferSortowania
         Return maxPicDate
     End Function
 
+    ''' <summary>
+    ''' sprawdza czy wszystkie pliki mają SERNO, TRUE: OK, FALSE: jakiś nie ma
+    ''' </summary>
+    ''' <returns></returns>
+    Public Function CheckSerNo() As String
+
+        For Each oPic As OnePic In _pliki
+            If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
+            If oPic.serno < 1 Then Return oPic.sSuggestedFilename
+        Next
+        Return ""
+    End Function
+
+    ''' <summary>
+    ''' policz pliki które mają zdefiniowany TargetDir
+    ''' </summary>
+    Public Function CountWithTargetDir() As Integer
+
+        Dim iCnt As Integer = 0
+        For Each oPic As Vblib.OnePic In _pliki
+            If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
+            iCnt += 1
+        Next
+        Return iCnt
+    End Function
+
+    ''' <summary>
+    ''' policz pliki do archiwizacji
+    ''' </summary>
+    ''' <param name="currentArchs">lista archiwów</param>
+    Public Function CountDoArchiwizacji(currentArchs As List(Of String)) As Integer
+
+        If currentArchs.Count < 1 Then Return 0
+
+        Dim iCnt As Integer = 0
+        For Each oPic As Vblib.OnePic In _pliki
+            If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
+
+            If oPic.Archived Is Nothing Then
+                iCnt += 1
+            Else
+                Dim sArchiwa As String = oPic.Archived.ToLowerInvariant
+                For Each sArch As String In currentArchs
+                    If Not oPic.IsArchivedIn(sArch) Then
+                        iCnt += 1
+                        Exit For
+                    End If
+                Next
+            End If
+
+        Next
+
+        Return iCnt
+
+    End Function
+
+    Public Function CountDoCloudArchiwizacji(cloudArchs As List(Of Vblib.CloudArchive)) As Integer
+
+        Dim currentArchs As New List(Of String)
+        For Each oArch As Vblib.CloudArchive In cloudArchs
+            If oArch.konfiguracja.enabled Then currentArchs.Add(oArch.konfiguracja.nazwa.ToLowerInvariant)
+        Next
+
+        If currentArchs.Count < 1 Then Return 0
+
+        Dim iCnt As Integer = 0
+        For Each oPic As Vblib.OnePic In _pliki
+            If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
+
+            If oPic.CloudArchived Is Nothing Then
+                iCnt += 1
+            Else
+                Dim sArchiwa As String = oPic.CloudArchived.ToLowerInvariant
+                For Each sArch As String In currentArchs
+                    If Not sArchiwa.Contains(sArch) Then
+                        iCnt += 1
+                        Exit For
+                    End If
+                Next
+            End If
+
+        Next
+
+        Return iCnt
+
+    End Function
+
+
     Public Class FilesInBuffer
         Inherits pkar.BaseList(Of OnePic)
 
-        Public Sub New(sFolder As String)
-            MyBase.New(sFolder, "buffer.json")
+        Public Sub New(sFolder As String, Optional folderfile As String = "buffer.json")
+            MyBase.New(sFolder, folderfile)
         End Sub
 
-        Public Sub RecalcSumsy()
-            ForEach(Sub(x) x.RecalcSumsy())
+        Public Sub RecalcSumsy(slowka As KeywordsList)
+            ForEach(Sub(x) x.RecalcSumsy(slowka))
         End Sub
 
     End Class

@@ -1,6 +1,7 @@
 ﻿Imports pkar
 Imports Vblib
 Imports pkar.UI.Extensions
+Imports MetadataExtractor
 
 Public Class PokazStatystyke
 
@@ -289,40 +290,35 @@ Public Class PokazStatystyke
 
 #Region "z azure"
     Private Sub uiPicByFaces_Click(sender As Object, e As RoutedEventArgs)
-        ZrobStatystyke(sender, AddressOf ExtractFacesCount)
+        ZrobStatystyke(sender, Function(x)
+                                   If x Is Nothing Then Return ""
+                                   Dim oExif As Vblib.ExifTag = x?.GetExifOfType(Vblib.ExifSource.AutoAzure)
+                                   If oExif IsNot Nothing Then Return If(oExif.AzureAnalysis?.Faces?.lista.Count, "?")
+
+                                   oExif = x?.GetExifOfType(Vblib.ExifSource.AutoWinFace)
+                                   If oExif IsNot Nothing Then Return If(oExif.AzureAnalysis?.Faces?.lista.Count, "?")
+
+                                   Return "?"
+                               End Function)
     End Sub
-    Private Function ExtractFacesCount(picek As Vblib.OnePic) As String
-        If picek Is Nothing Then Return ""
-        Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoAzure)
-        If oExif IsNot Nothing Then Return If(oExif.AzureAnalysis?.Faces?.lista.Count, "?")
-
-        oExif = picek?.GetExifOfType(Vblib.ExifSource.AutoWinFace)
-        If oExif IsNot Nothing Then Return If(oExif.AzureAnalysis?.Faces?.lista.Count, "?")
-
-        Return "?"
-    End Function
 
     Private Sub uiPicByDomFgColor_Click(sender As Object, e As RoutedEventArgs)
-        ZrobStatystyke(sender, AddressOf ExtractDomFgColor)
+        ZrobStatystyke(sender, Function(x)
+                                   Dim oExif As Vblib.ExifTag = x?.GetExifOfType(Vblib.ExifSource.AutoAzure)
+                                   If oExif Is Nothing Then Return "?"
+
+                                   Return If(oExif.AzureAnalysis?.Colors?.DominantColorForeground, "?")
+                               End Function)
     End Sub
-
-    Private Function ExtractDomFgColor(picek As Vblib.OnePic) As String
-        Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoAzure)
-        If oExif Is Nothing Then Return "?"
-
-        Return If(oExif.AzureAnalysis?.Colors?.DominantColorForeground, "?")
-    End Function
 
     Private Sub uiPicByDomBgColor_Click(sender As Object, e As RoutedEventArgs)
-        ZrobStatystyke(sender, AddressOf ExtractDomBgColor)
+        ZrobStatystyke(sender, Function(x)
+                                   Dim oExif As Vblib.ExifTag = x?.GetExifOfType(Vblib.ExifSource.AutoAzure)
+                                   If oExif Is Nothing Then Return "?"
+
+                                   Return If(oExif.AzureAnalysis?.Colors?.DominantColorBackground, "?")
+                               End Function)
     End Sub
-
-    Private Function ExtractDomBgColor(picek As Vblib.OnePic) As String
-        Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoAzure)
-        If oExif Is Nothing Then Return "?"
-
-        Return If(oExif.AzureAnalysis?.Colors?.DominantColorBackground, "?")
-    End Function
 
     Private Sub uiPicByAzureTag_Click(sender As Object, e As RoutedEventArgs)
         PicByAzureListProperty(sender, "Tags")
@@ -494,8 +490,102 @@ Public Class PokazStatystyke
 
     End Sub
 
+    Private Sub uiPicByRealDateYN_Click(sender As Object, e As RoutedEventArgs)
+        ZrobStatystyke(sender, Function(x)
+                                   If x Is Nothing Then Return "?"
+                                   Return If(x.HasRealDate, "Yes", "No")
+                               End Function)
+    End Sub
+
+    Private Sub uiPicByGeotagYN_Click(sender As Object, e As RoutedEventArgs)
+        ZrobStatystyke(sender, Function(x)
+                                   If x Is Nothing Then Return "?"
+                                   Return If(x.GetGeoTag Is Nothing, "No", "Yes")
+                               End Function)
+    End Sub
+
+    Private Sub uiPicByMono_Click(sender As Object, e As RoutedEventArgs)
+        ZrobStatystyke(sender, Function(x)
+                                   Dim azurek As Vblib.ExifTag = x.GetExifOfType(Vblib.ExifSource.AutoAzure)
+                                   If azurek?.AzureAnalysis Is Nothing Then Return "?"
+                                   Return If(azurek?.AzureAnalysis.IsBW, "black/white", "color")
+                               End Function)
+    End Sub
+
+    Private Sub uiPicByAzureAdult_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        If oFE Is Nothing Then Return
+        Dim entry As StatEntry = oFE.DataContext
+        If entry Is Nothing Then Return
+
+        Dim stats As New List(Of StatEntry)
+        Dim total As Integer = entry.lista.Count
+
+        For Each tag As String In {"ADULTPIC", "GORYPIC", "RACYPIC"}
+            Dim withKwd As New StatEntry With {.label = tag.Replace("PIC", "")}
+            withKwd.lista = entry.lista.Where(Function(x)
+                                                  Dim azurek As Vblib.ExifTag = x.GetExifOfType(Vblib.ExifSource.AutoAzure)
+                                                  If azurek?.AzureAnalysis Is Nothing Then Return False
+
+                                                  Return azurek.AzureAnalysis.Wiekowe.Contains(tag)
+                                              End Function)
+            withKwd.licznik = withKwd.lista.Count
+            withKwd.total = total
+            ' withKwd.percent będzie policzone przy nowym oknie 
+            stats.Add(withKwd)
+        Next
+
+        Dim oWnd As New PokazStatystyke(_history & ":" & entry.label, stats)
+        oWnd.Show()
+    End Sub
 
 
+    Private Sub uiPicByTarget_Click(sender As Object, e As RoutedEventArgs)
+        ZrobStatystyke(sender, Function(x)
+                                   If x Is Nothing Then Return "?"
+                                   If x.TargetDir.StartsWith("reel") Then Return "reel"
+                                   If x.TargetDir.StartsWith("inet") Then Return "inet"
+                                   Return "std"
+                               End Function)
+    End Sub
+
+    Private Sub uiPicByType_Click(sender As Object, e As RoutedEventArgs)
+        ZrobStatystyke(sender, Function(x)
+                                   If x Is Nothing Then Return "?"
+                                   Dim ext As String = System.IO.Path.GetExtension(x.sSuggestedFilename).ToLowerInvariant & ";"
+
+                                   If OnePic.ExtsMovie.Contains(ext) Then Return "movie"
+                                   If OnePic.ExtsPic.Contains(ext) Then Return "pic"
+                                   If OnePic.ExtsStereo.Contains(ext) Then Return "stereo"
+
+                                   Return "other"
+                               End Function)
+    End Sub
+
+    Private Sub uiPicByPicOrient_Click(sender As Object, e As RoutedEventArgs)
+        ZrobStatystyke(sender, Function(x)
+                                   Dim exifek As Vblib.ExifTag = x?.GetExifOfType(Vblib.ExifSource.FileExif)
+                                   If exifek Is Nothing Then Return "?"
+
+                                   If exifek.x * 1.1 < exifek.y Then Return "portrait"
+                                   If exifek.y * 1.1 < exifek.x Then Return "landscape"
+
+                                   Return "square"
+                               End Function)
+    End Sub
+
+    Private Sub uiPicByPicSize_Click(sender As Object, e As RoutedEventArgs)
+        ZrobStatystyke(sender, Function(x)
+                                   Dim exifek As Vblib.ExifTag = x?.GetExifOfType(Vblib.ExifSource.FileExif)
+                                   If exifek Is Nothing Then Return "?"
+
+                                   Dim mpix As Integer = exifek.x * exifek.y / 1000 / 1000
+
+                                   Return mpix
+                               End Function)
+    End Sub
+
+    '
 #End Region
 
 End Class

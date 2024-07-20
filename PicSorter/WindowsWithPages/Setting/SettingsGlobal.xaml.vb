@@ -1,6 +1,5 @@
 ﻿
 Imports pkar.UI.Configs.Extensions
-
 Imports pkar.UI.Extensions
 
 Class SettingsGlobal
@@ -61,17 +60,6 @@ Class SettingsGlobal
     End Sub
 
 
-    'Private Sub uiBrowseDataFolder(sender As Object, e As RoutedEventArgs)
-    '    Dim sPathLocal As String = uiFolderData.Text
-    '    If Not IO.Directory.Exists(sPathLocal) Then
-    '        Dim sAppName As String = Application.Current.MainWindow.GetType().Assembly.GetName.Name
-    '        Dim sLocalAppData As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-    '        sPathLocal = IO.Path.Combine(sLocalAppData, sAppName)
-    '        If Not IO.Directory.Exists(sPathLocal) Then IO.Directory.CreateDirectory(sPathLocal)
-    '    End If
-    '    FolderBrowser(uiFolderData, sPathLocal, "Select folder for program data")
-    'End Sub
-
     Private Sub uiBrowseBufferFolder(sender As Object, e As RoutedEventArgs)
         Dim iMax As Long = 0
         Dim sPath As String = ""
@@ -100,7 +88,9 @@ Class SettingsGlobal
         uiUseOneDrive.GetSettingsBool
         'uiIdGUID.GetSettingsBool
         'uiIdSerno.GetSettingsBool
-        uiSerNoDigits.GetSettingsInt
+        uiSerNoDigits.GetSettingsInt()
+        uiTitleFilename.GetSettingsBool
+        uiTitleSerno.GetSettingsBool
 
     End Sub
 
@@ -147,13 +137,23 @@ Class SettingsGlobal
 
         'uiIdGUID.SetSettingsBool
         'uiIdSerno.SetSettingsBool
-        uiSerNoDigits.SetSettingsInt
+        uiSerNoDigits.SetSettingsInt()
+        uiTitleFilename.SetSettingsBool
+        uiTitleSerno.SetSettingsBool
+
 
         Me.NavigationService.GoBack()
     End Sub
 
     Private Sub uiDbase_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsDbase)
+    End Sub
+
+    Private Sub uiTitle_CheckChange(sender As Object, e As RoutedEventArgs)
+        If Not uiTitleSerno.IsChecked AndAlso Not uiTitleFilename.IsChecked Then
+            uiTitleSerno.IsChecked = True
+            Me.MsgBox("Coś w tytule musi być, przyjmuję że nr seryjny")
+        End If
     End Sub
 End Class
 

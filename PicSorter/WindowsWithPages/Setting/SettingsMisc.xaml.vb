@@ -20,6 +20,7 @@ Class SettingsMisc
         uiWinFaceMaxAge.GetSettingsInt
         uiUseSpellCheck.GetSettingsBool
         uiAstroNotWhenWether.GetSettingsBool
+        uiAutoCrop.GetSettingsBool
         'uiStereoThumb.GetSettingsInt()
     End Sub
 
@@ -43,6 +44,7 @@ Class SettingsMisc
         uiWinFaceMaxAge.SetSettingsInt
         uiUseSpellCheck.SetSettingsBool
         uiAstroNotWhenWether.SetSettingsBool
+        uiAutoCrop.GetSettingsBool
         'uiStereoThumb.SetSettingsInt
 
         Me.NavigationService.GoBack()

@@ -47,6 +47,7 @@
                                     <MenuItem Header="by sun Hour" Click="uiPicBySunHour_Click" />
                                     <MenuItem Header="by day/night" Click="uiPicByDayNight_Click" />
                                     <MenuItem Header="by DayOfWeek" Click="uiPicByDOW_Click" />
+                                    <MenuItem Header="by realdate Y/N" Click="uiPicByRealDateYN_Click" />
                                 </MenuItem>
                                 <MenuItem  Header="by keyword"  >
                                     <MenuItem Header="person ('-')" Click="uiPicByKeywordO_Click" />
@@ -66,6 +67,7 @@
                                     <MenuItem Header="by Country" Click="uiPicByKraj_Click" />
                                     <MenuItem Header="by PL woj" Click="uiPicByPLwoj_Click" />
                                     <MenuItem Header="by od domu" Click="uiPicByDistance_Click" />
+                                    <MenuItem Header="by geotag Y/N" Click="uiPicByGeotagYN_Click" />
                                 </MenuItem>
                                 <MenuItem Header="Azure">
                                     <MenuItem Header="by faces count" Click="uiPicByFaces_Click" />
@@ -77,6 +79,15 @@
                                     <MenuItem Header="by categories" Click="uiPicByAzureCategories_Click"  />
                                     <MenuItem Header="by landmarks" Click="uiPicByAzureLandmarks_Click"  />
                                     <MenuItem Header="by celebrities" Click="uiPicByAzureCelebrities_Click"  />
+                                    <MenuItem Header="by adult" Click="uiPicByAzureAdult_Click"  />
+                                    <MenuItem Header="by monochrom Y/N" Click="uiPicByMono_Click" />
+                                </MenuItem>
+                                <MenuItem Header="picdata">
+                                    <MenuItem Header="by pictype" Click="uiPicByType_Click" />
+                                    <MenuItem Header="by size" Click="uiPicByPicSize_Click" />
+                                    <MenuItem Header="by orientation" Click="uiPicByPicOrient_Click" />
+                                    <MenuItem Header="by type" Click="uiPicByType_Click" />
+                                    <MenuItem Header="by target type" Click="uiPicByTarget_Click" />
                                 </MenuItem>
                                 <Separator/>
                                 <MenuItem Header="Miniaturki" Click="uiShowThumbs_Click" />
