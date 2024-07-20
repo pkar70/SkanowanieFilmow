@@ -50,7 +50,7 @@ Public Class AutoTags
 
             Await ApplyOne(oSrc)
             uiProgBarEngines.Value += 1
-            ProcessPic.GetBuffer(Me).SaveData()  ' bo zmieniono EXIF
+            Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
         Next
 
         uiProgBarEngines.Visibility = Visibility.Collapsed
@@ -68,7 +68,7 @@ Public Class AutoTags
         Await ApplyOne(oSrc)
 
         If prevCount <> PoliczUstawione(oSrc.nazwa) Then
-            ProcessPic.GetBuffer(Me).SaveData()  ' bo zmieniono EXIF
+            Application.GetBuffer.SaveData()  ' bo zmieniono EXIF
             Window_Loaded(Nothing, Nothing)
         Else
             Me.msgbox("Nic się nie zmieniło... Pewnie mechanizm jest nieaplikowalny do pozostałych zdjęć.")
@@ -81,7 +81,7 @@ Public Class AutoTags
         Me.ProgRingInit(True, True)
 
         _lista = New List(Of JedenEngine)
-        Dim iMax As Integer = ProcessPic.GetBuffer(Me).Count
+        Dim iMax As Integer = Application.GetBuffer.Count
 
         For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
             Dim oNew As New JedenEngine
@@ -103,7 +103,7 @@ Public Class AutoTags
         uiLista.ItemsSource = _lista
     End Sub
 
-    Private Function PoliczUstawione(nazwa As String) As Integer
+    Private Shared Function PoliczUstawione(nazwa As String) As Integer
 
         Dim liczyk As Func(Of OnePic, Boolean)
 
@@ -114,7 +114,7 @@ Public Class AutoTags
             liczyk = Function(x) x.GetExifOfType(nazwa) IsNot Nothing
         End If
 
-        Return ProcessPic.GetBuffer(Me).GetList.Where(liczyk).Count
+        Return Application.GetBuffer.GetList.Where(liczyk).Count
 
     End Function
 
@@ -148,7 +148,7 @@ Public Class AutoTags
 
         Dim iBatchMax As Integer = MAX_BATCH_SAVE_METADATA
 
-        For Each oItem As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
             If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
 
             If oItem.GetSumOfDescriptionsKwds.Contains(autoTagLock) Then
@@ -173,7 +173,7 @@ Public Class AutoTags
                 If oSrc.engine.IsWeb Then
                     iBatchMax -= 1
                     If iBatchMax < 0 Then
-                        ProcessPic.GetBuffer(Me).SaveData()
+                        Application.GetBuffer.SaveData()
                         iBatchMax = MAX_BATCH_SAVE_METADATA
                     End If
                 End If
@@ -227,13 +227,13 @@ Public Class AutoTags
         '    End If
         'End If
 
-        ProcessPic.GetBuffer(Me).GetList.ForEach(Sub(x) x.RemoveExifOfType(oSrc.nazwa))
+        Application.GetBuffer.GetList.ForEach(Sub(x) x.RemoveExifOfType(oSrc.nazwa))
 
         'If oSrc.nazwa = ExifSource.AutoGuid Then
         '    UsunGUIDandSerNo()
         'End If
 
-        ProcessPic.GetBuffer(Me).SaveData()
+        Application.GetBuffer.SaveData()
 
     End Sub
 

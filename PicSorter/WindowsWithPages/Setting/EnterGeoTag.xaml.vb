@@ -20,7 +20,7 @@ Public Class EnterGeoTag
         If Not sLink.StartsWithCI("http") Then Return False
 
         Dim oPos As BasicGeopos = BasicGeopos.GetFromLink(sLink)
-        If oPos Is Nothing OrElse oPos.IsEmpty Then Return False
+        If oPos.IsEmpty Then Return False
 
         uiLatitude.Text = oPos.Latitude
         uiLongitude.Text = oPos.Longitude

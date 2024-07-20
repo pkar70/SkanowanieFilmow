@@ -20,7 +20,7 @@
 
                 <CheckBox Name="uiFacesMaxCheck" IsChecked="{Binding MaxCheck, Mode=TwoWay}" Grid.Row="2" Content="Maksymalna liczba twarzy"/>
                 <TextBox Grid.Row="2" Text="{Binding MaxValue, Mode=OneWay}" HorizontalAlignment="Right"/>
-        <Slider Grid.ColumnSpan="2" Grid.Row="3" Value="{Binding MaxValue, Mode=TwoWay}" Minimum="0" Maximum="7" ToolTip="Liczba twarzy" IsEnabled="{Binding IsChecked, ElementName=uiFacesMaxCheck}"/>
+        <Slider Grid.ColumnSpan="2" Grid.Row="3" Value="{Binding MinValue, Mode=TwoWay}" Minimum="0" Maximum="7" ToolTip="Liczba twarzy" IsEnabled="{Binding IsChecked, ElementName=uiFacesMaxCheck}"/>
 
             </Grid>
 

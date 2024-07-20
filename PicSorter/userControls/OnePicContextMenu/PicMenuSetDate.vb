@@ -384,7 +384,7 @@ Public NotInheritable Class PicMenuSetDate
         Dim oStack As New StackPanel
         oStack.Children.Add(_pickerRange)
 
-        Dim oButt As New Button With {.Content = " Set ", .HorizontalAlignment = HorizontalAlignment.Center, .IsDefault = True}
+        Dim oButt As New Button With {.Content = " Set ", .HorizontalAlignment = HorizontalAlignment.Center}
         'oButt.Content = " Set " ' w With nie działa?
         'Dim oTxt As New TextBlock With {.Text = " Set "}
         'oButt.Content = oTxt

@@ -4,8 +4,6 @@ Imports pkar.DotNetExtensions
 Imports pkar.UI.Extensions
 
 Public Class LocalArchive
-    'Inherits ProcessWnd_Base
-
 
     Private _lista As List(Of DisplayArchive)
     Private _withTargetDir As Integer
@@ -16,9 +14,9 @@ Public Class LocalArchive
         Me.InitDialogs
         Me.ProgRingInit(True, True)
 
-        _withTargetDir = ProcessPic.CountWithTargetDir(Me)
+        _withTargetDir = CountWithTargetDir()
 
-        uiWithTargetDir.Maximum = ProcessPic.GetBuffer(Me).Count
+        uiWithTargetDir.Maximum = Application.GetBuffer.Count
         uiWithTargetDir.Value = _withTargetDir
         uiWithTargetDir.ToolTip = uiWithTargetDir.Value & "/" & uiWithTargetDir.Maximum
 
@@ -53,7 +51,7 @@ Public Class LocalArchive
 #Region "przygotowanie danych do pokazania"
     Private Function GetTotalSizeKiB() As Integer
         Dim iSize As Integer = 0
-        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
 
             If Not IO.File.Exists(oPic.InBufferPathName) Then Continue For
@@ -67,21 +65,20 @@ Public Class LocalArchive
         Return iSize
     End Function
 
-#If False Then
-    Public Function CountWithTargetDir() As Integer
+
+    Public Shared Function CountWithTargetDir() As Integer
         Dim iCnt As Integer = 0
-        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
             iCnt += 1
         Next
         Return iCnt
     End Function
-#End If
 
     ''' <summary>
     ''' liczy ile jest w buforze zdjęć które nie trafiły do wszystkich archiwów
     ''' </summary>
-    Public Function CountDoArchiwizacji() As Integer
+    Public Shared Function CountDoArchiwizacji() As Integer
 
         Dim currentArchs As New List(Of String)
         Application.GetArchivesList.ForEach(Sub(x) If x.enabled Then currentArchs.Add(x.StorageName.ToLowerInvariant))
@@ -89,7 +86,7 @@ Public Class LocalArchive
         If currentArchs.Count < 1 Then Return 0
 
         Dim iCnt As Integer = 0
-        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
 
             If oPic.Archived Is Nothing Then
@@ -110,9 +107,9 @@ Public Class LocalArchive
 
     End Function
 
-    Private Function CountArchived(sArchName As String) As Integer
+    Private Shared Function CountArchived(sArchName As String) As Integer
         Dim iCnt As Integer = 0
-        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If oPic.IsArchivedIn(sArchName) Then iCnt += 1
         Next
         Return iCnt
@@ -145,10 +142,9 @@ Public Class LocalArchive
 #End Region
 
 #Region "archiwizowanie"
-#If False Then
-    Public Async Function CheckSerNo() As Task(Of Boolean)
+    Public Shared Async Function CheckSerNo() As Task(Of Boolean)
 
-        For Each oPic As Vblib.OnePic In GetBuffer.GetList
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
             If oPic.serno < 1 Then
                 Await vb14.MsgBoxAsync($"Są zdjęcia bez serno, nie mogę kontynuować! ({oPic.sSuggestedFilename}")
@@ -157,7 +153,7 @@ Public Class LocalArchive
         Next
         Return True
     End Function
-#End If
+
     Private Async Sub uiGetThis_Click(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
 
@@ -202,7 +198,7 @@ Public Class LocalArchive
     Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
         vb14.DumpCurrMethod()
 
-        If Not Await ProcessPic.CheckSerNo(Me) Then Return
+        If Not Await CheckSerNo() Then Return
 
         'If Not Await Me.DialogBoxYNAsync("Czy juz poprawiles dopisywanie do archive?") Then Return
 
@@ -227,7 +223,7 @@ Public Class LocalArchive
         'Dim serNoLastArchived As Integer = vb14.GetSettingsInt("serNoLastArchived")
         'Dim serNoLastArchivedInit As Integer = serNoLastArchived
 
-        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir))
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrEmpty(x.TargetDir))
             ' If String.IsNullOrEmpty(oPic.TargetDir) Then Continue For
 
             Await Me.ProgRingInc
@@ -303,7 +299,7 @@ Public Class LocalArchive
         End If
 
 
-        ProcessPic.GetBuffer(Me).SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
+        Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
         If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
 
         Application.gDbase.AddFiles(newlyArchived)

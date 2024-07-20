@@ -37,8 +37,10 @@
 
         <CheckBox Content="Copy CloudArch &amp; DirTree to OneDrive" Name="uiUseOneDrive" Margin="0,10,0,0"/>
 
+        <!--<TextBlock Text="Identyfikator" FontWeight="Bold" Margin="0,5,0,0"/>
+        <CheckBox Content="date-based" Name="uiIdGUID"/>
+        <CheckBox Content="counter" Name="uiIdSerno"/>-->
         <Grid>
-            <!-- nie local:Slider, bo nie pokazuje prostej liczby cyfr a liczbę zdjęć -->
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />
@@ -48,11 +50,6 @@
         </Grid>
         <Slider Name="uiSerNoDigits" Minimum="5" Maximum="8" HorizontalAlignment="Stretch" Margin="10,0,10,0" ToolTip="Ile cyfr ma być pokazywanych w identyfikatorze zdjęcia" />
         <!--<Slider Name="uiSerNoDigits" Minimum="6" Maximum="10" HorizontalAlignment="Stretch" Margin="10,0,10,0" IsEnabled="{Binding IsChecked, ElementName=uiIdSerno}"/>-->
-
-        <TextBlock Text="Title bar okien" Margin="0,8,0,0"/>
-        <CheckBox Name="uiTitleSerno" Content="serial number" Checked="uiTitle_CheckChange" Unchecked="uiTitle_CheckChange"/>
-        <CheckBox Name="uiTitleFilename" Content="filename" Checked="uiTitle_CheckChange"  Unchecked="uiTitle_CheckChange"/>
-
 
         <Button Content=" Databases " HorizontalAlignment="Left" Width="Auto" Margin="5,10,5,10" Click="uiDbase_Click"/>
 

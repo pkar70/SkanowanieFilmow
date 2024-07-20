@@ -4,13 +4,13 @@
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
+'Imports lib_sharingNetwork
 Imports pkar    ' dla baselist
+'Imports System.Drawing
 Imports pkar.UI.Extensions
+'Imports System.ComponentModel.Design
 
 Public Class ProcessDownload
-    ' Inherits ProcessWnd_Base
-
-
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
         Me.InitDialogs
@@ -109,30 +109,6 @@ Public Class ProcessDownload
             Me.MsgBox($"Done - no new files.")
         End If
 
-        SprawdzCzyKonczySieSerNo(vb14.GetSettingsInt("lastSerNo"))
-
-    End Sub
-
-    Private Sub SprawdzCzyKonczySieSerNo(serno As Integer)
-
-        Dim iMaxCyfr As Integer = GetSettingsInt("uiSerNoDigits")
-        Dim iMaxSerno As Integer = Math.Pow(10, iMaxCyfr)
-        If serno * 10 < iMaxSerno Then Return
-
-        ' czyli mamy na pewno nie zero na pierwszym miejscu
-        If serno * 1.1 < iMaxSerno Then
-            If GetSettingsInt("askedSerNo10") >= iMaxCyfr Then Return
-
-            SetSettingsInt("askedSerNo10", iMaxCyfr)
-            Me.MsgBox("Wykorzystujesz już wszystkie cyfry serno, może zwiększ ich liczbę?")
-            Return
-        End If
-
-        ' mamy już 90 % wykorzystane!
-        If GetSettingsInt("askedSerNo90") >= iMaxCyfr Then Return
-        SetSettingsInt("askedSerNo90", iMaxCyfr)
-        Me.MsgBox("Wykorzystujesz już ponad 90 % puli serno, może zwiększ liczbę cyfr?")
-
     End Sub
 
     ''' <summary>
@@ -197,9 +173,6 @@ Public Class ProcessDownload
 
         Me.MsgBox("Done.")
 
-        SprawdzCzyKonczySieSerNo(vb14.GetSettingsInt("lastSerNo"))
-
-
     End Sub
 
     Private Async Function RetrieveFilesFromSource(oSrc As Vblib.PicSourceBase) As Task(Of Integer)
@@ -214,16 +187,11 @@ Public Class ProcessDownload
 
         Select Case oSrc.Typ
             Case PicSourceType.Inet
-                If ProcessPic.IsDefaultBuff(Me) Then
-                    Dim oWnd As New ProcessDownloadInternet(oSrc)
-                    oWnd.Owner = Me.Owner
-                    If Not oWnd.ShowDialog() Then
-                        retval = 0
-                    Else
-                        retval = oWnd.Counter
-                    End If
+                Dim oWnd As New ProcessDownloadInternet(oSrc)
+                If Not oWnd.ShowDialog() Then
+                    retval = 0
                 Else
-                    Me.MsgBox("Nie umiem do nie-default bufora")
+                    retval = oWnd.Counter
                 End If
             Case PicSourceType.PeerSrv
                 retval = Await RetrieveFromPeer(oSrc)
@@ -236,11 +204,11 @@ Public Class ProcessDownload
 
         Await RunAutoExif()
 
-        If ProcessPic.IsDefaultBuff(Me) Then SequenceHelper.ResetPoRetrieve()
+        SequenceHelper.ResetPoRetrieve()
 
         Me.ProgRingSetText("Saving metadata...")
 
-        ProcessPic.GetBuffer(Me).SaveData()
+        Application.GetBuffer.SaveData()
         oSrc.lastDownload = Date.Now
         Application.GetSourcesList.Save()   ' zmieniona data
 
@@ -259,7 +227,7 @@ Public Class ProcessDownload
 
         Dim iSerNo As Integer = vb14.GetSettingsInt("lastSerNo")
 
-        For Each oItem As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oItem As Vblib.OnePic In Application.GetBuffer.GetList
 
             ' najpierw Serial Number zrobimy - obojętnie co dalej...
             If oItem.serno < 1 Then
@@ -321,7 +289,7 @@ Public Class ProcessDownload
             End If
 
             ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
-            Await ProcessPic.GetBuffer(Me).AddFile(oSrcFile)
+            Await Application.GetBuffer.AddFile(oSrcFile)
             oSrcFile = oSrc.GetNext
             If oSrcFile Is Nothing Then Exit Do
             Me.ProgRingInc
@@ -374,7 +342,7 @@ Public Class ProcessDownload
             wndRenameFolders.RenamesInOnePic(oSrcFile)
 
             ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
-            Await ProcessPic.GetBuffer(Me).AddFile(oSrcFile)
+            Await Application.GetBuffer.AddFile(oSrcFile)
             oSrcFile = oSrc.GetNext
             If oSrcFile Is Nothing Then Exit Do
             Me.ProgRingInc
@@ -409,7 +377,7 @@ Public Class ProcessDownload
 
         For Each oPicek As Vblib.OnePic In lista
             ' kontrola czy pliku już przypadkiem nie ma (wedle suggested filename) - wtedy go pomijamy
-            If ProcessPic.GetBuffer(Me).GetList.First(Function(x) x.sSuggestedFilename = oPicek.sSuggestedFilename) IsNot Nothing Then Continue For
+            If Application.GetBuffer.GetList.First(Function(x) x.sSuggestedFilename = oPicek.sSuggestedFilename) IsNot Nothing Then Continue For
 
             oPicek.oContent = Await lib14_httpClnt.httpKlient.GetPicDataFromBuff(oPeer, oPicek.InBufferPathName)
             If oPicek.oContent IsNot Nothing Then
@@ -422,11 +390,11 @@ Public Class ProcessDownload
                 End If
 
 
-                Await ProcessPic.GetBuffer(Me).AddFile(oPicek)
+                Await Application.GetBuffer.AddFile(oPicek)
                 Await Me.ProgRingInc
                 iCount += 1
                 ' co 10 plików zapisuje dane, na wypadek awarii/zamknięcia app żeby coś było
-                If iCount Mod 10 = 0 Then ProcessPic.GetBuffer(Me).SaveData()
+                If iCount Mod 10 = 0 Then Application.GetBuffer.SaveData()
             End If
         Next
 

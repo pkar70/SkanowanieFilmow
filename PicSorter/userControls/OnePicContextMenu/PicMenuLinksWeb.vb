@@ -10,7 +10,6 @@ Public Class PicMenuLinksWeb
     Inherits PicMenuBase
 
     Private _itemLinki As MenuItem
-    Private _itemPaste As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -29,36 +28,10 @@ Public Class PicMenuLinksWeb
         Me.Items.Add(_itemLinki)
 
         Me.Items.Add(New Separator)
-        Me.Items.Add(NewMenuItem("Create", "Stwórz link do zaznaczonego zdjęcia", AddressOf uiCreateLink_Click))
-        _itemPaste = NewMenuItem("Paste", "Dodaj zapamiętany link", AddressOf uiPasteLink_Click)
-        _itemPaste.IsEnabled = False
-        Me.Items.Add(_itemPaste)
-
-        Me.Items.Add(New Separator)
         Me.Items.Add(NewMenuItem("Połącz", "Połącz wzajemnie dwa zdjęcia", AddressOf uiWzajemnie_Click))
 
         _wasApplied = True
     End Sub
-
-    Private _myclip As OneLink
-
-    Private Async Sub uiCreateLink_Click(sender As Object, e As RoutedEventArgs)
-        If GetSelectedItems().Count <> 1 Then
-            Vblib.MsgBox("Umiem stworzyć link tylko dla jednego zdjęciaa")
-            Return
-        End If
-
-        Dim opis As String = Await Vblib.InputBoxAsync("Podaj opis dla linku")
-        If String.IsNullOrWhiteSpace(opis) Then Return
-
-        _myclip = New OneLink With {.opis = opis, .link = "pic" & GetSelectedItems(0).oPic.FormattedSerNo}
-        _itemPaste.IsEnabled = True
-    End Sub
-
-    Private Sub uiPasteLink_Click(sender As Object, e As RoutedEventArgs)
-        OneOrMany(Sub(x) x.AddLink(_myclip))
-    End Sub
-
 
     Private Sub uiWzajemnie_Click(sender As Object, e As RoutedEventArgs)
         If GetSelectedItems().Count <> 2 Then
@@ -197,7 +170,6 @@ Public Class PicMenuLinksWeb
         Dim oNew As New MenuItem()
         oNew.Header = linek.opis
         oNew.DataContext = linek
-        oNew.ToolTip = linek
         AddHandler oNew.Click, AddressOf UzyjLinka
         Return oNew
     End Function
@@ -227,7 +199,6 @@ Public Class PicMenuLinksWeb
             Return
         End Try
 
-        ' link do zdjęcia w default buffer
         Dim oItem As Vblib.OnePic
         oItem = Application.GetBuffer.GetList.FirstOrDefault(Function(x) x.serno = serno)
         If oItem IsNot Nothing Then

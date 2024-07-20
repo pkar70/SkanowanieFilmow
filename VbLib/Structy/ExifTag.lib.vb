@@ -59,9 +59,6 @@ Public Class ExifTag
     Public Property MeteoKlimat As Meteo_Klimat
     Public Property MeteoSynop As Meteo_Synop
 
-    Public Property x As Integer
-    Public Property y As Integer
-
     ''' <summary>
     ''' konstruktor dla EntityFramework
     ''' </summary>

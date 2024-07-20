@@ -3,7 +3,6 @@ Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.UI.Extensions
 
 Public Class CloudArchiving
-    'Inherits ProcessWnd_Base
 
     Private _lista As List(Of DisplayArchive)
     Private _withTargetDir As Integer
@@ -12,7 +11,7 @@ Public Class CloudArchiving
         Me.ProgRingInit(True, True)
         Me.InitDialogs
 
-        uiWithTargetDir.Maximum = ProcessPic.GetBuffer(Me).Count
+        uiWithTargetDir.Maximum = Application.GetBuffer.Count
         _withTargetDir = CountWithTargetDir()
         uiWithTargetDir.Value = _withTargetDir
         uiWithTargetDir.ToolTip = uiWithTargetDir.Value & "/" & uiWithTargetDir.Maximum
@@ -67,16 +66,14 @@ Public Class CloudArchiving
     End Sub
 
 
-    Public Function CountWithTargetDir() As Integer
+    Public Shared Function CountWithTargetDir() As Integer
         Dim iCnt As Integer = 0
-        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If String.IsNullOrWhiteSpace(oPic.TargetDir) Then Continue For
             iCnt += 1
         Next
         Return iCnt
     End Function
-
-#If False Then
 
     ''' <summary>
     ''' liczy ile jest w buforze zdjęć które nie trafiły do wszystkich archiwów
@@ -113,11 +110,10 @@ Public Class CloudArchiving
         Return iCnt
 
     End Function
-#End If
 
-    Private Function CountArchived(sArchName As String) As Integer
+    Private Shared Function CountArchived(sArchName As String) As Integer
         Dim iCnt As Integer = 0
-        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If oPic.IsCloudArchivedIn(sArchName) Then iCnt += 1
         Next
         Return iCnt
@@ -150,7 +146,7 @@ Public Class CloudArchiving
 
     Private Async Function ApplyOne(oSrc As DisplayArchive) As Task
 
-        If Not Await ProcessPic.CheckSerNo(Me) Then Return
+        If Not Await LocalArchive.CheckSerNo() Then Return
 
         Me.ProgRingShow(True)
         Me.ProgRingSetText(oSrc.nazwa)
@@ -158,7 +154,7 @@ Public Class CloudArchiving
         Me.ProgRingSetMax(oSrc.maxCount)
         Me.ProgRingSetVal(0)
 
-        uiGetAll.Content = " STOP "
+        uiGetAll.content = " STOP "
 
         Dim sIndexJson As String = ""
         Dim bDirTreeToSave As Boolean = False
@@ -170,7 +166,7 @@ Public Class CloudArchiving
 
         Dim iCntSend As Integer = 0
 
-        For Each oPic As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
             If _stopArchiving Then Exit For
             Dim sErr1 As String = ""
             Me.ProgRingInc
@@ -221,7 +217,7 @@ Public Class CloudArchiving
             If iCntSend > 200 Then
                 ' zapisywanie co x zdjęć - żeby się zabezpieczyć przed CRASH
                 Me.ProgRingSetText("saving metadata...")
-                ProcessPic.GetBuffer(Me).SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
+                Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
                 Me.ProgRingSetText(oSrc.nazwa)
                 iCntSend = 0
             End If
@@ -238,7 +234,7 @@ Public Class CloudArchiving
             sErr.SendToClipboard
         End If
 
-        ProcessPic.GetBuffer(Me).SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
+        Application.GetBuffer.SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
 
         Me.ProgRingShow(False)
         uiGetAll.Content = " Run all " ' bo był STOP

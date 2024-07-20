@@ -209,27 +209,9 @@ Public Class DatabaseJSON
         ' to co zostanie po szybkim wyszukaniu idzie według pełnego szukania - pozniej bedzie dobre dla SQLa
 
         ' dziwne, ale 5 razy takie wyszło (null) - dwa przecinki pod rząd, pewnie przy dodawaniu do archiwumm
-        Return lista.
-            Distinct(New CzyTenSamOnePic).
-            Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
-        ' OrderBy(Function(x) x.serno).
+        Return lista.Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
 
     End Function
-
-    Public Class CzyTenSamOnePic
-        Implements IEqualityComparer(Of OnePic)
-
-        Public Function Equals1(ByVal x As OnePic, ByVal y As OnePic) As Boolean Implements IEqualityComparer(Of OnePic).Equals
-            If x Is Nothing OrElse y Is Nothing Then Return False
-            Return x.serno = y.serno
-        End Function
-
-        Public Function GetHashCode1(ByVal x As OnePic) As Integer Implements IEqualityComparer(Of OnePic).GetHashCode
-            If x Is Nothing Then Return 0
-            Return x.serno
-        End Function
-    End Class
-
 
     Function Search(channel As ShareChannel, sinceId As String) As IEnumerable(Of OnePic) Implements DatabaseInterface.Search
         Dim lista As New List(Of OnePic)
@@ -336,13 +318,13 @@ Public Class DatabaseJSON
     End Function
 
     Public Function Load() As Boolean Implements DatabaseInterface.Load
-        If Not _allItems.Load() Then Return False
-
-        _IsLoaded = True
-        ' recalculate sums
-        _allItems.ForEach(Sub(x) x.RecalcSumsy())
-
-        Return True
+        Dim bRet As Boolean = _allItems.Load()
+        If bRet Then
+            _IsLoaded = True
+            ' recalculate sums
+            _allItems.ForEach(Sub(x) x.RecalcSumsy())
+        End If
+        Return bRet
     End Function
 
     ''' <summary>

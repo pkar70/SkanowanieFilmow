@@ -330,16 +330,8 @@ Public Class BrowseKeywordsWindow
 
         If uiPinUnpin?.EffectiveDatacontext?.oPic Is Nothing Then Return
 
-        Dim minDate, maxdate As Date
-
-        If uiPinUnpin.EffectiveDatacontext.oPic.HasRealDate Then
-            minDate = uiPinUnpin.EffectiveDatacontext.oPic.GetMostProbablyDate.adddays(-1)
-            maxdate = minDate.AddDays(2)
-        Else
-            minDate = uiPinUnpin.EffectiveDatacontext.oPic.GetMinDate
-            maxdate = uiPinUnpin.EffectiveDatacontext.oPic.GetMaxDate
-        End If
-
+        Dim minDate As Date = uiPinUnpin.EffectiveDatacontext.oPic.GetMinDate ' Date.MaxValue
+        Dim maxDate As Date = uiPinUnpin.EffectiveDatacontext.oPic.GetMaxDate ' Date.MinValue
 
         For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
             ZablokujNiezgodneWedleDat(oItem, minDate, maxDate)

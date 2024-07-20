@@ -20,7 +20,6 @@ Imports pkar.UI.Extensions
 Imports Microsoft.EntityFrameworkCore.Diagnostics
 Imports Windows.Media.Devices
 Imports Vblib
-Imports System.Linq
 
 Public Class SearchWindow
 
@@ -283,11 +282,11 @@ Public Class SearchWindow
 
         ' = _queryResults
 
-        Dim inputList As List(Of Vblib.OnePic)
+        Dim inputList As IEnumerable(Of Vblib.OnePic)
         If uiLista.SelectedItems.count > 0 Then
-            inputList = uiLista.SelectedItems.Cast(Of Vblib.OnePic).ToList
+            inputList = uiLista.SelectedItems
         Else
-            inputList = New List(Of OnePic)(uiLista.ItemsSource)
+            inputList = uiLista.itemssource
         End If
 
         For Each oPic As Vblib.OnePic In inputList

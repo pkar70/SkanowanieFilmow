@@ -118,9 +118,7 @@ Public Class ShowBig
             Return
         End If
 
-
-
-        Me.Title = MetaWndFilename.GetHeaderText(_picek.oPic) &
+        Me.Title = _picek.oPic.InBufferPathName &
             $" ({_bitmap.Width.ToString("F0")}×{_bitmap.Height.ToString("F0")})"
         ' $" [{_picek.nrkol}/{_picek.maxnum}]"
 
@@ -588,36 +586,13 @@ Public Class ShowBig
             Return
         End If
 
-        'If vb14.GetSettingsBool("uiAutoCrop") Then
-        '    ' spróbuj wykombinować jak ustawić Value
-        '    UtnijOdGory()
-        '    ' UtnijOdDolu
-        '    ' UtnijZlewej
-        '    ' UtnijZprawej
-        '    If uiCropDown.Value = 0 Then uiCropDown.Value = 0.9
-        '    If uiCropLeft.Value = 0 Then uiCropLeft.Value = 0.1
-        '    If uiCropRight.Value = 0 Then uiCropRight.Value = 0.9
-        'Else
         If uiCropUp.Value = 0 Then uiCropUp.Value = 0.1
-            If uiCropDown.Value = 0 Then uiCropDown.Value = 0.9
-            If uiCropLeft.Value = 0 Then uiCropLeft.Value = 0.1
-            If uiCropRight.Value = 0 Then uiCropRight.Value = 0.9
-        'End If
+        If uiCropDown.Value = 0 Then uiCropDown.Value = 0.9
+        If uiCropLeft.Value = 0 Then uiCropLeft.Value = 0.1
+        If uiCropRight.Value = 0 Then uiCropRight.Value = 0.9
 
         UpdateClipRegion()
     End Sub
-
-    'Private Function UtnijOdGory() As Double
-
-    '    Dim kolumna As Integer = _bitmap.PixelWidth * 0.33
-
-    '    _bitmap.CopyPixels()
-
-
-
-    '    ' przejdź w 33 % szukając min
-    '    ' przejdź w 66 % szukając min
-    'End Function
 
 
     Private Sub ShowHideEditControls(iMode As EditModeEnum)

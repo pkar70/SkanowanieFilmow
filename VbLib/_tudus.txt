@@ -1,8 +1,4 @@
 
-OCR w AppSDK (z AI):
-https://learn.microsoft.com/en-us/windows/ai/apis/text-recognition
-
-
 ' https://github.com/xceedsoftware/wpftoolkit
 ' https://github.com/xceedsoftware/wpftoolkit/wiki/WatermarkTextBox (z podpowiedzią znikającą)
 ' https://github.com/xceedsoftware/wpftoolkit/wiki/TimePicker

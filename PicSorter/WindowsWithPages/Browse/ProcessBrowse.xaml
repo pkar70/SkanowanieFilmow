@@ -117,7 +117,6 @@
                         <MenuItem IsCheckable="True" Header="Description" Click="uiPodpisTo_Click"/>
                         <MenuItem IsCheckable="True" Header="Targetdir" Click="uiPodpisTo_Click"/>-->
 
-                        <MenuItem IsCheckable="True" Header="Serno" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisSerNo" />
                         <MenuItem IsCheckable="True" Header="Source" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisSource" />
                         <MenuItem IsCheckable="True" Header="Filename" MouseDoubleClick="uiPodpisDbl_Click"  Name="uiPodpisFilename"/>
                         <MenuItem IsCheckable="True" Header="Keywords" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisKeywords"/>
@@ -281,7 +280,6 @@
                             <!--<TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
                             <TextBlock Margin="0,-20,0,0" HorizontalAlignment="Right" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
                             <!--<TextBlock Margin="0,1,0,2" Text="{Binding podpis}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding podpis, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
-                            <TextBlock Margin="0,0,0,0" Text="{Binding oPic.serno}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSerNo, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sSourceName}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSource, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sSuggestedFilename}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisFilename, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding sumOfKwds}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisKeywords, Converter={StaticResource KonwersjaVisibility}}" />

@@ -1,5 +1,7 @@
 ﻿Imports pkar.UI.Extensions
 Imports pkar.DotNetExtensions
+Imports Org.BouncyCastle.Crypto
+Imports System.Windows.Automation
 
 Public Class ShareSendDescQueue
 

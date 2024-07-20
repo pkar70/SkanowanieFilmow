@@ -42,9 +42,6 @@ Partial Class Application
         Return sOneDrivePath
     End Function
 
-    ''' <summary>
-    ''' zwraca ścieżkę do plików konfiguracyjnych
-    ''' </summary>
     Public Shared Function GetDataFolder(Optional bThrowNotExist As Boolean = True) As String
 
         ' próba czy mamy commandline zmieniające nazwę
@@ -168,16 +165,15 @@ Partial Class Application
 
     Public Shared Function GetBuffer() As Vblib.BufferSortowania
         If gBuffer Is Nothing Then
-            ' w tym NEW jest LOAD oraz RecalcSumsy, w tym GEO z # do EXIF w metadanych!
-            gBuffer = New Vblib.BufferSortowania(Application.GetDataFolder, Application.GetKeywords)
+            gBuffer = New Vblib.BufferSortowania(Application.GetDataFolder)
         End If
         Return gBuffer
     End Function
 
-    'Public Shared Sub ResetBuffer()
-    '    IO.File.Delete(IO.Path.Combine(Application.GetDataFolder, "buffer.json"))
-    '    gBuffer = Nothing
-    'End Sub
+    Public Shared Sub ResetBuffer()
+        IO.File.Delete(IO.Path.Combine(Application.GetDataFolder, "buffer.json"))
+        gBuffer = Nothing
+    End Sub
 
     Private Shared gArchiveList As BaseList(Of lib_PicSource.LocalStorageMiddle)
     Public Shared Function GetArchivesList() As BaseList(Of lib_PicSource.LocalStorageMiddle)

@@ -17,7 +17,7 @@
             <CheckBox Content="Data maksymalna" IsChecked="{Binding MaxDateCheck, Mode=TwoWay}" Name="uiMaxDateCheck" ToolTip="Czy ta data ma być używana?" Unchecked="uiMaxDateCheck_Unchecked"/>
                 <Button Grid.Column="1" Content=" copy " Click="uiCopyDateMinToMax" ToolTip="Kopiuj datę min do daty max"/>
             </Grid>
-        <DatePicker Name="uiMaxDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01" IsEnabled="{Binding IsChecked, ElementName=uiMaxDateCheck}" ToolTip="Zdjęcie zrobione do tej daty" SelectedDate="{Binding MaxDate, Mode=TwoWay}"/>
+        <DatePicker Name="uiMaxDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01" IsEnabled="{Binding IsChecked, ElementName=uiMinDateCheck}" ToolTip="Zdjęcie zrobione do tej daty" SelectedDate="{Binding MaxDate, Mode=TwoWay}"/>
             <CheckBox Margin="0,5,0,0" ToolTip="Ignore year (use only month and day)" Content="Ignore year" IsChecked="{Binding IgnoreYear, Mode=TwoWay}"/>
 
         <TextBlock Text="GUID (obsolete)" Margin="0,5,0,0"/>

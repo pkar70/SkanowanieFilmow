@@ -27,7 +27,6 @@ Public NotInheritable Class PicMenuOnMap
             For Each oDictMapa In BasicGeopos.MapServices
                 Dim oNew As New MenuItem
                 oNew.Header = oDictMapa.Key
-                oNew.DataContext = oDictMapa.Key
                 AddHandler oNew.Click, AddressOf uiOnMap_Click
                 Me.Items.Add(oNew)
             Next
@@ -45,9 +44,9 @@ Public NotInheritable Class PicMenuOnMap
         If oGps Is Nothing Then Return
 
         Dim oFE As FrameworkElement = sender
-        Dim mapsvc As String = oFE?.DataContext
+        Dim oMapa As Vblib.JednaMapa = oFE?.DataContext
 
-        Dim sUri As Uri = oGps.ToUri(mapsvc)
+        Dim sUri As Uri = oMapa.UriForGeo(oGps)
 
         'Dim sUri As New Uri("https://www.openstreetmap.org/#map=16/" & oGps.Latitude & "/" & oGps.Longitude)
         sUri.OpenBrowser

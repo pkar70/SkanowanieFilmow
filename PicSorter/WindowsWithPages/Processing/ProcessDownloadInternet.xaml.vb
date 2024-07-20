@@ -15,7 +15,6 @@ Public Class ProcessDownloadInternet
     Private _source As Vblib.PicSourceBase
     Private _picek As Vblib.OnePic
     Private _lastgeo As Vblib.ExifTag
-    Private _samZmieniamAutora As Boolean
     Private Shared _autorzy As String()
 
     Sub New(oSrc As Vblib.PicSourceBase)
@@ -74,10 +73,9 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         uiSourceFilename.Text = _picek.sSuggestedFilename
         uiPicek.Source = ThumbPicek.ThumbCreateFromNormal(_picek.sInSourceID)
         uiGeo.Content = " Set "
-        uiGeo.ToolTip = "(no data)"
+        uiGeo.ToolTip = ""
 
         Vblib.DumpMessage("Picek: " & uiSourceFilename.Text)
-
 
         uiAutor.Text = "" ' autora nie chcemy powtarzać
         uiLink.Text = "" ' jak się nie uda ściągnąć, to trzeba będzie wpisać
@@ -91,9 +89,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
     End Sub
 
     Private Sub uiEnd_Click(sender As Object, e As RoutedEventArgs)
-
-        ProcessPic.GetBuffer(Me).SaveData()
-        'Application.GetBuffer.SaveData()
+        Application.GetBuffer.SaveData()
         'Application.GetSourcesList.Save() - zapis będzie z "piętro wyżej", razem z datą itp.
 
         DialogResult = True
@@ -122,7 +118,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
         _picek.sSuggestedFilename = _source.SourceName & "_" & Date.Now.ToString("yy.MM.dd_HH.mm.ss") & IO.Path.GetExtension(_picek.sInSourceID)
         _picek.oContent = IO.File.OpenRead(_picek.sInSourceID)
-        Await ProcessPic.GetBuffer(Me).AddFile(_picek)
+        Await Application.GetBuffer.AddFile(_picek)
 
         _picek.oContent.Close() ' bez tego nie byłoby możliwe delete
 
@@ -209,18 +205,6 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
             End If
         End If
 
-        mam = Regex.Match(tekst, "[12][0-9][0-9][0-9]-[12][0-9][0-9][0-9]")
-        If mam.Success Then
-            Dim iInd As Integer = mam.Value.IndexOf("-")
-            Dim tempInt As Integer
-            If Integer.TryParse(mam.Value.Substring(0, iInd), tempInt) Then
-                uiDateRange.MinDate = New Date(tempInt, 1, 1)
-            End If
-            If Integer.TryParse(mam.Value.Substring(iInd + 1), tempInt) Then
-                uiDateRange.MaxDate = New Date(tempInt, 12, 31)
-            End If
-        End If
-
         mam = Regex.Match(tekst, "[12][0-9][0-9][0-9]")
         If mam.Success Then
             Dim tempInt As Integer
@@ -262,26 +246,16 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         If mam.Success Then
             Dim tempInt As Integer
             If Integer.TryParse(mam.Value.Replace("ata ", ""), tempInt) Then
-                uiDateRange.RangeAsText = (1900 + tempInt).ToString
+                uiDateRange.RangeAsText = 1900 + tempInt * 10
                 Return
             End If
         End If
-
-        mam = Regex.Match(tekst, "lat [0-9]0")
-        If mam.Success Then
-            Dim tempInt As Integer
-            If Integer.TryParse(mam.Value.Replace("ata ", ""), tempInt) Then
-                uiDateRange.RangeAsText = (1900 + tempInt).ToString
-                Return
-            End If
-        End If
-
 
         mam = Regex.Match(tekst, "ata '[0-9]0")
         If mam.Success Then
             Dim tempInt As Integer
             If Integer.TryParse(mam.Value.Replace("ata '", ""), tempInt) Then
-                uiDateRange.RangeAsText = (1900 + tempInt * 10).ToString
+                uiDateRange.RangeAsText = 1900 + tempInt * 10
                 Return
             End If
         End If
@@ -290,29 +264,29 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
     Private Function TryWyraz2Miesiac(wyraz As String) As Integer
         ' wedle liczby rzymskiej lub nazwy
         Select Case wyraz.ToLowerInvariant
-            Case "stycznia", "styczeń", "styczniu"
+            Case "stycznia", "styczeń"
                 Return 1
-            Case "lutego", "luty", "ii", "lutym"
+            Case "lutego", "luty", "ii"
                 Return 2
-            Case "marca", "marzec", "iii", "marcu"
+            Case "marca", "marzec", "iii"
                 Return 3
-            Case "kwietnia", "kwiecień", "iv", "kwietniu"
+            Case "kwietnia", "kwiecień", "iv"
                 Return 4
-            Case "maja", "maj", "v", "maju"
+            Case "maja", "maj", "v"
                 Return 5
-            Case "czerwca", "czerwiec", "vi", "czerwcu"
+            Case "czerwca", "czerwiec", "vi"
                 Return 6
-            Case "lipca", "lipiec", "vii", "lipcu"
+            Case "lipca", "lipiec", "vii"
                 Return 7
-            Case "sierpnia", "sierpień", "viii", "sierpniu"
+            Case "sierpnia", "sierpień", "viii"
                 Return 8
-            Case "września", "wrzesień", "ix", "wrześniu"
+            Case "września", "wrzesień", "ix"
                 Return 9
-            Case "października", "październik", "x", "październiku"
+            Case "października", "październik", "x"
                 Return 10
-            Case "listopada", "listopad", "xi", "listopadzie"
+            Case "listopada", "listopad", "xi"
                 Return 11
-            Case "grudnia", "grudzień", "xii", "grudniu"
+            Case "grudnia", "grudzień", "xii"
                 Return 12
         End Select
 
@@ -324,9 +298,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
         For Each autor As String In _autorzy
             If tekst.Contains(autor) Then
-                _samZmieniamAutora = True
                 uiAutor.Text = autor
-                _samZmieniamAutora = False
                 Return
             End If
         Next
@@ -403,7 +375,6 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
         _autorzy = IO.File.ReadAllLines(sPath)
 
-        uiAddAuthor.IsEnabled = False
     End Sub
 
     Private Sub uiMenuGeo_Click(sender As Object, e As RoutedEventArgs)
@@ -460,8 +431,4 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         uiGeo.ToolTip = _lastgeo.GeoTag.FormatLink("%lat / %lon")
     End Sub
 
-    Private Sub uiAutor_TextChanged(sender As Object, e As TextChangedEventArgs)
-        If _samZmieniamAutora Then Return
-        uiAddAuthor.IsEnabled = True
-    End Sub
 End Class

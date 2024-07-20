@@ -16,8 +16,8 @@
             <TextBlock Grid.Row="4" Text="Tags" />
             <TextBlock Grid.Row="5" Text="Celebrities" />
             <TextBlock Grid.Row="6" Text="Captions" />
-            <TextBlock Grid.Row="7" Text="Gł. kolor tła" />
-            <TextBlock Grid.Row="8" Text="Gł. kolor front" />
+            <TextBlock Grid.Row="7" Text="DominantColorBackground" />
+            <TextBlock Grid.Row="8" Text="DominantColorForeground" />
             <TextBlock Grid.Row="9" Text="DominantColors" />
             <TextBlock Grid.Row="10" Text="Wiekowe" />
             <TextBlock Grid.Row="11" Text="Gdziekolwiek" />

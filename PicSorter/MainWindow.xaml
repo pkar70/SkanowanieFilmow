@@ -16,7 +16,7 @@
             <TextBlock Text="PicSort" FontSize="18" HorizontalAlignment="Center" />
             <TextBlock FontSize="10" HorizontalAlignment="Center" Name="uiVers" Margin="5,1,5,5"/> 
 
-                <Button Name="uiProcess" Content="Current (xx)" Margin="5,15,5,5" FontSize="18" Click="uiProcess_Click" ToolTip="Porządkowanie zdjęć"/>
+                <Button Name="uiProcess" Content="Process (xx)" Margin="5,15,5,5" FontSize="18" Click="uiProcess_Click" ToolTip="Porządkowanie zdjęć"/>
                 <Button Name="uiBrowseArch" Content="Browse arch" Margin="5,15,5,5" FontSize="18" Click="uiBrowseArch_Click" ToolTip="Przeglądanie archiwum wg katalogów"/>
                 <Button Name="uiSearch" Content="Search arch" Margin="5,15,5,5" FontSize="18" Click="uiSearch_Click" ToolTip="Wyszukiwanie w archiwum"/>
             <Button Name="uiStats" Content="Statistics" Margin="5,15,5,5" FontSize="18" Click="uiStats_Click" ToolTip="Statystyki zdjęć w archiwum"/>

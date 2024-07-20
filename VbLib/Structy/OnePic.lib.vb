@@ -283,7 +283,6 @@ Public Class OnePic
         Return Nothing
     End Function
 
-
     ''' <summary>
     ''' podmień (lub dodaj nowy) ExifTag, wedle ExifTag.Source
     ''' </summary>
@@ -345,10 +344,11 @@ Public Class OnePic
         Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualDate)
         If oExif IsNot Nothing Then
             If Not String.IsNullOrWhiteSpace(oExif?.DateTimeOriginal) Then Return True
-            If oExif.DateMin.Year <> oExif.DateMax.Year Then Return False
-            If oExif.DateMin.Month <> oExif.DateMax.Month Then Return False
-
-            Return oExif.DateMin.Day = oExif.DateMax.Day
+            If oExif.DateMin.Year = oExif.DateMax.Year AndAlso
+                    oExif.DateMin.Month = oExif.DateMax.Month AndAlso
+                    oExif.DateMin.Day = oExif.DateMax.Day Then
+                Return True
+            End If
         End If
 
         ' dla nie-cyfrowych, czyli dla skanowania, możemy mieć tylko ManualDate użyte jako datę dzienną
@@ -1434,14 +1434,14 @@ Public Class OnePic
 
             Dim picMinDate, picMaxDate As Date
 
+            oExif = GetExifOfType(ExifSource.FileExif)
             Dim oExifDate As Vblib.ExifTag = GetExifOfType(ExifSource.ManualDate)
             If oExifDate Is Nothing Then oExifDate = oExif
 
-            Dim oExifSrc As ExifTag = GetExifOfType(ExifSource.SourceDefault)
             ' jeśli istnieje data zrobienia zdjęcia, to ją bierzemy, jeśli nie - to zakres ze słów kluczowych itp.
-            If Not String.IsNullOrWhiteSpace(oExifDate?.DateTimeOriginal) AndAlso (oExifSrc Is Nothing OrElse oExifSrc.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital) Then
-                picMaxDate = ExifDateToDate(oExifDate.DateTimeOriginal)
-                picMinDate = picMaxDate
+            If oExifDate IsNot Nothing AndAlso (oExif Is Nothing OrElse oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital) Then
+                picMaxDate = oExifDate.DateTimeOriginal
+                picMinDate = oExifDate.DateTimeOriginal
             Else
                 picMinDate = GetMinDate()
                 picMaxDate = GetMaxDate()
@@ -2141,42 +2141,13 @@ Public Class OnePic
     End Function
 
     ''' <summary>
-    ''' wylicza wszystkie "summary", pola ktore nie są zapisywane. Może zmienić EXIF, jeśli w KeysList pojawiło się GEO, którego nie ma w metadanych zdjęcia
+    ''' wylicza wszystkie "summary", pola ktore nie są zapisywane
     ''' </summary>
-    Public Sub RecalcSumsy(Optional slowka As KeywordsList = Nothing)
+    Public Sub RecalcSumsy()
         sumOfDescr = GetSumOfDescriptionsText()
         sumOfKwds = GetAllKeywords() & " " ' zapewnienie spacji do szukania
         sumOfUserComment = GetSumOfUserComment()
         sumOfGeo = GetGeoTag()
-        If sumOfGeo Is Nothing AndAlso slowka IsNot Nothing Then
-            RecalcGeoFromKwd(slowka)
-        End If
-    End Sub
-
-    Public Sub RecalcGeoFromKwd(lista As KeywordsList)
-        If sumOfGeo IsNot Nothing Then Return ' ale już mamy
-        If Exifs Is Nothing Then Return ' nie mamy, ale też nie mamy skąd brać informacji...
-
-        For Each oExif As ExifTag In Exifs
-            If String.IsNullOrWhiteSpace(oExif.Keywords) Then Continue For
-
-            ' mamy jakieś słowa kluczowe
-            For Each slowko As String In oExif.Keywords.Split(" ")
-                If Not slowko.StartsWith("#") Then Continue For
-
-                Dim oKwd As OneKeyword = lista.GetKeyword(slowko)
-                If oKwd Is Nothing Then Continue For
-
-                If oKwd.oGeo Is Nothing Then Continue For
-
-                ' jest szansa że się te dane zapisze do JSON
-                oExif.GeoTag = oKwd.oGeo
-                oExif.GeoZgrubne = oKwd.iGeoRadius > 500
-                sumOfGeo = New BasicGeoposWithRadius(oKwd.oGeo, oKwd.iGeoRadius)
-
-                Exit Sub
-            Next
-        Next
     End Sub
 
 End Class

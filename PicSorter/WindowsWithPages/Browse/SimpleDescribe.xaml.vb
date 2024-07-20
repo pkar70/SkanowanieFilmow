@@ -44,9 +44,6 @@ Public Class SimpleDescribe
                 oPicek.oPic.ReplaceAllDescriptions(descr)
             End If
 
-            ' niech się zmieni w Thumbs
-            oPicek.NotifyPropChange("sumOfDescr")
-
             ' podmieniamy do pokazywania w ThumbsBrowse, a nuż zmieni się na ekranie :)
             ' nie trzeba, bo zmienia się w OnePic.sumofdescr
             'oPicek.SumOfDescriptionsText = descr
