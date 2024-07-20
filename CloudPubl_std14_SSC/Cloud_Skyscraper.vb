@@ -121,7 +121,97 @@ Public Class Cloud_Skyscraper
 
     ' w³asne, nie z VbLib, bo ma byæ niezale¿ne
     Private _oHttp As Net.Http.HttpClient
-    Private Const _defaultHttpAgent As String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4321.0 Safari/537.36 Edg/88.0.702.0"
+    'Private Const _defaultHttpAgent As String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4321.0 Safari/537.36 Edg/88.0.702.0"
+    Private Const _defaultHttpAgent As String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0"
+
+    ' pojawi³o siê response 409, Conflict
+
+    ' dump headers z oHttp:
+    '    {User-Agent Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0
+    'Accept: */*
+    'Accept-Language: en-US, en
+    'Accept-Encoding: gzip
+    '}
+
+    '    Accept: {*/*}
+    '    AcceptCharset: {}
+    '    AcceptEncoding: {gzip}
+    '    AcceptLanguage: {en-US, en}
+    '    Authorization: Nothing
+    '    CacheControl: Nothing
+    '    Connection: {}
+    '    ConnectionClose: Nothing
+    '    [Date]: Nothing
+    '    Expect: {}
+    '    ExpectContinue: Nothing
+    '    [From]: Nothing
+    '    Host: Nothing
+    '    IfMatch: {}
+    '    IfModifiedSince: Nothing
+    '    IfNoneMatch: {}
+    '    IfRange: Nothing
+    '    IfUnmodifiedSince: Nothing
+    '    MaxForwards: Nothing
+    '    NonValidated: {System.Net.Http.Headers.HttpHeadersNonValidated}
+    '    Pragma: {}
+    '    ProxyAuthorization: Nothing
+    '    Range: Nothing
+    '    Referrer: Nothing
+    '    TE: {}
+    '    Trailer: {}
+    '    TransferEncoding: {}
+    '    TransferEncodingChunked: Nothing
+    '    Upgrade: {}
+    '    UserAgent: {Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0}
+    '    Via: {}
+    '    [Warning]: {}
+
+    ' dump headers z Edge:
+    '    authority   www.skyscrapercity.com
+    'method Get
+    ':path: /login
+    ':scheme:   https
+    'Accept:    text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+    'Accept-Encoding:   gzip, deflate, br, zstd
+    'Accept-Language:   pl,en-US;q=0.9,en;q=0.8
+    'Cookie:    __browsiUID=a22eebea-7d7e-4439-8431-3d010205aae9; guest_hash=7e4899e3c472693b0e5eb93c81478ccc673d76cb97a1ce1349cb76ba3c94e25f; usprivacy=1N--; _pbjs_userid_consent_data=3524755945110770; _lr_env_src_ats=false; googlePPIDEnabled=true; lux_uid=172121842917378964; _gid=GA1.2.842428740.1721218429; _ga=GA1.2.788301588.1654158810; _ga_3KY03530K0=GS1.2.1721218429.1.1.1721218429.0.0.0; vsOptOutCcpa=true; _ga_CZT74PFW6D=GS1.1.1721218429.10.0.1721218431.58.0.0
+    'If-Modified- Since:    Wed, 17 Jul 2024 1213:47 GMT
+    'Priority:  u=0, i
+    'Sec-Ch-Ua: "Not/A)Brand";v="8", "Chromium";v="126", "Microsoft Edge";v="126"
+    'Sec-Ch-Ua-Mobile: ? 0
+    'Sec-Ch-Ua-Platform:    "Windows"
+    'Sec-Fetch-Dest:    document
+    'Sec-Fetch-Mode:    navigate
+    'Sec-Fetch-Site:    none
+    'Sec-Fetch-User: ? 1
+    'Upgrade-Insecure-Requests: 1
+    'User-Agent:    Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Like Gecko) Chrome/126.0.0.0 Safari/537.36 Edg/126.0.0.0
+
+    ' dump return headers w Edge"
+    'Accept-Ranges: none
+    'Alt-Svc: h3=":443";ma=86400,h3-29=":443";ma=86400,h3-27=":443";ma=86400
+    'Cache-Control  Private, no-cache, max-age=0
+    'Content-Encoding:  gzip
+    'Content-Security-Policy:   upgrade-insecure-requests; frame-ancestors 'self' https://data-labeling.platforum.cloud/
+    'Content-Type:  text/html; charset=utf-8
+    'Date : Wed, 17 Jul 2024 1224:32 GMT
+    'Expires:   Thu, 19 Nov 1981 0852:00 GMT
+    'Last-Modified: Wed, 17 Jul 2024 1224:31 GMT
+    'Set-Cookie:    googlePPIDEnabled=true; expires=Wed, 17-Jul-2024 1254:31 GMT; Max-Age=1800; path=/
+    'Set-Cookie:    xf_csrf=viNUom9eXEoef4A1; path=/; secure
+    'Vary:  Accept-Encoding
+    'Via:   1.1 google, 1.1 varnish, 1.1 varnish, 1.1 varnish
+    'X-Cache:   MISS, MISS, MISS
+    'X-Cache-Hits   0, 0, 0
+    'X-Content-Type-Options:    nosniff
+    'X-Envoy-Upstream-Service-Time  158
+    'X-Frame-Options:   SAMEORIGIN
+    'X-Served-By:   cache-chi-kigq8000177-CHI, cache-chi-klot8100029-CHI, cache-ams21061-AMS
+    'X-Timer:   S1721219072.818085,VS0,VE175
+    'X-Ua-Compatible:   IE=Edge,chrome=1
+
+    ' w curl dzia³a ok nawet sam link!
+
     Private Async Function GetPageAsync(sUrl As String, Optional sPostData As String = "") As Task(Of String)
         If _oHttp Is Nothing Then
 
@@ -136,8 +226,9 @@ Public Class Cloud_Skyscraper
             _oHttp.DefaultRequestHeaders.AcceptLanguage.Add(New Net.Http.Headers.StringWithQualityHeaderValue("en-US"))
             _oHttp.DefaultRequestHeaders.AcceptLanguage.Add(New Net.Http.Headers.StringWithQualityHeaderValue("en"))
             '_oHttp.DefaultRequestHeaders.AcceptEncoding.Add(New Net.Http.Headers.StringWithQualityHeaderValue("gzip")) ' Accept-Encoding: gzip, deflate
+
             '_oHttp.DefaultRequestHeaders.AcceptEncoding.Add(New Net.Http.Headers.StringWithQualityHeaderValue("deflate"))
-            _oHttp.DefaultRequestHeaders.Connection.Add("Keep-alive")
+            '_oHttp.DefaultRequestHeaders.Connection.Add("Keep-alive")
         End If
 
         Dim oResp As Net.Http.HttpResponseMessage
@@ -227,10 +318,12 @@ Public Class Cloud_Skyscraper
             ' step 3: wys³anie obrazka
             oPic._PipelineOutput.Seek(0, IO.SeekOrigin.Begin)
             Dim oPicContent As New Net.Http.StreamContent(oPic._PipelineOutput)
+
             ' ta linijka wymaga mapki mimetypów, Nuget - ale on wymaga .Net Std 2.0
-            oPicContent.Headers.ContentType =
-                New Net.Http.Headers.MediaTypeHeaderValue(
-                MimeTypes.MimeTypeMap.GetMimeType(IO.Path.GetExtension(oPic.InBufferPathName)))
+            'mimetajp = MimeTypes.MimeTypeMap.GetMimeType(mimetajp)
+            Dim mimetajp As String = MimeTypesy.GetMimeTypeFromFilename(oPic.InBufferPathName)
+
+            oPicContent.Headers.ContentType = New Net.Http.Headers.MediaTypeHeaderValue(mimetajp)
 
             Dim sUri As String = $"https://www.skyscrapercity.com/attachments/upload?type=post&context[thread_id]={sForum}&hash={sHash}"
             Dim pContent As New Net.Http.MultipartFormDataContent From {
