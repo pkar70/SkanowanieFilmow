@@ -253,32 +253,32 @@ Public Class OnePic
     ''' </summary>
     ''' <returns></returns>
     Public Function GetGeoTag() As pkar.BasicGeoposWithRadius
-        DumpCurrMethod($"({InBufferPathName})")
+        ' DumpCurrMethod($"({InBufferPathName})")
         ' ważniejsze jest z keywords, potem manual_geo, potem - dowolny
 
         Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualTag)
         If oExif?.GeoTag IsNot Nothing Then
-            DumpMessage("not null ExifSource.ManualTag.GeoTag")
+            ' DumpMessage("not null ExifSource.ManualTag.GeoTag")
             If Not oExif.GeoTag.IsEmpty Then Return New pkar.BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
-            DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
+            ' DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
         End If
 
         oExif = GetExifOfType(ExifSource.ManualGeo)
         If oExif?.GeoTag IsNot Nothing Then
-            DumpMessage("not null ExifSource.ManualGeo.GeoTag")
+            ' DumpMessage("not null ExifSource.ManualGeo.GeoTag")
             If Not oExif.GeoTag.IsEmpty Then Return New pkar.BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
-            DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
+            ' DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
         End If
 
         For Each oExif In Exifs
             If oExif?.GeoTag IsNot Nothing Then
-                DumpMessage($"not null GeoTag in {oExif.ExifSource}")
+                ' DumpMessage($"not null GeoTag in {oExif.ExifSource}")
                 If Not oExif.GeoTag.IsEmpty Then Return New pkar.BasicGeoposWithRadius(oExif.GeoTag, oExif.GeoZgrubne)
-                DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
+                ' DumpMessage($"... but IsEmpty, {oExif.GeoTag.Latitude}, {oExif.GeoTag.Longitude}")
             End If
         Next
 
-        DumpMessage("cannot find geotag")
+        ' DumpMessage("cannot find geotag")
 
         Return Nothing
     End Function
@@ -1205,6 +1205,34 @@ Public Class OnePic
 
         Return ret
     End Function
+
+    ''' <summary>
+    ''' Usuń podane słowo kluczowe, i normalizuj dane (geotag, usercomment) - niezależnie w każdym EXIF
+    ''' </summary>
+    ''' <param name="key">keyword do usunięcia; bądź NULL, gdy chodzi tylko o normalizację</param>
+    ''' <param name="lista">lista słów kluczowych (bo lib nie widzi tego co w App)</param>
+    ''' <param name="all">gdy TRUE, to ze wszystkich EXIFów, co może zepsuć UserComment!; FALSE: tylko w MANUAL_TAG</param>
+    ''' <returns>TRUE gdy był taki keyword</returns>
+    Public Function RemoveKeyword(key As String, lista As Vblib.KeywordsList, Optional all As Boolean = False) As Boolean
+
+        If Exifs Is Nothing Then Return False
+
+        Dim ret As Boolean = False
+
+        For Each oExif As ExifTag In Exifs
+            If all OrElse oExif.ExifSource = ExifSource.ManualTag Then
+                ret = ret Or oExif.RemoveKeyword(key, lista)
+            End If
+        Next
+
+        ' jeśli nie było, to nie ma sensu zmieniać sumy :)
+        If Not ret Then Return False
+
+        sumOfKwds = GetAllKeywords() & " "
+
+        Return True
+    End Function
+
 
     Public Function HasKeyword(oKey As OneKeyword) As Boolean
         'If Exifs Is Nothing Then Return False

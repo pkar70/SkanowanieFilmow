@@ -79,6 +79,46 @@ Public Class ExifTag
     '    Return oNew
     'End Function
 
+#Region "operacje na słowach kluczowych"
+
+    ''' <summary>
+    ''' Usuń podane słowo kluczowe, i normalizuj dane (geotag, usercomment); TRUE: był taki
+    ''' </summary>
+    ''' <param name="key">keyword do usunięcia; bądź NULL, gdy chodzi tylko o normalizację</param>
+    ''' <param name="lista">lista słów kluczowych (bo lib nie widzi tego co w App)</param>
+    ''' <returns>TRUE gdy był taki keyword</returns>
+    Public Function RemoveKeyword(key As String, lista As Vblib.KeywordsList) As Boolean
+        If String.IsNullOrWhiteSpace(Keywords) Then Return False
+        If Not String.IsNullOrEmpty(key) AndAlso Not Keywords.ContainsCI(key) Then Return False
+
+        Dim ret As Boolean = False
+
+        Dim allkwds As String = ""
+
+        For Each kwd As String In From c In Keywords.Replace(",", "").Split(" ") Distinct
+            If Not String.IsNullOrEmpty(key) AndAlso kwd = key Then
+                ret = True
+                Continue For
+            End If
+            allkwds &= " " & kwd
+        Next
+
+        If Not ret Then Return False
+
+        ' mamy nowy EXIF stworzony, podmieniamy
+        Dim newExif As ExifTag = lista.CreateManualTagFromKwds(allkwds)
+        Keywords = newExif?.Keywords
+        UserComment = newExif?.UserComment
+        DateMax = If(newExif?.DateMax, New Date(1800, 1, 1))
+        DateMin = If(newExif?.DateMin, New Date(2200, 1, 1))
+        GeoTag = newExif?.GeoTag
+        GeoName = newExif?.GeoName
+
+        Return True
+    End Function
+
+#End Region
+
 End Class
 
 Partial Public Module Extensions
@@ -102,7 +142,7 @@ Partial Public Module Extensions
     ''' <returns></returns>
     ' <Runtime.CompilerServices.Extension()>
     ' Public Function ToExifString(ByVal oDate As Date) As String
-    '     Return oDate.ToString("yyyy.MM.dd HH:mm:ss")
+    '     Return oDate.ToString("yyyy.MM.dd HH:mm :ss")
     ' End Function
 
 
