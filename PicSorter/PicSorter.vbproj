@@ -43,7 +43,6 @@
     <ProjectReference Include="..\Auto_std2_Astro\Auto_std2_Astro.vbproj" />
     <ProjectReference Include="..\Auto_std2_Meteo\Auto_std2_Meteo.vbproj" />
     <ProjectReference Include="..\CloudArch_std14_Chomikuj\CloudArch_std20_Chomikuj.vbproj" />
-    <ProjectReference Include="..\CloudPubl_std14_SSC\CloudPubl_std2_SSC.vbproj" />
     <ProjectReference Include="..\Database_SQL\Database_SQL.vbproj" />
     <ProjectReference Include="..\HiddenWatermark\AsNuget-HiddenWatermark.csproj" />
     <ProjectReference Include="..\lib14_httpClnt\lib14_httpClnt.vbproj" />
@@ -68,6 +67,7 @@
 
   <ItemGroup>
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.51" />
     <PackageReference Include="IPUserControls.Wpf" Version="1.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="7.0.4">
       <PrivateAssets>all</PrivateAssets>

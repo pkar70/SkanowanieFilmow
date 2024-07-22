@@ -6,7 +6,7 @@ Public NotInheritable Class PicMenuGeotag
     Inherits PicMenuBase
 
     Private Shared _clip As BasicGeoposWithRadius
-    Private _itemPaste As New MenuItem
+    Private _itemPaste As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd

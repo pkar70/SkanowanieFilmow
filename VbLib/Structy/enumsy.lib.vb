@@ -25,6 +25,7 @@ Public Class RestrictionsEnum
 End Class
 
 ' gdzie jest (0,0)
+' https://stackoverflow.com/questions/20600800/js-client-side-exif-orientation-rotate-and-mirror-jpeg-images
 Public Enum OrientationEnum
     topLeft = 1
     topRight = 2

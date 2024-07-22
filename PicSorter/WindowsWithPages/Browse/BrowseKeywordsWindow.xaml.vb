@@ -189,6 +189,7 @@ Public Class BrowseKeywordsWindow
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
         If oBrowserWnd Is Nothing Then Return
         oBrowserWnd.ChangedKeywords(_oNewExif, uiPinUnpin.EffectiveDatacontext)
+        _oNewExif = _oNewExif.Clone
 
         Application.ShowWait(False)
 

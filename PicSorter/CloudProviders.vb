@@ -6,10 +6,12 @@ Imports Vblib
 Public Class CloudPublishersList
     ' Inherits Vblib.MojaLista(Of CloudConfig)
 
+    ' New CloudPubl_std14_SSC.Cloud_Skyscraper,
+
     Private gCloudProviders As Vblib.CloudPublish() = {
         New Vblib.Publish_AdHoc,
         New Publish_Email,
-        New CloudPubl_std14_SSC.Cloud_Skyscraper,
+        New Cloud_Skyscraper,
         New Publish_Instagram.Publish_Instagram,
         New Publish_std2_Facebook.Publish_Facebook_Post,
         New Publish_std2_Facebook.Publish_Facebook_Album,
