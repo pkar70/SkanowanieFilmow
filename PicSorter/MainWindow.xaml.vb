@@ -1,5 +1,4 @@
 ﻿
-
 Imports pkar
 Imports Vblib
 Imports pkar.UI.Extensions
@@ -38,6 +37,8 @@ Class MainWindow
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         InitLib(Nothing)
+
+        'ShowMaxButton(False)
 
         Page_Loaded(Nothing, Nothing)    ' tak prościej, bo wklejam tu zawartość dawnego Page
 
@@ -982,3 +983,72 @@ Class MainWindow
 End Class
 
 
+
+Public Module ExtsWnd
+
+    Private Const WS_CAPTION As Long = &HC00000
+    Private Const WS_MAXIMIZEBOX As Long = &H10000L
+    Private Const WS_MINIMIZEBOX As Long = &H20000L
+    Private Const WS_SYSMENU As Long = &H80000L '(The WS_CAPTION style must also be specified) 
+
+    ' ale niestety miejsce zostaje (guzik jest jakby disabled, a nie hidden)
+
+    <Runtime.CompilerServices.Extension>
+    Public Sub ShowMinButton(wnd As Window, show As Boolean)
+        wnd.ustawWindowLong(WS_MINIMIZEBOX, show)
+    End Sub
+    <Runtime.CompilerServices.Extension>
+    Public Sub ShowMaxButton(wnd As Window, show As Boolean)
+        ' to samo co ResizeMode="CanMinimize" - blokuje, nie znika
+        wnd.ustawWindowLong(WS_MAXIMIZEBOX, show)
+    End Sub
+
+    <Runtime.CompilerServices.Extension>
+    Public Sub ShowSysMenuButton(wnd As Window, show As Boolean)
+        If show Then
+            ' the WS_CAPTION style must also be specified
+            wnd.ustawWindowLong(WS_SYSMENU Or WS_CAPTION, show)
+        Else
+            wnd.ustawWindowLong(WS_SYSMENU, show)
+        End If
+    End Sub
+
+    <Runtime.CompilerServices.Extension>
+    Public Sub ShowCaption(wnd As Window, show As Boolean)
+        wnd.ustawWindowLong(WS_CAPTION, show)
+    End Sub
+
+
+    Private Const GWL_STYLE As Integer = -16
+
+    <Runtime.CompilerServices.Extension>
+    Private Sub ustawWindowLong(wnd As Window, value As Integer, show As Boolean)
+        Dim handle As IntPtr = New WindowInteropHelper(wnd).Handle
+        If handle = IntPtr.Zero Then Return
+
+        Dim aktStyl As Integer = GetWindowLong(handle, GWL_STYLE)
+
+        If show Then
+            aktStyl = aktStyl Or value
+        Else
+            aktStyl = aktStyl And (Not value) ' Xor &HFFFFFFFFFFFFFFFF)
+        End If
+
+        SetWindowLong(handle, GWL_STYLE, aktStyl)
+
+    End Sub
+
+
+
+
+    <System.Runtime.InteropServices.DllImport("user32.dll")>
+    Private Function GetWindowLong(ByVal hWnd As IntPtr, ByVal nIndex As Integer) As Integer
+
+    End Function
+
+    <System.Runtime.InteropServices.DllImport("user32.dll")>
+    Private Function SetWindowLong(ByVal hWnd As IntPtr, ByVal nIndex As Integer, ByVal dwNewLong As Integer) As Integer
+
+    End Function
+
+End Module
