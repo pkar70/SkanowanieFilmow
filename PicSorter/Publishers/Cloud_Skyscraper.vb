@@ -1,7 +1,10 @@
 
+Imports System.IO
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 
+
+' wersja z Windows...http, bo to dzia³a, a System.Web nie dzia³a - przesta³. Zwraca Http 409 na GetAsync
 
 ' additInfo - gdzie maj¹ trafiaæ, jesli /threads/ to jest to ucinane, jesli /unread to tez.
 ' skyscrapercity.com/threads/prl-i-reszta-œwiata.800434
@@ -216,34 +219,29 @@ Public Class Cloud_Skyscraper
     Private Async Function GetPageAsync(sUrl As String, Optional sPostData As String = "") As Task(Of String)
         If _oHttp Is Nothing Then
 
-            Dim oHandler As New Net.Http.HttpClientHandler With
-                {
-                .CookieContainer = New Net.CookieContainer
-                }
-
-            _oHttp = New Net.Http.HttpClient(oHandler)
+            _oHttp = New Windows.Web.Http.HttpClient()
             _oHttp.DefaultRequestHeaders.UserAgent.TryParseAdd(_defaultHttpAgent)
-            _oHttp.DefaultRequestHeaders.Accept.Add(New Net.Http.Headers.MediaTypeWithQualityHeaderValue("*/*"))
-            _oHttp.DefaultRequestHeaders.AcceptLanguage.Add(New Net.Http.Headers.StringWithQualityHeaderValue("en-US"))
-            _oHttp.DefaultRequestHeaders.AcceptLanguage.Add(New Net.Http.Headers.StringWithQualityHeaderValue("en"))
+            _oHttp.DefaultRequestHeaders.Accept.Add(New Windows.Web.Http.Headers.HttpMediaTypeWithQualityHeaderValue("*/*"))
+            _oHttp.DefaultRequestHeaders.AcceptLanguage.Add(New Windows.Web.Http.Headers.HttpLanguageRangeWithQualityHeaderValue("en-US"))
+            _oHttp.DefaultRequestHeaders.AcceptLanguage.Add(New Windows.Web.Http.Headers.HttpLanguageRangeWithQualityHeaderValue("en"))
             '_oHttp.DefaultRequestHeaders.AcceptEncoding.Add(New Net.Http.Headers.StringWithQualityHeaderValue("gzip")) ' Accept-Encoding: gzip, deflate
 
             '_oHttp.DefaultRequestHeaders.AcceptEncoding.Add(New Net.Http.Headers.StringWithQualityHeaderValue("deflate"))
             '_oHttp.DefaultRequestHeaders.Connection.Add("Keep-alive")
         End If
 
-        Dim oResp As Net.Http.HttpResponseMessage
+        Dim oResp As Windows.Web.Http.HttpResponseMessage
 
         ' przygotuj pContent, bêdzie przy redirect u¿ywany ponownie
-        Dim pContent As Net.Http.StringContent = Nothing    ' ¿eby nie krzycza³ ¿e u¿ywam nieinicjalizowanego
-        If sPostData <> "" Then pContent = New Net.Http.StringContent(sPostData, Text.Encoding.UTF8, "application/x-www-form-urlencoded")
+        Dim pContent As Windows.Web.Http.HttpStringContent = Nothing    ' ¿eby nie krzycza³ ¿e u¿ywam nieinicjalizowanego
+        If sPostData <> "" Then pContent = New Windows.Web.Http.HttpStringContent(sPostData, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/x-www-form-urlencoded")
 
         Try
             ' ISSUE: reference to a compiler-generated method
             If sPostData <> "" Then
-                oResp = Await _oHttp.PostAsync(sUrl, pContent)
+                oResp = Await _oHttp.PostAsync(New Uri(sUrl), pContent)
             Else
-                oResp = Await _oHttp.GetAsync(sUrl)
+                oResp = Await _oHttp.GetAsync(New Uri(sUrl))
             End If
 
 #Disable Warning CA1031 ' Do not catch general exception types
@@ -312,25 +310,25 @@ Public Class Cloud_Skyscraper
 
 
         Dim sPostBody As String = ""
-        Dim oResp As Net.Http.HttpResponseMessage
+        Dim oResp As Windows.Web.Http.HttpResponseMessage
 
         For Each oPic As Vblib.OnePic In picki
 
             ' step 3: wys³anie obrazka
             oPic._PipelineOutput.Seek(0, IO.SeekOrigin.Begin)
-            Dim oPicContent As New Net.Http.StreamContent(oPic._PipelineOutput)
+            Dim oPicContent As New Windows.Web.Http.HttpStreamContent(oPic._PipelineOutput.AsInputStream)
 
             ' ta linijka wymaga mapki mimetypów, Nuget - ale on wymaga .Net Std 2.0
             'mimetajp = MimeTypes.MimeTypeMap.GetMimeType(mimetajp)
             Dim mimetajp As String = MimeTypesy.GetMimeTypeFromFilename(oPic.InBufferPathName)
 
-            oPicContent.Headers.ContentType = New Net.Http.Headers.MediaTypeHeaderValue(mimetajp)
+            oPicContent.Headers.ContentType = New Windows.Web.Http.Headers.HttpMediaTypeHeaderValue(mimetajp)
 
             Dim sUri As String = $"https://www.skyscrapercity.com/attachments/upload?type=post&context[thread_id]={sForum}&hash={sHash}"
-            Dim pContent As New Net.Http.MultipartFormDataContent From {
-                {New Net.Http.StringContent(xfToken), "_xfToken"},
-                {New Net.Http.StringContent("json"), "_xfResponseType"},
-                {New Net.Http.StringContent("1"), "_xfWithData"},
+            Dim pContent As New Windows.Web.Http.HttpMultipartFormDataContent From {
+                {New Windows.Web.Http.HttpStringContent(xfToken), "_xfToken"},
+                {New Windows.Web.Http.HttpStringContent("json"), "_xfResponseType"},
+                {New Windows.Web.Http.HttpStringContent("1"), "_xfWithData"},
                 {oPicContent, "upload", oPic.sSuggestedFilename}
             }
 
@@ -339,7 +337,7 @@ Public Class Cloud_Skyscraper
 
 
             Try
-                oResp = Await _oHttp.PostAsync(sUri, pContent)
+                oResp = Await _oHttp.PostAsync(New Uri(sUri), pContent)
 #Disable Warning CA1031 ' Do not catch general exception types
             Catch ex As Exception
 #Enable Warning CA1031 ' Do not catch general exception types
@@ -374,27 +372,27 @@ Public Class Cloud_Skyscraper
 
         sPostBody &= "<p>&nbsp;<p>Post published using PicSorter app</p>"
 
-        Dim pContentPost As New Net.Http.MultipartFormDataContent From {
-            {New Net.Http.StringContent(sPostBody, Text.Encoding.UTF8), "message_html"},
-            {New Net.Http.StringContent(sHash, Text.Encoding.UTF8), "attachment_hash"},
-            {New Net.Http.StringContent(sHashCombined, Text.Encoding.UTF8), "attachment_hash_combined"},
-            {New Net.Http.StringContent("", Text.Encoding.UTF8), "comment_type"},
-            {New Net.Http.StringContent(sLastDate, Text.Encoding.UTF8), "last_date"},
-            {New Net.Http.StringContent(sLastDate, Text.Encoding.UTF8), "last_known_date"},
-            {New Net.Http.StringContent(sParentId, Text.Encoding.UTF8), "parent_id"},
-            {New Net.Http.StringContent(sParentId, Text.Encoding.UTF8), "parent_ids"},
-            {New Net.Http.StringContent("", Text.Encoding.UTF8), "guestReplyMethod"},
-            {New Net.Http.StringContent(xfToken, Text.Encoding.UTF8), "_xfToken"},
-            {New Net.Http.StringContent($"/threads/{sForum}", Text.Encoding.UTF8), "_xfRequestUri"},
-            {New Net.Http.StringContent("1", Text.Encoding.UTF8), "_xfWithData"},
-            {New Net.Http.StringContent(xfToken, Text.Encoding.UTF8), "_xfToken"},
-            {New Net.Http.StringContent("json", Text.Encoding.UTF8), "_xfResponseType"}
+        Dim pContentPost As New Windows.Web.Http.HttpMultipartFormDataContent From {
+            {New Windows.Web.Http.HttpStringContent(sPostBody, Windows.Storage.Streams.UnicodeEncoding.Utf8), "message_html"},
+            {New Windows.Web.Http.HttpStringContent(sHash, Windows.Storage.Streams.UnicodeEncoding.Utf8), "attachment_hash"},
+            {New Windows.Web.Http.HttpStringContent(sHashCombined, Windows.Storage.Streams.UnicodeEncoding.Utf8), "attachment_hash_combined"},
+            {New Windows.Web.Http.HttpStringContent("", Windows.Storage.Streams.UnicodeEncoding.Utf8), "comment_type"},
+            {New Windows.Web.Http.HttpStringContent(sLastDate, Windows.Storage.Streams.UnicodeEncoding.Utf8), "last_date"},
+            {New Windows.Web.Http.HttpStringContent(sLastDate, Windows.Storage.Streams.UnicodeEncoding.Utf8), "last_known_date"},
+            {New Windows.Web.Http.HttpStringContent(sParentId, Windows.Storage.Streams.UnicodeEncoding.Utf8), "parent_id"},
+            {New Windows.Web.Http.HttpStringContent(sParentId, Windows.Storage.Streams.UnicodeEncoding.Utf8), "parent_ids"},
+            {New Windows.Web.Http.HttpStringContent("", Windows.Storage.Streams.UnicodeEncoding.Utf8), "guestReplyMethod"},
+            {New Windows.Web.Http.HttpStringContent(xfToken, Windows.Storage.Streams.UnicodeEncoding.Utf8), "_xfToken"},
+            {New Windows.Web.Http.HttpStringContent($"/threads/{sForum}", Windows.Storage.Streams.UnicodeEncoding.Utf8), "_xfRequestUri"},
+            {New Windows.Web.Http.HttpStringContent("1", Windows.Storage.Streams.UnicodeEncoding.Utf8), "_xfWithData"},
+            {New Windows.Web.Http.HttpStringContent(xfToken, Windows.Storage.Streams.UnicodeEncoding.Utf8), "_xfToken"},
+            {New Windows.Web.Http.HttpStringContent("json", Windows.Storage.Streams.UnicodeEncoding.Utf8), "_xfResponseType"}
         }
 
         ' tak, xfToken jest dwa razy.
         Dim sUriPost As String = $"https://www.skyscrapercity.com/threads/{sForum}/add-reply"
         Try
-            oResp = Await _oHttp.PostAsync(sUriPost, pContentPost)
+            oResp = Await _oHttp.PostAsync(New Uri(sUriPost), pContentPost)
 #Disable Warning CA1031 ' Do not catch general exception types
         Catch ex As Exception
 #Enable Warning CA1031 ' Do not catch general exception types
