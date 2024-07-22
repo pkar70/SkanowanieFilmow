@@ -1821,6 +1821,36 @@ Public Class ProcessBrowse
         KoniecFiltrowania(bMamy, sender IsNot Nothing)
     End Sub
 
+
+    Private Sub uiFilterLocked_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterLocking(True)
+    End Sub
+
+    Private Sub uiFilterunLocked_Click(sender As Object, e As RoutedEventArgs)
+        uiFilterLocking(False)
+    End Sub
+
+
+    Private Sub uiFilterLocking(locked As Boolean)
+        vb14.DumpCurrMethod()
+
+        uiFilterPopup.IsOpen = False
+        uiFilters.Content = If(locked, "🔒 locked", "unlocked")
+
+        Dim bMamy As Boolean = False
+        For Each oItem In _thumbsy
+            If oItem.oPic.locked = locked Then
+                oItem.opacity = 1
+                bMamy = True
+            Else
+                oItem.opacity = _OpacityWygas
+            End If
+        Next
+
+        KoniecFiltrowania(bMamy, True)
+    End Sub
+
+
     Private Sub uiFilterDwaSek_Click(sender As Object, e As RoutedEventArgs)
         uiFilterPopup.IsOpen = False
         uiFilters.Content = "dwa/sek"
@@ -2523,7 +2553,7 @@ Public Class ProcessBrowse
                     End If
                 Else
                     ' 2) a jeśli nie mamy, to po prostu dodajemy tag
-                    oPic.oPic.ReplaceOrAddExif(oExif)
+                    oPic.oPic.ReplaceOrAddExif(oExif.Clone)
                 End If
 
                 oPic.oPic.RemoveFromDescriptions(oExif.Keywords, Application.GetKeywords)
@@ -2796,6 +2826,10 @@ Public Class ProcessBrowse
 
             ' line 7: picid - właściwie tylko do picków z archiwum
             newDymek = newDymek & vbCrLf & oPic.FormattedSerNo
+
+            If oPic.locked Then
+                newDymek = newDymek & vbCrLf & "🔒 LOCKED"
+            End If
 
             If newDymek <> sDymek Then
                 sDymek = newDymek

@@ -93,6 +93,7 @@
                             <local:PicMenuOCR MetadataChanged="uiMetadataChanged" />
                             <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step TARGET -->
+                            <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj"  />
                             <!-- sequence step PUBLISH, ARCHIVE -->
                             <!-- readonly metadata 2 -->
                             <local:PicMenuOnMap />
