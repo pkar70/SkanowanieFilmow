@@ -567,10 +567,17 @@ Public Class PokazStatystyke
                                    Dim exifek As Vblib.ExifTag = x?.GetExifOfType(Vblib.ExifSource.FileExif)
                                    If exifek Is Nothing Then Return "?"
 
-                                   If exifek.x * 1.1 < exifek.y Then Return "portrait"
-                                   If exifek.y * 1.1 < exifek.x Then Return "landscape"
+                                   Dim uklad As Integer = 0
+                                   If exifek.x * 1.1 < exifek.y Then uklad = 1 ' Return "portrait"
+                                   If exifek.y * 1.1 < exifek.x Then uklad = -1 'Return "landscape"
 
-                                   Return "square"
+                                   If uklad = 0 Then Return "square"
+
+                                   If exifek.Orientation > 4 Then uklad = -uklad
+
+                                   If uklad = 1 Then Return "portrait"
+                                   Return "landscape"
+
                                End Function)
     End Sub
 
