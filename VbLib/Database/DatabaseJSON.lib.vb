@@ -144,9 +144,9 @@ Public Class DatabaseJSON
                 For Each kwd As String In query.ogolne.adv.TargetDir.Split(" ")
                     If kwd.Substring(0, 1) = "!" Then
                         Dim notkwd As String = kwd.Substring(1)
-                        lista = lista.Where(Function(x) Not If(x?.TargetDir.Contains(notkwd), True))
+                        lista = lista.Where(Function(x) Not If(x?.TargetDir.ContainsCI(notkwd), True))
                     Else
-                        lista = lista.Where(Function(x) If(x?.TargetDir.Contains(kwd), False))
+                        lista = lista.Where(Function(x) If(x?.TargetDir.ContainsCI(kwd), False))
                     End If
                 Next
             End If
