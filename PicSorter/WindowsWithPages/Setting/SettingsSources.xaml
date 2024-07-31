@@ -24,13 +24,7 @@
             <TextBlock Text="Lista źródeł:" FontWeight="Bold" />
             <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddSource_Click" Name="uiAddSource" Margin="2,2,2,2"/>
             <Popup IsOpen="False" Name="uiAddSourcePopup" PlacementTarget="{Binding ElementName=uiAddSource}">
-                <Menu Name="uiMenuSourcesTypes">
-                    <Menu.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
-                </Menu>
+                <local:MenuVertical x:Name="uiMenuSourcesTypes" />
             </Popup>
 
 

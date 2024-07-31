@@ -3142,6 +3142,9 @@ Public Class ProcessBrowse
         Next
     End Sub
 
+    Private Sub uiActionSaveSelection_Click(sender As Object, e As RoutedEventArgs)
+
+    End Sub
 End Class
 
 

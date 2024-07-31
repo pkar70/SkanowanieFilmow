@@ -40,12 +40,8 @@
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">
                 <Button Click="uiFilter_Click"  Content="Filters" Name="uiFilters"/>
                 <Popup IsOpen="False" Name="uiFilterPopup" PlacementTarget="{Binding ElementName=uiFilters}" StaysOpen="False">
-                    <Menu Name="uiMenuFilters">
-                        <Menu.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <VirtualizingStackPanel Orientation="Vertical"/>
-                            </ItemsPanelTemplate>
-                        </Menu.ItemsPanel>
+                    <local:MenuVertical x:Name="uiMenuFilters">
+                      
                         <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
                         <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" />
                         <MenuItem Header="bez realdate" Click="uiFilterNoRealDate_Click" />
@@ -89,7 +85,7 @@
                             <MenuItem Header="UNlocked" Click="uiFilterUnLocked_Click" />
                         </MenuItem>
                         <MenuItem Header="all" Click="uiFilterAll_Click" />
-                    </Menu>
+                    </local:MenuVertical>
                 </Popup>
                 <CheckBox Name="uiGrayOrHide" ToolTip="Zaznacz jeśli ma ukryć zdjęcia, odznacz jeśli mają być szare" Margin="3,3,8,0" Checked="uiGrayOrHide_Checked" Unchecked="uiGrayOrHide_Checked" />
                 <ComboBox Name="uiComboSize" Margin="0,0,0,0" SelectionChanged="uiComboSize_SelectionChanged">
@@ -109,18 +105,7 @@
                 </ComboBox>
                 <Button Content="Podpis" Name="uiPodpis" Click="uiPodpis_Click" Margin="0,0,15,0"/>
                 <Popup IsOpen="False" PlacementTarget="{Binding ElementName=uiPodpis}" StaysOpen="False" Name="uiPodpisWybor">
-                    <Menu x:Name="uiPodpisMenu">
-                        <Menu.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <VirtualizingStackPanel Orientation="Vertical"/>
-                            </ItemsPanelTemplate>
-                        </Menu.ItemsPanel>
-                        <!--<MenuItem IsCheckable="True" IsChecked="True" Header="None" Click="uiPodpisTo_Click"/>
-                        <MenuItem IsCheckable="True" Header="Filename" Click="uiPodpisTo_Click"/>
-                        <MenuItem IsCheckable="True" Header="Keywords" Click="uiPodpisTo_Click"/>
-                        <MenuItem IsCheckable="True" Header="Description" Click="uiPodpisTo_Click"/>
-                        <MenuItem IsCheckable="True" Header="Targetdir" Click="uiPodpisTo_Click"/>-->
-
+                    <local:MenuVertical x:Name="uiPodpisMenu">
                         <MenuItem IsCheckable="True" Header="Serno" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisSerNo" />
                         <MenuItem IsCheckable="True" Header="Source" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisSource" />
                         <MenuItem IsCheckable="True" Header="Filename" MouseDoubleClick="uiPodpisDbl_Click"  Name="uiPodpisFilename"/>
@@ -128,7 +113,7 @@
                         <MenuItem IsCheckable="True" Header="Description" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisDescription"/>
                         <MenuItem IsCheckable="True" Header="Src path" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisSrcPath"/>
                         <MenuItem IsCheckable="True" Header="Targetdir" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisTarget" />
-                    </Menu>
+                    </local:MenuVertical>
                 </Popup>
                 <Button Content=" Split " Height="Auto" Width="Auto" Click="uiSplitMode_Click" Name="uiSplit"/>
             </StackPanel>
@@ -136,12 +121,7 @@
             <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" >
                 <Button Name="uiOkna" Content=" Wnds " Height="Auto" Width="Auto" Click="uiOkna_Click"  Margin="0,0,10,0"/>
                 <Popup IsOpen="False" Name="uiOknaPopup" PlacementTarget="{Binding ElementName=uiOkna}" StaysOpen="False">
-                    <Menu >
-                        <Menu.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <VirtualizingStackPanel Orientation="Vertical"/>
-                            </ItemsPanelTemplate>
-                        </Menu.ItemsPanel>
+                    <local:MenuVertical >
                         <MenuItem Header="View metadata" Click="uiOknaShowMetadata_Click" />
                         <MenuItem Header="View real EXIF" Click="uiOknaShowExif_Click" />
                         <MenuItem Header="Keywords small" Click="uiOknaEditKwds_Click" />
@@ -154,17 +134,13 @@
                         <MenuItem Header="DatesSummary" Click="uiOknaDatesSumm_Click" />
                         <MenuItem Header="Any property" Click="uiOknaExifProp_Click" />
                         <MenuItem Header="Remote desc" Click="uiOknaRemoteDesc_Click" Name="uiOknaRemoteDesc" />
-                    </Menu>
+                    </local:MenuVertical>
                 </Popup>
                 <Button Name="uiAction" Content=" Action " Height="Auto" Width="Auto" Click="uiActionOpen_Click" />
             <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}" StaysOpen="False">
-                <Menu >
-                    <Menu.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
+                <local:MenuVertical>
                         <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
+                        <MenuItem Header="Save selection" Click="uiActionSaveSelection_Click" />
                         <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
                         <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" UseSelectedItems="True" />
                         <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" UseSelectedItems="True"/>
@@ -198,7 +174,7 @@
                         <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
                         <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
                         <local:PicMenuDeleteTemps UseSelectedItems="True"/>
-                    </Menu>
+                    </local:MenuVertical>
             </Popup>
             </StackPanel>
         </Grid>

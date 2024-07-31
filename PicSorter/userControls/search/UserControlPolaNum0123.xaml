@@ -48,46 +48,22 @@
 
         <Button Name="uiFieldList0" Grid.Row="0" Grid.Column="1" Content="*" Click="uiFieldList_Click" Margin="2,0,5,0" />
         <Popup IsOpen="False" Name="uiFieldList0_Popup" PlacementTarget="{Binding ElementName=uiFieldList0}" StaysOpen="False">
-            <Menu Name="uiFieldList0_Menu">
-                <Menu.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </Menu.ItemsPanel>
-            </Menu>
+            <local:MenuVertical x:Name="uiFieldList0_Menu" />
         </Popup>
 
         <Button Name="uiFieldList1" Grid.Row="1" Grid.Column="1" Content="*" Click="uiFieldList_Click" Margin="2,0,5,0" />
         <Popup IsOpen="False" Name="uiFieldList1_Popup" PlacementTarget="{Binding ElementName=uiFieldList1}" StaysOpen="False">
-            <Menu Name="uiFieldList1_Menu">
-                <Menu.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </Menu.ItemsPanel>
-            </Menu>
+            <local:MenuVertical x:Name="uiFieldList1_Menu" />
         </Popup>
 
         <Button Name="uiFieldList2" Grid.Row="2" Grid.Column="1" Content="*" Click="uiFieldList_Click" Margin="2,0,5,0" />
         <Popup IsOpen="False" Name="uiFieldList2_Popup" PlacementTarget="{Binding ElementName=uiFieldList2}" StaysOpen="False">
-            <Menu Name="uiFieldList2_Menu">
-                <Menu.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </Menu.ItemsPanel>
-            </Menu>
+            <local:MenuVertical x:Name="uiFieldList2_Menu" />
         </Popup>
 
         <Button Name="uiFieldList3" Grid.Row="3" Grid.Column="1" Content="*" Click="uiFieldList_Click" Margin="2,0,5,0" />
         <Popup IsOpen="False" Name="uiFieldList3_Popup" PlacementTarget="{Binding ElementName=uiFieldList3}" StaysOpen="False">
-            <Menu Name="uiFieldList3_Menu">
-                <Menu.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </Menu.ItemsPanel>
-            </Menu>
+            <local:MenuVertical x:Name="uiFieldList3_Menu" />
         </Popup>
 
 

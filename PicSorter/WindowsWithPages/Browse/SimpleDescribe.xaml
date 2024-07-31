@@ -17,13 +17,7 @@
             <TextBox Name="uiAllDescribe" HorizontalAlignment="Stretch" IsReadOnly="true" Margin="5,5,0,5" />
             <Button Name="uiPastePrev" Margin="0,0,5,0" Grid.Column="1" Content="▼" Click="uiPastePrev_Click" IsEnabled="False"/>
             <Popup Name="uiPrevMenuPopup" PlacementTarget="{Binding ElementName=uiPastePrev}" IsOpen="False" StaysOpen="False">
-                <Menu Name="uiPrevMenu">
-                    <Menu.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
-                </Menu>
+                <local:MenuVertical x:Name="uiPrevMenu" />
             </Popup>
         </Grid>
         <Grid>

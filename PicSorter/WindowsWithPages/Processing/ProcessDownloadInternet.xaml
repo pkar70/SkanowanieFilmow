@@ -58,15 +58,10 @@
 
             <Button Content=" ... " FontWeight="Bold" Click="uiMenuGeo_Click" Name="uiMenuGeo" Margin="2,2,2,2" HorizontalAlignment="Right" Grid.Row="5" Grid.Column="1"/>
             <Popup IsOpen="False" Name="uiMenuGeoMenu" PlacementTarget="{Binding ElementName=uiMenuGeo}">
-                <Menu>
-                    <Menu.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
+                <local:MenuVertical>
                     <MenuItem Header="Use last" Click="uiSameGeo_Click" />
                     <MenuItem Header="Search arch" Click="uiSearchArch_Click" />
-                </Menu>
+                </local:MenuVertical>
             </Popup>
         </Grid>
 

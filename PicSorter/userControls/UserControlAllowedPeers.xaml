@@ -19,13 +19,7 @@
 
         <Button Grid.Column="1" Content="+" HorizontalAlignment="Right" Name="uiAddPostprocButton" Click="uiAddPostproc_Click" />
         <Popup IsOpen="False" Name="uiAddPostprocPopup" PlacementTarget="{Binding ElementName=uiAddPostprocButton}">
-            <Menu Name="uiMenuPostProcessors">
-                <Menu.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </Menu.ItemsPanel>
-            </Menu>
+            <local:MenuVertical x:Name="uiMenuPostProcessors" />
         </Popup>
     </Grid>
 </UserControl>

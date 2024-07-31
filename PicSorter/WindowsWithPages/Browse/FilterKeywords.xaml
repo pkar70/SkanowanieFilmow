@@ -10,18 +10,7 @@
         <TextBlock Name="uiTitle" HorizontalAlignment="Center" />
         <!--<Grid>-->
             <TextBlock FontWeight="Bold" Text="Keywords:" />
-            <!--<Button Content=" + " HorizontalAlignment="Right" Name="uiAdd" Click="uiAdd_Click"/>
-            <Popup IsOpen="False" Name="uiAddPopup" PlacementTarget="{Binding ElementName=uiAdd}" HorizontalOffset="-10" StaysOpen="False" >
-                <Menu Name="uiMenuKeywords">
-                    <Menu.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
-                </Menu>
-            </Popup>
-        </Grid>
-        <TextBox Name="uiKeywords" />-->
+           
         <local:UserKwdEditButton x:Name="uiKeywords" />
         <Button Content=" Search " HorizontalAlignment="Center" Margin="5,10,5,5" Click="Button_Click" IsDefault="True"/>
     </StackPanel>
