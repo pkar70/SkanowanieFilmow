@@ -12,8 +12,8 @@ Partial Public Class Auto_Meteo_Opad
     Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoMeteoOpad
     Public Overrides ReadOnly Property DymekAbout As String = "Dane meteo - opad (Polska)"
 
-    Public Sub New(sDataFolder As String)
-        MyBase.New(sDataFolder)
+    Public Sub New()
+        MyBase.New(Vblib.GetDataFolder)
     End Sub
 
     'Public Sub New(dataFolder As String)
@@ -22,10 +22,9 @@ Partial Public Class Auto_Meteo_Opad
     'End Sub
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
-        If oFile.GetMostProbablyDate(True).Year < 1950 Then Return Nothing
+        If Not CanTag(oFile) Then Return Nothing
+
         Dim oGeo As pkar.BasicGeopos = oFile.GetGeoTag
-        If oGeo Is Nothing Then Return Nothing
-        If Not oGeo.IsInsidePoland Then Return Nothing
 
         Dim opad As Vblib.Meteo_Opad = ConstructOpadData(oFile.GetMostProbablyDate(True), oGeo)
         If opad Is Nothing Then Return Nothing

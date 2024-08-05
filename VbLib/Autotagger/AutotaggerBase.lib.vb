@@ -44,7 +44,29 @@
         End Get
     End Property
 
+    ''' <summary>
+    ''' Sprawdza czy da się zrobić tak - bez override to tylko sprawdzenie maski
+    ''' </summary>
+    Public Overridable Function CanTag(oFile As OnePic) As Boolean
+        If Not oFile.MatchesMasks(includeMask) Then
+            DumpMessage("nie spełnia maski")
+            Return False
+        End If
 
+        If oFile.GetSumOfDescriptionsKwds.Contains(GetAutoTagDisableKwd) Then
+            DumpMessage("Skippin because " & GetAutoTagDisableKwd())
+            Return False
+        End If
+
+        Return True
+    End Function
+
+    Public Function GetAutoTagDisableKwd() As String
+        Dim ret As String = Nazwa
+        Dim iInd As Integer = ret.IndexOf("_")
+        If iInd < 1 Then Return "=NO:" & ret
+        Return "=NO:" & ret.Substring(iInd + 1)
+    End Function
 End Class
 
 

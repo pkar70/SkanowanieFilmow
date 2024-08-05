@@ -7,6 +7,8 @@
 ' i znajduje najbliższą znalezioną (niezależnie od odległości)
 
 
+Imports pkar
+
 Public Class Auto_GeoNamePl
     Inherits AutotaggerBase
 
@@ -20,50 +22,38 @@ Public Class Auto_GeoNamePl
 
     Private _cacheDataFolder As String
 
-    Public Sub New(dataFolder As String)
-        _cacheDataFolder = dataFolder
+    Public Sub New()
+        _cacheDataFolder = Vblib.GetDataFolder
     End Sub
+
+    Public Overrides Function CanTag(oFile As OnePic) As Boolean
+
+        Dim oGeo As BasicGeoposWithRadius = oFile.sumOfGeo
+
+        If oGeo Is Nothing Then
+            DumpMessage("nie mam danych geograficznych")
+            Return False
+        End If
+
+        If Not oGeo.IsInsidePoland Then
+            DumpMessage("poza Polską")
+            Return False
+        End If
+
+        Return True
+    End Function
+
 
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
         DumpCurrMethod("file: " & oFile.sSuggestedFilename)
-        If Not oFile.MatchesMasks(includeMask) Then
-            DumpMessage("nie spełnia maski")
-            Return Nothing
-        End If
+        If Not CanTag(oFile) Then Return Nothing
 
-        If oFile.Exifs Is Nothing Then
-            DumpMessage("nie zainicjalizowane oExifs")
-            Return Nothing
-        End If
-
-        For Each oItem As ExifTag In oFile.Exifs
-            DumpMessage("EXIF " & oItem.ExifSource)
-
-            'If Not String.IsNullOrWhiteSpace(oItem.GeoName) Then
-            '    DumpMessage("już mam GeoName")
-            '    Continue For
-            'End If
-            If oItem.GeoTag Is Nothing Then
-                DumpMessage("nie mam danych geograficznych")
-                Continue For
-            End If
-            If oItem.GeoTag.IsEmpty Then
-                DumpMessage("empty geotag")
-                Continue For
-            End If
-            If Not oItem.GeoTag.IsInsidePoland Then
-                DumpMessage("poza Polską")
-                Continue For
-            End If
-
-            Dim oNew As New ExifTag(Nazwa)
-            oNew.GeoTag = oItem.GeoTag
-            oNew.GeoName = Await GetNameForGeoPos(oItem.GeoTag, oItem.GeoZgrubne)
-            DumpMessage("geoname: " & oNew.GeoName)
-            Return oNew
-        Next
-
-        Return Nothing
+        Dim oGeo As BasicGeoposWithRadius = oFile.GetGeoTag
+        Dim oNew As New ExifTag(Nazwa)
+        oNew.GeoTag = oFile.GetGeoTag
+        oNew.GeoName = Await GetNameForGeoPos(oGeo, oGeo.Radius > 1000)
+        DumpMessage("geoname: " & oNew.GeoName)
+        Return oNew
 
     End Function
 

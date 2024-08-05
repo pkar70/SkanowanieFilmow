@@ -6,6 +6,9 @@
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="AutoTags" Height="450" Width="300" Loaded="Window_Loaded">
+    <Window.Resources>
+        <local:ConverterNegate x:Key="ConverterNegate"/>
+    </Window.Resources>
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -15,7 +18,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <TextBlock Text="Auto-znakowanie zdjęć" HorizontalAlignment="Center" FontSize="18" />
+        <local:TextBlockPageTitle Text="Auto-znakowanie zdjęć"  />
 
             <ListView Name="uiLista" Margin="0,5,0,10" Grid.Row="1">
                 <ListView.ItemContainerStyle>
@@ -40,7 +43,7 @@
                             <CheckBox IsChecked="{Binding enabled, Mode=TwoWay}" Margin="2,0,5,0" />
                             <TextBlock Grid.Column="1" Text="{Binding nazwa}" ToolTipService.ToolTip="{Binding dymekAbout}"  />
                         <TextBlock Grid.Column="1" Text="{Binding engine.Ikony}" ToolTipService.ToolTip="{Binding engine.IkonyDymek}" HorizontalAlignment="Right" Margin="0,0,4,0" />
-                        <Button Grid.Column="2" Content=" Run " Click="uiGetThis_Click" IsEnabled="{Binding allDone}"/>
+                        <Button Grid.Column="2" Content=" Run " Click="uiGetThis_Click" IsEnabled="{Binding allDone, Converter={StaticResource ConverterNegate}}"/>
 
                             <ProgressBar Height="8" Grid.Row="1" Grid.ColumnSpan="3" Margin="5,2,5,2" Maximum="{Binding maxCount}" Value="{Binding count}" ToolTipService.ToolTip="{Binding dymekCount}" />
                         <Grid.ContextMenu>

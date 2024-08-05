@@ -1,4 +1,5 @@
 ﻿Imports Microsoft.Rest.Azure
+Imports pkar
 Imports Vblib
 
 
@@ -17,18 +18,33 @@ Public Class Auto_Pogoda
 
     Private _cache As New List(Of Vblib.CacheAutoWeather_Item)
 
+    Public Overrides Function CanTag(oFile As OnePic) As Boolean
+        Dim oGeo As BasicGeoposWithRadius = oFile.sumOfGeo
+        If oGeo Is Nothing Then Return False
+        Dim oData As Date = oFile.GetMostProbablyDate(True)
+        If Not oData.IsDateValid Then Return False
+        If oData.Year < 1950 Then Return False ' blokada nr 1 ("1950..2050")
+        If oData.Year < 1970 Then Return False ' blokada nr 2 - na innym poziomie na serwerze 
+
+        If Not MyBase.CanTag(oFile) Then Return False
+
+        If GetSettingsString("uiVisualCrossSubscriptionKey").Length < 5 Then Return False
+
+        Return True
+    End Function
+
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
-        If Not oFile.MatchesMasks(includeMask, "") Then Return Nothing
+        If Not CanTag(oFile) Then Return Nothing
 
         If oFile.Exifs Is Nothing Then Return Nothing
 
         ' musimy mieć zarówno GEO jak i DATE
-        Dim oGeo As pkar.BasicGeopos = oFile.GetGeoTag
+        Dim oGeo As pkar.BasicGeopos = oFile.sumOfGeo
         If oGeo Is Nothing Then Return Nothing
         Dim oData As Date = oFile.GetMostProbablyDate(True)
         If Not oData.IsDateValid Then Return Nothing
 
-        If Vblib.GetSettingsString("uiVisualCrossSubscriptionKey").Length < 5 Then Return Nothing
+        If GetSettingsString("uiVisualCrossSubscriptionKey").Length < 5 Then Return Nothing
 
         Dim oWeather As Vblib.CacheAutoWeather_Item = TryFromCache(oGeo, oData.ToUniversalTime)
 
@@ -38,7 +54,10 @@ Public Class Auto_Pogoda
             maxGuard -= 1
             Vblib.DumpMessage($"Weather guard: {maxGuard}")
             oWeather = Await TryFromWWW(oGeo, oData)
-            If oWeather Is Nothing Then Return Nothing
+            If oWeather Is Nothing Then
+                DumpMessage($"Dla {oFile.sSuggestedFilename} dostalem NULL z TryFromWWW")
+                Return Nothing
+            End If
 
             ChangeMoonPhase(oWeather)
             CalculateSunHour(oWeather, oData)

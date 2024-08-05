@@ -1,0 +1,17 @@
+﻿<Page x:Class="SettingsAutoTagsDef"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PicSorterNS"
+      mc:Ignorable="d" 
+      Title="AutoTags" Loaded="Page_Loaded">
+    <StackPanel Margin="5,5,5,5">
+        <local:TextBlockPageTitle Text="Auto taggery" />
+        <CheckBox Content="dokładne liczenie" Name="uiAutotagsExact" ToolTip="Zaznacz, jeśli ma dokładnie sprawdzać ile jeszcze zdjęć może być otagowanych" Margin="0,15,0,15"/>
+
+        <local:UserControlListaChecks x:Name="uiDefaultAutoTags" />
+
+        <local:ButtonOkSave Click="uiOk_Click" />
+    </StackPanel>
+</Page>

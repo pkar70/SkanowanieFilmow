@@ -1,6 +1,7 @@
 ﻿Imports System.Globalization
 Imports System.IO
 Imports System.Net
+Imports Vblib
 
 Public MustInherit Class Auto_Meteo_Base
     Inherits Vblib.AutotaggerBase
@@ -18,6 +19,23 @@ Public MustInherit Class Auto_Meteo_Base
         _cacheDataFolder = IO.Path.Combine(dataFolder, "AutoMeteo")
         IO.Directory.CreateDirectory(_cacheDataFolder) ' nie ma exception gdy istnieje
     End Sub
+
+    Public Overrides Function CanTag(oFile As OnePic) As Boolean
+        If Not MyBase.CanTag(oFile) Then Return False
+
+        Dim oGeo As pkar.BasicGeopos = oFile.GetGeoTag
+        If oGeo Is Nothing Then Return False
+        If Not oGeo.IsInsidePoland Then Return False
+
+        Dim oData As Date = oFile.GetMostProbablyDate(True)
+        If Not oData.IsDateValid Then Return False
+
+        If oFile.GetMostProbablyDate(True).Year < 1950 Then Return False
+
+        Return True
+    End Function
+
+
 
     Protected Sub SciagnijSlownikKodow()
 

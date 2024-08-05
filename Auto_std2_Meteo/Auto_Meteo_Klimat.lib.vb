@@ -22,10 +22,10 @@ Partial Public Class Auto_Meteo_Klimat
     'End Sub
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
-        If oFile.GetMostProbablyDate(True).Year < 1950 Then Return Nothing
+
+        If Not CanTag(oFile) Then Return Nothing
+
         Dim oGeo As pkar.BasicGeopos = oFile.GetGeoTag
-        If oGeo Is Nothing Then Return Nothing
-        If Not oGeo.IsInsidePoland Then Return Nothing
 
         Dim meteo As Vblib.Meteo_Klimat = ConstructMeteoData(oFile.GetMostProbablyDate(True), oGeo)
         If meteo Is Nothing Then Return Nothing

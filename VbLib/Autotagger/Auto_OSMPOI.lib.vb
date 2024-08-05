@@ -13,8 +13,8 @@ Public Class Auto_OSM_POI
 
     Private _cacheDataFolder As String
 
-    Public Sub New(dataFolder As String)
-        _cacheDataFolder = dataFolder
+    Public Sub New()
+        _cacheDataFolder = Vblib.GetDataFolder
     End Sub
 
     ''' <summary>
@@ -34,25 +34,20 @@ Public Class Auto_OSM_POI
         Return sNazwa.Depolit ' DropAccents gdy bedzie tu .NetStd2
     End Function
 
+    Public Overrides Function CanTag(oFile As OnePic) As Boolean
+        Return (oFile.sumOfGeo IsNot Nothing)
+    End Function
+
 
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
-        If Not oFile.MatchesMasks(includeMask, "") Then Return Nothing
+        If Not CanTag(oFile) Then Return Nothing
 
-        If oFile.Exifs Is Nothing Then Return Nothing
-
-        For Each oItem As ExifTag In oFile.Exifs
-            'If Not String.IsNullOrWhiteSpace(oItem.GeoName) Then Continue For
-            If oItem.GeoTag Is Nothing Then Continue For
-            If oItem.GeoTag.IsEmpty Then Continue For
-            ' If Not oItem.GeoTag.IsInsidePoland Then Continue For
-
-            Dim oNew As New ExifTag(Nazwa)
-            oNew.GeoTag = oItem.GeoTag
-            oNew.GeoName = OSMnameZgrubne(Await GetNameForGeoPos(oItem.GeoTag), oItem.GeoZgrubne)
-            Return oNew
-        Next
-
-        Return Nothing
+        Dim oGeo As BasicGeoposWithRadius = oFile.GetGeoTag
+        Dim oNew As New ExifTag(Nazwa)
+        oNew.GeoTag = oFile.GetGeoTag
+        oNew.GeoName = OSMnameZgrubne(Await GetNameForGeoPos(oGeo), oGeo.Radius > 1000)
+        DumpMessage("geoname: " & oNew.GeoName)
+        Return oNew
 
     End Function
 

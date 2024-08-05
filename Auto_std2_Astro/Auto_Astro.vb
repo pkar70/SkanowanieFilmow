@@ -1,63 +1,11 @@
 
 
 Imports CosineKitty
+Imports pkar
+Imports Vblib
+
 'Imports Vblib
 Imports Vblib.Extensions
-
-
-Public Class Auto_MoonPhase
-    Inherits Vblib.AutotaggerBase
-
-    Public Overrides ReadOnly Property Typek As Vblib.AutoTaggerType = Vblib.AutoTaggerType.Local
-    Public Overrides ReadOnly Property Nazwa As String = Vblib.ExifSource.AutoMoon
-    Public Overrides ReadOnly Property MinWinVersion As String = "7.0"
-    Public Overrides ReadOnly Property DymekAbout As String = "Wylicza (dla daty zdjêcia) fazê Ksiê¿yca"
-    Public Overrides ReadOnly Property includeMask As String = "*.*"
-    Public Overrides ReadOnly Property RequireDate As Boolean = True
-
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-    Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
-#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-
-        ' gdy takie ustawienie, nie wstawiaj tagu gdy jest pogoda lub ASTRO
-        ' NIE mozna sprawdzac oExif.PogodaAstro, bo to jest z MOON, ASTRO, VisCross
-        If Vblib.GetSettingsBool("uiAstroNotWhenWether") Then
-            If oFile.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather) IsNot Nothing Then Return Nothing
-            If oFile.GetExifOfType(Vblib.ExifSource.AutoAstro) IsNot Nothing Then Return Nothing
-        End If
-
-
-        ' spawdŸ datê zdjêcia
-        Dim data As Date
-
-        If oFile.HasRealDate Then
-            data = oFile.GetMostProbablyDate
-        Else
-            ' muszê mieæ datê dzienn¹ - ale skany mog¹ mieæ zakres OD - DO ten sam dzieñ
-            Dim dataMin As Date = oFile.GetMinDate
-            data = oFile.GetMaxDate
-
-            If dataMin.Day <> data.Day Then Return Nothing
-            If dataMin.Month <> data.Month Then Return Nothing
-            If dataMin.Year <> data.Year Then Return Nothing
-        End If
-
-
-        Dim oAstro As New Vblib.AutoWeatherDay
-        oAstro.moonphase = Auto_Astro.GetMoonPhase(data)
-        Dim oPogoda As New Vblib.CacheAutoWeather_Item
-        oPogoda.day = oAstro
-
-        Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.AutoMoon)
-        oExif.PogodaAstro = oPogoda
-
-        Return oExif
-
-    End Function
-
-
-End Class
-
 
 Public Class Auto_Astro
     Inherits Vblib.AutotaggerBase
@@ -70,18 +18,35 @@ Public Class Auto_Astro
     Public Overrides ReadOnly Property RequireDate As Boolean = True
     Public Overrides ReadOnly Property RequireGeo As Boolean = True
 
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
-    Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
-#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+    Public Overrides Function CanTag(oFile As OnePic) As Boolean
+        If Not MyBase.CanTag(oFile) Then Return False ' sprawdzanie maski, niby niepotrzebne bo przecie¿ Do wszystkich ale =NO:
 
-        Dim oExif As Vblib.ExifTag
-
-        ' gdy takie ustawienie, nie wstawiaj tagu gdy jest pogoda
-        ' NIE mozna sprawdzac oExif.PogodaAstro, bo to jest z MOON, ASTRO, VisCross
         If Vblib.GetSettingsBool("uiAstroNotWhenWether") Then
             If oFile.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather) IsNot Nothing Then Return Nothing
         End If
 
+        Dim oGeo As BasicGeoposWithRadius = oFile.sumOfGeo
+        If oGeo Is Nothing Then Return False
+
+        If oFile.HasRealDate Then Return True
+
+        ' muszê mieæ datê dzienn¹ - ale skany mog¹ mieæ zakres OD - DO ten sam dzieñ
+        Dim dataMax As Date = oFile.GetMaxDate
+        Dim dataMin As Date = oFile.GetMinDate
+
+        If dataMin.Day <> dataMax.Day Then Return False
+        If dataMin.Month <> dataMax.Month Then Return False
+        If dataMin.Year <> dataMax.Year Then Return False
+
+        Return True
+
+    End Function
+
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+    Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+
+        If Not CanTag(oFile) Then Return Nothing
 
         ' spawdŸ datê zdjêcia
         Dim data As Date
@@ -99,7 +64,9 @@ Public Class Auto_Astro
         End If
 
         ' geo niby nie musimy mieæ, ale dla uproszczenia (AutoTag, AddGeo, AutoTag - nie doda³by wschodów/zachodów)
-        Dim oGeo As pkar.BasicGeopos = oFile.GetGeoTag
+        Dim oGeo As BasicGeoposWithRadius = oFile.sumOfGeo
+        If oGeo Is Nothing Then oGeo = oFile.GetGeoTag()
+
         If oGeo Is Nothing Then Return Nothing
 
         Dim oAstro As New Vblib.AutoWeatherDay
@@ -118,7 +85,7 @@ Public Class Auto_Astro
         'If Not oGeo.IsInsideEU Then
         '    timeZone = GuessTimeZone(oGeo)
         'Else
-        '    If EuroDST(data) Then timeZone += 1
+        '    If EuroDST(dataMax) Then timeZone += 1
         'End If
 
         oAstro.sunhour = Math.Round(CalculateSunHour(data, wschod.ToLocalTime, zachod.ToLocalTime), 2)
@@ -134,7 +101,7 @@ Public Class Auto_Astro
 
         Dim oPogoda As New Vblib.CacheAutoWeather_Item
         oPogoda.day = oAstro
-        oExif = New Vblib.ExifTag(Vblib.ExifSource.AutoAstro)
+        Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.AutoAstro)
 
         oExif.PogodaAstro = oPogoda
 

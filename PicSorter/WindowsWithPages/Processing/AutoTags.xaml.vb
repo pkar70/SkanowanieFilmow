@@ -7,12 +7,14 @@ Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.UI.Extensions
 Imports Auto_std2_Astro
 Imports Vblib
+Imports System.Threading
+Imports pkar
+Imports System.ComponentModel
 
 Public Class AutoTags
 
-    Private _lista As List(Of JedenEngine)
+    Private _lista As ObservableList(Of JedenEngine)
     Private _stopArchiving As Boolean
-
 
     Private Const MAX_BATCH_SAVE_METADATA As Integer = 100
 
@@ -71,38 +73,117 @@ Public Class AutoTags
             ProcessPic.GetBuffer(Me).SaveData()  ' bo zmieniono EXIF
             Window_Loaded(Nothing, Nothing)
         Else
-            Me.msgbox("Nic się nie zmieniło... Pewnie mechanizm jest nieaplikowalny do pozostałych zdjęć.")
+            Me.MsgBox("Nic się nie zmieniło... Pewnie mechanizm jest nieaplikowalny do pozostałych zdjęć.")
         End If
 
     End Sub
 
-    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+    Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
         Me.ProgRingInit(True, True)
 
-        _lista = New List(Of JedenEngine)
-        Dim iMax As Integer = ProcessPic.GetBuffer(Me).Count
+        Dim tryb As Boolean = Vblib.GetSettingsBool("uiAutotagsExact")
+        Await UstawListe(tryb)
+    End Sub
 
-        For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
+    Private Async Function UstawListe(tryb As Boolean) As Task
+
+
+        ' najpierw pokazujemy to co nie wymaga liczenia
+        _lista = New ObservableList(Of JedenEngine)
+        Dim iMax As Integer = ProcessPic.GetBuffer(Me).Count
+        Dim autoSelect As String = Vblib.GetSettingsString("uiDefaultAutoTags")
+
+        For Each oEngine As Vblib.AutotaggerBase In Vblib.gAutoTagery
             Dim oNew As New JedenEngine
-            oNew.nazwa = oEngine.Nazwa
-            'oNew.ineticon = If(oEngine.IsWeb, "🌍", "")
-            oNew.engine = oEngine
             oNew.maxCount = iMax
-            oNew.count = PoliczUstawione(oNew.nazwa)
-            oNew.dymekCount = vbCrLf & oNew.count & "/" & oNew.maxCount
-            If oNew.count = iMax Then
-                oNew.enabled = False
-                oNew.dymekCount &= " (komplet)"
-            End If
+            oNew.enabled = autoSelect.Contains(oEngine.Nazwa & "|")
+            oNew.nazwa = oEngine.Nazwa
+            oNew.engine = oEngine
             oNew.dymekAbout = oEngine.DymekAbout
 
             _lista.Add(oNew)
         Next
-
         uiLista.ItemsSource = _lista
+
+        Thread.Sleep(10)    ' pokaż na ekranie
+
+
+        ' teraz dopiero wyliczamy
+
+        Me.ProgRingShow(True)
+        Me.ProgRingSetText(If(tryb, "liczę dokładnie...", "sprawdzam"))
+
+        For Each oEngine As JedenEngine In _lista
+
+            If tryb Then
+                UstawDymekCountAllDone(oEngine)
+            Else
+                UstawDymekCount(oEngine)
+            End If
+
+            If oEngine.allDone Then oEngine.dymekCount &= " (komplet)"
+
+            oEngine.NotifyPropChange("count")
+            oEngine.NotifyPropChange("dymekCount")
+            oEngine.NotifyPropChange("count")
+        Next
+
+        Me.ProgRingShow(False)
+        Me.ProgRingSetText("")
+
+    End Function
+
+    Private Sub UstawDymekCount(oNew As JedenEngine)
+        oNew.count = PoliczUstawione(oNew.nazwa)
+        oNew.dymekCount = vbCrLf & oNew.count & "/" & oNew.maxCount
+        oNew.allDone = (oNew.count >= oNew.maxCount)
+
+        ' to jest zbyt długie - szukanie geotag tak często
+        'Dim iNotPossible As Integer = ProcessPic.GetBuffer(Me).GetList.
+        '    Where(Function(x) x.GetExifOfType(oNew.nazwa) IsNot Nothing).
+        'Where(Function(x) oNew.engine.CanTag(x)).Count
+
     End Sub
 
+
+    Private Sub UstawDymekCountAllDone(oNew As JedenEngine)
+
+        Dim countJest As Integer = 0
+        Dim countNieUmie As Integer = 0
+
+        Dim starttime = Date.Now
+
+        For Each oItem As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
+            If oItem.GetExifOfType(oNew.nazwa) IsNot Nothing Then
+                countJest += 1
+            Else
+                If Not oNew.engine.CanTag(oItem) Then countNieUmie += 1
+            End If
+        Next
+
+        'oNew.count = PoliczUstawione(oNew.nazwa)
+        'Dim iNotPossible As Integer = ProcessPic.GetBuffer(Me).GetList.
+        '    Where(Function(x) x.GetExifOfType(oNew.engine.CanTag(x)).
+        'Where(Function(x) oNew.engine.CanTag(x)).Count
+        oNew.count = countJest
+
+        If countNieUmie > 0 Then
+            oNew.dymekCount = $"{oNew.count} + {countNieUmie} = {oNew.count + countNieUmie} / {oNew.maxCount}"
+        Else
+            oNew.dymekCount = $"{oNew.count} / {oNew.maxCount}"
+        End If
+
+        If oNew.count + countNieUmie >= oNew.maxCount Then
+            oNew.allDone = True
+        Else
+            oNew.allDone = False
+        End If
+
+
+        Vblib.DumpMessage($"UstawWszystko({oNew.nazwa}), liczenie zajęło {(Date.Now - starttime).ToStringDHMS}")
+
+    End Sub
     Private Function PoliczUstawione(nazwa As String) As Integer
 
         Dim liczyk As Func(Of OnePic, Boolean)
@@ -144,7 +225,7 @@ Public Class AutoTags
         End If
 
 
-        Dim autoTagLock As String = GetAutoTagDisableKwd(oSrc)
+        Dim autoTagLock As String = oSrc.engine.GetAutoTagDisableKwd
 
         Dim iBatchMax As Integer = MAX_BATCH_SAVE_METADATA
 
@@ -202,14 +283,6 @@ Public Class AutoTags
 
     End Function
 
-    Private Function GetAutoTagDisableKwd(oSrc As JedenEngine) As String
-        Dim ret As String = oSrc.nazwa
-        Dim iInd As Integer = ret.IndexOf("_")
-        If iInd < 1 Then Return "=NO:" & ret
-        Return "=NO:" & ret.Substring(iInd + 1)
-    End Function
-
-
     Private Async Sub uiRemoveTags_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
         Dim oSrc As JedenEngine = oFE?.DataContext
@@ -253,6 +326,8 @@ Public Class AutoTags
     'End Sub
 
     Public Class JedenEngine
+        Implements ComponentModel.INotifyPropertyChanged
+
         Public Property enabled As Boolean
         Public Property nazwa As String
         'Public Property ineticon As String
@@ -263,6 +338,24 @@ Public Class AutoTags
         Public Property dymekAbout As String
 
         Public Property allDone As Boolean = True
+
+        Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
+
+        Public Sub NotifyPropChange(propertyName As String)
+            ' ale do niektórych to onepic się zmienia, więc niby rekurencyjnie powinno być :)
+            Dim evChProp As New PropertyChangedEventArgs(propertyName)
+            RaiseEvent PropertyChanged(Me, evChProp)
+        End Sub
+
     End Class
 
+End Class
+
+Public Class ConverterNegate
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim bulek As Boolean = CType(value, Boolean)
+        Return Not bulek
+    End Function
 End Class
