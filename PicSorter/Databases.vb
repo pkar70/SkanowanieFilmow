@@ -1,16 +1,18 @@
 ﻿Imports Vblib
 
+' nie w vblib, bo Database_SQL
+
 Public Class Databases
     Implements DatabaseInterface
 
     Private _configDir As String
     Private _bazyDanych As List(Of Vblib.DatabaseInterface)
 
-    Sub New(configDir As String)
-        _configDir = configDir
+    Sub New()
+        _configDir = Vblib.GetDataFolder
         _bazyDanych = New List(Of DatabaseInterface)
-        _bazyDanych.Add(New Vblib.DatabaseJSON(configDir))
-        _bazyDanych.Add(New Database_SQL.DatabaseSQL(configDir))
+        _bazyDanych.Add(New Vblib.DatabaseJSON(_configDir))
+        _bazyDanych.Add(New Database_SQL.DatabaseSQL(_configDir))
     End Sub
 
     Public ReadOnly Property IsEnabled As Boolean Implements DatabaseInterface.IsEnabled

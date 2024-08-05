@@ -25,7 +25,7 @@ Public Class Process_Watermark
     Private Shared Function EnsureWatermarkData() As Boolean
         If _watermark IsNot Nothing Then Return True
 
-        Dim sWatermarkFile As String = Application.GetDataFile("", "watermark.jpg")
+        Dim sWatermarkFile As String = vblib.GetDataFile("", "watermark.jpg")
         If Not IO.File.Exists(sWatermarkFile) Then Return False     ' musimy mieć plik ze znakiem wodnym
 
         Dim watermarkBytes As Byte() = File.ReadAllBytes(sWatermarkFile)

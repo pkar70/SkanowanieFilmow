@@ -69,6 +69,11 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="userControls\ButtonLeftContext.vb" />
+    <Compile Include="userControls\ButtonPopupmenuV.vb" />
+    <Compile Include="userControls\ButtonPopupmenu.xaml.vb">
+      <DependentUpon>ButtonPopupmenu.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="userControls\IconUnicode.vb" />
     <Compile Include="userControls\MenuItemIcon.vb" />
     <Compile Include="userControls\MenuVertical.vb" />
     <Page Include="MainWindow.xaml">
@@ -83,6 +88,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="userControls\ButtonPopupmenu.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Import Include="System.Threading.Tasks" />
@@ -136,6 +145,9 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="trayIcon1.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="userControls\uzycia.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>

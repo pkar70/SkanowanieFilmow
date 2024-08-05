@@ -42,20 +42,22 @@ Public Class BufferSortowania
     'Private _RootDataPath As String
     Private _rootPictures As String
     Private _pliki As FilesInBuffer
+    Private _nazwa As String
 
     ''' <summary>
     ''' wczytuje indeks zdjęć z pliku .json
     ''' </summary>
     ''' <param name="sRootDataPath">ścieżka do katalogu z plikami .json</param>
     ''' <param name="slowka">lista słów kluczowych (potrzebna w .lib)</param>
-    Public Sub New(sRootDataPath As String, slowka As KeywordsList)
+    Public Sub New(sRootDataPath As String)
         '_RootDataPath = sRootDataPath
         _pliki = New FilesInBuffer(sRootDataPath)
         _pliki.Load()
-        _pliki.RecalcSumsy(slowka)
+        _pliki.RecalcSumsy(Vblib.GetKeywords)
         ' AddSortBy
         'AddTyp3()
         _rootPictures = GetSettingsString("uiFolderBuffer")
+        _nazwa = ""
     End Sub
 
     ''' <summary>
@@ -64,15 +66,35 @@ Public Class BufferSortowania
     ''' <param name="sRootDataPath">ścieżka do katalogu z plikami .json</param>
     ''' <param name="bufferFolder">nazwa bufora (podkatalogu ze zdjęciami)</param>
     ''' <param name="slowka">lista słów kluczowych (potrzebna w .lib)</param>
-    Public Sub New(sRootDataPath As String, bufferFolder As String, slowka As KeywordsList)
+    Public Sub New(sRootDataPath As String, bufferFolder As String)
         '_RootDataPath = sRootDataPath
         _pliki = New FilesInBuffer(sRootDataPath, "u." & bufferFolder & ".json")
         _pliki.Load()
-        _pliki.RecalcSumsy(slowka)
+        _pliki.RecalcSumsy(Vblib.GetKeywords)
 
         _rootPictures = IO.Path.Combine(GetSettingsString("uiFolderBuffer"), bufferFolder)
+        _nazwa = bufferFolder
     End Sub
 
+    Public Function GetBufferName() As String
+        Return _nazwa
+    End Function
+
+    Public Function IsDefaultBuffer() As Boolean
+        Return String.IsNullOrWhiteSpace(_nazwa)
+    End Function
+
+    Private Function GetStagesSettName() As String
+        Return $"stages_{_nazwa}"
+    End Function
+
+    Public Function GetStagesSettings() As String
+        Return Vblib.GetSettingsString(GetStagesSettName)
+    End Function
+
+    Public Sub SetStagesSettings(listaCheckow As String)
+        Vblib.SetSettingsString(GetStagesSettName, listaCheckow)
+    End Sub
 
 #If False Then
     ' *TODO* to później można wyłączyć, bo to uzupełnia to co się powinno zrobić wcześniej

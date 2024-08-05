@@ -30,7 +30,7 @@ GetType(UserControlPostProcessPipeline), New FrameworkPropertyMetadata(String.Em
     Private Sub WypelnMenuPostprocesory()
         uiMenuPostProcessors.Items.Clear()
 
-        For Each oItem As Vblib.PostProcBase In Application.gPostProcesory
+        For Each oItem As Vblib.PostProcBase In Vblib.gPostProcesory
             uiMenuPostProcessors.Items.Add(StworzMenuItemPostProcesora(oItem))
         Next
 

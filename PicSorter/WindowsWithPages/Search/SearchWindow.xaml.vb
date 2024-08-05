@@ -105,7 +105,7 @@ Public Class SearchWindow
 
     Private Sub ProbaWczytaniaJSON()
         Dim lista As List(Of Vblib.OnePic)
-        Dim sTxt = IO.File.ReadAllText(Application.GetDataFile("", "archIndexFull.json"))
+        Dim sTxt = IO.File.ReadAllText(vblib.GetDataFile("", "archIndexFull.json"))
         sTxt &= "]"
         Dim sErr As String = ""
         Try
@@ -209,7 +209,7 @@ Public Class SearchWindow
 
             Dim listaFolderow As New List(Of Vblib.OneDir)
             For Each nazwa As String In From c In listaNazwFolderow Order By c Distinct
-                Dim oFolder As Vblib.OneDir = Application.GetDirTree.GetDirFromTargetDir(nazwa)
+                Dim oFolder As Vblib.OneDir = vblib.GetDirTree.GetDirFromTargetDir(nazwa)
                 If oFolder Is Nothing Then
                     oFolder = New Vblib.OneDir
                     oFolder.fullPath = nazwa

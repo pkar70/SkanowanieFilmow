@@ -21,7 +21,7 @@ Public NotInheritable Class PicMenuAutotaggers
         oMenuItem.Items.Clear()
         ' _UImenuOnClick = oEventHandler
 
-        For Each oEngine As Vblib.AutotaggerBase In Application.gAutoTagery
+        For Each oEngine As Vblib.AutotaggerBase In Vblib.gAutoTagery
             Dim oNew As New MenuItem
             oNew.Header = oEngine.Nazwa.Replace("_", "__")
 

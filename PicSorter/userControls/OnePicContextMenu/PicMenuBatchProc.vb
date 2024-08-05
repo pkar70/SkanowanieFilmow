@@ -20,7 +20,7 @@ Public NotInheritable Class PicMenuBatchProc
     Private Shared Sub WypelnMenuBatchProcess(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
         oMenuItem.Items.Clear()
 
-        For Each oEngine As Vblib.PostProcBase In Application.gPostProcesory
+        For Each oEngine As Vblib.PostProcBase In Vblib.gPostProcesory
             Dim oNew As New MenuItem
             oNew.Header = oEngine.Nazwa.Replace("_", "__")
             oNew.DataContext = oEngine

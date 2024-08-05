@@ -31,7 +31,7 @@ Public Class RemoteDescr
 
     Private Sub RefreshLista()
         uiLista.ItemsSource = Nothing
-        uiLista.ItemsSource = Application.GetShareDescriptionsIn.FindAllForPic(_thumb.oPic)
+        uiLista.ItemsSource = vblib.GetShareDescriptionsIn.FindAllForPic(_thumb.oPic)
     End Sub
 
     Private Sub uiDel_Click(sender As Object, e As RoutedEventArgs)
@@ -53,12 +53,12 @@ Public Class RemoteDescr
     End Sub
 
     Private Sub Usun(oDesc As ShareDescription)
-        Application.GetShareDescriptionsIn.Remove(oDesc)
+        vblib.GetShareDescriptionsIn.Remove(oDesc)
         RefreshLista()
     End Sub
 
     Private Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
         ' na zamykaniu okna robimy Save zmienionych danych (bufor.Save jest na zamykaniu ProcessBrowse)
-        Application.GetShareDescriptionsIn.Save(True)
+        vblib.GetShareDescriptionsIn.Save(True)
     End Sub
 End Class

@@ -72,7 +72,7 @@ Public Class OCRwnd
         End If
 
         ' użyje wszystkich z OCR w nazwie, może w efekcie trafi na jakiś który umie ten typ pliku obsłużyć
-        For Each engine As Vblib.AutotaggerBase In Application.gAutoTagery
+        For Each engine As Vblib.AutotaggerBase In Vblib.gAutoTagery
             If Not engine.Nazwa.Contains("OCR") Then Continue For
 
             Dim oEngOCR As AutoTagOCR_Base = TryCast(engine, AutoTagOCR_Base)

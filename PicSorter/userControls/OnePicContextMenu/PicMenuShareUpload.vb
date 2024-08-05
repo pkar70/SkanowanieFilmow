@@ -21,7 +21,7 @@ Public NotInheritable Class PicMenuShareUpload
 
         If Not InitEnableDisable("Share peers", "Dzielenie się zdjęciami", True) Then Return
 
-        If Application.GetShareLogins.Count > 0 Then
+        If vblib.GetShareLogins.Count > 0 Then
             _menuAllow = New MenuItem With {.Header = "Force allow"}
             AddHandler _menuAllow.SubmenuOpened, AddressOf OpeningForceAllowMenu
             WypelnMenuLogins(_menuAllow, AddressOf ActionSharingLogin)
@@ -34,7 +34,7 @@ Public NotInheritable Class PicMenuShareUpload
 
         End If
 
-        If Application.GetShareServers.Count > 0 Then
+        If vblib.GetShareServers.Count > 0 Then
             Dim oNew As New MenuItem With {.Header = "Send to Server"}
             Me.Items.Add(oNew)
             WypelnMenuServers(oNew, AddressOf ActionSharingServer)
@@ -186,7 +186,7 @@ Public NotInheritable Class PicMenuShareUpload
     Private Sub WypelnMenuLogins(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
         oMenuItem.Items.Clear()
 
-        For Each oLogin As Vblib.ShareLogin In Application.GetShareLogins
+        For Each oLogin As Vblib.ShareLogin In vblib.GetShareLogins
             If oLogin.displayName.EqualsCI("FORPICSEARCH") Then Continue For
             Dim oNew As New MenuItem
             oNew.Header = oLogin.displayName
@@ -235,7 +235,7 @@ Public NotInheritable Class PicMenuShareUpload
     Public Shared Sub WypelnMenuServers(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
         oMenuItem.Items.Clear()
 
-        For Each oLogin As Vblib.ShareServer In Application.GetShareServers
+        For Each oLogin As Vblib.ShareServer In vblib.GetShareServers
 
             Dim oNew As New MenuItem
             oNew.Header = oLogin.displayName
@@ -299,7 +299,7 @@ Public NotInheritable Class PicMenuShareUpload
         Else
 
             oPic.ResetPipeline()
-            Dim ret As String = Await oPic.RunPipeline(_ShareSrvr.uploadProcessing, Application.gPostProcesory, False)
+            Dim ret As String = Await oPic.RunPipeline(_ShareSrvr.uploadProcessing, Vblib.gPostProcesory, False)
             If ret <> "" Then
                 ' jakiś błąd
                 _allErrs &= ret & vbCrLf

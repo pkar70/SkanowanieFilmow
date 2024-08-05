@@ -25,13 +25,12 @@ Public Class CloudPublishersList
 
     Private gCloudPublishers As List(Of Vblib.CloudPublish)
 
-    Private gCloudConfigs As New BaseList(Of Vblib.CloudConfig)(Application.GetDataFolder, "cloudPublishers.json")
+    Private gCloudConfigs As New BaseList(Of Vblib.CloudConfig)(vblib.GetDataFolder, "cloudPublishers.json")
 
     Private _DataDir As String
 
-    Public Sub New(sDataDir As String)
-        _DataDir = sDataDir
-
+    Public Sub New()
+        _DataDir = Vblib.GetDataFolder
     End Sub
 
     Public Function Load() As Boolean
@@ -80,7 +79,7 @@ Public Class CloudPublishersList
 
         For Each oProvider As Vblib.CloudPublish In gCloudProviders
             If oProvider.sProvider = oConfig.sProvider Then
-                Return oProvider.CreateNew(oConfig, Application.gPostProcesory, sDataDir)
+                Return oProvider.CreateNew(oConfig, Vblib.gPostProcesory, sDataDir)
             End If
         Next
 
@@ -118,27 +117,27 @@ Public Class CloudArchivesList
     'New CloudArch_std14_Shutterfly.Cloud_Shutterfly
     ' }
 
-    Private gCloudArchives As List(Of Vblib.CloudArchive)
+    'Private gCloudArchives As List(Of Vblib.CloudArchive)
 
     Private Const CLOUDARCH_FILENAME As String = "cloudArchives.json"
-    Private gCloudConfigs As New BaseList(Of Vblib.CloudConfig)(Application.GetDataFolder, CLOUDARCH_FILENAME)
+    Private gCloudConfigs As New BaseList(Of Vblib.CloudConfig)(vblib.GetDataFolder, CLOUDARCH_FILENAME)
 
     Private _DataDir As String
 
-    Public Sub New(sDataDir As String)
-        _DataDir = sDataDir
+    Public Sub New()
+        _DataDir = Vblib.GetDataFolder
     End Sub
 
     Public Function Load() As Boolean
 
         gCloudConfigs.Load()
 
-        gCloudArchives = New List(Of Vblib.CloudArchive)
+        Vblib.LibgCloudArchives = New List(Of Vblib.CloudArchive)
 
         For Each oItem As Vblib.CloudConfig In gCloudConfigs
             Dim oNew As Vblib.CloudArchive = GetCloudInstantion(oItem)
             If oNew IsNot Nothing Then
-                gCloudArchives.Add(oNew)
+                Vblib.LibgCloudArchives.Add(oNew)
             End If
         Next
 
@@ -148,7 +147,7 @@ Public Class CloudArchivesList
     Public Shared Sub CopyToOneDrive(sSourceFileName As String, sSettName As String)
         If Not Vblib.GetSettingsBool(sSettName) Then Return
 
-        Dim srcFile As String = IO.Path.Combine(Application.GetDataFolder, sSourceFileName)
+        Dim srcFile As String = IO.Path.Combine(vblib.GetDataFolder, sSourceFileName)
         If Not IO.File.Exists(srcFile) Then Return
 
         Dim dstFile As String = IO.Path.Combine(Application.GetOneDrivePath, sSourceFileName)
@@ -159,7 +158,7 @@ Public Class CloudArchivesList
     Public Function Save(Optional bIgnoreNulls As Boolean = False) As Boolean
         gCloudConfigs.Clear()
 
-        For Each oItem As Vblib.CloudArchive In gCloudArchives
+        For Each oItem As Vblib.CloudArchive In Vblib.LibgCloudArchives
             gCloudConfigs.Add(oItem.konfiguracja)
         Next
 
@@ -173,7 +172,7 @@ Public Class CloudArchivesList
 
         For Each oProvider As Vblib.CloudArchive In gCloudProviders
             If oProvider.sProvider = oConfig.sProvider Then
-                Return oProvider.CreateNew(oConfig, Application.gPostProcesory, _DataDir)
+                Return oProvider.CreateNew(oConfig, Vblib.gPostProcesory, _DataDir)
             End If
         Next
 
@@ -181,7 +180,7 @@ Public Class CloudArchivesList
     End Function
 
     Public Function GetList() As List(Of Vblib.CloudArchive)
-        Return gCloudArchives
+        Return Vblib.LibgCloudArchives
     End Function
 
     Public Function GetProvidersList() As List(Of Vblib.CloudArchive)
@@ -189,10 +188,10 @@ Public Class CloudArchivesList
     End Function
 
     Public Sub Remove(oItem As Vblib.CloudArchive)
-        gCloudArchives.Remove(oItem)
+        Vblib.LibgCloudArchives.Remove(oItem)
     End Sub
     Public Sub Add(oNewConfig As Vblib.CloudConfig)
-        gCloudArchives.Add(GetCloudInstantion(oNewConfig))
+        Vblib.LibgCloudArchives.Add(GetCloudInstantion(oNewConfig))
     End Sub
 
 End Class

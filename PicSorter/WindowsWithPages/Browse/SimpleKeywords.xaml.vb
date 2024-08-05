@@ -27,7 +27,7 @@
 
         'BrowseKeywordsWindow.ApplyKeywordsToExif(_oNewExif, listaKwds)
 
-        Dim _oNewExif As Vblib.ExifTag = Application.GetKeywords.CreateManualTagFromKwds(newKwds)
+        Dim _oNewExif As Vblib.ExifTag = vblib.GetKeywords.CreateManualTagFromKwds(newKwds)
 
         Dim oPicek As ProcessBrowse.ThumbPicek = DataContext
         oPicek.oPic.ReplaceOrAddExif(_oNewExif)

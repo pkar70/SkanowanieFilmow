@@ -30,7 +30,7 @@ Public Class SettingsDirTree
 
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
-        Application.GetDirTree.Save(True)
+        vblib.GetDirTree.Save(True)
         CloudArchivesList.CopyToOneDrive("dirstree.json", "uiUseOneDrive")
         Me.Close()
     End Sub
@@ -97,7 +97,7 @@ Public Class SettingsDirTree
     Private Async Sub uiAddEditDone_Click(sender As Object, e As RoutedEventArgs)
 
         If _addMode Then
-            If Application.GetDirTree.IdExists(uiId.Text) Then
+            If vblib.GetDirTree.IdExists(uiId.Text) Then
                 vb14.DialogBox("Taka nazwa już istnieje, wybierz inną")
                 Return
             End If
@@ -130,7 +130,7 @@ Public Class SettingsDirTree
 
     Private Sub RefreshList()
         uiTreeView.ItemsSource = Nothing
-        uiTreeView.ItemsSource = Application.GetDirTree
+        uiTreeView.ItemsSource = vblib.GetDirTree
     End Sub
 
     Private Sub uiExportItem_Click(sender As Object, e As RoutedEventArgs)
@@ -175,7 +175,7 @@ Public Class SettingsDirTree
 
         ' nie trzeba we flat wszystkich katalogów, bo wystarczy prefix (tylko o co chodziło w tym zapisie?)
         Dim bHasKeys As Boolean = False
-        For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+        For Each oPic As Vblib.OnePic In vblib.GetBuffer.GetList
             If oPic.TargetDir Is Nothing Then Continue For
             ' tu było StartsWith, ale przecież teraz mamy pełne ścieżki więc musimy Contains
             If oPic.TargetDir.Contains(oItem.sId) Then
@@ -190,7 +190,7 @@ Public Class SettingsDirTree
         End If
 
         ' kasowanie
-        Application.GetDirTree.Remove(oItem)
+        vblib.GetDirTree.Remove(oItem)
         RefreshList()
     End Sub
 
@@ -205,7 +205,7 @@ Public Class SettingsDirTree
 
         Application.ShowWait(True)
         ' wczytanie istniejących folderów, tree, jako podkatalogi do item
-        Application.GetDirTree.AddSubfolderTree(oItem, sFolder)
+        vblib.GetDirTree.AddSubfolderTree(oItem, sFolder)
         Application.ShowWait(False)
 
         RefreshList()
@@ -255,7 +255,7 @@ Public Class SettingsDirTree
 
         ' mamy jakieś query wpisane, to szukamy wedle niego
         Dim lista As New List(Of Vblib.OneDir)
-        For Each oFold In Application.GetDirTree.ToFlatList
+        For Each oFold In vblib.GetDirTree.ToFlatList
             If oFold.notes.ContainsCIAI(query) OrElse oFold.sId.ContainsCIAI(query) Then
                 lista.Add(oFold)
             End If
@@ -268,12 +268,12 @@ Public Class SettingsDirTree
 
         Dim doUsuniecia As New List(Of OneDir)
 
-        Dim minPicDate As Date = Application.GetBuffer.GetMinDate
-        Dim maxPicDate As Date = Application.GetBuffer.GetMaxDate
+        Dim minPicDate As Date = vblib.GetBuffer.GetMinDate
+        Dim maxPicDate As Date = vblib.GetBuffer.GetMaxDate
 
         vb14.DumpMessage($"Zakres dat zdjec: {minPicDate.ToExifString} do {maxPicDate.ToExifString}")
 
-        For Each oFold In Application.GetDirTree.ToFlatList
+        For Each oFold In vblib.GetDirTree.ToFlatList
             If String.IsNullOrEmpty(oFold.fullPath) Then Continue For
             vb14.DumpMessage($"analyzing folder {oFold.fullPath}")
 
@@ -283,7 +283,7 @@ Public Class SettingsDirTree
             If maxPicDate < dataFolderu Then Continue For
             vb14.DumpMessage("data folderu w zakresie dat bufora")
 
-            For Each oPic As OnePic In Application.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrWhiteSpace(x.TargetDir))
+            For Each oPic As OnePic In vblib.GetBuffer.GetList.Where(Function(x) Not String.IsNullOrWhiteSpace(x.TargetDir))
                 If oPic.TargetDir.StartsWithOrdinal(oFold.fullPath) Then
                     vb14.DumpMessage("  jest taki w aktualnym buforze, więc go pomijam")
                     Exit For
@@ -294,7 +294,7 @@ Public Class SettingsDirTree
                 Dim bFound As Boolean = False
                 Dim parentPath As String = IO.Path.GetDirectoryName(oFold.fullPath)
                 vb14.DumpMessage($"  nie ma w aktualnym buforze, więc sprawdzam parenta {parentPath}")
-                For Each oPicParent As OnePic In Application.GetBuffer.GetList
+                For Each oPicParent As OnePic In vblib.GetBuffer.GetList
                     If oPicParent.TargetDir.StartsWithOrdinal(parentPath) Then
                         vb14.DumpMessage($"  i parent jest w buforze")
                         bFound = True

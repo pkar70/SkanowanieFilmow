@@ -27,7 +27,7 @@ Public NotInheritable Class PicMenuDescribe
         OneOrMany(Sub(x)
                       x.AddDescription(oDesc)
                       If Not String.IsNullOrWhiteSpace(x.sharingFromGuid) Then
-                          Application.GetShareDescriptionsOut.AddPicDescForPicLastPeer(x, oDesc.comment)
+                          vblib.GetShareDescriptionsOut.AddPicDescForPicLastPeer(x, oDesc.comment)
                       End If
 
                   End Sub)

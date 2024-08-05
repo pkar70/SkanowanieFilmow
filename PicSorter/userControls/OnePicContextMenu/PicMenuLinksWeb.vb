@@ -229,7 +229,7 @@ Public Class PicMenuLinksWeb
 
         ' link do zdjęcia w default buffer
         Dim oItem As Vblib.OnePic
-        oItem = Application.GetBuffer.GetList.FirstOrDefault(Function(x) x.serno = serno)
+        oItem = vblib.GetBuffer.GetList.FirstOrDefault(Function(x) x.serno = serno)
         If oItem IsNot Nothing Then
             ' mamy zdjęcie w buforze, więc możemy pokazać
             Dim oWnd As New ShowBig(oItem, False, False)

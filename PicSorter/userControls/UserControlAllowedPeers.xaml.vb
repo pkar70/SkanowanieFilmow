@@ -28,7 +28,7 @@ GetType(UserControlAllowedPeers), New FrameworkPropertyMetadata(String.Empty))
     Private Sub WypelnMenuPeers()
         uiMenuPostProcessors.Items.Clear()
 
-        For Each oItem As Vblib.ShareLogin In Application.GetShareLogins
+        For Each oItem As Vblib.ShareLogin In vblib.GetShareLogins
             uiMenuPostProcessors.Items.Add(StworzMenuItemPeer(oItem))
         Next
 

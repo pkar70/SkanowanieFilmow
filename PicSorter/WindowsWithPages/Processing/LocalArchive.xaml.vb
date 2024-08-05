@@ -304,7 +304,7 @@ Public Class LocalArchive
 
 
         ProcessPic.GetBuffer(Me).SaveData()  ' bo prawdopodobnie zmiany są w oPic.Archived
-        If bDirTreeToSave Then Application.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
+        If bDirTreeToSave Then vblib.GetDirTree.Save(True)   ' bo jakies katalogi całkiem możliwe że dodane są; z ignorowaniem NULLi
 
         Application.gDbase.AddFiles(newlyArchived)
 

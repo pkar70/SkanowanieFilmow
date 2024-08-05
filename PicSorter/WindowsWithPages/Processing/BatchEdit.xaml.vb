@@ -52,7 +52,7 @@ Public Class BatchEdit
         _lista = New List(Of JedenEngine)
         _iMax = ProcessPic.GetBuffer(Me).Count
 
-        For Each oEngine As Vblib.PostProcBase In Application.gPostProcesory
+        For Each oEngine As Vblib.PostProcBase In Vblib.gPostProcesory
             If oEngine.Nazwa.Contains("(") Then Continue For
 
             Dim oNew As New JedenEngine

@@ -8,7 +8,7 @@ Imports pkar.UI.Extensions
 
 Class SettingsMapsy
 
-    Private Shared _lista As New BaseList(Of JednaMapa)(Application.GetDataFolder)
+    Private Shared _lista As New BaseList(Of JednaMapa)(Vblib.GetDataFolder)
 
     Public Shared Sub DodajMapyDoNugeta()
         _lista.Load()

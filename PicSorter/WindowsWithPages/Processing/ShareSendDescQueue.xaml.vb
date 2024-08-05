@@ -14,7 +14,7 @@ Public Class ShareSendDescQueue
 
         _lista = New List(Of DisplayQueuePeer)
 
-        For Each oDesc As Vblib.ShareDescription In Application.GetShareDescriptionsOut
+        For Each oDesc As Vblib.ShareDescription In vblib.GetShareDescriptionsOut
 
             Dim oItem As DisplayQueuePeer = _lista.Find(Function(x) oDesc.lastPeer.ContainsCI(x.peer.login.ToString))
             If oItem IsNot Nothing Then
@@ -23,7 +23,7 @@ Public Class ShareSendDescQueue
                 oItem = New DisplayQueuePeer
                 oItem.count = 1
 
-                oItem.peer = Application.GetShareServers.Find(Function(x) oDesc.lastPeer.ContainsCI(x.login.ToString))
+                oItem.peer = vblib.GetShareServers.Find(Function(x) oDesc.lastPeer.ContainsCI(x.login.ToString))
                 oItem.nazwa = oItem.peer?.displayName
                 _lista.Add(oItem)
             End If
@@ -72,7 +72,7 @@ Public Class ShareSendDescQueue
 
         Me.ProgRingShow(True)
 
-        Await lib14_httpClnt.httpKlient.UploadPicDescriptions(Application.GetShareDescriptionsOut, oSrc.peer)
+        Await lib14_httpClnt.httpKlient.UploadPicDescriptions(vblib.GetShareDescriptionsOut, oSrc.peer)
 
         Me.ProgRingShow(False)
 

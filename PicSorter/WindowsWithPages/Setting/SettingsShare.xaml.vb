@@ -27,9 +27,9 @@ Class SettingsShare
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiServerEnabled.GetSettingsBool
         uiUploadBlocked.GetSettingsBool
-        uiServerEnabled.IsEnabled = (Application.GetShareLogins.Count > 0)
+        uiServerEnabled.IsEnabled = (vblib.GetShareLogins.Count > 0)
         uiMyName.Text = Environment.MachineName
-        uiLastAccess.DataContext = Application.gLastLoginSharing
+        uiLastAccess.DataContext = vblib.gLastLoginSharing
         uiSharingAutoUploadComment.GetSettingsBool
         'uiWebBuffPicLimit.GetSettingsInt()
         'uiHttpLog.GetSettingsBool
@@ -48,12 +48,7 @@ Class SettingsShare
     End Sub
 
     Public Shared Sub StartServicing()
-        Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(
-                Application.GetShareLogins, Application.gDbase,
-                Application.gLastLoginSharing, Application.GetBuffer,
-                Application.GetShareDescriptionsIn, Application.GetShareDescriptionsOut,
-                Application.gPostProcesory,
-                Application.GetDataFolder)
+        Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(Application.gDbase)
         Application.gWcfServer.StartSvc()
 
     End Sub

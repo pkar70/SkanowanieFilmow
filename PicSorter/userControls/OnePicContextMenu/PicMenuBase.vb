@@ -96,24 +96,34 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     End Sub
 
     Protected Function GetSelectedItems() As List(Of ProcessBrowse.ThumbPicek)
-        Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
 
-        If fe?.SelectedItems Is Nothing Then Return Nothing
+        Return TryCast(Window.GetWindow(Me), ProcessBrowse)?.GetSelectedThumbs
 
-        Dim ret As New List(Of ProcessBrowse.ThumbPicek)
-        For Each oThumb As ProcessBrowse.ThumbPicek In fe.SelectedItems
-            ret.Add(oThumb)
-        Next
+        'Dim cbox As CheckBox = TryCast(FindUiElement("uiPodpisCheckbox"), CheckBox)
+        'If cbox IsNot Nothing AndAlso cbox.IsChecked Then
+        '    Dim wnd As ProcessBrowse = Window.GetWindow(Me)
+        '    ' *TODO* ma zwrócić listę z IsChecked wzietą!
+        '    Return
+        'End If
 
-        Return ret
+        'Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
+
+        'If fe?.SelectedItems Is Nothing Then Return Nothing
+
+        'Dim ret As New List(Of ProcessBrowse.ThumbPicek)
+        'For Each oThumb As ProcessBrowse.ThumbPicek In fe.SelectedItems
+        '    ret.Add(oThumb)
+        'Next
+
+        'Return ret
     End Function
     Protected Function GetSelectedItemsAsPics() As List(Of Vblib.OnePic)
-        Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
-        If fe?.SelectedItems Is Nothing Then Return Nothing
+        'Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
+        'If fe?.SelectedItems Is Nothing Then Return Nothing
 
         Dim ret As New List(Of Vblib.OnePic)
 
-        For Each oThumb As ProcessBrowse.ThumbPicek In fe.SelectedItems
+        For Each oThumb As ProcessBrowse.ThumbPicek In GetSelectedItems()
             ret.Add(oThumb.oPic)
         Next
 
@@ -122,19 +132,21 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     End Function
 
     Protected Function GetFullLista() As List(Of ProcessBrowse.ThumbPicek)
-        Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
 
-        If fe?.ItemsSource Is Nothing Then Return Nothing
+        Return TryCast(Window.GetWindow(Me), ProcessBrowse)?.GetAllThumbs
 
-        Dim ret As New List(Of ProcessBrowse.ThumbPicek)
-        For Each oThumb As ProcessBrowse.ThumbPicek In fe.ItemsSource
-            ret.Add(oThumb)
-        Next
+        'Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
 
-        Return ret
+        'If fe?.ItemsSource Is Nothing Then Return Nothing
 
-        'Return TryCast(fe?.ItemsSource, List(Of ProcessBrowse.ThumbPicek))
-        'Return fe?.Items
+        'Dim ret As New List(Of ProcessBrowse.ThumbPicek)
+        'For Each oThumb As ProcessBrowse.ThumbPicek In fe.ItemsSource
+        '    ret.Add(oThumb)
+        'Next
+
+        'Return ret
+
+
     End Function
 
     Protected Function FindUiElement(name As String) As FrameworkElement

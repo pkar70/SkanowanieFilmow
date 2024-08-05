@@ -76,7 +76,7 @@ Public Class PicMenuKwds
         Dim kwd As String = oFE.Header
 
         OneOrMany(Sub(x)
-                      x.RemoveKeyword(kwd, Application.GetKeywords)
+                      x.RemoveKeyword(kwd, vblib.GetKeywords)
                   End Sub
         )
 
@@ -96,7 +96,7 @@ Public Class PicMenuKwds
     Private Sub uiKwdsPaste_Click(sender As Object, e As RoutedEventArgs)
 
         OneOrMany(Sub(x)
-                      x.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(_clipKwds & " " & x.GetAllKeywords))
+                      x.ReplaceOrAddExif(vblib.GetKeywords.CreateManualTagFromKwds(_clipKwds & " " & x.GetAllKeywords))
                       x.sumOfKwds = x.GetAllKeywords & " "
                   End Sub
         )
@@ -118,7 +118,7 @@ Public Class PicMenuKwds
     Private Sub uiKwdsForce_Click(sender As Object, e As RoutedEventArgs)
         ' to jest trochę ryzykowne!
         OneOrMany(Sub(x)
-                      x.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(_clipKwds))
+                      x.ReplaceOrAddExif(vblib.GetKeywords.CreateManualTagFromKwds(_clipKwds))
                       x.sumOfKwds = x.GetAllKeywords & " "
                   End Sub
         )

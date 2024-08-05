@@ -4,7 +4,7 @@ Imports Vblib
 
 Class SettingsShareServers
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        uiLista.ItemsSource = Application.GetShareServers.OrderBy(Function(x) x.displayName)
+        uiLista.ItemsSource = Vblib.GetShareServers.OrderBy(Function(x) x.displayName)
     End Sub
 
     Private Async Sub uiAddSrv_Click(sender As Object, e As RoutedEventArgs)
@@ -22,8 +22,8 @@ Class SettingsShareServers
         oNew.displayName = Await Vblib.DialogBoxInputAllDirectAsync("Pod jaką nazwą zapamiętać go?")
         If oNew.displayName = "" Then Return
 
-        Application.GetShareServers.Add(oNew)
-        Application.GetShareServers.Save(True)
+        Vblib.GetShareServers.Add(oNew)
+        Vblib.GetShareServers.Save(True)
         Page_Loaded(Nothing, Nothing)
     End Sub
 
@@ -51,12 +51,12 @@ Class SettingsShareServers
 
         If Not Await Vblib.DialogBoxYNAsync($"Na pewno usunąć serwer {oItem.displayName}?") Then Return
 
-        Application.GetShareServers.Remove(oItem)
+        Vblib.GetShareServers.Remove(oItem)
 
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
-        Application.GetShareServers.Save(True)
+        Vblib.GetShareServers.Save(True)
     End Sub
 End Class
 

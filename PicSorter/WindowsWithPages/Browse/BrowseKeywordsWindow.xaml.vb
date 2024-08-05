@@ -47,7 +47,7 @@ Public Class BrowseKeywordsWindow
         _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
 
         ' bo jak nie ma żadnych tagów, to nie kasował oznaczeń
-        Application.GetKeywords.ToFlatList.ForEach(Sub(x) x.bChecked = False)
+        vblib.GetKeywords.ToFlatList.ForEach(Sub(x) x.bChecked = False)
 
         Dim currentFlatKwds As String = uiPinUnpin.EffectiveDatacontext?.oPic.GetAllKeywords
         uiSelectedKwds.Text = If(currentFlatKwds, "")
@@ -70,7 +70,7 @@ Public Class BrowseKeywordsWindow
         uiEdit.IsEnabled = False
         uiClear.IsEnabled = False
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords.ToFlatList
             oItem.bEnabled = True
             oItem.bChecked = False
         Next
@@ -134,7 +134,7 @@ Public Class BrowseKeywordsWindow
     Public Shared Function GetListOfSelectedKeywords() As List(Of Vblib.OneKeyword)
         Dim lKeys As New List(Of Vblib.OneKeyword)
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords.ToFlatList
             If oItem.bChecked Then lKeys.Add(oItem)
         Next
 
@@ -159,7 +159,7 @@ Public Class BrowseKeywordsWindow
     End Sub
 
     Private Sub uiClear_Click(sender As Object, e As RoutedEventArgs)
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords.ToFlatList
             oItem.bChecked = False
         Next
         uiSelectedKwds.Text = ""
@@ -220,9 +220,9 @@ Public Class BrowseKeywordsWindow
         ' step 2: znajdź - ale hierarchicznie!
 
         If uiHideKeywords.IsChecked Then
-            uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList.Where(Function(x) x.bEnabled)
+            uiLista.ItemsSource = vblib.GetKeywords.GetKeyword(sId).ToFlatList.Where(Function(x) x.bEnabled)
         Else
-            uiLista.ItemsSource = Application.GetKeywords.GetKeyword(sId).ToFlatList
+            uiLista.ItemsSource = vblib.GetKeywords.GetKeyword(sId).ToFlatList
         End If
     End Sub
 
@@ -249,7 +249,7 @@ Public Class BrowseKeywordsWindow
 
         uiGrupy.Items.Add(RECENT_LABEL)
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords
             If oItem.SubItems Is Nothing Then Continue For
             If oItem.SubItems.Count < 1 Then Continue For
             ' zostaje własna rekurencja, bo chodzi o indent w hierarchii
@@ -268,7 +268,7 @@ Public Class BrowseKeywordsWindow
     Private Sub ZablokujNiezgodne()
         vb14.DumpCurrMethod()
 
-        Application.GetKeywords.EnableDisableAll(True)
+        vblib.GetKeywords.EnableDisableAll(True)
         ' OdblokujWszystkie() ' 40 ms przed usunięciem DumpCurrMethod z ToFlat, 2 ms po tym
         ZablokujNiezgodneWedlePic() ' 50 ms j.w.
         ZablokujNiezgodneWedleKeywords() ' 50 ms j.w.
@@ -314,7 +314,7 @@ Public Class BrowseKeywordsWindow
         '    UstalCheckboxyRecursive(oItem, aKwds)
         'Next
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords.ToFlatList
             oItem.bChecked = False
             For Each sTag As String In aKwds
                 If oItem.sId = sTag Then
@@ -342,8 +342,8 @@ Public Class BrowseKeywordsWindow
         End If
 
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
-            ZablokujNiezgodneWedleDat(oItem, minDate, maxDate)
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords.ToFlatList
+            ZablokujNiezgodneWedleDat(oItem, minDate, maxdate)
         Next
 
 
@@ -355,16 +355,16 @@ Public Class BrowseKeywordsWindow
         Dim minDate As Date = Date.MaxValue
         Dim maxDate As Date = Date.MinValue
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords
             minDate = SzukajMinDatyRecursive(oItem, minDate)
         Next
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords
             maxDate = SzukajMaxDatyRecursive(oItem, maxDate)
         Next
         vb14.DumpMessage($"daty: {minDate} .. {maxDate}")
 
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords.ToFlatList
             ZablokujNiezgodneWedleDat(oItem, minDate, maxDate)
         Next
 
@@ -443,7 +443,7 @@ Public Class BrowseKeywordsWindow
 
     Private Sub uiZmianaCheck(sender As Object, e As RoutedEventArgs)
         Dim currentFlatKwds As String = ""
-        Application.GetKeywords.ToFlatList.ForEach(Sub(x) If x.bChecked Then currentFlatKwds &= x.sId & " ")
+        vblib.GetKeywords.ToFlatList.ForEach(Sub(x) If x.bChecked Then currentFlatKwds &= x.sId & " ")
         uiSelectedKwds.Text = currentFlatKwds
     End Sub
 

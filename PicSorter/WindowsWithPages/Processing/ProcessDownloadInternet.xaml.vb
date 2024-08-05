@@ -27,7 +27,7 @@ Public Class ProcessDownloadInternet
         _source = oSrc
 
 
-        Dim sPath As String = IO.Path.Combine(App.GetDataFolder, "inetauthors.txt")
+        Dim sPath As String = IO.Path.Combine(Vblib.GetDataFolder, "inetauthors.txt")
         If IO.File.Exists(sPath) Then _autorzy = IO.File.ReadAllLines(sPath)
 
     End Sub
@@ -112,7 +112,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         _picek.ReplaceOrAddExif(srcExif)    ' bo się powtarzało, nie wiem czemu - inne dane w _picek są ładnie zmienne
 
         ' MANUAL_TAG, ale z pełnym opisem, a także z GeoTag jak trzeba
-        _picek.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(uiKeywords.uiSlowka.Text))
+        _picek.ReplaceOrAddExif(Vblib.GetKeywords.CreateManualTagFromKwds(uiKeywords.uiSlowka.Text))
 
         Dim descr As New OneDescription(uiDescription.Text, "")
         _picek.AddDescription(descr)
@@ -398,7 +398,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
             If autor.EqualsCI(newAutor) Then Return ' już mamy
         Next
 
-        Dim sPath As String = IO.Path.Combine(App.GetDataFolder, "inetauthors.txt")
+        Dim sPath As String = IO.Path.Combine(Vblib.GetDataFolder, "inetauthors.txt")
         IO.File.AppendAllLines(sPath, {newAutor})
 
         _autorzy = IO.File.ReadAllLines(sPath)

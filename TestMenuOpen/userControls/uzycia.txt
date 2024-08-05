@@ -1,0 +1,87 @@
+﻿        <Grid>
+            <TextBlock FontWeight="Bold" Text="Keywords:" />
+            <Button Content=" + " HorizontalAlignment="Right" Name="uiAdd" Click="uiAdd_Click"/>
+            <Popup IsOpen="False" Name="uiAddPopup" PlacementTarget="{Binding ElementName=uiAdd}" HorizontalOffset="-10" StaysOpen="False" >
+                <local:MenuVertical x:Name="uiMenuKeywords" />
+            </Popup>
+        </Grid>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">
+                <Button Click="uiFilter_Click"  Content="Filters" Name="uiFilters"/>
+                <Popup IsOpen="False" Name="uiFilterPopup" PlacementTarget="{Binding ElementName=uiFilters}" StaysOpen="False">
+                    <local:MenuVertical x:Name="uiMenuFilters">
+ 
+
+ <grid>
+             <TextBlock Text="Lista miejsc:" FontWeight="Bold" />
+            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddSource_Click" Name="uiAddSource" Margin="2,2,2,2"/>
+            <Popup IsOpen="False" Name="uiAddSourcePopup" PlacementTarget="{Binding ElementName=uiAddSource}">
+                <local:MenuVertical x:Name="uiMenuCloudProviders" />
+            </Popup>
+
+                       </Grid.RowDefinitions>
+            <TextBlock Text="Lista miejsc:" FontWeight="Bold" />
+            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddSource_Click" Name="uiAddSource" Margin="2,2,2,2"/>
+            <Popup IsOpen="False" Name="uiAddSourcePopup" PlacementTarget="{Binding ElementName=uiAddSource}">
+                <local:MenuVertical x:Name="uiMenuCloudProviders" />
+            </Popup>
+
+
+                      <TextBlock Grid.Row="2" Text="Postprocess:" />
+            <local:UserControlPostProcessPipeline Grid.Row="2" Grid.Column="1" x:Name="uiPostprocessUC" />
+            <!--<Button Grid.Row="2" Content="+" HorizontalAlignment="Right" Name="uiAddPostprocButton" Click="uiAddPostproc_Click" />
+            <Popup IsOpen="False" Name="uiAddPostprocPopup" PlacementTarget="{Binding ElementName=uiAddPostprocButton}">
+                <Menu Name="uiMenuPostProcessors">
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                </Menu>
+            </Popup>
+ 
+
+             <TextBlock Text="Lista źródeł:" FontWeight="Bold" />
+            <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddSource_Click" Name="uiAddSource" Margin="2,2,2,2"/>
+            <Popup IsOpen="False" Name="uiAddSourcePopup" PlacementTarget="{Binding ElementName=uiAddSource}">
+                <local:MenuVertical x:Name="uiMenuSourcesTypes" />
+            </Popup>
+
+
+                        </Grid.ColumnDefinitions>
+            <TextBox Name="uiAllDescribe" HorizontalAlignment="Stretch" IsReadOnly="true" Margin="5,5,0,5" />
+            <Button Name="uiPastePrev" Margin="0,0,5,0" Grid.Column="1" Content="▼" Click="uiPastePrev_Click" IsEnabled="False"/>
+            <Popup Name="uiPrevMenuPopup" PlacementTarget="{Binding ElementName=uiPastePrev}" IsOpen="False" StaysOpen="False">
+                <local:MenuVertical x:Name="uiPrevMenu" />
+            </Popup>
+        </Grid>
+
+        
+
+
+        <TextBox Grid.Column="0" Name="uiPostprocess" Text="{Binding Path=AllowedPeers, ElementName=UserControlPostProcessPipelineControl, Mode=TwoWay}"/>
+        <!--<TextBox Grid.Column="0" Name="uiPostprocess" Text="{Binding Pipeline, Mode=TwoWay}"/>-->
+
+        <Button Grid.Column="1" Content="+" HorizontalAlignment="Right" Name="uiAddPostprocButton" Click="uiAddPostproc_Click" />
+        <Popup IsOpen="False" Name="uiAddPostprocPopup" PlacementTarget="{Binding ElementName=uiAddPostprocButton}">
+            <local:MenuVertical x:Name="uiMenuPostProcessors" />
+        </Popup>
+
+
+
+                <Button Name="uiFieldList0" Grid.Row="0" Grid.Column="1" Content="*" Click="uiFieldList_Click" Margin="2,0,5,0" />
+        <Popup IsOpen="False" Name="uiFieldList0_Popup" PlacementTarget="{Binding ElementName=uiFieldList0}" StaysOpen="False">
+            <local:MenuVertical x:Name="uiFieldList0_Menu" />
+        </Popup>
+
+
+
+
+        
+        <TextBox Grid.Column="0" Name="uiPostprocess" Text="{Binding Path=Pipeline, ElementName=UserControlPostProcessPipelineControl, Mode=TwoWay}"/>
+        <!--<TextBox Grid.Column="0" Name="uiPostprocess" Text="{Binding Pipeline, Mode=TwoWay}"/>-->
+
+        <Button Grid.Column="1" Content="+" HorizontalAlignment="Right" Name="uiAddPostprocButton" Click="uiAddPostproc_Click" />
+        <Popup IsOpen="False" Name="uiAddPostprocPopup" PlacementTarget="{Binding ElementName=uiAddPostprocButton}">
+            <local:MenuVertical x:Name="uiMenuPostProcessors" />
+        </Popup>

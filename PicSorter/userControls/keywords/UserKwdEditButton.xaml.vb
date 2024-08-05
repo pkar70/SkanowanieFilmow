@@ -31,7 +31,7 @@ Public Class UserKwdEditButton
     Public Delegate Sub MetadataChangedHandler(sender As Object, data As EventArgs)
 
     Public Function GetManualTag()
-        Return Application.GetKeywords.CreateManualTagFromKwds(uiSlowka.Text)
+        Return vblib.GetKeywords.CreateManualTagFromKwds(uiSlowka.Text)
     End Function
 
 

@@ -435,7 +435,7 @@ Public Class PokazStatystyke
         Dim stats As New List(Of StatEntry)
         Dim total As Integer = entry.lista.Count
 
-        For Each oKey As Vblib.OneKeyword In Application.GetKeywords.ToFlatList
+        For Each oKey As Vblib.OneKeyword In vblib.GetKeywords.ToFlatList
             If Not oKey.sId.StartsWith(prefix) Then Continue For
 
             Dim withKwd As New StatEntry With {.label = oKey.sId}

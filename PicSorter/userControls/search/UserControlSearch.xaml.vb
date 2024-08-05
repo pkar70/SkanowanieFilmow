@@ -17,7 +17,7 @@ Public Class UserControlSearch
     Private Sub FillQueriesCombo()
         uiComboQueries.Items.Clear()
 
-        For Each oItem As Vblib.SearchQuery In Application.GetQueries.OrderBy(Function(x) x.nazwa)
+        For Each oItem As Vblib.SearchQuery In vblib.GetQueries.OrderBy(Function(x) x.nazwa)
             uiComboQueries.Items.Add(New ComboBoxItem With {.Content = oItem.nazwa, .DataContext = oItem})
         Next
     End Sub
@@ -35,21 +35,21 @@ Public Class UserControlSearch
         Dim nazwa As String = Await vb14.DialogBoxInputAllDirectAsync("Podaj nazwę kwerendy")
         If String.IsNullOrWhiteSpace(nazwa) Then Return
 
-        For Each oItem As Vblib.SearchQuery In Application.GetQueries
+        For Each oItem As Vblib.SearchQuery In vblib.GetQueries
             If oItem.nazwa = nazwa Then
                 If Not Await vb14.DialogBoxYNAsync("Taka nazwa już istnieje, zamienić?") Then
                     Return
                 End If
                 ' podmiana query - czyli tutaj usuwamy oryginał, zaraz go zapiszemy ponownie
-                Application.GetQueries.Remove(oItem)
+                vblib.GetQueries.Remove(oItem)
                 Exit For
             End If
         Next
 
         query.nazwa = nazwa
-        Application.GetQueries.Add(query)
-        Application.GetQueries.Save(True)
-        Application.GetShareChannels.ReResolveQueries()
+        vblib.GetQueries.Add(query)
+        vblib.GetQueries.Save(True)
+        vblib.GetShareChannels.ReResolveQueries()
 
         ' żeby zmiany nie były ciągle w tym samym co właśnie zapisane
         DataContext = query.Clone

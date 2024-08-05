@@ -10,10 +10,10 @@ Class SettingsShareLogins
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
-        uiLista.ItemsSource = Application.GetShareLogins.OrderBy(Function(x) x.displayName)
+        uiLista.ItemsSource = vblib.GetShareLogins.OrderBy(Function(x) x.displayName)
         uiAdresOverride.GetSettingsString
         Dim adres As String = Await vb14_GetMyIP.GetMyIP.GetIPString
-        _channels = Application.GetShareChannels.Select(Of String)(Function(x) x.nazwa).ToList
+        _channels = vblib.GetShareChannels.Select(Of String)(Function(x) x.nazwa).ToList
         _channels.Sort()
 
     End Sub
@@ -55,7 +55,7 @@ Class SettingsShareLogins
         oLogin.allowedLogin.remoteHostName = ""
         'End If
 
-        Application.GetShareLogins.Save(True) ' zmienione uprawnienia
+        vblib.GetShareLogins.Save(True) ' zmienione uprawnienia
     End Sub
 
     Private Async Sub uiDel_Click(sender As Object, e As RoutedEventArgs)
@@ -64,7 +64,7 @@ Class SettingsShareLogins
 
         If Not Await Me.DialogBoxYNAsync($"Usunąć login {oLogin.displayName}?") Then Return
 
-        Application.GetShareLogins.Remove(oLogin)
+        vblib.GetShareLogins.Remove(oLogin)
         Page_Loaded(Nothing, Nothing)
     End Sub
 
@@ -138,22 +138,22 @@ Class SettingsShareLogins
                 Return
             End If
 
-            Dim peer As ShareLogin = Application.GetShareLogins.FindByID(oLogin.ID)
+            Dim peer As ShareLogin = vblib.GetShareLogins.FindByID(oLogin.ID)
             If peer IsNot Nothing Then
                 Me.MsgBox($"Taki ID już istnieje (dla '{peer.displayName}')")
                 Return
             End If
         Else
             ' usuwamy aktualny
-            Dim peer As ShareLogin = Application.GetShareLogins.FindByID(oLogin.ID)
-            If peer IsNot Nothing Then Application.GetShareLogins.Remove(peer)
+            Dim peer As ShareLogin = vblib.GetShareLogins.FindByID(oLogin.ID)
+            If peer IsNot Nothing Then vblib.GetShareLogins.Remove(peer)
         End If
         ' tylko przy new, bo EDIT i tak bezpośrednio na obiekcie jest
-        Application.GetShareLogins.Add(oLogin)
+        vblib.GetShareLogins.Add(oLogin)
 
-            ' tu mamy Clone oryginału, którego nie zmieniamy
-            uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
-        With Application.GetShareLogins
+        ' tu mamy Clone oryginału, którego nie zmieniamy
+        uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
+        With vblib.GetShareLogins
             .ReResolveChannels()
             .Save(True)
         End With
@@ -165,7 +165,7 @@ Class SettingsShareLogins
 
     Private Sub uiEnabled_Checked(sender As Object, e As RoutedEventArgs)
         ' check oraz uncheck
-        Application.GetShareLogins.Save(True)
+        vblib.GetShareLogins.Save(True)
     End Sub
 
     Private Sub uiUseRemHostName_Click(sender As Object, e As RoutedEventArgs)

@@ -17,7 +17,7 @@ Public Class UserControlButtonKeywords
         Me.ContextMenu.Items.Clear()
 
         ' root level: ma tylko trzy pozycje, które nie mogą być same z siebie zaznaczone :)
-        For Each oItem As Vblib.OneKeyword In Application.GetKeywords
+        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords
             Dim oNew As New MenuItem
             oNew.Header = oItem.sId
             DodajSubTree(oNew, oItem.SubItems)

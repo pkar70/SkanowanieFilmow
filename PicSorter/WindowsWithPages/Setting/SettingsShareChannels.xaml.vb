@@ -9,10 +9,10 @@ Class SettingsShareChannels
     Private _kwerendy As List(Of String) 'ObservableList(Of SearchQuery)
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        _lista = Application.GetShareChannels.OrderBy(Function(x) x.nazwa)
+        _lista = Vblib.GetShareChannels.OrderBy(Function(x) x.nazwa)
         uiLista.ItemsSource = _lista
 
-        _kwerendy = Application.GetQueries.OrderBy(Of String)(Function(x) x.nazwa).Select(Of String)(Function(x) x.nazwa).ToList
+        _kwerendy = Vblib.GetQueries.OrderBy(Of String)(Function(x) x.nazwa).Select(Of String)(Function(x) x.nazwa).ToList
     End Sub
 
 #Region "lista kanałów"
@@ -49,7 +49,7 @@ Class SettingsShareChannels
 
         If Not Await Vblib.DialogBoxYNAsync($"Usunąć channel {oChannel.nazwa}?") Then Return
 
-        Application.GetShareChannels.Remove(oChannel)
+        Vblib.GetShareChannels.Remove(oChannel)
         Page_Loaded(Nothing, Nothing)
 
     End Sub
@@ -73,7 +73,7 @@ Class SettingsShareChannels
     Private Function GetLoginyKorzystajace(oChannel As ShareChannel) As String
         Dim sLogins As String = ""
 
-        For Each oLogin As ShareLogin In Application.GetShareLogins.GetList
+        For Each oLogin As ShareLogin In Vblib.GetShareLogins
             If oLogin.channels Is Nothing Then Continue For
             For Each channelProc As ShareChannelProcess In oLogin.channels
                 If channelProc.channelName = oChannel.nazwa Then
@@ -113,7 +113,7 @@ Class SettingsShareChannels
 
         uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
 
-        With Application.GetShareChannels
+        With Vblib.GetShareChannels
             .GetList.Add(oChannel)
             .ReResolveQueries()
             .Save(True)

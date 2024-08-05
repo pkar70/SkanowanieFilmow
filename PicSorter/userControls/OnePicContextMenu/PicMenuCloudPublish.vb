@@ -42,13 +42,13 @@ Public NotInheritable Class PicMenuCloudPublish
 
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                If oItem.oPic.IsAdultInExifs OrElse Application.GetKeywords.IsAdultInAnyKeyword(oItem.oPic.GetAllKeywords) Then
+                If oItem.oPic.IsAdultInExifs OrElse vblib.GetKeywords.IsAdultInAnyKeyword(oItem.oPic.GetAllKeywords) Then
                     iCnt += 1
                     sNames = sNames & vbCrLf & oItem.oPic.sSuggestedFilename
                 End If
             Next
         Else
-            If _picek.IsAdultInExifs OrElse Application.GetKeywords.IsAdultInAnyKeyword(_picek.GetAllKeywords) Then
+            If _picek.IsAdultInExifs OrElse vblib.GetKeywords.IsAdultInAnyKeyword(_picek.GetAllKeywords) Then
                 iCnt = 1
                 sNames = _picek.sSuggestedFilename
             End If

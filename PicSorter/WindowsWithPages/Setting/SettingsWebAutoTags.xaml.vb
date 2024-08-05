@@ -1,6 +1,6 @@
 ﻿Imports pkar.UI.Configs.Extensions
 
-Class SettingsAutoTags
+Class SettingsWebAutoTags
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiAzureEndpoint.GetSettingsString

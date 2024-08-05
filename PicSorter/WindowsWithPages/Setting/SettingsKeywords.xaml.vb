@@ -13,7 +13,7 @@ Class SettingsKeywords
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
-        Application.GetKeywords.Save(True)
+        vblib.GetKeywords.Save(True)
         'Me.NavigationService.GoBack()
         Me.Close()
     End Sub
@@ -113,14 +113,14 @@ Class SettingsKeywords
     End Sub
 
     Public Shared Sub FillDirCombo(uiCombo As ComboBox, currDir As String, bNoDates As Boolean)
-        Application.GetDirTree.ForEach(Sub(x) WypelnComboRecursive(uiCombo, x, "", currDir, bNoDates))
+        vblib.GetDirTree.ForEach(Sub(x) WypelnComboRecursive(uiCombo, x, "", currDir, bNoDates))
     End Sub
 
 
     Private Async Sub uiAddEditDone_Click(sender As Object, e As RoutedEventArgs)
 
         If _addMode Then
-            For Each oItem As Vblib.OneKeyword In Application.GetKeywords
+            For Each oItem As Vblib.OneKeyword In vblib.GetKeywords
                 If oItem.sId = uiDisplayName.Text Then
                     Me.MsgBox("Taka nazwa już istnieje, wybierz inną")
                     Return
@@ -172,9 +172,9 @@ Class SettingsKeywords
     End Sub
 
     Private Sub PrzeliczIpokaz(bPrzelicz As Boolean, itemToShow As Vblib.OneKeyword)
-        If bPrzelicz Then Application.GetKeywords.CalculateMinMaxDateTree()
+        If bPrzelicz Then vblib.GetKeywords.CalculateMinMaxDateTree()
         uiTreeView.ItemsSource = Nothing
-        uiTreeView.ItemsSource = Application.GetKeywords
+        uiTreeView.ItemsSource = vblib.GetKeywords
 
         If itemToShow Is Nothing Then Return
 
@@ -267,7 +267,7 @@ Class SettingsKeywords
         ' we flat, sprawdzić występowanie słów kluczowych w buffor/archive
         Dim bHasKeys As Boolean = False
         For Each oKey As OneKeyword In oItem.ToFlatList
-            For Each oPic As Vblib.OnePic In Application.GetBuffer.GetList
+            For Each oPic As Vblib.OnePic In vblib.GetBuffer.GetList
                 If oPic.HasKeyword(oKey) Then
                     bHasKeys = True
                     Exit For
@@ -281,10 +281,10 @@ Class SettingsKeywords
             If Not Await Me.DialogBoxYNAsync("Keyword jest używany, na pewno usunąć?") Then Return
         End If
 
-        Dim tatus As Vblib.OneKeyword = Application.GetKeywords.GetParentOf(oItem)
+        Dim tatus As Vblib.OneKeyword = vblib.GetKeywords.GetParentOf(oItem)
 
         ' kasowanie
-        Application.GetKeywords.Remove(oItem)
+        vblib.GetKeywords.Remove(oItem)
 
         PrzeliczIpokaz(True, tatus)
 

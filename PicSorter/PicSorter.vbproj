@@ -12,11 +12,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="icons\1fa9c.png" />
     <None Remove="icons\trayIcon1.gif" />
     <None Remove="icons\trayIcon1.ico" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="icons\1fa9c.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="icons\trayIcon1.gif">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -89,6 +93,12 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="WindowsWithPages\Processing\SequenceList.xaml.vb">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="WindowsWithPages\Setting\SettingsRare.xaml.vb">
+      <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
 

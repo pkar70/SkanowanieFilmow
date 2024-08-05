@@ -94,7 +94,7 @@ Class MainWindow
                     Return
                 End If
 
-                Dim plik As String = Application.GetDataFile("", argsy(2) & ".json")
+                Dim plik As String = Vblib.GetDataFile("", argsy(2) & ".json")
 
                 If IO.File.Exists(plik) Then
                     Process.Start("notepad", plik)
@@ -125,7 +125,7 @@ Class MainWindow
     Private Function CmdLineGetFolder(param As String) As String
         Select Case param.ToLowerInvariant
             Case "data"
-                Return Application.GetDataFolder(False)
+                Return Vblib.GetDataFolder(False)
             Case "buff"
                 Return Vblib.GetSettingsString("uiFolderBuffer")
         End Select
@@ -165,7 +165,7 @@ Class MainWindow
             Return ""
         End If
 
-        For Each tool In Application.gAutoTagery
+        For Each tool In gAutoTagery
             If tool.Nazwa.EqualsCIAI(toolName) Then
                 Dim picek As New Vblib.OnePic
                 picek.InBufferPathName = toolParam
@@ -192,7 +192,7 @@ Class MainWindow
             Return ""
         End If
 
-        For Each tool In Application.gAutoTagery
+        For Each tool In gAutoTagery
             If tool.Nazwa.EqualsCIAI(toolName) Then
                 Dim picek As New Vblib.OnePic
 
@@ -279,7 +279,7 @@ Class MainWindow
             End Try
 
             If ikonka Is Nothing Then
-                Dim localIcon As String = IO.Path.Combine(Application.GetDataFolder, "trayIcon1.ico")
+                Dim localIcon As String = IO.Path.Combine(Vblib.GetDataFolder, "trayIcon1.ico")
                 If Not IO.File.Exists(localIcon) Then
                     ' ściągnij z mojego serwera?
                 End If
@@ -362,7 +362,7 @@ Class MainWindow
     End Sub
 
     Private Sub uiBrowseCurrent_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New ProcessBrowse(Application.GetBuffer, False, "Buffer")
+        Dim oWnd As New ProcessBrowse(Vblib.GetBuffer, False, "Buffer")
         oWnd.Show()
     End Sub
 
@@ -413,8 +413,10 @@ Class MainWindow
     End Sub
 #End Region
 
+
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
+        InitGlobsy()
 
         ' jeśli już pracuje, pomijamy całość inicjalizacji
         If Await CheckIfRunning() Then Return
@@ -431,10 +433,10 @@ Class MainWindow
 
         ' *TODO* guziki pozostałe wyłączane jak nie ma LocalStorage
 
-        Dim count As Integer = Application.GetBuffer.Count
+        Dim count As Integer = Vblib.GetBuffer.Count
         uiProcess.Content = $"Current ({count})"
         If count = 0 Then
-            Dim path As String = IO.Path.Combine(Application.GetDataFolder, "buffer.json")
+            Dim path As String = IO.Path.Combine(Vblib.GetDataFolder, "buffer.json")
             If IO.File.Exists(path) Then
                 If New IO.FileInfo(path).Length > 5 Then
                     Dim lista As List(Of Vblib.OnePic)
@@ -475,6 +477,43 @@ Class MainWindow
         'UsunAstroMoon
         'Album_dw_04()
         'Await PoprawAddResolution()
+    End Sub
+
+    Private Shared Sub InitGlobsy()
+        Globs.Init(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData))
+
+        Globs.gAutoTagery = {
+        New Vblib.AutoTag_EXIF,
+        New Vblib.AutoTag_FullEXIF,
+        New Auto_std2_Astro.Auto_Pogoda,
+        New Auto_std2_Astro.Auto_Astro,
+        New Auto_std2_Astro.Auto_MoonPhase,
+        New Auto_std2_Meteo.Auto_Meteo_Opad,
+        New Vblib.Auto_GeoNamePl,
+        New Vblib.Auto_OSM_POI,
+        New Auto_WinOCR.AutoTag_WinOCR,
+        New Auto_WinFace.Auto_WinFace,
+        New Vblib.Auto_AzureTest(New Process_ResizeHalf)
+    }
+
+        Globs.gPostProcesory = {
+        New Process_AutoRotate,
+        New Process_Resize800,
+        New Process_Resize1024,
+        New Process_Resize1280,
+        New Process_Resize1600,
+        New Process_Resize2048,
+        New Process_ResizeHalf,
+        New Process_FlipHorizontal,
+        New Process_EmbedBasicExif,
+        New Process_EmbedGeoExif,
+        New Process_EmbedExif,
+        New Process_RemoveExif,
+        New Process_Signature.Process_FaceRemove,
+        New Process_Signature.Process_Signature,
+        New Process_Watermark
+    }
+
     End Sub
 
 

@@ -1,7 +1,7 @@
-﻿Imports System.IO
-Imports System.Net.WebRequestMethods
+﻿'Imports System.IO
+'Imports System.Net.WebRequestMethods
 Imports HiddenWatermark
-
+Imports pkar.UI.Extensions
 
 Class SettingsWatermark
     Private Sub uiVerify_Click(sender As Object, e As RoutedEventArgs)
@@ -23,25 +23,25 @@ Class SettingsWatermark
         Dim fileBytes As Byte() = IO.File.ReadAllBytes(sFile)
         Dim bitmapa As BitmapImage = BajtyNaBitmape(fileBytes)
         If bitmapa.Width <> 32 Or bitmapa.Height <> 32 Then
-            Vblib.DialogBox("Obrazek musi być 32×32 piksele")
+            Me.MsgBox("Obrazek musi być 32×32 piksele")
             Return
         End If
 
         uiImage.Source = bitmapa
 
         ' skopiowanie do DataFolder
-        IO.File.Copy(sFile, Application.GetDataFile("", "watermark.jpg", False))
+        IO.File.Copy(sFile, vblib.GetDataFile("", "watermark.jpg", False))
 
     End Sub
 
     Private Sub uiGenerate_Click(sender As Object, e As RoutedEventArgs)
 
         If uiWatermarkText1.Text.Length > 3 Or uiWatermarkText2.Text.Length > 3 Then
-            Vblib.DialogBox("Tekst może mieć maks. 3 znaki")
+            Me.MsgBox("Tekst może mieć maks. 3 znaki")
             Return
         End If
 
-        Dim sTargetFilename As String = Application.GetDataFile("", "watermark.jpg", False)
+        Dim sTargetFilename As String = vblib.GetDataFile("", "watermark.jpg", False)
 
         Process_Signature.WatermarkCreate.StworzWatermarkFile(sTargetFilename, uiWatermarkText1.Text, uiWatermarkText2.Text)
 
@@ -54,7 +54,7 @@ Class SettingsWatermark
         Dim oPicker As New Microsoft.Win32.OpenFileDialog
         oPicker.Title = sTitle
         oPicker.CheckPathExists = True
-        oPicker.InitialDirectory = Application.GetDataFolder
+        oPicker.InitialDirectory = vblib.GetDataFolder
 
         ' Show open file dialog box
         Dim result? As Boolean = oPicker.ShowDialog()
@@ -71,8 +71,8 @@ Class SettingsWatermark
 
         Dim bitmapa As New BitmapImage()
 
-        Using oStream As New MemoryStream(aBajty)
-            oStream.Seek(0, SeekOrigin.Begin)
+        Using oStream As New IO.MemoryStream(aBajty)
+            oStream.Seek(0, IO.SeekOrigin.Begin)
             bitmapa.BeginInit()
             bitmapa.StreamSource = oStream
             bitmapa.CacheOption = BitmapCacheOption.OnLoad
@@ -83,15 +83,16 @@ Class SettingsWatermark
     End Function
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
 
-        Dim sFile As String = Application.GetDataFile("", "watermark.jpg", False)
+        Dim sFile As String = vblib.GetDataFile("", "watermark.jpg", False)
         If Not IO.File.Exists(sFile) Then Return
 
         Dim fileBytes As Byte() = IO.File.ReadAllBytes(sFile)
 
         Dim bitmapa As BitmapImage = BajtyNaBitmape(fileBytes)
         If bitmapa.Width <> 32 Or bitmapa.Height <> 32 Then
-            Vblib.DialogBox("Obrazek musi być 32×32 piksele")
+            Me.MsgBox("Obrazek musi być 32×32 piksele")
             Return
         End If
 

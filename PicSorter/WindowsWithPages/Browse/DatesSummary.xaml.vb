@@ -25,7 +25,7 @@ Public Class DatesSummary
             If String.IsNullOrWhiteSpace(oExif.Keywords) Then Continue For
 
             For Each kwd As String In oExif.Keywords.Split(" ")
-                Dim oKey As Vblib.OneKeyword = Application.GetKeywords.GetKeyword(kwd)
+                Dim oKey As Vblib.OneKeyword = vblib.GetKeywords.GetKeyword(kwd)
                 If oKey Is Nothing Then Continue For ' np. -f1
 
                 If oKey.maxDate.IsDateValid OrElse oKey.minDate.IsDateValid Then

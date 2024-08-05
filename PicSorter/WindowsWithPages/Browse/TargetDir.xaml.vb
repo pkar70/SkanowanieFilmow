@@ -104,7 +104,7 @@ Public Class TargetDir
         Dim sDataDo As String = aboutDateDo.AddDays(5).ToExifString
 
         ' teraz mozna wedle stringow
-        For Each oDir As Vblib.OneDir In Application.GetDirTree.ToFlatList
+        For Each oDir As Vblib.OneDir In vblib.GetDirTree.ToFlatList
             ' If oDir.sId.StartsWith("_") Then lLista.Add(oDir.ToComboDisplayName)
             If Not oDir.IsFromDate Then Continue For
             If oDir.sId > sDataOd AndAlso oDir.sId < sDataDo Then
@@ -202,7 +202,7 @@ Public Class TargetDir
 
     Private Shared Function CountSubdirInDate(sData As String) As Char
         Dim iCount As Integer = 65
-        For Each oDir As Vblib.OneDir In Application.GetDirTree.ToFlatList
+        For Each oDir As Vblib.OneDir In vblib.GetDirTree.ToFlatList
             If oDir.sId.StartsWithOrdinal(sData) Then iCount += 1
         Next
 
@@ -309,12 +309,12 @@ Public Class TargetDir
             'If Not String.IsNullOrWhiteSpace(uiManualDateName.Text) Then
             '    sDir = sDir & " " & uiManualDateName.Text
             'End If
-            Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
+            Return vblib.GetDirTree.TryAddSubdir(oParent, sDir, "")
         End If
 
         If uiAutoDateSplit.IsChecked Then
             Dim sDir As String = KatalogNaCzas(oPicek)
-            Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
+            Return vblib.GetDirTree.TryAddSubdir(oParent, sDir, "")
         End If
 
         ' a to się nie ma prawa zdarzyć
@@ -330,13 +330,13 @@ Public Class TargetDir
             'If Not String.IsNullOrWhiteSpace(uiManualGeoName.Text) Then
             '    sDir = sDir & " " & uiManualGeoName.Text
             'End If
-            Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
+            Return vblib.GetDirTree.TryAddSubdir(oParent, sDir, "")
         End If
 
         If uiAutoGeoSplit.IsChecked Then
             Dim sDir As String = KatalogNaCzas(oPicek)
             sDir = sDir & "_" & KatalogNaGeo(oPicek)
-            Return Application.GetDirTree.TryAddSubdir(oParent, sDir, "")
+            Return vblib.GetDirTree.TryAddSubdir(oParent, sDir, "")
         End If
 
         ' a to się nie ma prawa zdarzyć

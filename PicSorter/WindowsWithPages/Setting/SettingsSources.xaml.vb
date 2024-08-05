@@ -80,20 +80,20 @@ Class SettingsSources
         Dim oMI As MenuItem = sender
         Select Case oMI.Header.ToString.Trim.ToLowerInvariant
             Case "folder"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.FOLDER, Application.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.FOLDER, vblib.GetDataFolder)
             Case "mtp"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.MTP, Application.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.MTP, vblib.GetDataFolder)
             Case "adhoc"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.AdHOC, Application.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.AdHOC, vblib.GetDataFolder)
             Case "inet"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Inet, Application.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Inet, vblib.GetDataFolder)
                 oNewSrc.defaultExif = New ExifTag With
                     {
                     .ExifSource = Vblib.ExifSource.SourceDefault,
                     .FileSourceDeviceType = FileSourceDeviceTypeEnum.internet
                     }
             Case "reel"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Reel, Application.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Reel, vblib.GetDataFolder)
                 oNewSrc.defaultExif = New ExifTag With
                     {
                     .ExifSource = Vblib.ExifSource.SourceDefault,

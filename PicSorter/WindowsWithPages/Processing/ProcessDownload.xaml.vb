@@ -19,9 +19,9 @@ Public Class ProcessDownload
         Dim listka As New List(Of lib_PicSource.PicSourceImplement)
         Application.GetSourcesList.ForEach(Sub(x) listka.Add(x))
 
-        If Application.GetShareServers.Count > 0 Then
+        If vblib.GetShareServers.Count > 0 Then
             ' dodajemy do tego jeszcze peer-serwery
-            For Each oSrv As Vblib.ShareServer In Application.GetShareServers
+            For Each oSrv As Vblib.ShareServer In vblib.GetShareServers
                 Dim oNew As New lib_PicSource.PicSourceImplement(PicSourceType.PeerSrv, Nothing)
                 oNew.SourceName = "peer: " & oSrv.displayName
                 oNew.Path = oSrv.login.ToString
@@ -236,7 +236,8 @@ Public Class ProcessDownload
 
         Await RunAutoExif()
 
-        If ProcessPic.IsDefaultBuff(Me) Then SequenceHelper.ResetPoRetrieve()
+        'If ProcessPic.IsDefaultBuff(Me) Then SequenceHelper.ResetPoRetrieve()
+        ProcessPic.GetBuffer(Me).SetStagesSettings("")
 
         Me.ProgRingSetText("Saving metadata...")
 
@@ -253,7 +254,7 @@ Public Class ProcessDownload
         Me.ProgRingSetText("Reading EXIFs...")
         Me.ProgRingSetVal(0)
 
-        Dim oEngine As AutotaggerBase = Application.gAutoTagery.Where(Function(x) x.Nazwa = Vblib.ExifSource.FileExif).ElementAt(0)
+        Dim oEngine As AutotaggerBase = Vblib.gAutoTagery.Where(Function(x) x.Nazwa = Vblib.ExifSource.FileExif).ElementAt(0)
         ' się nie powinno zdarzyć, no ale cóż...
         If oEngine Is Nothing Then Return
 
@@ -291,7 +292,7 @@ Public Class ProcessDownload
     Private Async Function RetrieveFromDisk(oSrc As PicSourceBase) As Task(Of Integer)
         Me.ProgRingSetText($"Dir {oSrc.SourceName}")
 
-        Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
+        Dim iCount As Integer = oSrc.ReadDirectory(vblib.GetKeywords.ToFlatList)
         'Await vb14.DialogBoxAsync($"read {iCount} files")
         vb14.DumpMessage($"Read {iCount} files")
 
@@ -317,7 +318,7 @@ Public Class ProcessDownload
 
             If Not String.IsNullOrWhiteSpace(oSrc.defaultKwds) Then
                 ' mogłoby być i bez IFa, bo potrafi się zachować :)
-                oSrcFile.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
+                oSrcFile.ReplaceOrAddExif(vblib.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
             End If
 
             ' false gdy np. pod tą samą nazwą jest ten sam plik z tą samą zawartością; lub gdy dodanie daty nie pozwala 'unikalnąć' nazwy
@@ -334,7 +335,7 @@ Public Class ProcessDownload
     Private Async Function RetrieveFromReel(oSrc As PicSourceBase) As Task(Of Integer)
         Me.ProgRingSetText($"Dir {oSrc.SourceName}")
 
-        Dim iCount As Integer = oSrc.ReadDirectory(Application.GetKeywords.ToFlatList)
+        Dim iCount As Integer = oSrc.ReadDirectory(vblib.GetKeywords.ToFlatList)
         'Await vb14.DialogBoxAsync($"read {iCount} files")
         vb14.DumpMessage($"Read {iCount} files")
 
@@ -367,7 +368,7 @@ Public Class ProcessDownload
 
             If Not String.IsNullOrWhiteSpace(oSrc.defaultKwds) Then
                 ' mogłoby być i bez IFa, bo potrafi się zachować :)
-                oSrcFile.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
+                oSrcFile.ReplaceOrAddExif(vblib.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
             End If
 
             ' wszystkie zmiany wynikające z rename
@@ -387,7 +388,7 @@ Public Class ProcessDownload
     Private Async Function RetrieveFromPeer(oSrc As PicSourceBase) As Task(Of Integer)
         ' ściągnij przez sieć
 
-        Dim oPeer As Vblib.ShareServer = Application.GetShareServers.FindByGuid(oSrc.Path)
+        Dim oPeer As Vblib.ShareServer = vblib.GetShareServers.FindByGuid(oSrc.Path)
 
         Dim ret As String = Await lib14_httpClnt.httpKlient.TryConnect(oPeer)
         If Not ret.StartsWith("OK") Then
@@ -418,7 +419,7 @@ Public Class ProcessDownload
 
                 If Not String.IsNullOrWhiteSpace(oSrc.defaultKwds) Then
                     ' mogłoby być i bez IFa, bo potrafi się zachować :)
-                    oPicek.ReplaceOrAddExif(Application.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
+                    oPicek.ReplaceOrAddExif(vblib.GetKeywords.CreateManualTagFromKwds(oSrc.defaultKwds))
                 End If
 
 

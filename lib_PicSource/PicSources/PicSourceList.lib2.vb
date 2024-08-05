@@ -6,9 +6,9 @@ Public Class PicSourceList
 
     Private _dataFolder As String
 
-    Public Sub New(sFolder As String)
-        MyBase.New(sFolder, "sources.json")
-        _dataFolder = sFolder
+    Public Sub New()
+        MyBase.New(Vblib.GetDataFolder, "sources.json")
+        _dataFolder = Vblib.GetDataFolder
     End Sub
 
     ''' <summary>

@@ -56,7 +56,7 @@ Public Class EditExifTag
 
         oCombo.Items.Add(" ")
 
-        Dim sFileName As String = IO.Path.Combine(App.GetDataFolder(), sFiletitle & ".txt")
+        Dim sFileName As String = IO.Path.Combine(vblib.GetDataFolder(), sFiletitle & ".txt")
         If IO.File.Exists(sFileName) Then
             Dim fileContent As List(Of String) = IO.File.ReadAllLines(sFileName).ToList
             fileContent.Sort()
@@ -138,19 +138,19 @@ Public Class EditExifTag
     End Sub
 
     Private Sub uiOpenAuthors_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New EditEntryHist(App.GetDataFolder, "Authors", "Dodaj autora (zwykle: imię nazwisko)", "")
+        Dim oWnd As New EditEntryHist(vblib.GetDataFolder, "Authors", "Dodaj autora (zwykle: imię nazwisko)", "")
         oWnd.ShowDialog()
         WypelnComboPlikiem(uiAuthor, "authors", _exifTag.Author)
     End Sub
 
     Private Sub uiOpenCopyrights_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New EditEntryHist(App.GetDataFolder, "Copyrights", "Dodaj właściciela praw", "(c) KTO, All rights reserved.")
+        Dim oWnd As New EditEntryHist(vblib.GetDataFolder, "Copyrights", "Dodaj właściciela praw", "(c) KTO, All rights reserved.")
         oWnd.ShowDialog()
         WypelnComboPlikiem(uiCopyright, "copyrights", _exifTag.Copyright)
     End Sub
 
     Private Sub uiOpenCamera_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New EditEntryHist(App.GetDataFolder, "Cameras", "Dodaj model aparatu/skanera", "")
+        Dim oWnd As New EditEntryHist(vblib.GetDataFolder, "Cameras", "Dodaj model aparatu/skanera", "")
         oWnd.ShowDialog()
         WypelnComboPlikiem(uiCameraModel, "cameras", _exifTag.CameraModel)
     End Sub

@@ -15,7 +15,7 @@ Class ProcessPic
         Me.InitDialogs
         Me.ProgRingInit(True, False)
 
-        _buforek = Application.GetBuffer
+        _buforek = vblib.GetBuffer
         _isDefaultBuff = True
 
         WypelnListeBuforow()
@@ -134,8 +134,8 @@ Class ProcessPic
         '    wysok += 40
         'End If
 
-        If Application.GetShareDescriptionsIn.Count + Application.GetShareDescriptionsOut.Count > 0 Then
-            uiSharingDescrips.Content = $"Upload descrs ({Application.GetShareDescriptionsOut.Count})"
+        If vblib.GetShareDescriptionsIn.Count + vblib.GetShareDescriptionsOut.Count > 0 Then
+            uiSharingDescrips.Content = $"Upload descrs ({vblib.GetShareDescriptionsOut.Count})"
             uiSharingDescrips.Visibility = Visibility.Visible
             wysok += 40
         End If
@@ -170,7 +170,7 @@ Class ProcessPic
     End Sub
 
     Private Sub uiSequence_Click(sender As Object, e As RoutedEventArgs)
-        PokazSubWindow(New SequenceHelper) ' tylko dla default buff umie to zrobić w pełni poprawnie (checkboxy)
+        PokazSubWindow(New SequenceHelperList) ' multibuff OK
     End Sub
 
     Private Sub uiRetrieve_Click(sender As Object, e As RoutedEventArgs)
@@ -232,7 +232,7 @@ Class ProcessPic
 
         If Not IO.Directory.Exists(IO.Path.Combine(sFolder, dirname)) Then Return False
 
-        Return IO.File.Exists(IO.Path.Combine(Application.GetDataFolder, "u." & dirname & ".json"))
+        Return IO.File.Exists(IO.Path.Combine(vblib.GetDataFolder, "u." & dirname & ".json"))
     End Function
 
     Private Sub uiBufory_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
@@ -245,10 +245,10 @@ Class ProcessPic
         If String.IsNullOrWhiteSpace(folderName) Then Return
 
         If folderName = "(default)" Then
-            _buforek = New Vblib.BufferSortowania(Application.GetDataFolder, Application.GetKeywords)
+            _buforek = New Vblib.BufferSortowania(Vblib.GetDataFolder)
             _isDefaultBuff = True
         Else
-            _buforek = New Vblib.BufferSortowania(Application.GetDataFolder, folderName, Application.GetKeywords)
+            _buforek = New Vblib.BufferSortowania(Vblib.GetDataFolder, folderName)
             _isDefaultBuff = False
         End If
 
@@ -275,7 +275,7 @@ Class ProcessPic
         Dim sFolder As String = vb14.GetSettingsString("uiFolderBuffer")
         IO.Directory.CreateDirectory(IO.Path.Combine(sFolder, newFolder))
 
-        _buforek = New Vblib.BufferSortowania(Application.GetDataFolder, newFolder, Application.GetKeywords)
+        _buforek = New Vblib.BufferSortowania(vblib.GetDataFolder, newFolder)
 
         ' musi być zapis, bo musi być plik do guzików
         '_buforek.SaveData()  - ale nie przejdzie, bo nie robi Save gdy count = 0

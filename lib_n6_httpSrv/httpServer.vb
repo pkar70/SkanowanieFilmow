@@ -24,15 +24,15 @@ Public Class ServerWrapper
     ''' </summary>
     Public Shared _lastNetAccess As New LastNetAccess
 
-    Public Sub New(loginy As pkar.BaseList(Of Vblib.ShareLogin), databases As Vblib.DatabaseInterface, lastAccess As Vblib.ShareLoginData, buffer As Vblib.IBufor, shareDescIn As pkar.BaseList(Of Vblib.ShareDescription), shareDescOut As pkar.BaseList(Of Vblib.ShareDescription), postProcs As Vblib.PostProcBase(), dataFolder As String)
-        _loginy = loginy
+    Public Sub New(databases As Vblib.DatabaseInterface)
+        _loginy = Vblib.GetShareLogins
         _databases = databases
-        _lastAccess = lastAccess
-        _buffer = buffer
-        _shareDescIn = shareDescIn
-        _shareDescOut = shareDescOut
-        _postProcs = postProcs
-        _dataFolder = dataFolder
+        _lastAccess = Vblib.gLastLoginSharing
+        _buffer = Vblib.GetBuffer
+        _shareDescIn = Vblib.GetShareDescriptionsIn
+        _shareDescOut = Vblib.GetShareDescriptionsOut
+        _postProcs = Vblib.gPostProcesory
+        _dataFolder = Vblib.GetDataFolder
     End Sub
 
     Public Function IsRunning() As Boolean
