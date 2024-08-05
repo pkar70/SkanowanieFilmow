@@ -1,0 +1,19 @@
+﻿<Window x:Class="SequenceHelperList"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="Sequence helper" Height="500" Width="220" Loaded="Page_Loaded" WindowStyle="ToolWindow" >
+
+    <Window.Resources>
+        <local:ConverterNegate x:Key="ConverterNegate"/>
+    </Window.Resources>
+
+    <local:StretchedGrid Margin="5,5,5,5" Width="200" Rows="A,*">
+        <local:TextBlockPageTitle Visibility="Collapsed" x:Name="uiTitle" />
+        <StackPanel Grid.Row="1" x:Name="uiLista" />
+        <!--<local:StretchedListView Grid.Row="1" x:Name="uiLista"/>-->
+    </local:StretchedGrid>
+</Window>

@@ -38,55 +38,67 @@
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">
-                <Button Click="uiFilter_Click"  Content="Filters" Name="uiFilters"/>
-                <Popup IsOpen="False" Name="uiFilterPopup" PlacementTarget="{Binding ElementName=uiFilters}" StaysOpen="False">
-                    <local:MenuVertical x:Name="uiMenuFilters">
-                      
-                        <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
-                        <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" />
-                        <MenuItem Header="bez realdate" Click="uiFilterNoRealDate_Click" />
-                        <MenuItem Header="only NAR" Click="uiFilterNAR_Click" />
-                        <MenuItem Header="wg keywords" Click="uiFilterKeywords_Click" />
-                        <MenuItem Header="AZURE »">
-                            <MenuItem Header="bez tagu" Click="uiFilterNoAzure_Click" />
-                            <Separator/>
-                            <MenuItem Header="face" Click="uiFilterAzure_Click" />
-                            <MenuItem Header="no face" Click="uiFilterAzure_Click" />
-                            <MenuItem Header="person" Click="uiFilterAzure_Click" />
-                            <MenuItem Header="no person" Click="uiFilterAzure_Click" />
-                            <Separator/>
-                            <MenuItem Header="by tag..." Click="uiFilterAzureTag_Click" />
-                            <MenuItem Header="by object..." Click="uiFilterAzureObject_Click" />
-                            <MenuItem Header="by brand..." Click="uiFilterAzureBrand_Click" />
-                            <MenuItem Header="by category..." Click="uiFilterAzureCategories_Click" />
-                            <MenuItem Header="by landmark..." Click="uiFilterAzureLandmarks_Click" />
-                            <MenuItem Header="by celebrities..." Click="uiFilterAzureCelebrities_Click" />
-                            <Separator/>
-                            <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
-                        </MenuItem>
-                        <MenuItem Header="no Description" Click="uiFilterNoDescr_Click" Name="uiFilterNoDescr"/>
-                        <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget"/>
-                        <MenuItem Header="Sharing »" Name="uiFilterSharing" SubmenuOpened="uiFilterSharing_SubmenuOpened">
-                            <MenuItem Header="Query" Name="uiFilterQuery" />
-                            <MenuItem Header="for Channel" Name="uiFilterChannels" />
-                            <!--<MenuItem Header="Queries for Login" Name="uiFilterLogins"/>-->
-                            <!--<MenuItem Header="Marked for Login" Name="uiFilterLoginsMarked"/>-->
-                            <MenuItem Header="for Login" Name="uiFilterLoginsMarked"/>
-                            <MenuItem Header="Cudze" Click="uiFilterCudze_Click" />
-                            <MenuItem Header="remote desc" Click="uiFilterRemoteDesc_Click" />
-                        </MenuItem>
-                        <MenuItem Header="addytywne »">
-                            <MenuItem Header="none" Click="uiFilterNone_Click" />
-                            <MenuItem Header="Full search" Click="uiFilterSearch_Click" />
-                            <MenuItem Header="reverse" Click="uiFilterReverse_Click" />
-                        </MenuItem>
-                        <MenuItem Header="locks »">
-                            <MenuItem Header="locked" Click="uiFilterLocked_Click" />
-                            <MenuItem Header="UNlocked" Click="uiFilterUnLocked_Click" />
-                        </MenuItem>
-                        <MenuItem Header="all" Click="uiFilterAll_Click" />
-                    </local:MenuVertical>
-                </Popup>
+                <local:ButtonLeftContext Content="Filters" x:Name="uiFilters">
+                    <Button.ContextMenu>
+                        <ContextMenu>
+                            <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
+                            <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" Icon="🚩" />
+                            <MenuItem Header="bez realdate" Click="uiFilterNoRealDate_Click" Icon="📆"/>
+                            <MenuItem Header="only NAR" Click="uiFilterNAR_Click" />
+                            <MenuItem Header="wg keywords" Click="uiFilterKeywords_Click" Icon="#"/>
+                            <MenuItem Header="by stage" >
+                                <!-- Icon="🪜" -->
+                                <MenuItem.Icon>
+                                    <Image Source="icons/1fa9c.png"/>
+                                </MenuItem.Icon>
+                                <MenuItem Header="ready" ToolTip="Wszystkie required spełnione" Click="uiFilterStageReady_Click" Icon="✔"/>
+                                <MenuItem Header="exact" Name="uiFilterStageMenuExact" Icon="="/>
+                                <MenuItem Header="below" Name="uiFilterStageMenuBelow" Icon="&lt;"/>
+                                <MenuItem Header="not" Name="uiFilterStageMenuNot" Icon="¬"/>
+                                <!--<MenuItem Header="reverse" Click="uiFilterReverse_Click" Icon="¬" />-->
+                            </MenuItem>
+                            <MenuItem Header="AZURE »">
+                                <MenuItem Header="bez tagu" Click="uiFilterNoAzure_Click" />
+                                <Separator/>
+                                <MenuItem Header="face" Click="uiFilterAzure_Click" Icon="👱"/>
+                                <MenuItem Header="no face" Click="uiFilterAzure_Click" />
+                                <MenuItem Header="person" Click="uiFilterAzure_Click" Icon="🧍"/>
+                                <MenuItem Header="no person" Click="uiFilterAzure_Click" />
+                                <Separator/>
+                                <MenuItem Header="by tag..." Click="uiFilterAzureTag_Click" />
+                                <MenuItem Header="by object..." Click="uiFilterAzureObject_Click" />
+                                <MenuItem Header="by brand..." Click="uiFilterAzureBrand_Click" />
+                                <MenuItem Header="by category..." Click="uiFilterAzureCategories_Click" />
+                                <MenuItem Header="by landmark..." Click="uiFilterAzureLandmarks_Click" />
+                                <MenuItem Header="by celebrities..." Click="uiFilterAzureCelebrities_Click" />
+                                <Separator/>
+                                <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
+                            </MenuItem>
+                            <MenuItem Header="no Description" Click="uiFilterNoDescr_Click" Name="uiFilterNoDescr"/>
+                            <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget" Icon="📂"/>
+                            <MenuItem Header="Sharing »" Name="uiFilterSharing" SubmenuOpened="uiFilterSharing_SubmenuOpened">
+                                <MenuItem Header="Query" Name="uiFilterQuery" />
+                                <MenuItem Header="for Channel" Name="uiFilterChannels" />
+                                <!--<MenuItem Header="Queries for Login" Name="uiFilterLogins"/>-->
+                                <!--<MenuItem Header="Marked for Login" Name="uiFilterLoginsMarked"/>-->
+                                <MenuItem Header="for Login" Name="uiFilterLoginsMarked"/>
+                                <MenuItem Header="Cudze" Click="uiFilterCudze_Click" />
+                                <MenuItem Header="remote desc" Click="uiFilterRemoteDesc_Click" />
+                            </MenuItem>
+                            <MenuItem Header="addytywne »">
+                                <MenuItem Header="none" Click="uiFilterNone_Click" />
+                                <MenuItem Header="Full search" Click="uiFilterSearch_Click" Icon="🔍"/>
+                                <MenuItem Header="reverse" Click="uiFilterReverse_Click"  Icon="¬"/>
+                            </MenuItem>
+                            <MenuItem Header="locks »">
+                                <MenuItem Header="locked" Click="uiFilterLocked_Click" Icon="🔒"/>
+                                <MenuItem Header="UNlocked" Click="uiFilterUnLocked_Click" />
+                            </MenuItem>
+                            <MenuItem Header="all" Click="uiFilterAll_Click" />
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                </local:ButtonLeftContext>
+                
                 <CheckBox Name="uiGrayOrHide" ToolTip="Zaznacz jeśli ma ukryć zdjęcia, odznacz jeśli mają być szare" Margin="3,3,8,0" Checked="uiGrayOrHide_Checked" Unchecked="uiGrayOrHide_Checked" />
                 <ComboBox Name="uiComboSize" Margin="0,0,0,0" SelectionChanged="uiComboSize_SelectionChanged">
                     <ComboBoxItem Content="fit all" IsSelected="true" />
@@ -113,6 +125,8 @@
                         <MenuItem IsCheckable="True" Header="Description" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisDescription"/>
                         <MenuItem IsCheckable="True" Header="Src path" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisSrcPath"/>
                         <MenuItem IsCheckable="True" Header="Targetdir" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisTarget" />
+                        <Separator/>
+                        <MenuItem IsCheckable="True" Header="select box" Name="uiPodpisCheckbox" />
                     </local:MenuVertical>
                 </Popup>
                 <Button Content=" Split " Height="Auto" Width="Auto" Click="uiSplitMode_Click" Name="uiSplit"/>
@@ -204,6 +218,8 @@
                         <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}, ConverterParameter=NEG}" Height="{Binding iDuzoscH, Mode=OneWay }" Width="{Binding widthPaskow}" />
                         <Grid Height="{Binding iDuzoscH, Mode=OneWay }" Width="4" />
                         <StackPanel>
+                            <Grid>
+                                
                         <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" Opacity="{Binding opacity}" MouseLeftButtonDown="uiImage_LeftClick">
                             <Image.ContextMenu>
                                 <ContextMenu>
@@ -260,8 +276,10 @@
                             </Image.ContextMenu>
                         </Image>
 
-                            <!--<TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
-                            <TextBlock Margin="0,-20,0,0" HorizontalAlignment="Right" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
+                                <CheckBox VerticalAlignment="Top" HorizontalAlignment="Left" IsChecked="{Binding oPic.IsChecked}" FontSize="20" Visibility="{Binding IsChecked, ElementName=uiPodpisCheckbox, Converter={StaticResource KonwersjaVisibility}}" MinWidth="20" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked"/>
+                                <!--<TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
+                            <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
+                            </Grid>
                             <!--<TextBlock Margin="0,1,0,2" Text="{Binding podpis}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding podpis, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.serno}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSerNo, Converter={StaticResource KonwersjaVisibility}}" />
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.sSourceName}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSource, Converter={StaticResource KonwersjaVisibility}}" />

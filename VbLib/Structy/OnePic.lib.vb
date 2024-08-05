@@ -465,7 +465,7 @@ Public Class OnePic
 
 
     Public Shared Function MatchesMasks(sFilenameNoPath As String, sIncludeMasks As String, sExcludeMasks As String) As Boolean
-        DumpCurrMethod($"({sFilenameNoPath}, {sIncludeMasks}, {sExcludeMasks}")
+        ' DumpCurrMethod($"({sFilenameNoPath}, {sIncludeMasks}, {sExcludeMasks}")
 
         ' https://stackoverflow.com/questions/725341/how-to-determine-if-a-file-matches-a-file-mask
         Dim aMaski As String()
@@ -2206,6 +2206,31 @@ Public Class OnePic
             Next
         Next
     End Sub
+
+    ''' <summary>
+    ''' podaje stage, sprawdzając required od góry, i potem idąc w górę
+    ''' </summary>
+    Public Function GetStage() As SequenceStageBase
+
+        Dim level As Integer = 999
+        Dim ret As SequenceStageBase = Nothing
+
+        ' wedle required od góry, schodzi do x
+        For Each oStage As SequenceStageBase In SequenceCheckers.Where(Function(x) x.IsRequired).OrderByDescending(Of Integer)(Function(x) x.StageNo)
+            If oStage.Check(Me) Then Exit For
+            ret = oStage
+            level = ret.StageNo
+        Next
+
+        ' od x w górę
+        For Each oStage As SequenceStageBase In SequenceCheckers.Where(Function(x) x.StageNo > level).OrderBy(Of Integer)(Function(x) x.StageNo)
+            If Not oStage.Check(Me) Then Exit For
+            ret = oStage
+        Next
+
+        Return ret
+    End Function
+
 
 End Class
 
