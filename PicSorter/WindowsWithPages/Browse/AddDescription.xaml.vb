@@ -2,6 +2,7 @@
 
 'Imports Windows.Media.Devices
 Imports pkar.UI.Extensions
+Imports Vblib
 
 Public Class AddDescription
 
@@ -48,7 +49,7 @@ Public Class AddDescription
         _comment = uiDescription.Text
 
         If _keywords.Contains("NO:") AndAlso Not _keywords.Contains("=NO:") Then
-            If Await Me.dialogboxynasync("Podejrzewam że chciałeś użyć keyword blokującego AUTOTAG, ale użyłeś złej składni: powinno być =NO:" & vbCrLf & "Chcesz poprawić?") Then Return
+            If Await Me.DialogBoxYNAsync("Podejrzewam że chciałeś użyć keyword blokującego AUTOTAG, ale użyłeś złej składni: powinno być =NO:" & vbCrLf & "Chcesz poprawić?") Then Return
         End If
 
         If _editmode Then
@@ -87,6 +88,21 @@ Public Class AddDescription
             'oNew.Margin = _DefMargin
             'oNew.Background = New SolidColorBrush(Colors.White)
             oMenuItem.Items.Add(oNew)
+
+            If oItem.sId = "=NO" Then DodajTaggersBlock(oNew, oEventHandler)
+
+        Next
+
+    End Sub
+
+    Private Shared Sub DodajTaggersBlock(oParent As MenuItem, oEventHandler As RoutedEventHandler)
+
+        For Each oTagger In Globs.gAutoTagery
+
+            Dim oItem As New Vblib.OneKeyword With {.sId = oTagger.GetAutoTagDisableKwd}
+            Dim oNew As New MenuItem With {.Header = oItem.sId, .DataContext = oItem}
+            AddHandler oNew.Click, oEventHandler
+            oParent.Items.Add(oNew)
         Next
 
     End Sub
@@ -94,7 +110,7 @@ Public Class AddDescription
     Public Shared Function WypelnMenuKeywords(oMenu As Menu, oEventHandler As RoutedEventHandler) As Integer
         oMenu.Items.Clear()
 
-        For Each oItem As Vblib.OneKeyword In vblib.GetKeywords
+        For Each oItem As Vblib.OneKeyword In Vblib.GetKeywords
             Dim oNew As New MenuItem
             oNew.Header = oItem.sId
             'oNew.Margin = _DefMargin
