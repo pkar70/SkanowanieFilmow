@@ -10,7 +10,6 @@ Public Class PicMenuLinksWeb
     Inherits PicMenuBase
 
     Private _itemLinki As MenuItem
-    Private _itemPaste As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -29,10 +28,8 @@ Public Class PicMenuLinksWeb
         Me.Items.Add(_itemLinki)
 
         Me.Items.Add(New Separator)
-        Me.Items.Add(NewMenuItem("Create", "Stwórz link do zaznaczonego zdjęcia", AddressOf uiCreateLink_Click))
-        _itemPaste = NewMenuItem("Paste", "Dodaj zapamiętany link", AddressOf uiPasteLink_Click)
-        _itemPaste.IsEnabled = False
-        Me.Items.Add(_itemPaste)
+        AddCopyMenu("Create", "Stwórz link do zaznaczonego zdjęcia")
+        AddPasteMenu("Paste", "Dodaj zapamiętany link")
 
         Me.Items.Add(New Separator)
         Me.Items.Add(NewMenuItem("Połącz", "Połącz wzajemnie dwa zdjęcia", AddressOf uiWzajemnie_Click))
@@ -40,27 +37,36 @@ Public Class PicMenuLinksWeb
         _wasApplied = True
     End Sub
 
-    Private _myclip As OneLink
+    Private _clip As OneLink
 
-    Private Async Sub uiCreateLink_Click(sender As Object, e As RoutedEventArgs)
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
+
+        If Not UseSelectedItems Then Return
+        _miCopy.IsEnabled = (GetSelectedItems().Count = 1)
+
+    End Sub
+
+    Protected Overrides Async Sub CopyCalled()
+
         If GetSelectedItems().Count <> 1 Then
             Vblib.MsgBox("Umiem stworzyć link tylko dla jednego zdjęciaa")
+            _miPaste.IsEnabled = False
             Return
         End If
 
         Dim opis As String = Await Vblib.InputBoxAsync("Podaj opis dla linku")
         If String.IsNullOrWhiteSpace(opis) Then Return
 
-        _myclip = New OneLink With {.opis = opis, .link = "pic" & GetSelectedItems(0).oPic.FormattedSerNo}
-        _itemPaste.IsEnabled = True
+        _clip = New OneLink With {.opis = opis, .link = "pic" & GetSelectedItems(0).oPic.FormattedSerNo}
     End Sub
 
-    Private Sub uiPasteLink_Click(sender As Object, e As RoutedEventArgs)
-        OneOrMany(Sub(x) x.AddLink(_myclip))
+    Protected Overrides Sub PasteCalled()
+        OneOrMany(Sub(x) x.AddLink(_clip))
     End Sub
 
 
-    Private Sub uiWzajemnie_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiWzajemnie_Click(sender As Object, e As RoutedEventArgs)
         If GetSelectedItems().Count <> 2 Then
             Vblib.MsgBox("Umiem łączyć tylko dwa zdjęcia")
             Return
@@ -105,8 +111,16 @@ Public Class PicMenuLinksWeb
             Return
         End If
 
+        Dim txts As String = Await Vblib.InputBoxAsync($"Podaj opis zdjęcia {thumb0.oPic.FormattedSerNo} | opis {thumb1.oPic.FormattedSerNo}")
+        Dim opisy As String() = txts.Split("|")
 
-        Vblib.MsgBox("Nie potrafię się zorientować które zdjęcie jest które")
+        If opisy.Length <> 2 Then
+            Vblib.MsgBox("Nie rozumiem opisu")
+            Return
+        End If
+
+        PolaczZeSoba(thumb0, opisy(1), thumb0, opisy(0))
+
     End Sub
 
     ''' <summary>
