@@ -53,8 +53,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     Protected Function InitEnableDisable(header As String, dymek As String, Optional bSubItems As Boolean = False)
 
         If String.IsNullOrWhiteSpace(Me.Header) Then
-            'Me.Header = header & If(UseSelectedItems AndAlso bSubItems, " »", "")
-            Me.Header = header & If(bSubItems, " »", "")
+            Me.Header = header & If(UseSelectedItems AndAlso bSubItems, " »", "")
         End If
         ToolTip = dymek
 
@@ -97,7 +96,24 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
 
     Protected Function GetSelectedItems() As List(Of ProcessBrowse.ThumbPicek)
 
-        Return TryCast(Window.GetWindow(Me), ProcessBrowse)?.GetSelectedThumbs
+        Dim wnd As Window = Window.GetWindow(Me)
+        If wnd Is Nothing Then
+            'Dim ctxmenu As FrameworkElement = Me
+            'While ctxmenu.GetType <> GetType(ContextMenu)
+            '    ctxmenu = ctxmenu.Parent
+            'End While
+
+            'wnd = Window.GetWindow(ctxmenu)
+
+            'If wnd Is Nothing Then
+            '    wnd = Window.GetWindow(ctxmenu.Parent) ' popup
+            'End If
+
+
+            wnd = Window.GetWindow(TryCast(FindUiElement("uiPicList"), ListView))
+        End If
+
+            Return TryCast(wnd, ProcessBrowse)?.GetSelectedThumbs
 
         'Dim cbox As CheckBox = TryCast(FindUiElement("uiPodpisCheckbox"), CheckBox)
         'If cbox IsNot Nothing AndAlso cbox.IsChecked Then
@@ -210,7 +226,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
 
     End Function
 
-    Public Async Function ProgBarInc() As Task
+    Protected Async Function ProgBarInc() As Task
         If _progBar IsNot Nothing Then
             _progBar.Value += 1
             Await Task.Delay(1) ' żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
@@ -232,5 +248,36 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         Return NewMenuCloudOperation(oEngine.konfiguracja.nazwa, oEngine, Nothing)
     End Function
 
+    ''' <summary>
+    ''' do override, reakcja na otwieranie menu - wywoływane dla każdego w menu
+    ''' </summary>
+    Public Overridable Sub MenuOtwieramy()
+        If _miCopy IsNot Nothing Then _miCopy.IsEnabled = Not UseSelectedItems
+    End Sub
+
+    Protected _miPaste As MenuItem
+    Protected _miCopy As MenuItem
+
+    Protected Sub AddCopyMenu(header As String, dymek As String)
+        _miCopy = NewMenuItem(header, dymek, Sub()
+                                                 ' najpierw True, bo można w ten sposób dać False w CopyCalled
+                                                 _miPaste.IsEnabled = True
+                                                 CopyCalled()
+                                             End Sub)
+        Me.Items.Add(_miCopy)
+    End Sub
+
+    Protected Sub AddPasteMenu(header As String, dymek As String)
+        _miPaste = NewMenuItem(header, dymek, Sub() PasteCalled(), False)
+        Me.Items.Add(_miPaste)
+    End Sub
+
+    Protected Overridable Sub CopyCalled()
+
+    End Sub
+
+    Protected Overridable Sub PasteCalled()
+
+    End Sub
 
 End Class

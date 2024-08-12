@@ -38,12 +38,14 @@ Public Class PicMenuSearchArchive
         _ByAzureObjects = NewMenuItem("Similar (Object)", "Wyszukaj zdjęcia oznaczone przez Azure tymi samymi Tags", AddressOf SearchByAzureObjects)
         Me.Items.Add(_ByAzureObjects)
 
-        AddHandler Me.SubmenuOpened, AddressOf OpeningSearchMenu
 
         _wasApplied = True
     End Sub
 
-    Private Sub OpeningSearchMenu(sender As Object, e As RoutedEventArgs)
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
+
+        If Not _wasApplied Then Return
 
         ' fallback przy błędach
         _ByAzureTags.IsEnabled = False
@@ -54,15 +56,14 @@ Public Class PicMenuSearchArchive
         Dim oPic As Vblib.OnePic = GetFromDataContext()
         If oPic Is Nothing Then Return
 
-
         Dim azurek As Vblib.MojeAzure = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)?.AzureAnalysis
         UstawWidocznoscMenuItemTagi(azurek)
         UstawWidocznoscMenuItemObjects(azurek)
         UstawWidocznoscMenuItemKeywords(oPic)
         UstawWidocznoscMenuItemGeo(oPic)
-
-
     End Sub
+
+
     Private Sub UstawWidocznoscMenuItemGeo(oPic As OnePic)
 
         _ByGeo.DataContext = oPic?.GetGeoTag

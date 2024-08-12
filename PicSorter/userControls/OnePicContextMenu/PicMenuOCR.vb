@@ -5,11 +5,10 @@ Imports pkar.UI.Extensions
 Public Class PicMenuOCR
     Inherits PicMenuBase
 
-    Public Shared _myClip As String = ""
-    Private _miPaste As MenuItem
-    Private _miPasteDesc As MenuItem
-    Private _miCopyOCRclip As MenuItem
-    Private _miCopyOCRlocal As MenuItem
+    Public Shared _Clip As String = "" ' public dla OCRwnd.xaml
+    Private _PasteDesc As MenuItem
+    Private _CopyOCRclip As MenuItem
+    Private _CopyOCRlocal As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -24,44 +23,44 @@ Public Class PicMenuOCR
 
         Me.Items.Add(NewMenuItem("OCR window", "Otworz okno zarządzania OCR", AddressOf uiOpenOCRwnd_Click))
 
-        _miCopyOCRclip = NewMenuItem("OCR to Clipboard", "Wyślij OCR do clipboard", AddressOf uiOCRtoClip_Click)
-        Me.Items.Add(_miCopyOCRclip)
-        _miCopyOCRlocal = NewMenuItem("Copy OCR", "Skopiowanie OCR do lokalnego schowka", AddressOf uiOCRcopy_Click)
-        Me.Items.Add(_miCopyOCRlocal)
+        _CopyOCRclip = NewMenuItem("OCR to Clipboard", "Wyślij OCR do clipboard", AddressOf uiOCRtoClip_Click)
+        Me.Items.Add(_CopyOCRclip)
+        _CopyOCRlocal = NewMenuItem("Copy OCR", "Skopiowanie OCR do lokalnego schowka", AddressOf uiOCRcopy_Click)
+        Me.Items.Add(_CopyOCRlocal)
 
-        _miPaste = NewMenuItem("Paste OCR", "Narzucenie zdjęciom OCR wg lokalnego schowka", AddressOf uiOCRpaste_Click)
-        Me.Items.Add(_miPaste)
-        _miPasteDesc = NewMenuItem("Paste as Descr", "Dodanie OCR z lokalnego schowka jako Description", AddressOf uiOCRpasteDescr_Click)
-        Me.Items.Add(_miPasteDesc)
+        AddPasteMenu("Paste OCR", "Narzucenie zdjęciom OCR wg lokalnego schowka")
+        _PasteDesc = NewMenuItem("Paste as Descr", "Dodanie OCR z lokalnego schowka jako Description", AddressOf uiOCRpasteDescr_Click, False)
+        Me.Items.Add(_PasteDesc)
 
-        AddHandler Me.SubmenuOpened, AddressOf StworzMenuOCR
         _wasApplied = True
     End Sub
 
-    Private Sub StworzMenuOCR(sender As Object, e As RoutedEventArgs)
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
 
-        _miPasteDesc.IsEnabled = Not String.IsNullOrEmpty(_myClip)
-        _miPaste.IsEnabled = Not String.IsNullOrEmpty(_myClip)
+        If Not _wasApplied Then Return
 
         If Not UseSelectedItems Then
-            Dim oExif As Vblib.ExifTag = GetFromDataContext.GetExifOfType(Vblib.ExifSource.AutoWinOCR)
-            _miCopyOCRclip.IsEnabled = oExif IsNot Nothing
-            _miCopyOCRlocal.IsEnabled = oExif IsNot Nothing
+            Dim oExif As Vblib.ExifTag = GetFromDataContext()?.GetExifOfType(Vblib.ExifSource.AutoWinOCR)
+            _CopyOCRclip.IsEnabled = oExif IsNot Nothing
+            _CopyOCRlocal.IsEnabled = oExif IsNot Nothing
         End If
-
     End Sub
+
 
     Private Sub uiOCRpasteDescr_Click(sender As Object, e As RoutedEventArgs)
         ' z zabezpieczeniem przed wielokrotnym dodawaniem
-        OneOrMany(Sub(x) If Not x.sumOfDescr.Contains(_myClip) Then x.AddDescription(New Vblib.OneDescription(_myClip, "")))
+        OneOrMany(Sub(x) If Not x.sumOfDescr.Contains(_Clip) Then x.AddDescription(New Vblib.OneDescription(_Clip, "")))
     End Sub
 
-    Private Sub uiOCRpaste_Click(sender As Object, e As RoutedEventArgs)
-        OneOrMany(Sub(x) x.ReplaceOrAddExif(New Vblib.ExifTag(Vblib.ExifSource.AutoWinOCR) With {.UserComment = _myClip}))
+    Protected Overrides Sub Pastecalled()
+        OneOrMany(Sub(x) x.ReplaceOrAddExif(New Vblib.ExifTag(Vblib.ExifSource.AutoWinOCR) With {.UserComment = _Clip}))
     End Sub
 
     Private Sub uiOCRcopy_Click(sender As Object, e As RoutedEventArgs)
-        _myClip = SumaOCR()
+        _Clip = SumaOCR()
+        _miPaste.IsEnabled = _Clip IsNot Nothing
+        _PasteDesc.IsEnabled = _Clip IsNot Nothing
     End Sub
 
     Private Sub uiOCRtoClip_Click(sender As Object, e As RoutedEventArgs)

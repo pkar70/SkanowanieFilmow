@@ -16,10 +16,7 @@ Public NotInheritable Class PicMenuOnMap
 
         If Not InitEnableDisable("On map", "Wywołanie mapy ze wskazaniem miejsca wykonania zdjęcia", True) Then Return
 
-        If _picek.GetGeoTag Is Nothing Then
-            Me.IsEnabled = False
-            Return
-        End If
+        If UseSelectedItems Then Return
 
         Try
             Me.Items.Clear()
@@ -38,6 +35,14 @@ Public NotInheritable Class PicMenuOnMap
 
         DodajMenuFlicker(Me)
         _wasApplied = True
+    End Sub
+
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
+
+        If UseSelectedItems Then Return
+        Me.IsEnabled = GetFromDataContext()?.sumOfGeo IsNot Nothing
+
     End Sub
 
     Private Sub uiOnMap_Click(sender As Object, e As RoutedEventArgs)

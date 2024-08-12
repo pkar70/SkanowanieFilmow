@@ -6,7 +6,7 @@ Public NotInheritable Class PicMenuGeotag
     Inherits PicMenuBase
 
     Private Shared _clip As BasicGeoposWithRadius
-    Private _itemPaste As MenuItem
+    Private _itemReset As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -21,14 +21,22 @@ Public NotInheritable Class PicMenuGeotag
 
         Me.Items.Add(NewMenuItem("Create Geotag", "Tworzenie znacznika z lokalizacją", AddressOf uiCreateGeotag_Click))
         Me.Items.Add(NewMenuItem("Make same", "Skopiowanie geografii pomiędzy zdjęciami", AddressOf uiGeotagMakeSame_Click, UseSelectedItems))
-        Me.Items.Add(NewMenuItem("Copy Geotag", "Skopiuj dane geograficzne ze wskazanego zdjęcia do lokalnego schowka ", AddressOf uiGeotagToClip_Click, Not UseSelectedItems))
-        _itemPaste = NewMenuItem("Paste Geotag", "ustaw dane geograficzne zdjęć wedle lokalnego schowka", AddressOf uiGeotagPaste_Click, _clip IsNot Nothing)
-        Me.Items.Add(_itemPaste)
 
-        Me.Items.Add(NewMenuItem("Reset Geotag", "Wyczyść dopisane przez program dane geograficzne zdjęcia (ManualGeo, OSM, IMGW)", AddressOf uiGeotagClear_Click, UseSelectedItems OrElse GetFromDataContext.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing))
+        AddCopyMenu("Copy Geotag", "Skopiuj dane geograficzne ze wskazanego zdjęcia do lokalnego schowka ")
+        AddPasteMenu("Paste Geotag", "ustaw dane geograficzne zdjęć wedle lokalnego schowka")
+
+        _itemReset = NewMenuItem("Reset Geotag", "Wyczyść dopisane przez program dane geograficzne zdjęcia (ManualGeo, OSM, IMGW)", AddressOf uiGeotagClear_Click)
+        Me.Items.Add(_itemReset)
 
         _wasApplied = True
     End Sub
+
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
+        _miCopy.IsEnabled = Not UseSelectedItems AndAlso GetFromDataContext.sumOfGeo IsNot Nothing
+        _itemReset.IsEnabled = UseSelectedItems OrElse GetFromDataContext.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing
+    End Sub
+
 
     Private Sub uiGeotagMakeSame_Click(sender As Object, e As RoutedEventArgs)
         ' tu wejdzie tylko przy UseSelectedItems
@@ -100,7 +108,8 @@ Public NotInheritable Class PicMenuGeotag
         EventRaise(Me)
     End Sub
 
-    Private Sub uiGeotagToClip_Click(sender As Object, e As RoutedEventArgs)
+    Protected Overrides Sub CopyCalled()
+        MyBase.CopyCalled()
 
         Dim oGeo As BasicGeoposWithRadius = GetFromDataContext.GetGeoTag
         If oGeo Is Nothing Then
@@ -109,8 +118,6 @@ Public NotInheritable Class PicMenuGeotag
         End If
 
         _clip = oGeo
-        _itemPaste.IsEnabled = True
-
     End Sub
 
     Private Sub GeotagSet(oPic As Vblib.OnePic)

@@ -6,7 +6,6 @@ Public Class PicMenuKwds
     Inherits PicMenuBase
 
     Private _itemRemove As MenuItem
-    Private _itemPaste As MenuItem
     Private _itemForce As MenuItem
 
 
@@ -25,9 +24,8 @@ Public Class PicMenuKwds
         _itemRemove = NewMenuItem("Remove kwd", "Usunięcie słowa kluczowego", Nothing)
         Me.Items.Add(_itemRemove)
         _itemRemove.Items.Add("(no entries)")
-        Me.Items.Add(NewMenuItem("Copy kwds", "Skopiuj słowa kluczowe do lokalnego schowka (ze wszystkich zdjęć)", AddressOf uiCopyKwds_Click))
-        _itemPaste = NewMenuItem("Paste kwds", "Dodaj słowa kluczowe wedle lokalnego schowka", AddressOf uiKwdsPaste_Click, False)
-        Me.Items.Add(_itemPaste)
+        AddCopyMenu("Copy kwds", "Skopiuj słowa kluczowe do lokalnego schowka (ze wszystkich zdjęć)")
+        AddPasteMenu("Paste kwds", "Dodaj słowa kluczowe wedle lokalnego schowka")
         _itemForce = NewMenuItem("Force kwds", "Narzuć słowa kluczowe lokalnego schowka", AddressOf uiKwdsForce_Click, False)
         Me.Items.Add(_itemForce)
 
@@ -84,19 +82,19 @@ Public Class PicMenuKwds
 
     End Sub
 
-    Private _clipKwds As String
+    Private Shared _clip As String
 
-    Private Sub uiCopyKwds_Click(sender As Object, e As RoutedEventArgs)
-        _clipKwds = JakieSaKwds()
+    Protected Overrides Sub CopyCalled()
+        MyBase.CopyCalled()
+        _clip = JakieSaKwds()
         _itemForce.IsEnabled = True
-        _itemPaste.IsEnabled = True
     End Sub
 
 
-    Private Sub uiKwdsPaste_Click(sender As Object, e As RoutedEventArgs)
+    Protected Overrides Sub Pastecalled()
 
         OneOrMany(Sub(x)
-                      x.ReplaceOrAddExif(vblib.GetKeywords.CreateManualTagFromKwds(_clipKwds & " " & x.GetAllKeywords))
+                      x.ReplaceOrAddExif(Vblib.GetKeywords.CreateManualTagFromKwds(_clip & " " & x.GetAllKeywords))
                       x.sumOfKwds = x.GetAllKeywords & " "
                   End Sub
         )
@@ -118,7 +116,7 @@ Public Class PicMenuKwds
     Private Sub uiKwdsForce_Click(sender As Object, e As RoutedEventArgs)
         ' to jest trochę ryzykowne!
         OneOrMany(Sub(x)
-                      x.ReplaceOrAddExif(vblib.GetKeywords.CreateManualTagFromKwds(_clipKwds))
+                      x.ReplaceOrAddExif(Vblib.GetKeywords.CreateManualTagFromKwds(_clip))
                       x.sumOfKwds = x.GetAllKeywords & " "
                   End Sub
         )

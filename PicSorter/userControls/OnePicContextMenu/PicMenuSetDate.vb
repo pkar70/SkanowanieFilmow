@@ -11,7 +11,10 @@ Public NotInheritable Class PicMenuSetDate
     Private Shared _clipMax As Date
     Private Shared _clipOrg As Date
 
-    Private _itemPaste As New MenuItem
+    'Private _itemPaste As MenuItem
+    Private _itemInterpolate As MenuItem
+    'Private _itemCopy As MenuItem
+    Private _itemCalcDiff As MenuItem
     Private _timeDiff As String
 
     Public Overrides Sub OnApplyTemplate()
@@ -31,14 +34,11 @@ Public NotInheritable Class PicMenuSetDate
         Me.Items.Add(NewMenuItem("Force date taken", "Narzuca datowanie zdjęcia", AddressOf uiForceDateTaken_Click))
         Me.Items.Add(NewMenuItem("Set date range", "Narzuca zakres dat zdjęcia", AddressOf uiForceDateRange_Click))
 
-        If UseSelectedItems Then
-            Me.Items.Add(NewMenuItem("Interpolate", "Interpoluje datę zdjęcia z sąsiednich", AddressOf uiInterpolateDates_Click))
-        End If
+        _itemInterpolate = NewMenuItem("Interpolate", "Interpoluje datę zdjęcia z sąsiednich", AddressOf uiInterpolateDates_Click)
+        Me.Items.Add(_itemInterpolate)
 
-        Me.Items.Add(NewMenuItem("Copy range", "Kopiuje daty wybranego pliku do lokalnego clipboard", AddressOf uiDatesToClip_Click, Not UseSelectedItems))
-
-        _itemPaste = NewMenuItem("Paste range", "Narzuca daty zdjęć wedle zapisanych w lokalnym clipboard", AddressOf uiDatesPaste_Click, _clipMin.IsDateValid OrElse _clipMax.IsDateValid)
-        Me.Items.Add(_itemPaste)
+        AddCopyMenu("Copy range", "Kopiuje daty wybranego pliku do lokalnego clipboard")
+        AddPasteMenu("Paste range", "Narzuca daty zdjęć wedle zapisanych w lokalnym clipboard")
 
         Dim timediff As TimeSpan = Date.Now - Date.UtcNow
 
@@ -49,12 +49,18 @@ Public NotInheritable Class PicMenuSetDate
         tools.Items.Add(NewMenuItem($"To local ({timediff.Hours})", "Zamienia czas UTC na lokalny", AddressOf uiToLocal_Click))
         tools.Items.Add(NewMenuItem($"To universal (-{timediff.Hours})", "Zamienia czas lokalny na UTC", AddressOf uiToUTC_Click))
         tools.Items.Add(NewMenuItem("Adjust offset", "Przesuwa czas o podane minuty", AddressOf uiAdjustOffset_Click))
-        If UseSelectedItems Then
-            tools.Items.Add(NewMenuItem("Calculate diff", "Wylicza różnicę czasu pomiędzy zdjęciami", AddressOf uiCalcDiff_Click))
-        End If
 
+        _itemCalcDiff = NewMenuItem("Calculate diff", "Wylicza różnicę czasu pomiędzy zdjęciami", AddressOf uiCalcDiff_Click)
+        tools.Items.Add(_itemCalcDiff)
 
         _wasApplied = True
+    End Sub
+
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
+
+        _itemCalcDiff.IsEnabled = UseSelectedItems
+        _itemInterpolate.IsEnabled = UseSelectedItems
     End Sub
 
 
@@ -138,7 +144,8 @@ Public NotInheritable Class PicMenuSetDate
 
 #Region "clipboard dat"
 
-    Private Sub uiDatesPaste_Click(sender As Object, e As RoutedEventArgs)
+    Protected Overrides Sub pastecalled()
+
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
                 ForceInPic(oItem, _clipMin, _clipMax, _clipOrg)
@@ -151,7 +158,7 @@ Public NotInheritable Class PicMenuSetDate
         EventRaise(Me)
     End Sub
 
-    Private Sub uiDatesToClip_Click(sender As Object, e As RoutedEventArgs)
+    Protected Overrides Sub copycalled()
         _clipMin = GetFromDataContext.GetMinDate
         _clipMax = GetFromDataContext.GetMaxDate
         _clipOrg = GetFromDataContext.GetMostProbablyDate

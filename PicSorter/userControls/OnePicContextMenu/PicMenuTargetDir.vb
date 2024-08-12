@@ -6,8 +6,11 @@ Imports PicSorterNS.ProcessBrowse
 Public NotInheritable Class PicMenuTargetDir
     Inherits PicMenuBase
 
-    Private _itemPaste As New MenuItem
     Private Shared _clipForTargetDir As String
+    Private _itemSet As MenuItem
+    Private _itemClear As MenuItem
+    Private _itemMakeSame As MenuItem
+
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -20,26 +23,31 @@ Public NotInheritable Class PicMenuTargetDir
 
         Me.Items.Clear()
 
-        If UseSelectedItems Then
-            ' dla pojedyńczego trudno jest ustalić TargetDir (radiobuttony automatycznego podziału)
-            Me.Items.Add(NewMenuItem("Set target dir", "Ustawianie katalogu docelowego", AddressOf uiCreateTargetDir_Click))
-        End If
+        _itemSet = NewMenuItem("Set target dir", "Ustawianie katalogu docelowego", AddressOf uiCreateTargetDir_Click)
+        Me.Items.Add(_itemSet)
 
-        If UseSelectedItems Then
-            Me.Items.Add(NewMenuItem("Make same", "Skopiowanie katalogu docelowego między zdjęciami", AddressOf uiTargetMakeSame_Click))
-        End If
+        _itemMakeSame = NewMenuItem("Make same", "Skopiowanie katalogu docelowego między zdjęciami", AddressOf uiTargetMakeSame_Click)
+        Me.Items.Add(_itemMakeSame)
 
-        If Not UseSelectedItems Then
-            Me.Items.Add(NewMenuItem("Copy TargetDir", "Skopiowanie katalogu docelowego do lokalnego schowka", AddressOf uiTargetToClip_Click, String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)))
-        End If
+        AddCopyMenu("Copy TargetDir", "Skopiowanie katalogu docelowego do lokalnego schowka")
+        AddPasteMenu("Paste TargetDir", "Narzucenie zdjęciom katalogu docelowego wg lokalnego schowka")
 
-        'oNew = New MenuItem
-        _itemPaste = NewMenuItem("Paste TargetDir", "Narzucenie zdjęciom katalogu docelowego wg lokalnego schowka", AddressOf uiTargetPaste_Click, Not String.IsNullOrWhiteSpace(_clipForTargetDir))
-        Me.Items.Add(_itemPaste)
-
-        Me.Items.Add(NewMenuItem("Clear TargetDir", "Usunięcie wskazania katalogu docelowego", AddressOf uiTargetClear_Click, UseSelectedItems OrElse String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)))
+        _itemClear = NewMenuItem("Clear TargetDir", "Usunięcie wskazania katalogu docelowego", AddressOf uiTargetClear_Click)
+        Me.Items.Add(_itemClear)
 
         _wasApplied = True
+    End Sub
+
+
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
+
+        If Not _wasApplied Then Return
+        _miCopy.IsEnabled = Not UseSelectedItems AndAlso Not String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)
+        _itemSet.IsEnabled = UseSelectedItems
+        _itemClear.IsEnabled = UseSelectedItems OrElse Not String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)
+        _itemMakeSame.IsEnabled = UseSelectedItems AndAlso GetSelectedItems.Count > 1
+
     End Sub
 
     Private Sub uiTargetMakeSame_Click(sender As Object, e As RoutedEventArgs)
@@ -87,12 +95,11 @@ Public NotInheritable Class PicMenuTargetDir
         EventRaise(Me)
     End Sub
 
-
-    Private Sub uiTargetToClip_Click(sender As Object, e As RoutedEventArgs)
+    Protected Overrides Sub CopyCalled()
         _clipForTargetDir = GetFromDataContext.TargetDir
     End Sub
 
-    Private Sub uiTargetPaste_Click(sender As Object, e As RoutedEventArgs)
+    Protected Overrides Sub PasteCalled()
         OneOrMany(Sub(x) If String.IsNullOrWhiteSpace(x.TargetDir) Then x.TargetDir = _clipForTargetDir)
         EventRaise(Me)
     End Sub

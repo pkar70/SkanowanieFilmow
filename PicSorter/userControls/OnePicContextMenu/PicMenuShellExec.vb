@@ -9,6 +9,8 @@ Public NotInheritable Class PicMenuShellExec
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
         If _wasApplied Then Return
 
+        If UseSelectedItems Then Return
+
         MyBase.OnApplyTemplate()
 
         If Not InitEnableDisable("Shell exec", "Uruchomienie programu domyślnego dla danego typu zdjęcia") Then Return
