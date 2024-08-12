@@ -554,9 +554,16 @@ Public Class OnePic
     ''' <summary>
     ''' usuwa wszystkie descriptions, i wstawia nowe - jako "dzisiejsze"
     ''' </summary>
-    Public Sub ReplaceAllDescriptions(sDesc As String)
+    Public Sub ReplaceAllDescriptions(sDesc As String, Optional copyKwds As Boolean = False)
+
+        Dim kwds As String = ""
+        For Each oDesc As OneDescription In descriptions
+            kwds &= oDesc.keywords & " "
+        Next
+        kwds = kwds.Trim
+
         descriptions = New List(Of OneDescription)
-        AddDescription(New OneDescription(sDesc, ""))
+        AddDescription(New OneDescription(sDesc, kwds))
         RecalcSumsy()
     End Sub
 
@@ -1280,11 +1287,29 @@ Public Class OnePic
         sRet = GetSumOfCommentText()
         If sRet <> "" Then Return sRet
 
+        If Not GetSettingsBool("uiPublishUseAzure") Then Return ""
+
         Dim oExif As ExifTag = GetExifOfType(ExifSource.AutoAzure)
         If oExif Is Nothing Then Return ""
 
         Return oExif.AzureAnalysis.Captions?.ToComment("Azure")
 
+    End Function
+
+    Public Function GetDescriptionForCloud_Header() As String
+        Dim serno As String = If(GetSettingsBool("uiPublishShowSerno"), FormattedSerNo, "")
+        Dim comm As String = GetDescriptionForCloud()
+        If serno <> "" AndAlso comm <> "" Then
+            Return serno & "; " & comm
+        End If
+
+        Return serno & comm
+    End Function
+
+    Public Function GetDescriptionForCloud_Footer() As String
+        If sumOfGeo Is Nothing Then Return ""
+        If Not GetSettingsBool("uiPublishAddMaplink") Then Return ""
+        Return sumOfGeo.ToOSMLink(17)
     End Function
 
 #Region "sharing"
@@ -1476,16 +1501,19 @@ Public Class OnePic
             End If
 
             If query.ogolne.IgnoreYear Then
+                ' jeśli nie wiemy kiedy zdjęcie było zrobione, to nie można go pokazać przy szukaniu IgnoreYear
+                If (picMaxDate - picMinDate).TotalDays > 30 Then Return False
+
                 ' bierzemy daty oDir, i zmieniamy Year na taki jak w UI query
                 picMinDate = picMinDate.AddYears(query.ogolne.MinDate.Year - picMinDate.Year)
                 picMaxDate = picMaxDate.AddYears(query.ogolne.MaxDate.Year - picMaxDate.Year)
             End If
 
             If query.ogolne.MaxDateCheck AndAlso query.ogolne.MaxDate.IsDateValid Then
-                If picMinDate > query.ogolne.MaxDate Then Return False
-            End If
+                    If picMinDate > query.ogolne.MaxDate Then Return False
+                End If
 
-            If query.ogolne.MinDateCheck AndAlso query.ogolne.MinDate.IsDateValid Then
+                If query.ogolne.MinDateCheck AndAlso query.ogolne.MinDate.IsDateValid Then
                 If picMaxDate < query.ogolne.MinDate Then Return False
             End If
 

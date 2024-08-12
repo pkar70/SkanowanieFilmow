@@ -364,7 +364,13 @@ Public Class Cloud_Skyscraper
             End If
 
 
-            sPostBody &= $"<p>&nbsp;<p>&nbsp;<p>{oPic.GetDescriptionForCloud}</p><p><img src='{oJsonPicRet.link}' style='width: auto;' class='fr-fic fr-dii' data-attachment='full:{oJsonPicRet.attachment.attachment_id}'/></p>"
+            sPostBody &= $"<p>&nbsp;</p><p>&nbsp;</p>"
+            Dim temp As String = oPic.GetDescriptionForCloud_Header
+            If Not String.IsNullOrWhiteSpace(temp) Then sPostBody &= $"<p>{temp}</p>"
+            sPostBody &= $"<p><img src='{oJsonPicRet.link}' style='width: auto;' class='fr-fic fr-dii' data-attachment='full:{oJsonPicRet.attachment.attachment_id}'/></p>"
+            temp = oPic.GetDescriptionForCloud_Footer
+            If Not String.IsNullOrWhiteSpace(temp) Then sPostBody &= $"<p>{temp}</p>"
+
             If oNextPic IsNot Nothing Then oNextPic()
         Next
 
