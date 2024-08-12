@@ -1,22 +1,4 @@
-﻿' pokazywanie zdjęć
-
-' 1) prosty przegląd, zaraz po Download - żeby:
-' a) skasować niepotrzebne, których nie ma sensu "autotagować"
-' b) ułatwić autosortowanie (według dat)
-
-' 2) pełniejszy przegląd, później
-
-' FUNKCJONALNOŚCI:
-' FUNKCJONALNOŚCI:
-' 2) crop
-' 3) rotate - ze skasowaniem z EXIF informacji o obrocie
-' 4) resize
-' 5) shell open edit
-' ** uwaga! zachować daty plików?
-
-' toolbox: delete, crop, rotate, resize (może być automat jakiś)
-' EXIF per oglądany obrazek, oraz per zaznaczone (EXIFSource: MANUAL & yyMMdd-HHmmss)
-
+﻿
 
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
@@ -29,6 +11,7 @@ Imports System.Linq
 Imports Windows.UI.Notifications
 Imports PicSorterNS.BrowseFullSearch
 Imports Newtonsoft.Json
+Imports System.Windows.Controls.Primitives
 'Imports System.Windows.Forms
 'Imports Windows.ApplicationModel.Background
 'Imports Microsoft.EntityFrameworkCore.Internal
@@ -41,7 +24,7 @@ Public Class ProcessBrowse
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć
     Private _redrawPending As Boolean = False
     Private _oBufor As Vblib.IBufor
-    Private _inArchive As Boolean  ' to będzie wyłączać różne funkcjonalności
+    'Private _inArchive As Boolean  ' to będzie wyłączać różne funkcjonalności
     Private _title As String
     Private _memSizeKb As Integer
 
@@ -54,7 +37,7 @@ Public Class ProcessBrowse
     ''' </summary>
     ''' <param name="bufor"></param>
     ''' <param name="onlyBrowse"></param>
-    Public Sub New(bufor As Vblib.IBufor, onlyBrowse As Boolean, title As String)
+    Public Sub New(bufor As Vblib.IBufor, title As String)
         vb14.DumpCurrMethod()
 
         ' This call is required by the designer.
@@ -62,13 +45,13 @@ Public Class ProcessBrowse
 
         ' Add any initialization after the InitializeComponent() call.
         _oBufor = bufor
-        _inArchive = onlyBrowse
+        '_inArchive = onlyBrowse
 
         _title = title
     End Sub
 
     Private Sub MenuActionReadOnly()
-        Dim oVis As Visibility = If(_inArchive, Visibility.Collapsed, Visibility.Visible)
+        Dim oVis As Visibility = If(_oBufor.GetIsReadonly, Visibility.Collapsed, Visibility.Visible)
         ' jedynie dla menu w Action to zadziała, menu context obrazka - nie jest dostępne
         uiDeleteSelected.Visibility = oVis
         uiMenuAutotags.Visibility = oVis
@@ -112,7 +95,7 @@ Public Class ProcessBrowse
         ' zaczynamy od wygaszonego stereopack - dla archiwum, oraz gdy nie znamy SPM
         uiStereoPack.Visibility = Visibility.Collapsed
 
-        If _inArchive Then
+        If _oBufor.GetIsReadonly Then
             ' działamy na archiwum
 
             uiFilterNoTarget.Visibility = Visibility.Collapsed
@@ -226,7 +209,7 @@ Public Class ProcessBrowse
     Private _niekasujArchived As Boolean
 
     Private Async Function EwentualneKasowanieArchived() As Task
-        If _inArchive Then Return
+        If _oBufor.GetIsReadonly Then Return
         If _niekasujArchived Then Return
 
         Dim iArchCount As Integer = Application.GetArchivesList.Count
@@ -319,7 +302,7 @@ Public Class ProcessBrowse
         uiProgBar.Visibility = Visibility.Visible
 
         For Each oItem As ThumbPicek In _thumbsy
-            Await oItem.ThumbWczytajLubStworz(_inArchive) 'DoczytajMiniaturke(bCacheThumbs, oItem)
+            Await oItem.ThumbWczytajLubStworz(_oBufor.GetIsReadonly) 'DoczytajMiniaturke(bCacheThumbs, oItem)
             Await Task.Delay(1) ' na potrzeby ProgressBara
             uiProgBar.Value += 1
         Next
@@ -547,7 +530,7 @@ Public Class ProcessBrowse
     'End Sub
 
     Private Sub uiActionLock_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
 
         If uiPicList.SelectedItems.Count < 1 Then Return
 
@@ -559,7 +542,7 @@ Public Class ProcessBrowse
 
 
     Private Sub uiActionSelectFilter_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
 
         uiPicList.SelectedItems.Clear()
 
@@ -572,13 +555,13 @@ Public Class ProcessBrowse
 #End Region
 
     Private Sub uiMetadataChanged(sender As Object, e As EventArgs)
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
         SaveMetaData()
     End Sub
 
     Private Sub uiMetadataChangedResort(sender As Object, e As EventArgs)
         ' tu wskakuje po zmianie daty zdjęć...
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
 
         ReDymkuj()
 
@@ -590,7 +573,7 @@ Public Class ProcessBrowse
 
     Public Function GetSelectedThumbs() As List(Of ThumbPicek)
         If uiPodpisCheckbox.IsChecked Then
-            Return _thumbsy.Where(Function(x) x.IsChecked)
+            Return _thumbsy.Where(Function(x) x.IsChecked).ToList
         Else
             Dim ret As New List(Of ThumbPicek)
             For Each oItem As ThumbPicek In uiPicList.SelectedItems
@@ -633,13 +616,13 @@ Public Class ProcessBrowse
     End Sub
 
     Private Sub uiMetadataChangedDymkuj(sender As Object, e As EventArgs)
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
         ReDymkuj()
         SaveMetaData()
     End Sub
 
     Private Sub uiMetadataChangedDescribe(sender As Object, e As EventArgs)
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
             oItem.ZrobDymek()
             oItem.NotifyPropChange("sumOfDescr")
@@ -812,7 +795,7 @@ Public Class ProcessBrowse
     End Function
 
     Private Sub uiGetFileSize_Click(sender As Object, e As System.Windows.RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
 
         Dim iFileSize As Long = 0
         Dim iCnt As Integer = 0
@@ -835,7 +818,7 @@ Public Class ProcessBrowse
 
         Dim oThumb As ThumbPicek = uiPicList.SelectedItems(0)
 
-        Dim oWnd As New ShowBig(oThumb, _inArchive, True)
+        Dim oWnd As New ShowBig(oThumb, _oBufor.GetIsReadonly, True)
         oWnd.Owner = Me
         oWnd.Show()
 
@@ -1181,7 +1164,7 @@ Public Class ProcessBrowse
             lista.AddFile(oPic.oPic)
         Next
 
-        Dim oWnd As New ProcessBrowse(lista, True, "Selected")
+        Dim oWnd As New ProcessBrowse(lista, "Selected")
         oWnd.Show()
     End Sub
 
@@ -1226,7 +1209,7 @@ Public Class ProcessBrowse
         If oPicek Is Nothing Then Return
 
         _redrawPending = False
-        Dim oWnd As New ShowBig(oPicek, _inArchive, False)
+        Dim oWnd As New ShowBig(oPicek, _oBufor.GetIsReadonly, False)
         oWnd.Owner = Me
         oWnd.Show()
 
@@ -1460,7 +1443,7 @@ Public Class ProcessBrowse
     End Sub
 
     Private Async Sub uiDeleteSelected_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
 
         ' delete selected
         If uiPicList.SelectedItems Is Nothing Then Return
@@ -1487,13 +1470,13 @@ Public Class ProcessBrowse
     End Sub
 
     Private Async Sub uiDeleteThumbsSelected_Click(sender As Object, e As RoutedEventArgs)
-        uiActionsPopup.IsOpen = False
+        'uiActionsPopup.IsOpen = False
         If uiPicList.SelectedItems Is Nothing Then Return
 
         'Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
 
         For Each oThumb As ThumbPicek In uiPicList.SelectedItems
-            Await oThumb.ThumbWczytajLubStworz(_inArchive, True)
+            Await oThumb.ThumbWczytajLubStworz(_oBufor.GetIsReadonly, True)
             'Await DoczytajMiniaturke(bCacheThumbs, oThumb, True)
         Next
 
@@ -2613,8 +2596,24 @@ Public Class ProcessBrowse
 #Region "menu autotaggers"
     Private Sub uiActionOpen_Click(sender As Object, e As RoutedEventArgs)
         uiActionsPopup.IsOpen = Not uiActionsPopup.IsOpen
+        If uiActionsPopup.IsOpen Then UruchomMenuOpen(uiActionsMenu)
     End Sub
 
+    Private Sub uiActionsContext_Opening(sender As Object, e As ContextMenuEventArgs)
+        Dim img As Image = TryCast(sender, Image)
+        Dim ctxmn As ContextMenu = TryCast(img.ContextMenu, ContextMenu)
+        If ctxmn Is Nothing Then Return
+        UruchomMenuOpen(ctxmn)
+    End Sub
+
+
+    Private Sub UruchomMenuOpen(meni As MenuBase)
+
+        For Each oItem In meni.Items
+            Dim pmb As PicMenuBase = TryCast(oItem, PicMenuBase)
+            pmb?.MenuOtwieramy()
+        Next
+    End Sub
 
 
 #End Region
@@ -2733,27 +2732,27 @@ Public Class ProcessBrowse
     End Sub
 
     Private Sub uiOknaEditKwds_Click(sender As Object, e As RoutedEventArgs)
-        OpenSubWindow(New SimpleKeywords(_inArchive))
+        OpenSubWindow(New SimpleKeywords(_oBufor.GetIsReadonly))
     End Sub
 
     Private Sub uiOknaKwdsTree_Click(sender As Object, e As RoutedEventArgs)
-        OpenSubWindow(New BrowseKeywordsWindow(_inArchive))
+        OpenSubWindow(New BrowseKeywordsWindow(_oBufor.GetIsReadonly))
     End Sub
 
     Private Sub uiOknaDescribe_Click(sender As Object, e As RoutedEventArgs)
-        OpenSubWindow(New SimpleDescribe(_inArchive))
+        OpenSubWindow(New SimpleDescribe(_oBufor.GetIsReadonly))
     End Sub
 
     Private Sub uiOknaManualExif_Click(sender As Object, e As RoutedEventArgs)
-        OpenSubWindow(New EditOneExif(Vblib.ExifSource.Flattened, _inArchive))
+        OpenSubWindow(New EditOneExif(Vblib.ExifSource.Flattened, _oBufor.GetIsReadonly))
     End Sub
 
     Private Sub uiOknaOCR_Click(sender As Object, e As RoutedEventArgs)
-        OpenSubWindow(New SimpleOCR(_inArchive))
+        OpenSubWindow(New SimpleOCR(_oBufor.GetIsReadonly))
     End Sub
 
     Private Sub uiOknaRemoteDesc_Click(sender As Object, e As RoutedEventArgs)
-        OpenSubWindow(New RemoteDescr(_inArchive))
+        OpenSubWindow(New RemoteDescr(_oBufor.GetIsReadonly))
     End Sub
 
     Private Sub uiOknaTargetDir_Click(sender As Object, e As RoutedEventArgs)
@@ -2770,7 +2769,7 @@ Public Class ProcessBrowse
 
 
     Private Sub uiOknaManualAzureExif_Click(sender As Object, e As RoutedEventArgs)
-        OpenSubWindow(New EditOneExif(Vblib.ExifSource.AutoAzure, _inArchive))
+        OpenSubWindow(New EditOneExif(Vblib.ExifSource.AutoAzure, _oBufor.GetIsReadonly))
 
         Dim b As New ThumbPicek(Nothing, 10)
         Dim c As Vblib.OnePic = b
@@ -3295,6 +3294,30 @@ Public Class ProcessBrowse
         uiPodpisWybor.IsOpen = False
     End Sub
 
+    Private Sub uiCheckUncheckAll_Click(sender As Object, e As RoutedEventArgs)
+        For Each oItem As ThumbPicek In _thumbsy
+            If Not oItem.IsChecked Then Continue For
+
+            oItem.IsChecked = False
+            oItem.NotifyPropChange("IsChecked")
+        Next
+    End Sub
+
+    Private Sub uiCheckCheckAll_Click(sender As Object, e As RoutedEventArgs)
+        For Each oItem As ThumbPicek In _thumbsy
+            If oItem.IsChecked Then Continue For
+
+            oItem.IsChecked = True
+            oItem.NotifyPropChange("IsChecked")
+        Next
+    End Sub
+
+    Private Sub uiCheckReverse_Click(sender As Object, e As RoutedEventArgs)
+        For Each oItem As ThumbPicek In _thumbsy
+            oItem.IsChecked = Not oItem.IsChecked
+            oItem.NotifyPropChange("IsChecked")
+        Next
+    End Sub
 
 End Class
 

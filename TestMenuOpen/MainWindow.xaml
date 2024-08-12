@@ -15,7 +15,7 @@
 
         <Button Name="uiAction" Content=" Action " Height="Auto" Width="Auto" Click="uiActionOpen_Click" VerticalAlignment="Top" HorizontalAlignment="Center"/>
         <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}" StaysOpen="False" Opened="uiActionsPopup_Opened">
-            <local:MenuVertical>
+            <local:MenuVertical >
                 <MenuItem Header="l1 de_scribe" InputGestureText="Ctrl+D" Click="MenuItem_Click" />
                 <MenuItem Header="l2" >
                     <local:MenuItemIcon Header="l2.1" Click="MenuItem_Click" Image="trayIcon1.gif" />

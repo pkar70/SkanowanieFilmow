@@ -145,7 +145,7 @@ Class ProcessPic
     End Sub
 
     Private Sub uiBrowse_Click(sender As Object, e As RoutedEventArgs)
-        PokazSubWindow(New ProcessBrowse(_buforek, False, "Buffer"))
+        PokazSubWindow(New ProcessBrowse(_buforek, "Buffer"))
         AktualizujGuziki()
     End Sub
 

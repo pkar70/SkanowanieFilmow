@@ -362,7 +362,7 @@ Class MainWindow
     End Sub
 
     Private Sub uiBrowseCurrent_Click(sender As Object, e As RoutedEventArgs)
-        Dim oWnd As New ProcessBrowse(Vblib.GetBuffer, False, "Buffer")
+        Dim oWnd As New ProcessBrowse(Vblib.GetBuffer, "Buffer")
         oWnd.Show()
     End Sub
 

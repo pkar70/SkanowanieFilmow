@@ -6,9 +6,7 @@
       xmlns:local="clr-namespace:PicSorterNS"
       mc:Ignorable="d" 
       Title="Miscellaneous " >
-    <Grid>
         <StackPanel Width="170">
-            <TextBlock HorizontalAlignment="Center" Text="" Name="uiVersion"/>
             <Button Content="Global settings" Margin="5,10,5,20" FontSize="18" Click="uiGlobalSett_Click"/>
 
             <Button Content="Sequence checker" Margin="5,10,5,20" FontSize="18" Click="uiSequenceSett_Click"/>
@@ -21,6 +19,7 @@
 
             <Button Content="Listy" Margin="5,10,5,5" FontSize="18" Click="uiListSett_Click"/>
 
+            <Button Content="Misc" Margin="5,5,5,5" FontSize="18" Click="uiMiscSett_Click"/>
+
         </StackPanel>
-    </Grid>
 </Page>

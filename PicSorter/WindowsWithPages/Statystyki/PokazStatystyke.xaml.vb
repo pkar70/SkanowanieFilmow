@@ -119,7 +119,7 @@ Public Class PokazStatystyke
             Next
         Next
 
-        Dim oWnd As New ProcessBrowse(lista, True, _history & ":" & entry.label)
+        Dim oWnd As New ProcessBrowse(lista, _history & ":" & entry.label)
         oWnd.Show()
         Return
 
@@ -181,57 +181,54 @@ Public Class PokazStatystyke
 
 #Region "pogodowe"
     Private Sub uiPicByPogodaIcon_Click(sender As Object, e As RoutedEventArgs)
-        ZrobStatystyke(sender, AddressOf ExtractPogodaIcon)
+        ZrobStatystyke(sender,
+                       Function(x As Vblib.OnePic) As String
+                           Dim oExif As Vblib.ExifTag = x?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
+                           If oExif Is Nothing Then Return "?"
+
+                           Return oExif.PogodaAstro.currentConditions.icon
+                       End Function)
     End Sub
-
-    Private Function ExtractPogodaIcon(picek As Vblib.OnePic) As String
-        Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
-        If oExif Is Nothing Then Return "?"
-
-        Return oExif.PogodaAstro.currentConditions.icon
-    End Function
-
 
     Private Sub uiPicByTemp_Click(sender As Object, e As RoutedEventArgs)
-        ZrobStatystyke(sender, AddressOf ExtractCurrTemp)
-    End Sub
-    Private Function ExtractCurrTemp(picek As Vblib.OnePic) As String
-        Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
-        If oExif Is Nothing Then Return "?"
+        ZrobStatystyke(sender, Function(picek As Vblib.OnePic) As String
+                                   Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
+                                   If oExif Is Nothing Then Return "?"
 
-        Return Math.Round(oExif.PogodaAstro.currentConditions.temp).ToString("00")
-    End Function
+                                   Return Math.Round(oExif.PogodaAstro.currentConditions.temp).ToString("00")
+                               End Function,
+                       True)
+    End Sub
 
     Private Sub uiPicByTempOdcz_Click(sender As Object, e As RoutedEventArgs)
-        ZrobStatystyke(sender, AddressOf ExtractTempOdcz)
-    End Sub
-    Private Function ExtractTempOdcz(picek As Vblib.OnePic) As String
-        Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
-        If oExif Is Nothing Then Return "?"
+        ZrobStatystyke(sender, Function(picek As Vblib.OnePic) As String
+                                   Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
+                                   If oExif Is Nothing Then Return "?"
 
-        Return Math.Round(oExif.PogodaAstro.currentConditions.feelslike).ToString("00")
-    End Function
+                                   Return Math.Round(oExif.PogodaAstro.currentConditions.feelslike).ToString("00")
+                               End Function,
+                       True)
+    End Sub
 
     Private Sub uiPicByDayAvgTemp_Click(sender As Object, e As RoutedEventArgs)
-        ZrobStatystyke(sender, AddressOf ExtractDayAvgTemp)
-    End Sub
-    Private Function ExtractDayAvgTemp(picek As Vblib.OnePic) As String
-        Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
-        If oExif Is Nothing Then Return "?"
+        ZrobStatystyke(sender, Function(picek As Vblib.OnePic) As String
+                                   Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
+                                   If oExif Is Nothing Then Return "?"
 
-        Return Math.Round(oExif.PogodaAstro.day.temp).ToString("00")
-    End Function
+                                   Return Math.Round(oExif.PogodaAstro.day.temp).ToString("00")
+                               End Function,
+                       True)
+    End Sub
 
     Private Sub uiPicByDayPrecipType_Click(sender As Object, e As RoutedEventArgs)
-        ZrobStatystyke(sender, AddressOf ExtractPrecipType)
-    End Sub
-    Private Function ExtractPrecipType(picek As Vblib.OnePic) As String
-        Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
-        If oExif Is Nothing Then Return "?"
+        ZrobStatystyke(sender, Function(picek As Vblib.OnePic) As String
+                                   Dim oExif As Vblib.ExifTag = picek?.GetExifOfType(Vblib.ExifSource.AutoVisCrosWeather)
+                                   If oExif Is Nothing Then Return "?"
 
-        If oExif.PogodaAstro.day.preciptype Is Nothing Then Return ""
-        Return oExif.PogodaAstro.day.preciptype(0)
-    End Function
+                                   If oExif.PogodaAstro.day.preciptype Is Nothing Then Return ""
+                                   Return oExif.PogodaAstro.day.preciptype(0)
+                               End Function)
+    End Sub
 
 #End Region
 
@@ -471,7 +468,7 @@ Public Class PokazStatystyke
         Return oExif.Author
     End Function
 
-    Private Sub ZrobStatystyke(sender As Object, keySel As Func(Of Vblib.OnePic, String))
+    Private Sub ZrobStatystyke(sender As Object, keySel As Func(Of Vblib.OnePic, String), Optional sortnum As Boolean = False)
 
         Dim oFE As FrameworkElement = sender
         If oFE Is Nothing Then Return
@@ -480,10 +477,24 @@ Public Class PokazStatystyke
 
         Dim total As Integer = entry.lista.Count
 
-        Dim stats = entry.lista.GroupBy(keySel,
+        Dim statsTemp As IEnumerable(Of StatEntry) = entry.lista.GroupBy(keySel,
                         Function(picek) picek,
-                        Function(label, lista) New StatEntry With {.label = label, .licznik = lista.Count, .lista = lista, .total = total}).
-                 OrderBy(Function(entry1) entry1.label).ToList
+                        Function(label, lista) New StatEntry With {.label = label, .licznik = lista.Count, .lista = lista, .total = total})
+
+        Dim stats As List(Of StatEntry)
+        If sortnum Then
+            stats = statsTemp.OrderBy(Function(entry1) entry1.label).ToList
+        Else
+            stats = statsTemp.OrderBy(Of Double)(Function(entry1)
+                                                     Dim ret As Double
+                                                     If Double.TryParse(entry1.label, ret) Then
+                                                         Return ret
+                                                     Else
+                                                         Return 0
+                                                     End If
+                                                 End Function).ToList
+        End If
+
 
         Dim oWnd As New PokazStatystyke(_history & ":" & entry.label, stats)
         oWnd.Show()

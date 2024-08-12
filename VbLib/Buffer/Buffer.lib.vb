@@ -4,7 +4,7 @@ Imports System.IO
 'Imports pkar
 Imports pkar.DotNetExtensions
 
-Imports Vblib.BufferSortowania
+'Imports Vblib.BufferSortowania
 
 Public Interface IBufor
     Sub SaveData()
@@ -33,6 +33,10 @@ Public Interface IBufor
     Function GetMinDate() As Date
     Function GetMaxDate() As Date
 
+    Function GetIsReadonly() As Boolean
+
+    Function GetBufferName() As String
+
 End Interface
 
 
@@ -43,6 +47,8 @@ Public Class BufferSortowania
     Private _rootPictures As String
     Private _pliki As FilesInBuffer
     Private _nazwa As String
+
+
 
     ''' <summary>
     ''' wczytuje indeks zdjęć z pliku .json
@@ -76,7 +82,7 @@ Public Class BufferSortowania
         _nazwa = bufferFolder
     End Sub
 
-    Public Function GetBufferName() As String
+    Public Function GetBufferName() As String Implements IBufor.GetBufferName
         Return _nazwa
     End Function
 
@@ -395,6 +401,9 @@ Public Class BufferSortowania
 
     End Function
 
+    Public Function GetIsReadonly() As Boolean Implements IBufor.GetIsReadonly
+        Return False
+    End Function
 
     Public Class FilesInBuffer
         Inherits pkar.BaseList(Of OnePic)
@@ -498,5 +507,12 @@ Public Class BufferFromQuery
         Return maxPicDate
     End Function
 
+    Public Function GetIsReadonly() As Boolean Implements IBufor.GetIsReadonly
+        Return True
+    End Function
+
+    Public Function GetBufferName() As String Implements IBufor.GetBufferName
+        Throw New NotImplementedException()
+    End Function
 End Class
 

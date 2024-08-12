@@ -101,6 +101,11 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
     End Sub
 
     Private Async Sub uiAdd_Click(sender As Object, e As RoutedEventArgs)
+
+        If uiGeo.Content = " Set " Then
+            If Not Await Me.DialogBoxYNAsync("Nie ustawiłeś Geotag, tak ma być?") Then Return
+        End If
+
         Counter += 1
 
         _picek.TargetDir = "inet\" & _source.SourceName
@@ -446,7 +451,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
             Next
         Next
 
-        Dim oWnd As New ProcessBrowse(lista, True, "Found")
+        Dim oWnd As New ProcessBrowse(lista, "Found")
         oWnd.Show()
 
     End Sub

@@ -305,7 +305,7 @@ Public Class SearchWindow
             Next
         Next
 
-        Dim oWnd As New ProcessBrowse(lista, True, "Found")
+        Dim oWnd As New ProcessBrowse(lista, "Found")
         oWnd.Show()
         Return
 

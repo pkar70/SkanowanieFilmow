@@ -57,7 +57,7 @@
                                 <MenuItem Header="not" Name="uiFilterStageMenuNot" Icon="¬"/>
                                 <!--<MenuItem Header="reverse" Click="uiFilterReverse_Click" Icon="¬" />-->
                             </MenuItem>
-                            <MenuItem Header="AZURE »">
+                            <MenuItem Header="AZURE">
                                 <MenuItem Header="bez tagu" Click="uiFilterNoAzure_Click" />
                                 <Separator/>
                                 <MenuItem Header="face" Click="uiFilterAzure_Click" Icon="👱"/>
@@ -76,7 +76,7 @@
                             </MenuItem>
                             <MenuItem Header="no Description" Click="uiFilterNoDescr_Click" Name="uiFilterNoDescr"/>
                             <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget" Icon="📂"/>
-                            <MenuItem Header="Sharing »" Name="uiFilterSharing" SubmenuOpened="uiFilterSharing_SubmenuOpened">
+                            <MenuItem Header="Sharing" Name="uiFilterSharing" SubmenuOpened="uiFilterSharing_SubmenuOpened">
                                 <MenuItem Header="Query" Name="uiFilterQuery" />
                                 <MenuItem Header="for Channel" Name="uiFilterChannels" />
                                 <!--<MenuItem Header="Queries for Login" Name="uiFilterLogins"/>-->
@@ -85,12 +85,12 @@
                                 <MenuItem Header="Cudze" Click="uiFilterCudze_Click" />
                                 <MenuItem Header="remote desc" Click="uiFilterRemoteDesc_Click" />
                             </MenuItem>
-                            <MenuItem Header="addytywne »">
+                            <MenuItem Header="addytywne">
                                 <MenuItem Header="none" Click="uiFilterNone_Click" />
                                 <MenuItem Header="Full search" Click="uiFilterSearch_Click" Icon="🔍"/>
                                 <MenuItem Header="reverse" Click="uiFilterReverse_Click"  Icon="¬"/>
                             </MenuItem>
-                            <MenuItem Header="locks »">
+                            <MenuItem Header="locks">
                                 <MenuItem Header="locked" Click="uiFilterLocked_Click" Icon="🔒"/>
                                 <MenuItem Header="UNlocked" Click="uiFilterUnLocked_Click" />
                             </MenuItem>
@@ -150,46 +150,53 @@
                         <MenuItem Header="Remote desc" Click="uiOknaRemoteDesc_Click" Name="uiOknaRemoteDesc" />
                     </local:MenuVertical>
                 </Popup>
-                <Button Name="uiAction" Content=" Action " Height="Auto" Width="Auto" Click="uiActionOpen_Click" />
-            <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}" StaysOpen="False">
-                <local:MenuVertical>
-                        <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
-                        <MenuItem Header="Save selection" Click="uiActionSaveSelection_Click" />
-                        <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
-                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" UseSelectedItems="True" />
-                        <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" UseSelectedItems="True"/>
-                        <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
-                        <!--<MenuItem Header="Add link" Click="uiAddLink_Click" />-->
-                        <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiGeotagMetadataChanged" UseSelectedItems="True" />
-                        <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" UseSelectedItems="True" />
-                        <local:PicMenuKwds MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
-                        <!--<local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />-->
-                        <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" />
+                <Button x:Name="uiAction" Content=" Action " Height="Auto" Width="Auto"  Click="uiActionOpen_Click" />
+                <!--<local:ButtonLeftContext x:Name="uiAction" Content=" Action " Height="Auto" Width="Auto"  >
+                    <Button.ContextMenu>
+                        <ContextMenu>-->
+                            <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}" StaysOpen="False">
+                    <local:MenuVertical x:Name="uiActionsMenu">
+                            <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
+                            <MenuItem Header="Save selection" Click="uiActionSaveSelection_Click" />
+                            <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
+                            <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" UseSelectedItems="True" />
+                            <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" UseSelectedItems="True"/>
+                            <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
+                            <!--<MenuItem Header="Add link" Click="uiAddLink_Click" />-->
+                            <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiGeotagMetadataChanged" UseSelectedItems="True" />
+                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" UseSelectedItems="True" />
+                            <local:PicMenuKwds MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
+                            <!--<local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />-->
+                            <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" />
 
-                        <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
-                        <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
-                        <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
-                        <local:PicMenuShareUpload UseSelectedItems="True" UseProgBar="True"/>
-                    
-                        <!--<MenuItem Header="Publish  »" Name="uiMenuPublish"  />-->
-                        <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
-                        <!--<MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>-->
-                        <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
-                        <MenuItem Header="Pack as stereo" Name="uiStereoPack" Click="uiStereoPack_Click" />
-                        <Separator/>
-                        <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
-                        <local:PicMenuCopyOut  UseSelectedItems="True"/>
-                        <MenuItem Header="Get files size" Click="uiGetFileSize_Click" />
-                        <Separator/>
-                        <MenuItem Header="new window from filter" Click="uiActionNewWndFltr_Click" />
-                        <MenuItem Header="new wnd from selection" Click="uiActionNewWndSelection_Click" />
-                        <MenuItem Header="save as contactsheet" Click="uiSaveContactSheetItems_Click" />
-                        <Separator/>
-                        <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
-                        <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
-                        <local:PicMenuDeleteTemps UseSelectedItems="True"/>
-                    </local:MenuVertical>
+                            <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
+                            <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
+                            <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
+                            <local:PicMenuShareUpload UseSelectedItems="True" UseProgBar="True"/>
+
+                            <!--<MenuItem Header="Publish  »" Name="uiMenuPublish"  />-->
+                            <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
+                            <!--<MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>-->
+                            <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
+                            <MenuItem Header="Pack as stereo" Name="uiStereoPack" Click="uiStereoPack_Click" />
+                            <Separator/>
+                            <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
+                            <local:PicMenuCopyOut  UseSelectedItems="True"/>
+                            <MenuItem Header="Get files size" Click="uiGetFileSize_Click" />
+                            <Separator/>
+                            <MenuItem Header="new window from filter" Click="uiActionNewWndFltr_Click" />
+                            <MenuItem Header="new wnd from selection" Click="uiActionNewWndSelection_Click" />
+                            <MenuItem Header="save as contactsheet" Click="uiSaveContactSheetItems_Click" />
+                            <Separator/>
+                            <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
+                            <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
+                            <local:PicMenuDeleteTemps UseSelectedItems="True"/>
+                            </local:MenuVertical>
             </Popup>
+
+                        <!--</ContextMenu>
+                    </Button.ContextMenu>
+                </local:ButtonLeftContext>-->
             </StackPanel>
         </Grid>
         
@@ -220,9 +227,9 @@
                         <StackPanel>
                             <Grid>
                                 
-                        <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" Opacity="{Binding opacity}" MouseLeftButtonDown="uiImage_LeftClick">
-                            <Image.ContextMenu>
-                                <ContextMenu>
+                        <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" Opacity="{Binding opacity}" MouseLeftButtonDown="uiImage_LeftClick" ContextMenuOpening="uiActionsContext_Opening">
+                                    <Image.ContextMenu >
+                                <ContextMenu >
                                         <!-- readonly simple metadata -->
                                         <local:PicMenuCopyPath   />
 
@@ -276,7 +283,15 @@
                             </Image.ContextMenu>
                         </Image>
 
-                                <CheckBox VerticalAlignment="Top" HorizontalAlignment="Left" IsChecked="{Binding oPic.IsChecked}" FontSize="20" Visibility="{Binding IsChecked, ElementName=uiPodpisCheckbox, Converter={StaticResource KonwersjaVisibility}}" MinWidth="20" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked"/>
+                                <CheckBox VerticalAlignment="Top" HorizontalAlignment="Left" IsChecked="{Binding IsChecked, Mode=TwoWay}" FontSize="20" Visibility="{Binding IsChecked, ElementName=uiPodpisCheckbox, Converter={StaticResource KonwersjaVisibility}}" MinWidth="20" Checked="CheckBox_Checked" Unchecked="CheckBox_Checked">
+                                    <CheckBox.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="uncheck all" Icon="☐" Click="uiCheckUncheckAll_Click" />
+                                            <MenuItem Header="check all" Icon="🗹" Click="uiCheckCheckAll_Click" />
+                                            <MenuItem Header="reverse" Click="uiCheckReverse_Click" />
+                                        </ContextMenu>
+                                    </CheckBox.ContextMenu>
+                                </CheckBox>
                                 <!--<TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
                             <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
                             </Grid>

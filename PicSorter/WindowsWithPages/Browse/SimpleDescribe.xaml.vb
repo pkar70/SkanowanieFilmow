@@ -41,7 +41,7 @@ Public Class SimpleDescribe
                 oPicek.oPic.AddDescription(New OneDescription(descr, ""))
                 descr = oPicek.oPic.GetSumOfDescriptionsText
             Else
-                oPicek.oPic.ReplaceAllDescriptions(descr)
+                oPicek.oPic.ReplaceAllDescriptions(descr, True)
             End If
 
             ' niech się zmieni w Thumbs
@@ -114,8 +114,15 @@ Public Class SimpleDescribe
 
         _orgDescribe = oPicek.oPic.GetSumOfDescriptionsText
         uiAllDescribe.Text = _orgDescribe
-        uiAllDescribe.IsReadOnly = oPicek.oPic.AreTagsInDescription
-        uiAllDescribe.ToolTip = "W description są słowa kluczowe, więc nie można tu tego zmieniać"
+
+        Dim tagsy As String() = oPicek.oPic.sumOfKwds.Split(" ")
+        If tagsy.Length > 0 AndAlso tagsy.Any(Function(x) Not x.StartsWith("=NO")) Then
+            uiAllDescribe.IsReadOnly = True
+            uiAllDescribe.ToolTip = "W description są słowa kluczowe, więc nie można tu tego zmieniać"
+        Else
+            uiAllDescribe.IsReadOnly = False
+            uiAllDescribe.ToolTip = ""
+        End If
 
         uiAdd.Visibility = If(_orgDescribe.Contains(" | "), Visibility.Visible, Visibility.Collapsed)
 

@@ -107,7 +107,7 @@ Public Class OCRwnd
     End Sub
 
     Private Sub uiCopy_Click(sender As Object, e As RoutedEventArgs)
-        PicMenuOCR._myClip = uiOCR.Text
+        PicMenuOCR._Clip = uiOCR.Text
         uiCopy.IsEnabled = False
         Dim dymek As String = uiOCR.Text
         If dymek.Length > 30 Then dymek = dymek.Substring(0, 30) & "..."

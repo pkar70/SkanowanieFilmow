@@ -11,15 +11,18 @@
         <Button Content="Sources" Margin="5,10,5,5" FontSize="18" Click="uiSettSources_Click"/>
         <Button Content="Local arch" Margin="5,10,5,5" FontSize="18" Click="uiArchives_Click"/>
         <Button Content="Cloud storage" Margin="5,10,5,5" FontSize="18" Click="uiCloudArchive_Click"/>
-        <Button Content="Publishing" Margin="5,10,5,20" FontSize="18" Click="uiCloudPublish_Click"/>
 
+            <Button Content="Publishers" Margin="5,10,5,10" FontSize="18" Click="uiCloudPublish_Click"/>
+            
         <Button Content="Slideshow" Margin="5,10,5,20" FontSize="18" Click="uiSlideshow_Click"/>
 
-        <Button Content="Misc" Margin="5,5,5,5" FontSize="18" Click="uiMiscSett_Click"/>
 
-        <Button Content="Sharing" Margin="5,10,5,5" FontSize="18" Click="uiSharingSett_Click"/>
+            <Button Content="Pipeline" Margin="5,10,5,5" FontSize="18" Click="uiPipeline_Click"/>
+            <Button Content="Publishing" Margin="5,5,5,5" FontSize="18" Click="uiPublishSett_Click"/>
 
-            <Button Content="Rzadkie" Margin="5,10,5,5" FontSize="18" Click="uiSharingRzadie_Click"/>
+            <Button Content="Sharing" Margin="5,5,5,5" FontSize="18" Click="uiSharingSett_Click"/>
+
+            <Button Content="Rzadkie" Margin="5,15,5,5" FontSize="18" Click="uiSharingRzadie_Click"/>
 
             <Button Content="Backup as ZIP" Margin="5,15,5,5" FontSize="18" Click="uiBackup_Click"/>
 

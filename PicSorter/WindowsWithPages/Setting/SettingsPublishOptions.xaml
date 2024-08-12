@@ -1,0 +1,20 @@
+﻿<Page x:Class="SettingsPublishOptions"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:PicSorterNS"
+      mc:Ignorable="d" 
+      d:DesignHeight="710" d:DesignWidth="350"
+      Title="Publish options" Loaded="Page_Loaded">
+    <StackPanel Margin="5,5,5,5">
+        <local:TextBlockPageTitle Text="Options for publish"/>
+        <TextBlock Margin="0,10,0,0" Text="Comment for publising (to any server):"/>
+        <CheckBox Name="uiPublishShowSerno" Content="Add serno" />
+        <CheckBox Name="uiPublishUseAzure" Content="Use Azure for comment" />
+        <CheckBox Name="uiPublishAddMaplink" Content="Add map link" />
+        <TextBlock Margin="0,10,0,0" Text="If no (C) metadata, use this:"/>
+        <TextBox Name="uiDefaultCopyr" HorizontalAlignment="Left" Width="100" ToolTip="Enter exact text to be embedded on picture"/>
+        <local:ButtonOkSave Margin="5,20,5,0" Click="uiOK_Click" />
+    </StackPanel>
+</Page>

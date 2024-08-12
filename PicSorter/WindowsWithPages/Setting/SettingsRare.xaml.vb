@@ -34,4 +34,9 @@ Class SettingsRare
     Private Sub uiSequenceSett_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsSequence)
     End Sub
+
+    Private Sub uiMiscSett_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsMisc)
+    End Sub
+
 End Class

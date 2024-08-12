@@ -36,9 +36,7 @@ Class SettingsMain
 
 
 
-    Private Sub uiMiscSett_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingsMisc)
-    End Sub
+
 
     Private Async Sub uiBackup_Click(sender As Object, e As RoutedEventArgs)
 
@@ -102,5 +100,13 @@ Class SettingsMain
 
     Private Sub uiSharingRzadie_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsRare)
+    End Sub
+
+    Private Sub uiPipeline_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsPipeline)
+    End Sub
+
+    Private Sub uiPublishSett_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsPublishOptions)
     End Sub
 End Class
