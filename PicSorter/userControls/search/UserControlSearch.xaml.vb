@@ -155,6 +155,15 @@ Public Class UserControlSearch
     Private Function FromUiToQuery() As Vblib.SearchQuery
         Dim query As Vblib.SearchQuery = DataContext
 
+        ' bez tego za każdym razem maxdate skacze o 1 :)
+        ' za to z tym rozkłada się na BasicGeoPosWithRadius: Unable to find a constructor to use for type pkar.BasicGeoposWithRadius. A class should either have a default constructor, one constructor with arguments or a constructor marked with the JsonConstructor attribute. Path 'ogolne.geo.Location.Radius', line 18, position 17.
+        ' query = query.Clone
+
+        If query.ogolne.IgnoreYear Then
+            query.ogolne.MinDate = New Date(Date.Now.Year - 1, query.ogolne.MinDate.Month, query.ogolne.MinDate.Day)
+            query.ogolne.MaxDate = New Date(Date.Now.Year - 1, query.ogolne.MaxDate.Month, query.ogolne.MaxDate.Day)
+        End If
+
         ' daty - UI ma NULL dla nie-selected, a my chcemy mieć wartości
         If Not query.ogolne.MinDateCheck OrElse Not query.ogolne.MaxDate.IsDateValid Then
             query.ogolne.MaxDate = Date.MaxValue
