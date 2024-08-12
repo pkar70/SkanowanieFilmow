@@ -210,8 +210,8 @@ Public Class DatabaseJSON
 
         ' dziwne, ale 5 razy takie wyszło (null) - dwa przecinki pod rząd, pewnie przy dodawaniu do archiwumm
         Return lista.
-            Distinct(New CzyTenSamOnePic).
-            Where(Function(x) If(x?.CheckIfMatchesQuery(query), False))
+           Where(Function(x) If(x?.CheckIfMatchesQuery(query), False)).
+        Distinct(New CzyTenSamOnePic)
         ' OrderBy(Function(x) x.serno).
 
     End Function
