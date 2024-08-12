@@ -43,6 +43,8 @@ Public Class Process_FaceRemove
             Return True
         End If
 
+        Dim limitRozmiaru As Integer = Vblib.GetSettingsInt("uiWinFaceMinSize")
+
         oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
         Using img = Image.FromStream(oPic._PipelineInput)
 
@@ -54,6 +56,9 @@ Public Class Process_FaceRemove
                     If oFace.Width + oFace.Height = 0 Then Continue For
                     ' zabezpieczenie przed WinFace sprzed pamiętania box
                     If oFace.X + oFace.Y = 0 Then Continue For
+                    ' rozmiar mniejszy niż limit
+                    If img.Height < limitRozmiaru Then Continue For
+                    If img.Width < limitRozmiaru Then Continue For
 
                     ' wyliczamy środek
                     Dim iX As Integer = img.Width * oFace.X / 100

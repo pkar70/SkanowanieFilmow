@@ -48,14 +48,8 @@
 
         <!--<TextBlock Text="JPG quality:" Margin="0,5,0,0"/>
         <Slider Name="uiJpgQuality" Minimum="0" Maximum="100" HorizontalAlignment="Stretch"  />-->
-        <Button Margin="0,5,0,5" Content="Watermark" HorizontalAlignment="Left" Click="uiWatermark_Click" />
 
         <CheckBox Name="uiDragOutThumbs" Content="Use thumbs as drag&amp;drop source" Margin="0,2,0,2"/>
-
-        <local:SliderWithHdr Header="Nie zamazuj twarzy dla zdjęć starszych niż lat:" x:Name="uiWinFaceMaxAge" Minimum="20" Maximum="100" /> 
-
-        <!--<TextBlock Text="Nie zamazuj twarzy dla zdjęć starszych niż lat:" />
-        <TextBox Name="uiWinFaceMaxAge" InputScope="Digits" Width="50" HorizontalAlignment="Left" />-->
 
         <CheckBox Name="uiAstroNotWhenWether" Margin="0,2,0,2" Content="Nie wstawiaj ASTRO gdy jest WEATHER" ToolTip="Gdy WEATHER, nie wstawia ASTRO; gdy ASTRO, nie wstawia MOON"/>
 

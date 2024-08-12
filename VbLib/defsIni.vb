@@ -38,6 +38,8 @@ uiWebBuffPicLimit=99
 uiTitleSerno=True
 uiAutoCrop=True
 
+uiWinFaceMinSize=2
+
 # remark
 ' remark
 ; remark

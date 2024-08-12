@@ -17,7 +17,6 @@ Class SettingsMisc
         uiHideThumbs.GetSettingsBool
         uiBigPicSize.GetSettingsInt()
         uiDragOutThumbs.GetSettingsBool
-        uiWinFaceMaxAge.GetSettingsInt
         uiUseSpellCheck.GetSettingsBool
         uiAstroNotWhenWether.GetSettingsBool
         uiAutoCrop.GetSettingsBool
@@ -41,7 +40,6 @@ Class SettingsMisc
         uiHideThumbs.SetSettingsBool
         uiBigPicSize.SetSettingsInt
         uiDragOutThumbs.SetSettingsBool
-        uiWinFaceMaxAge.SetSettingsInt
         uiUseSpellCheck.SetSettingsBool
         uiAstroNotWhenWether.SetSettingsBool
         uiAutoCrop.GetSettingsBool
@@ -59,7 +57,4 @@ Class SettingsMisc
         Me.NavigationService.Navigate(New SettingsMapsy)
     End Sub
 
-    Private Sub uiWatermark_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingsWatermark)
-    End Sub
 End Class
