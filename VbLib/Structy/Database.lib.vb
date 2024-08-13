@@ -33,6 +33,11 @@ Public Interface DatabaseInterface
     Function Load() As Boolean
 
     ''' <summary>
+    ''' zwolnienie zasobów - gdy brakuje pamięci...
+    ''' </summary>
+    Sub Unload()
+
+    ''' <summary>
     ''' Dodaj metadane zdjęć do archiwum, JSON: AppendFile, i jeśli wczytane to do _files, SQL: add to DB
     ''' </summary>
     Function AddFiles(nowe As IEnumerable(Of OnePic)) As Boolean

@@ -328,6 +328,8 @@ Class MainWindow
         archMI.Items.Add(CreateMenuItem("Search", "Wyszukiwanie w archiwum", AddressOf uiSearch_Click))
         archMI.Items.Add(CreateMenuItem("Statistics", "Statystyki zdjęć w archiwum", AddressOf uiStats_Click))
         archMI.Items.Add(New Separator)
+        archMI.Items.Add(CreateMenuItem("Unload", "", AddressOf ArchUnload_Click))
+        archMI.Items.Add(New Separator)
         archMI.Items.Add(CreateMenuItem("Status", "", AddressOf ArchStatus_Click))
         ' * freemem - zwolnienie Archive.OnePic
         ctxMenu.Items.Add(archMI)
@@ -398,6 +400,14 @@ Class MainWindow
             Me.MsgBox("Nie mam bazy wczytanej")
         End If
     End Sub
+
+    Private Async Sub ArchUnload_Click(sender As Object, e As RoutedEventArgs)
+
+        If Not Application.gDbase.IsLoaded Then Return
+        If Not Await Me.DialogBoxYNAsync("Unload arch database to free memory?") Then Return
+        Application.gDbase.Unload()
+    End Sub
+
 
     Private Function CreateMenuItem(hdr As String, dymek As String, handlerek As RoutedEventHandler) As MenuItem
         Dim oNew As New MenuItem With {.Header = hdr, .ToolTip = dymek}

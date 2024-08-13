@@ -87,6 +87,14 @@ Public Class Databases
         Return False
     End Function
 
+    Public Sub Unload() Implements DatabaseInterface.Unload
+        For Each dbase As Vblib.DatabaseInterface In _bazyDanych
+            If dbase.IsLoaded Then
+                dbase.Unload()
+            End If
+        Next
+    End Sub
+
 
     ''' <summary>
     ''' Dodaj metadane zdjęć do archiwum

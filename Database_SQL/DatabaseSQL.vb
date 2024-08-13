@@ -189,6 +189,10 @@ Public Class DatabaseSQL
         Return True
     End Function
 
+    Public Sub Unload() Implements DatabaseInterface.Unload
+        ' not used for SQL
+    End Sub
+
     Public Function AddFiles(nowe As IEnumerable(Of OnePic)) As Boolean Implements DatabaseInterface.AddFiles
         If Not IsLoaded Then If Not Load() Then Return False
 

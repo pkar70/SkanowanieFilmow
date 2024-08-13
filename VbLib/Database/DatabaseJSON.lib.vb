@@ -345,6 +345,11 @@ Public Class DatabaseJSON
         Return True
     End Function
 
+    Public Sub Unload() Implements DatabaseInterface.Unload
+        _IsLoaded = False
+        _allItems = Nothing
+    End Sub
+
     ''' <summary>
     ''' usunięcie końcowego "]" z pliku (jeśli taki jest)
     ''' </summary>
