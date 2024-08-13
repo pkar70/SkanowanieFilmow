@@ -448,7 +448,7 @@ Public Class PokazStatystyke
             withKwd.licznik = withKwd.lista.Count
             withKwd.total = total
             ' withKwd.percent będzie policzone przy nowym oknie 
-            stats.Add(withKwd)
+            If withKwd.licznik > 0 Then stats.Add(withKwd)
         Next
 
         Dim oWnd As New PokazStatystyke(_history & ":" & entry.label, stats)
