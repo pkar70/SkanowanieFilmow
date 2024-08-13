@@ -72,12 +72,13 @@
                                     <!--<MenuItem Header="→ ► ⊏ ◨ ↠ ↶ ⇉ ⇒" FontSize="18"/>
                                     <MenuItem Header="↓ ▼ ⊓ ⬓ ⨅ ↡ ↺ ⇊ ⇓" FontSize="18"/>
                                     <MenuItem Header="← ◄ ⊐ ◧ ↞ ↷ ⇇ ⇐" FontSize="18"/>-->
-                                    <MenuItem Header="↶ anticlockwise ⇉" FontSize="16" Click="uiRotateRight_Click"/>
-                                    <MenuItem Header="↺ 180° ⇊" FontSize="15" Click="uiRotateDown_Click"/>
-                                    <MenuItem Header="↷ clockwise ⇇" FontSize="14" Click="uiRotateLeft_Click"/>
+                                    <MenuItem Icon="↶"  Header="anticlockwise ⇉" FontSize="16" Click="uiRotateRight_Click"/>
+                                    <MenuItem Icon="↺" Header="180° ⇊" FontSize="15" Click="uiRotateDown_Click"/>
+                                    <MenuItem Icon="↷" Header="clockwise ⇇" FontSize="14" Click="uiRotateLeft_Click"/>
                                     <!--<MenuItem Header="Rotate UI" Click="uiRotate_Click" />-->
                                 </MenuItem>
-                                <MenuItem Header="Flip ⇔ " Click="uiFlipHoriz_Click" />
+                                <MenuItem Icon="⇔" Header="Flip" Click="uiFlipHoriz_Click" />
+                                <MenuItem Icon="◧" Header="Negative " Click="uiNegative_Click" IsEnabled="False"/>
                                 <Separator/>
                                 <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
                                 <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />

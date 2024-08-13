@@ -13,6 +13,8 @@ Imports MediaDevices
 Imports pkar.DotNetExtensions
 Imports pkar.UI.Extensions
 Imports System.Runtime.CompilerServices
+Imports Windows.Graphics.Imaging
+Imports System.Runtime.InteropServices
 
 Public Class ShowBig
 
@@ -177,7 +179,7 @@ Public Class ShowBig
 
             If _picek.oPic.fileTypeDiscriminator = "✋" Then
                 ' nie zmieniamy obrazka przy NAR
-                uipinunpin.ispinned = True
+                uiPinUnpin.IsPinned = True
                 uiFullPicture.ContextMenu = Nothing
             End If
         End If
@@ -432,10 +434,16 @@ Public Class ShowBig
         resize
         rotate
         flip
+        negatyw
     End Enum
 
     Private _editMode As EditModeEnum = EditModeEnum.none
 
+    ''' <summary>
+    ''' jeśli już jest jakaś zmiana, to najpierw zapis i dopiero potem przełączenie na nowy typ
+    ''' </summary>
+    ''' <param name="editMode"></param>
+    ''' <returns></returns>
     Private Async Function SprawdzCzyJestEdycja(editMode As EditModeEnum) As Task
         If _editMode <> EditModeEnum.none Then
 
@@ -599,9 +607,9 @@ Public Class ShowBig
         '    If uiCropRight.Value = 0 Then uiCropRight.Value = 0.9
         'Else
         If uiCropUp.Value = 0 Then uiCropUp.Value = 0.1
-            If uiCropDown.Value = 0 Then uiCropDown.Value = 0.9
-            If uiCropLeft.Value = 0 Then uiCropLeft.Value = 0.1
-            If uiCropRight.Value = 0 Then uiCropRight.Value = 0.9
+        If uiCropDown.Value = 0 Then uiCropDown.Value = 0.9
+        If uiCropLeft.Value = 0 Then uiCropLeft.Value = 0.1
+        If uiCropRight.Value = 0 Then uiCropRight.Value = 0.9
         'End If
 
         UpdateClipRegion()
@@ -670,7 +678,30 @@ Public Class ShowBig
         UpdateClipRegion()
     End Sub
 
+
 #End Region
+
+
+    '        Dim originalBitmap As New BitmapImage(New Uri("your_image_path_here"))
+    '        Dim negativeBitmap As WriteableBitmap = CreateNegativeImage(originalBitmap)
+
+    'Private Function CreateNegativeImage(originalBitmap As BitmapSource) As WriteableBitmap
+    '        Dim width As Integer = originalBitmap.PixelWidth
+    '        Dim height As Integer = originalBitmap.PixelHeight
+    '        Dim stride As Integer = width * ((originalBitmap.Format.BitsPerPixel + 7) / 8)
+    '        Dim pixelData(height * stride - 1) As Byte
+    '        originalBitmap.CopyPixels(pixelData, stride, 0)
+
+    '        For i As Integer = 0 To pixelData.Length - 1 Step 4
+    '            pixelData(i) = CByte(255 - pixelData(i))       ' Blue
+    '            pixelData(i + 1) = CByte(255 - pixelData(i + 1)) ' Green
+    '            pixelData(i + 2) = CByte(255 - pixelData(i + 2)) ' Red
+    '        Next
+
+    '        Dim negativeBitmap As New WriteableBitmap(width, height, originalBitmap.DpiX, originalBitmap.DpiY, originalBitmap.Format, Nothing)
+    '        negativeBitmap.WritePixels(New Int32Rect(0, 0, width, height), pixelData, stride, 0)
+    '        Return negativeBitmap
+    '    End Function
 
 
     Private Async Function ZapiszZmianyObrazka(bmpTrans As wingraph.BitmapTransform) As Task(Of Boolean)
@@ -679,11 +710,12 @@ Public Class ShowBig
 
         DumpCurrMethod($"(Transform: rotation={bmpTrans.Rotation.ToString}, crop={bmpTrans.Bounds.X}+{bmpTrans.Bounds.Width}, {bmpTrans.Bounds.Y}+ {bmpTrans.Bounds.Height})")
 
-
         ' *TODO* (może) do Settings:Misc, [] ask for confirm after EditSave (przy Crop, i ew. Rotate)
         ' If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
 
         _picek.oPic.InitEdit(False)
+
+
 
         Using oStream As New InMemoryRandomAccessStream
 
@@ -715,6 +747,7 @@ Public Class ShowBig
 
         End Using
 
+        _picek.oImageSrc = Nothing ' zwolnienie zasobów
         IO.File.Delete(_picek.ThumbGetFilename) ' no exception if not found
 
         '_picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
@@ -1008,6 +1041,14 @@ Public Class ShowBig
 
     End Sub
 
+    Private Async Sub uiNegate_Click(sender As Object, e As RoutedEventArgs)
+        Await SprawdzCzyJestEdycja(EditModeEnum.negatyw)
+        If _editMode <> EditModeEnum.negatyw Then Return
+        uiSave_Click(sender, e)
+
+    End Sub
+
+
     Private _MojeDataContextChange As Boolean
 
     Private Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
@@ -1028,6 +1069,104 @@ Public Class ShowBig
 
         Window_Loaded(Nothing, Nothing)
     End Sub
+
+#Region "negatyw"
+
+
+#Region "mainwork"
+
+    ' to mi podał Copilot
+
+    <ComImport>
+    <Guid("5B0D3235-4DBA-4D44-8659-1A1659D6C0F1")>
+    <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
+    Interface IMemoryBufferByteAccess
+        Sub GetBuffer(ByRef buffer As IntPtr, ByRef capacity As UInteger)
+    End Interface
+
+    Public Function CreateNegativeImage(originalBitmap As SoftwareBitmap) As SoftwareBitmap
+        ' Convert to BGRA8 format if necessary
+        Dim bitmap = SoftwareBitmap.Convert(originalBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied)
+
+        ' Access the buffer
+        Using buffer = bitmap.LockBuffer(BitmapBufferAccessMode.ReadWrite)
+            Using reference = buffer.CreateReference()
+                ' Get a pointer to the pixel buffer
+                Dim data As IntPtr
+                Dim capacity As UInteger ' moje: = reference.Capacity
+                ' i data i capacity są out
+                CType(reference, IMemoryBufferByteAccess).GetBuffer(data, capacity)
+
+                ' Iterate through each pixel
+                For i As Integer = 0 To capacity - 1 Step 4
+                    ' Invert the colors
+                    Marshal.WriteByte(data, i, CByte(255 - Marshal.ReadByte(data, i)))         ' Blue
+                    Marshal.WriteByte(data, i + 1, CByte(255 - Marshal.ReadByte(data, i + 1))) ' Green
+                    Marshal.WriteByte(data, i + 2, CByte(255 - Marshal.ReadByte(data, i + 2))) ' Red
+                Next
+            End Using
+        End Using
+        Return bitmap
+    End Function
+#End Region
+
+
+    Private Async Sub uiNegative_Click(sender As Object, e As RoutedEventArgs)
+        ' zrobienie negatywu
+
+        Await SprawdzCzyJestEdycja(EditModeEnum.negatyw)
+
+        _picek.oPic.AddEditHistory("negative")
+
+        Dim oExif As Vblib.ExifTag = _picek.oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+        If oExif IsNot Nothing Then
+            ' reset orientation, bo loadbitmap i tak obraca
+            oExif.Orientation = Vblib.OrientationEnum.topLeft
+        End If
+
+        SaveMetaData()
+
+        ' trochę skopiowane z ZapiszZmianyObrazka()
+        _picek.oPic.InitEdit(False)
+
+        Dim softbit As SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(_picek.oPic)
+        Dim negatbmp As SoftwareBitmap = CreateNegativeImage(softbit)
+
+        _picek.oPic.InitEdit(False)
+
+        Using oStream As New InMemoryRandomAccessStream
+
+            Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
+
+            Try
+
+                oEncoder.SetSoftwareBitmap(negatbmp)
+
+                ' gdy to robię na zwyklym AsRandomAccessStream to się wiesza
+                Await oEncoder.FlushAsync()
+
+                Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic)
+
+                _picek.oPic.EndEdit(True, True)
+
+            Catch ex As Exception
+                Me.MsgBox("Błąd zapisu zmian:" & vbCrLf & ex.Message)
+            End Try
+
+        End Using
+
+        _picek.oPic.EndEdit(True, True)
+
+        _picek.oImageSrc = Nothing ' zwolnienie zasobów
+        IO.File.Delete(_picek.ThumbGetFilename) ' no exception if not found
+
+        '_picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
+        Await _picek.ThumbWczytajLubStworz(_inArchive)
+
+        _editMode = EditModeEnum.none
+
+    End Sub
+#End Region
 
 #End Region
 
