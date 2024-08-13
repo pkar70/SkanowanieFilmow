@@ -11,5 +11,7 @@
         <!--<Button Content="List of camera makers" Margin="5,15,5,25" FontSize="18" Click="uiListCameraMakers_Click" Width="190"/>-->
         <Button Content="List of Inet authors" Margin="5,15,5,25" FontSize="18" Click="uiListInetAuthor_Click" Width="150"/>
         <Button Content="List of cameras" Margin="5,15,5,25" FontSize="18" Click="uiListCameraModels_Click" Width="150"/>
-         </StackPanel>
+
+        <Button Content="List of maps" Margin="5,15,5,25" FontSize="18" Click="uiSettMaps_Click" Width="150"/>
+    </StackPanel>
 </Page>

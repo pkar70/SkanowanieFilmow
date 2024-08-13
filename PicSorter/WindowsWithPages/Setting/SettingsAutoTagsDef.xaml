@@ -8,6 +8,9 @@
       Title="AutoTags" Loaded="Page_Loaded">
     <StackPanel Margin="5,5,5,5">
         <local:TextBlockPageTitle Text="Auto taggery" />
+
+        <CheckBox Name="uiAstroNotWhenWether" Margin="0,10,0,10" Content="Nie wstawiaj ASTRO gdy jest WEATHER" ToolTip="Gdy WEATHER, nie wstawia ASTRO; gdy ASTRO, nie wstawia MOON"/>
+
         <CheckBox Content="dokładne liczenie" Name="uiAutotagsExact" ToolTip="Zaznacz, jeśli ma dokładnie sprawdzać ile jeszcze zdjęć może być otagowanych" Margin="0,15,0,15"/>
 
         <local:UserControlListaChecks x:Name="uiDefaultAutoTags" />

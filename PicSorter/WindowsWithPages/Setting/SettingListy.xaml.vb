@@ -23,4 +23,8 @@ Class SettingListy
         oWnd.Show()
     End Sub
 
+    Private Sub uiSettMaps_Click(sender As Object, e As RoutedEventArgs)
+        Me.NavigationService.Navigate(New SettingsMapsy)
+    End Sub
+
 End Class

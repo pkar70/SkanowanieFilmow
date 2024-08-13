@@ -18,8 +18,8 @@ Class SettingsMisc
         uiBigPicSize.GetSettingsInt()
         uiDragOutThumbs.GetSettingsBool
         uiUseSpellCheck.GetSettingsBool
-        uiAstroNotWhenWether.GetSettingsBool
         uiAutoCrop.GetSettingsBool
+        uiAdvShellExec.GetSettingsBool
         'uiStereoThumb.GetSettingsInt()
     End Sub
 
@@ -41,9 +41,9 @@ Class SettingsMisc
         uiBigPicSize.SetSettingsInt
         uiDragOutThumbs.SetSettingsBool
         uiUseSpellCheck.SetSettingsBool
-        uiAstroNotWhenWether.SetSettingsBool
-        uiAutoCrop.GetSettingsBool
+        uiAutoCrop.SetSettingsBool
         'uiStereoThumb.SetSettingsInt
+        uiAdvShellExec.SetSettingsBool
 
         Me.NavigationService.GoBack()
     End Sub
@@ -52,9 +52,5 @@ Class SettingsMisc
         Me.NavigationService.Navigate(New SettingsStereo)
     End Sub
 
-
-    Private Sub uiSettMaps_Click(sender As Object, e As RoutedEventArgs)
-        Me.NavigationService.Navigate(New SettingsMapsy)
-    End Sub
 
 End Class

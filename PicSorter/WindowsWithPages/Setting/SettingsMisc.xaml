@@ -36,7 +36,6 @@
         <Slider Name="uiBigPicSize" ToolTip="Od 50 do 90 %" Minimum="50" Maximum="90" HorizontalAlignment="Stretch"/>-->
 
         <local:SliderWithHdr Header="Rozmiar okna dużego zdjęcia:" x:Name="uiBigPicSize" Minimum="50" Maximum="90" ToolTip="Ile % ekranu może zająć okno BigPic" />
-        <Button Content=" Mapy " Click="uiSettMaps_Click" HorizontalAlignment="Left" Margin="0,5,0,5"/>
         <CheckBox Name="uiNoDelConfirm" Content="Skip Confirm before pic delete" />
         <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
             <TextBlock Text="Delete BAK after " />
@@ -51,8 +50,6 @@
 
         <CheckBox Name="uiDragOutThumbs" Content="Use thumbs as drag&amp;drop source" Margin="0,2,0,2"/>
 
-        <CheckBox Name="uiAstroNotWhenWether" Margin="0,2,0,2" Content="Nie wstawiaj ASTRO gdy jest WEATHER" ToolTip="Gdy WEATHER, nie wstawia ASTRO; gdy ASTRO, nie wstawia MOON"/>
-
         <CheckBox Name="uiUseSpellCheck" Margin="0,2,0,2" Content="Użyj spellcheck w oknie OCR"  ToolTip="Default dla okna OCR"/>
 
         <!--<TextBlock Text="Datowane katalogi na zdjęcia:" Margin="0,5,0,0" />
@@ -61,7 +58,8 @@
         <CheckBox Name="uiTree2Miesiac" Content=" | + 1981.01" />
         <CheckBox Name="uiTree3DzienWeekDay" Content=" | | + 1981.01.24.sb" IsChecked="True" IsEnabled="False"/>-->
 
-        <CheckBox Name="uiAutoCrop" Content="try to auto-crop" ToolTip="gdy zaznaczone, to program wchodząc do CROP zdjęcia próbuje sam dopasować miejsce cięcia"/>
+        <CheckBox Name="uiAutoCrop" Content="try to auto-crop" Margin="0,2,0,2" ToolTip="gdy zaznaczone, to program wchodząc do CROP zdjęcia próbuje sam dopasować miejsce cięcia"/>
+        <CheckBox Name="uiAdvShellExec" Content="Advanced ShellExec" Margin="0,2,0,2" ToolTip="gdy zaznaczone, to menu ShellExec pokazuje listę programów dla danego fileext, gdy FALSE, tylko defaultowy program"/>
 
         <local:ButtonOkSave Margin="5,20,5,0" Click="uiOK_Click" />
     </StackPanel>

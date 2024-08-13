@@ -22,6 +22,7 @@ Class SettingsAutoTagsDef
         'uiLista.ItemsSource = _lista
 
         uiDefaultAutoTags.SetItems(Vblib.gAutoTagery.Select(Of String)(Function(x) x.Nazwa).ToArray)
+        uiAstroNotWhenWether.GetSettingsBool
 
     End Sub
 
@@ -35,6 +36,8 @@ Class SettingsAutoTagsDef
 
         'Vblib.SetSettingsString("uiDefaultAutoTags", defaulty)
         uiDefaultAutoTags.SetSettingsString()
+        uiAstroNotWhenWether.SetSettingsBool
+
         Me.NavigationService.GoBack()
     End Sub
 
