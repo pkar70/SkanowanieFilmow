@@ -33,8 +33,9 @@
             </Grid.ColumnDefinitions>
 
             <StackPanel Orientation="Horizontal" >
-                <Button Content=" Datogram " Height="Auto" Width="Auto" Click="uiOpenHistoragam_Click" Margin="5,0,15,0"/>
-                <Button Content=" Mapogram " Height="Auto" Width="Auto" IsEnabled="False" />
+                <Button Content=" Datogram " Height="Auto" Width="Auto" Click="uiOpenHistoragam_Click" Margin="5,0,0,0"/>
+                <Button Content=" Map " Height="Auto" Width="Auto" IsEnabled="False" Margin="15,0,15,0"/>
+                <Button Content=" Stat " Height="Auto" Width="Auto" Click="uiOpenStat_Click" />
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">

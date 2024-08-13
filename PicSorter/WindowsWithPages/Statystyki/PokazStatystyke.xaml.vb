@@ -23,6 +23,7 @@ Public Class PokazStatystyke
         _entries = entries
     End Sub
 
+
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
         Me.ProgRingInit(True, False)
@@ -107,16 +108,23 @@ Public Class PokazStatystyke
 
         For Each oPic As Vblib.OnePic In entry.lista
 
-            For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
-                'vb14.DumpMessage($"trying archive {oArch.StorageName}")
-                Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
-                If Not String.IsNullOrWhiteSpace(sRealPath) Then
-                    Dim oPicNew As Vblib.OnePic = oPic.Clone
-                    oPic.InBufferPathName = sRealPath
-                    Await lista.AddFile(oPic)
-                    Exit For
-                End If
-            Next
+            If System.IO.File.Exists(oPic.InBufferPathName) Then
+                Await lista.AddFile(oPic)
+            Else
+
+                For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
+                    'vb14.DumpMessage($"trying archive {oArch.StorageName}")
+                    Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
+                    If Not String.IsNullOrWhiteSpace(sRealPath) Then
+                        Dim oPicNew As Vblib.OnePic = oPic.Clone
+                        oPic.InBufferPathName = sRealPath
+                        Await lista.AddFile(oPic)
+                        Exit For
+                    End If
+                Next
+
+            End If
+
         Next
 
         Dim oWnd As New ProcessBrowse(lista, _history & ":" & entry.label)
@@ -536,7 +544,7 @@ Public Class PokazStatystyke
             Dim withKwd As New StatEntry With {.label = tag.Replace("PIC", "")}
             withKwd.lista = entry.lista.Where(Function(x)
                                                   Dim azurek As Vblib.ExifTag = x.GetExifOfType(Vblib.ExifSource.AutoAzure)
-                                                  If azurek?.AzureAnalysis Is Nothing Then Return False
+                                                  If azurek?.AzureAnalysis?.Wiekowe Is Nothing Then Return False
 
                                                   Return azurek.AzureAnalysis.Wiekowe.Contains(tag)
                                               End Function)

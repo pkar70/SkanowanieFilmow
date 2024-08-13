@@ -413,6 +413,23 @@ Public Class ProcessBrowse
         Dim oWnd As New HistogramWindow(_oBufor)
         oWnd.Show()
     End Sub
+
+    Private Sub uiOpenStat_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim statRoot As New StatEntry
+        statRoot.label = _oBufor.GetBufferName
+        statRoot.lista = _oBufor.GetList
+        statRoot.licznik = _oBufor.Count
+        statRoot.total = statRoot.licznik ' na początek mamy tyle samo
+
+        Dim lista As New List(Of StatEntry)
+
+        lista.Add(statRoot)
+
+        Dim oWnd As New PokazStatystyke("", lista)
+        oWnd.Show()
+    End Sub
+
 #End Region
 
 #Region "menu actions"
@@ -1491,6 +1508,7 @@ Public Class ProcessBrowse
     ''' <param name="iCount"></param>
     ''' <returns></returns>
     Private Function GetMaxBok(iCount As Integer) As Integer
+        If iCount < 1 Then Return 400
         Dim iPixeli As Integer = Me.ActualWidth * Me.ActualHeight * 0.8   ' na zaokrąglenia
         Dim iPixPerPic As Integer = iPixeli / iCount  ' pikseli² na obrazek
         Dim iMaxBok As Integer = Math.Min(400, Math.Sqrt(iPixPerPic))
