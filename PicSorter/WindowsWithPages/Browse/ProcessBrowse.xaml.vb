@@ -406,7 +406,11 @@ Public Class ProcessBrowse
     End Function
 
     Private Async Sub uiSortBy_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
+        Me.ProgRingShow(True)
+        'Me.ProgRingSetText("sorting...")
         Await SortujThumbsy()
+        'Me.ProgRingSetText("")
+        Me.ProgRingShow(False)
     End Sub
 
     Private Sub uiOpenHistoragam_Click(sender As Object, e As RoutedEventArgs)

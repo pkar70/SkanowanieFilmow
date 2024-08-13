@@ -15,6 +15,7 @@ Public Class CloudPublishersList
         New Publish_Instagram.Publish_Instagram,
         New Publish_std2_Facebook.Publish_Facebook_Post,
         New Publish_std2_Facebook.Publish_Facebook_Album,
+        New lib_n6_publishPDF.Publish_PDF,
         New Publish_ZIP,
         New Publish_CBZ
         }

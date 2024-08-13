@@ -98,6 +98,10 @@ Public NotInheritable Class PicMenuCloudPublish
                     If archiveName = "" Then Return
                     _engine.sZmienneZnaczenie = archiveName
 #End If
+            Case lib_n6_publishPDF.Publish_PDF.PROVIDERNAME
+                Dim archiveName As String = SettingsGlobal.FileSaveBrowser("", "Podaj nazwę pliku docelowego", "plik.pdf")
+                If archiveName = "" Then Return
+                _engine.sZmienneZnaczenie = archiveName
             Case Else
                 bSendNow = Await Vblib.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
         End Select
