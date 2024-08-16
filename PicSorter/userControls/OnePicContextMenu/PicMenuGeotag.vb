@@ -6,7 +6,7 @@ Public NotInheritable Class PicMenuGeotag
     Inherits PicMenuBase
 
     Private Shared _clip As BasicGeoposWithRadius
-    Private _itemReset As MenuItem
+    Private Shared _itemReset As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -33,8 +33,8 @@ Public NotInheritable Class PicMenuGeotag
 
     Public Overrides Sub MenuOtwieramy()
         MyBase.MenuOtwieramy()
-        _miCopy.IsEnabled = Not UseSelectedItems AndAlso GetFromDataContext.sumOfGeo IsNot Nothing
-        _itemReset.IsEnabled = UseSelectedItems OrElse GetFromDataContext.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing
+        _miCopy.IsEnabled = Not UseSelectedItems AndAlso GetFromDataContext()?.sumOfGeo IsNot Nothing
+        _itemReset.IsEnabled = UseSelectedItems OrElse GetFromDataContext()?.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing
     End Sub
 
 

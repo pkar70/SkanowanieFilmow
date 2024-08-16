@@ -12,9 +12,9 @@ Public NotInheritable Class PicMenuSetDate
     Private Shared _clipOrg As Date
 
     'Private _itemPaste As MenuItem
-    Private _itemInterpolate As MenuItem
+    Private Shared _itemInterpolate As MenuItem
     'Private _itemCopy As MenuItem
-    Private _itemCalcDiff As MenuItem
+    Private Shared _itemCalcDiff As MenuItem
     Private _timeDiff As String
 
     Public Overrides Sub OnApplyTemplate()

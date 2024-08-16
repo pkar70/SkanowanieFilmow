@@ -8,8 +8,8 @@ Imports pkar.DotNetExtensions
 Public NotInheritable Class PicMenuShareUpload
     Inherits PicMenuBase
 
-    Private _menuAllow As MenuItem
-    Private _menuDeny As MenuItem
+    Private Shared _menuAllow As MenuItem
+    Private Shared _menuDeny As MenuItem
 
 
     Public Overrides Sub OnApplyTemplate()

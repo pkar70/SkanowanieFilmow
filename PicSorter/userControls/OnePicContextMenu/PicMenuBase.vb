@@ -41,7 +41,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ' musi być OnePic, bo potrzebny jest InBufferPathName i tak dalej, ale może być NULL gdy ma używać listy
     Protected _picek As Vblib.OnePic
 
-    Protected _wasApplied As Boolean
+    Protected Shared _wasApplied As Boolean
 
     Private _progBar As ProgressBar
 
@@ -255,8 +255,8 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         If _miCopy IsNot Nothing Then _miCopy.IsEnabled = Not UseSelectedItems
     End Sub
 
-    Protected _miPaste As MenuItem
-    Protected _miCopy As MenuItem
+    Protected Shared _miPaste As MenuItem
+    Protected Shared _miCopy As MenuItem
 
     Protected Sub AddCopyMenu(header As String, dymek As String)
         _miCopy = NewMenuItem(header, dymek, Sub()

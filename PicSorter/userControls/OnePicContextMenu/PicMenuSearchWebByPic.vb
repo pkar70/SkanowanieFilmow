@@ -45,7 +45,7 @@ Public NotInheritable Class PicMenuSearchWebByPic
     End Sub
 
     Public Shared Async Function GetLocalUriInBuff(oPic As Vblib.OnePic) As Task(Of String)
-        Dim currMe As String = Await SettingsShareLogins.GetCurrentMeAsWeb & ":20563"
+        Dim currMe As String = Await SettingsShareLogins.GetCurrentMeAsWeb & ":" & Vblib.Globs.APP_HTTP_PORT
         Return "http://" & currMe & "/bufpic/" & IO.Path.GetFileName(oPic.InBufferPathName)
     End Function
 

@@ -7,9 +7,9 @@ Public NotInheritable Class PicMenuTargetDir
     Inherits PicMenuBase
 
     Private Shared _clipForTargetDir As String
-    Private _itemSet As MenuItem
-    Private _itemClear As MenuItem
-    Private _itemMakeSame As MenuItem
+    Private Shared _itemSet As MenuItem
+    Private Shared _itemClear As MenuItem
+    Private Shared _itemMakeSame As MenuItem
 
 
     Public Overrides Sub OnApplyTemplate()
@@ -43,10 +43,10 @@ Public NotInheritable Class PicMenuTargetDir
         MyBase.MenuOtwieramy()
 
         If Not _wasApplied Then Return
-        _miCopy.IsEnabled = Not UseSelectedItems AndAlso Not String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)
+        _miCopy.IsEnabled = Not UseSelectedItems AndAlso Not String.IsNullOrWhiteSpace(GetFromDataContext()?.TargetDir)
         _itemSet.IsEnabled = UseSelectedItems
-        _itemClear.IsEnabled = UseSelectedItems OrElse Not String.IsNullOrWhiteSpace(GetFromDataContext.TargetDir)
-        _itemMakeSame.IsEnabled = UseSelectedItems AndAlso GetSelectedItems.Count > 1
+        _itemClear.IsEnabled = UseSelectedItems OrElse Not String.IsNullOrWhiteSpace(GetFromDataContext()?.TargetDir)
+        _itemMakeSame.IsEnabled = UseSelectedItems AndAlso GetSelectedItems()?.Count > 1
 
     End Sub
 

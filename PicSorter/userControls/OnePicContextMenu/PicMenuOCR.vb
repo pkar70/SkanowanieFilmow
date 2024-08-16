@@ -6,9 +6,9 @@ Public Class PicMenuOCR
     Inherits PicMenuBase
 
     Public Shared _Clip As String = "" ' public dla OCRwnd.xaml
-    Private _PasteDesc As MenuItem
-    Private _CopyOCRclip As MenuItem
-    Private _CopyOCRlocal As MenuItem
+    Private Shared _PasteDesc As MenuItem
+    Private Shared _CopyOCRclip As MenuItem
+    Private Shared _CopyOCRlocal As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd

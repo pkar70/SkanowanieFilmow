@@ -5,8 +5,8 @@ Imports pkar
 Public Class PicMenuKwds
     Inherits PicMenuBase
 
-    Private _itemRemove As MenuItem
-    Private _itemForce As MenuItem
+    Private Shared _itemRemove As MenuItem
+    Private Shared _itemForce As MenuItem
 
 
     Public Overrides Sub OnApplyTemplate()

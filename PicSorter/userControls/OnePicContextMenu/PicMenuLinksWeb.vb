@@ -9,7 +9,7 @@ Imports pkar.DotNetExtensions
 Public Class PicMenuLinksWeb
     Inherits PicMenuBase
 
-    Private _itemLinki As MenuItem
+    Private Shared _itemLinki As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -43,7 +43,8 @@ Public Class PicMenuLinksWeb
         MyBase.MenuOtwieramy()
 
         If Not UseSelectedItems Then Return
-        _miCopy.IsEnabled = (GetSelectedItems().Count = 1)
+
+        _miCopy.IsEnabled = (GetSelectedItems()?.Count = 1)
 
     End Sub
 
