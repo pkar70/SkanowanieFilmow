@@ -34,20 +34,10 @@ Public Class BrowseKeywordsWindow
 
         If uiPinUnpin.IsPinned Then Return
 
-        'Public Sub InitForPic(oPic As ProcessBrowse.ThumbPicek)
-        'If oPic Is Nothing Then Return
-        '_oPic = oPic
-        '_oPic = DataContext
-        'If _oPic IsNot Nothing Then
-        '    Me.Title = IO.Path.GetFileName(_oPic.oPic.InBufferPathName)
-        'Else
-        '    Me.Title = "Keywords"
-        'End If
-
         _oNewExif = New Vblib.ExifTag(Vblib.ExifSource.ManualTag)
 
         ' bo jak nie ma żadnych tagów, to nie kasował oznaczeń
-        vblib.GetKeywords.ToFlatList.ForEach(Sub(x) x.bChecked = False)
+        Vblib.GetKeywords.ToFlatList.ForEach(Sub(x) x.bChecked = False)
 
         Dim currentFlatKwds As String = uiPinUnpin.EffectiveDatacontext?.oPic.GetAllKeywords
         uiSelectedKwds.Text = If(currentFlatKwds, "")

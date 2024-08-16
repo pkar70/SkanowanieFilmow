@@ -35,9 +35,11 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="80" Name="naCheckBoxOrazTag" />
                             <ColumnDefinition Width="*" Name="naOpis" />
+                            <ColumnDefinition Width="Auto" Name="naIkonki" />
                         </Grid.ColumnDefinitions>
                         <CheckBox IsChecked="{Binding bChecked}" IsEnabled="{Binding bEnabled}" Content="{Binding sId}" Checked="uiZmianaCheck" Unchecked="uiZmianaCheck" />
                         <TextBlock Grid.Column="1" Text="{Binding sDisplayName}" />
+                        <TextBlock Grid.Column="2" Text="{Binding GetIkonki}" />
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
