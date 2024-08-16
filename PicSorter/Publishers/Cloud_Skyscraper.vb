@@ -368,8 +368,18 @@ Public Class Cloud_Skyscraper
             Dim temp As String = oPic.GetDescriptionForCloud_Header
             If Not String.IsNullOrWhiteSpace(temp) Then sPostBody &= $"<p>{temp}</p>"
             sPostBody &= $"<p><img src='{oJsonPicRet.link}' style='width: auto;' class='fr-fic fr-dii' data-attachment='full:{oJsonPicRet.attachment.attachment_id}'/></p>"
-            temp = oPic.GetDescriptionForCloud_Footer
-            If Not String.IsNullOrWhiteSpace(temp) Then sPostBody &= $"<p>{temp}</p>"
+            'temp = oPic.GetDescriptionForCloud_Footer
+
+            If GetSettingsBool("uiPublishUseDate") Then
+                sPostBody &= $"<p>{oPic.GetDateSummary(True)}</p>"
+            End If
+
+
+            If oPic.sumOfGeo IsNot Nothing Then
+                If GetSettingsBool("uiPublishAddMaplink") Then
+                    sPostBody &= $"<p><a href='{oPic.sumOfGeo.ToOSMLink(17)}'>na mapie</a></p>"
+                End If
+            End If
 
             If oNextPic IsNot Nothing Then oNextPic()
         Next
