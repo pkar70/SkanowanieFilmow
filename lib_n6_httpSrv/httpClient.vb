@@ -89,7 +89,7 @@ Public Class httpKlient
         ' reszta ma dodatkowe parametry
         ' http://server:20563/cmd?guid=xxxx&clientHost=xxx
 
-        Dim sUri As String = $"http://{oServer.serverAddress}:20563/{command}?guid={oServer.login}&clientHost={Environment.MachineName}"
+        Dim sUri As String = $"http://{oServer.serverAddress}:{Globs.APP_HTTP_PORT}/{command}?guid={oServer.login}&clientHost={Environment.MachineName}"
         If addit <> "" Then
             If Not addit.StartsWith("&") Then sUri &= "&"
             sUri &= addit

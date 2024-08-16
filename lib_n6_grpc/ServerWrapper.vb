@@ -28,7 +28,7 @@ Public Class ServerWrapper
 
         ' Despite adding a "launchSettings.json" file to the project, I couldn't find a way 
         ' for the builder to pick it up, so had to configure the URLs here
-        builder.WebHost.UseUrls({"http://localhost:20563/"})
+        builder.WebHost.UseUrls({"http://localhost:20563/"}) APP_HTTP_PORT
         builder.Services.AddGrpc
 
         _app = builder.Build()

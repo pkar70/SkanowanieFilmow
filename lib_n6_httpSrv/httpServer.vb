@@ -8,10 +8,41 @@ Imports pkar.DotNetExtensions
 Imports Vblib
 
 Public Class ServerWrapper
+    Inherits ServerWrapperBase
+
+
+    Public Sub New(databases As Vblib.DatabaseInterface)
+        MyBase.New(databases)
+    End Sub
+
+    ' uwaga: port tak¿e w PicMenuSearchWebByPic
+    Protected Overrides Function baseUri() As String
+        ' Return $"https://*:{APP_HTTPS_PORT}/"
+        Return $"http://*:{APP_HTTP_PORT}/"
+    End Function
+
+End Class
+
+Public Class ServerWrapperHttps
+    Inherits ServerWrapperBase
+
+    Public Sub New(databases As Vblib.DatabaseInterface)
+        MyBase.New(databases)
+    End Sub
+
+    Protected Overrides Function baseUri() As String
+        Return $"https://*:{APP_HTTPS_PORT}/"
+    End Function
+
+End Class
+
+
+Public MustInherit Class ServerWrapperBase
 
     Private _host As HttpListener
-    Private Shared _loginy As pkar.BaseList(Of Vblib.ShareLogin)
     Private Shared _databases As Vblib.DatabaseInterface
+
+    Private Shared _loginy As pkar.BaseList(Of Vblib.ShareLogin)
     Private Shared _lastAccess As Vblib.ShareLoginData
     Private Shared _buffer As Vblib.IBufor
     Private Shared _shareDescIn As pkar.BaseList(Of Vblib.ShareDescription)
@@ -25,8 +56,8 @@ Public Class ServerWrapper
     Public Shared _lastNetAccess As New LastNetAccess
 
     Public Sub New(databases As Vblib.DatabaseInterface)
-        _loginy = Vblib.GetShareLogins
         _databases = databases
+        _loginy = Vblib.GetShareLogins
         _lastAccess = Vblib.gLastLoginSharing
         _buffer = Vblib.GetBuffer
         _shareDescIn = Vblib.GetShareDescriptionsIn
@@ -49,11 +80,10 @@ Public Class ServerWrapper
         If _host Is Nothing Then Task.Run(Sub() InitService())
     End Sub
 
-    ' uwaga: port tak¿e w PicMenuSearchWebByPic
-    Private Const baseUri As String = "http://*:20563/"
+    Protected MustOverride Function baseUri() As String
 
-    Public Sub TryAddAcl()
-        Dim cmdline As String = $"http add urlacl url={baseUri} user={Environment.UserDomainName}\{Environment.UserName}"
+    Private Sub TryAddAcl()
+        Dim cmdline As String = $"http add urlacl url={baseUri()} user={Environment.UserDomainName}\{Environment.UserName}"
 
         Dim psi As New ProcessStartInfo("netsh", cmdline)
         psi.Verb = "runas"
@@ -64,6 +94,7 @@ Public Class ServerWrapper
         Process.Start(psi).WaitForExit()
 
     End Sub
+
 
     Private Function TryStart() As Boolean
         _host = New HttpListener
@@ -699,10 +730,10 @@ Public Class ServerWrapper
                 End If
 
                 oLogin.lastLogin.kiedy = Date.Now
-                    oLogin.lastLogin.IPaddr = IPaddr.ToString
+                oLogin.lastLogin.IPaddr = IPaddr.ToString
 
-                    Return oLogin
-                End If
+                Return oLogin
+            End If
         Next
 
         Return Nothing
@@ -751,6 +782,7 @@ Public Class ServerWrapper
 
 
 End Class
+
 
 Public Class LastNetAccess
     Private Property kiedy As Date
