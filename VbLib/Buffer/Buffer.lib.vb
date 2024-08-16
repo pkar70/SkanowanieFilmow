@@ -48,7 +48,7 @@ Public Class BufferSortowania
     Private _pliki As FilesInBuffer
     Private _nazwa As String
 
-
+    Public Const DEFAULT_BUFFER_NAME As String = "Buffer"
 
     ''' <summary>
     ''' wczytuje indeks zdjęć z pliku .json
@@ -63,7 +63,7 @@ Public Class BufferSortowania
         ' AddSortBy
         'AddTyp3()
         _rootPictures = GetSettingsString("uiFolderBuffer")
-        _nazwa = ""
+        _nazwa = DEFAULT_BUFFER_NAME
     End Sub
 
     ''' <summary>
@@ -512,7 +512,7 @@ Public Class BufferFromQuery
     End Function
 
     Public Function GetBufferName() As String Implements IBufor.GetBufferName
-        Throw New NotImplementedException()
+        Return "Query"
     End Function
 End Class
 
