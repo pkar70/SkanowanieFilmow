@@ -252,8 +252,6 @@ Public Class AutoTag_EXIF
         oNewExif.Copyright = oRdr.GetString(CompactExifLib.ExifTag.Copyright) ' 33432 = 8298 ASCII(ANY)
         oNewExif.Keywords = oRdr.GetString(CompactExifLib.ExifTag.ImageDescription)  ' tylko ASCII, 010e ASCII(ANY)
 
-        oNewExif.Keywords = oNewExif.Keywords?.Replace("EPSON scanner image", "") ' ze skanera są takie keywordsy, usuwam je bo bez sensu
-
         oNewExif.CameraModel = AddSecondTagString(
             oRdr.GetString(CompactExifLib.ExifTag.Make), ' ASCII(ANY)
             oRdr.GetString(CompactExifLib.ExifTag.Model), ' 272 = 0110 ASCII(ANY)
@@ -271,6 +269,9 @@ Public Class AutoTag_EXIF
 
         ' tag XPTitle is ignored by Windows Explorer if ImageDescription exists)
         If oNewExif.Keywords = "" Then oNewExif.Keywords = oRdr.GetStringMicrosoft(CompactExifLib.ExifTag.XpTitle)
+
+        oNewExif.Keywords = oNewExif.Keywords?.Replace("EPSON scanner image", "") ' ze skanera są takie keywordsy, usuwam je bo bez sensu
+
         ' (ignored by Windows Explorer if Artist exists)
         If oNewExif.Author = "" Then oNewExif.Author = oRdr.GetStringMicrosoft(CompactExifLib.ExifTag.XpAuthor)
 
