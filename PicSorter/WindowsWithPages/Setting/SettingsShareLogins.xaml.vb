@@ -42,7 +42,7 @@ Class SettingsShareLogins
         ' wysłanie email
         Dim subject As String = "Dane logowania do mojego PicSort"
         Dim body As String = "Pełny dostęp:" & vbCrLf & $"PicSort://{adres}/{oLogin.login}"
-        body &= vbCrLf & "Dostęp via WWW:" & vbCrLf & $"http://{adres}:20563/webbuf?guid={oLogin.login}"
+        body &= vbCrLf & "Dostęp via WWW:" & vbCrLf & $"http://{adres}:{APP_HTTP_PORT}/webbuf?guid={oLogin.login}"
         Dim email As New AsNuget_UseMapi.SendFileTo.MAPI
         email.SendMailPopup(subject, body)
 

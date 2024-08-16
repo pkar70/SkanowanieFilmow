@@ -8,31 +8,7 @@ Imports System.Threading
 Class MainWindow
     Inherits Window
 
-    ''' <summary>
-    ''' Sprawdzenie czy już nie działa, jak tak to upewnia się że ma być druga instancja, jeśli nie - zamyka app (i zwraca TRUE)
-    ''' </summary>
-    Private Async Function CheckIfRunning() As Task(Of Boolean)
-        Dim currentProcess As Process = Process.GetCurrentProcess()
 
-        Dim runningProcess As Process = (From process In Process.GetProcessesByName(currentProcess.ProcessName)
-                                         Where
-                                    process.Id <> currentProcess.Id
-                                         Select process).FirstOrDefault()
-
-        If runningProcess Is Nothing Then Return False
-
-        ' mamy poprzednią instancję
-        If Await Me.DialogBoxYNAsync("To byłoby drugie uruchomienie app, zamknąć się?") Then
-            ' ewentualnie ShowWindow(runningProcess.MainWindowHandle, SW_SHOWMAXIMIZED)
-            ' przy [DllImport("user32.dll")]
-            ' Private Static extern Boolean ShowWindow(IntPtr hWnd, Int32 nCmdShow);
-
-            Application.Current.Shutdown()
-            Return True
-        End If
-
-        Return False
-    End Function
 
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
@@ -224,6 +200,34 @@ Class MainWindow
 #Region "zamykanie i ikonka"
 
     Private _closinguje As Boolean
+
+    ''' <summary>
+    ''' Sprawdzenie czy już nie działa, jak tak to upewnia się że ma być druga instancja, jeśli nie - zamyka app (i zwraca TRUE)
+    ''' </summary>
+    Private Async Function CheckIfRunning() As Task(Of Boolean)
+        Dim currentProcess As Process = Process.GetCurrentProcess()
+
+        Dim runningProcess As Process = (From process In Process.GetProcessesByName(currentProcess.ProcessName)
+                                         Where
+                                    process.Id <> currentProcess.Id
+                                         Select process).FirstOrDefault()
+
+        If runningProcess Is Nothing Then Return False
+
+        ' mamy poprzednią instancję
+        If Await Me.DialogBoxYNAsync("To byłoby drugie uruchomienie app, zamknąć się?") Then
+            ' ewentualnie ShowWindow(runningProcess.MainWindowHandle, SW_SHOWMAXIMIZED)
+            ' przy [DllImport("user32.dll")]
+            ' Private Static extern Boolean ShowWindow(IntPtr hWnd, Int32 nCmdShow);
+
+            Application.Current.Shutdown()
+            Return True
+        End If
+
+        Return False
+    End Function
+
+
 
     Private Async Sub Window_Closing(sender As Object, e As ComponentModel.CancelEventArgs)
 
@@ -483,14 +487,31 @@ Class MainWindow
 
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
-        'PoprawReelFromTarget
-        'UsunAstroMoon
-        'Album_dw_04()
-        'Await PoprawAddResolution()
+        'PoprawZeszyty
     End Sub
 
+    Private Shared Function GetOneDrivePath() As String
+        Dim sOneDrivePath As String = Environment.GetEnvironmentVariable("OneDriveConsumer")
+        If sOneDrivePath Is Nothing Then Return ""
+
+        If Not IO.Directory.Exists(sOneDrivePath) Then Return ""
+
+        sOneDrivePath = IO.Path.Combine(sOneDrivePath, "Apps")
+        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
+
+        Dim appName As String = GetAppName()
+
+        sOneDrivePath = IO.Path.Combine(sOneDrivePath, appName)
+        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
+
+        Return sOneDrivePath
+    End Function
+
+
     Private Shared Sub InitGlobsy()
-        Globs.Init(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData))
+        Globs.Init(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            GetOneDrivePath)
 
         Globs.gAutoTagery = {
         New Vblib.AutoTag_EXIF,
@@ -524,12 +545,54 @@ Class MainWindow
         New Process_Watermark
     }
 
+
     End Sub
 
 
 #Region "poprawianie plików"
 
 #If False Then
+    Private Sub PoprawZeszyty()
+        Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "u.240812.json")
+        arch.Load()
+
+        For Each oPic As Vblib.OnePic In arch
+            Dim oExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.ManualDate)
+
+            If oExif IsNot Nothing Then Continue For
+
+            Dim fname As String = oPic.sSuggestedFilename.Replace("..", ".")
+
+            If Not fname.StartsWith("19") Then Continue For
+
+            Dim rok As Integer = fname.Substring(0, 4)
+            Dim miesOd As Integer = 1
+            Dim dzOd As Integer = 1
+            Dim miesDo As Integer = 12
+            Dim dzDo As Integer = 31
+            If fname.Substring(4, 1) = "." Then
+                miesOd = fname.Substring(5, 2)
+                miesDo = miesOd
+                dzDo = 30
+                If fname.Substring(7, 1) = "." Then
+                    dzOd = fname.Substring(8, 2)
+                    dzDo = dzOd
+                End If
+            End If
+
+            If miesDo = 2 AndAlso dzDo > 27 Then dzDo = 27
+
+            Dim onew As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
+            onew.DateMin = New Date(rok, miesOd, dzOd)
+            onew.DateMax = New Date(rok, miesDo, dzDo)
+            oPic.ReplaceOrAddExif(onew)
+
+        Next
+
+        arch.Save()
+
+    End Sub
+
 
     Private Async Function PoprawAddResolution() As Task
 

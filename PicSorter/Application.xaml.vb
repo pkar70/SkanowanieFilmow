@@ -24,25 +24,6 @@ Partial Class Application
         End If
     End Sub
 
-
-    Public Shared Function GetOneDrivePath() As String
-        Dim sOneDrivePath As String = Environment.GetEnvironmentVariable("OneDriveConsumer")
-        If sOneDrivePath Is Nothing Then Return ""
-
-        If Not IO.Directory.Exists(sOneDrivePath) Then Return ""
-
-        sOneDrivePath = IO.Path.Combine(sOneDrivePath, "Apps")
-        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
-
-        Dim appName As String = GetAppName()
-
-        sOneDrivePath = IO.Path.Combine(sOneDrivePath, appName)
-        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
-
-        Return sOneDrivePath
-    End Function
-
-
     Private Shared gSourcesList As lib_PicSource.PicSourceList
 
     Public Shared Function GetSourcesList() As lib_PicSource.PicSourceList
@@ -96,6 +77,6 @@ Partial Class Application
 
     Public Shared gDbase As New Databases()
 
-    Public Shared gWcfServer As lib_sharingNetwork.ServerWrapper
+    Public Shared gWcfServer As lib_sharingNetwork.ServerWrapperBase
 
 End Class

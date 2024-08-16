@@ -116,7 +116,7 @@ Public Class SimpleDescribe
         uiAllDescribe.Text = _orgDescribe
 
         Dim tagsy As String() = oPicek.oPic.sumOfKwds.Split(" ")
-        If tagsy.Length > 0 AndAlso tagsy.Any(Function(x) Not x.StartsWith("=NO")) Then
+        If tagsy.Length > 0 AndAlso tagsy.Any(Function(x) x.Length > 1 AndAlso Not x.StartsWith("=NO")) Then
             uiAllDescribe.IsReadOnly = True
             uiAllDescribe.ToolTip = "W description są słowa kluczowe, więc nie można tu tego zmieniać"
         Else

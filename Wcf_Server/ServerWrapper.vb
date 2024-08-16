@@ -15,7 +15,7 @@ Public Class ServerWrapper
 
 #If STD_WCF Then
 
-            _host = New ServiceHost(GetType(PicSortService), New Uri("http://localhost:20563/HelloWCF"))
+            _host = New ServiceHost(GetType(PicSortService), New Uri($"http://localhost:{APP_HTTP_PORT}/HelloWCF"))
 
             _host.AddServiceEndpoint(GetType(IPicSortService), New WSHttpBinding(), "PicSort")
 

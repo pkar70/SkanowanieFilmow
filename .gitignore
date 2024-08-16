@@ -266,6 +266,6 @@ Moje/
 descript.ion
 *.apk
 /Moje/
-pswd.vb
+**/pswd.vb
 pswd.cs
 pswd.lib.vb

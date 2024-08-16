@@ -1,6 +1,7 @@
 ﻿
 Imports pkar.UI.Configs.Extensions
 Imports pkar.UI.Extensions
+Imports Vblib
 
 Class SettingsGlobal
 
@@ -132,6 +133,16 @@ Class SettingsGlobal
         End If
 
         uiFolderBuffer.SetSettingsString()
+
+        If Not Vblib.GetSettingsBool("uiUseOneDrive") AndAlso uiUseOneDrive.IsChecked Then
+            Me.MsgBox("Włączenie kopiowania do OneDrive zadziała po restart aplikacji")
+        End If
+
+        If Not uiUseOneDrive.IsChecked Then
+            ' ale wyłączyć umiemy od razu...
+            Globs.GetKeywords.MaintainCopy("")
+        End If
+
         'uiFolderData.SetSettingsString()
         uiUseOneDrive.SetSettingsBool
 
@@ -140,7 +151,6 @@ Class SettingsGlobal
         uiSerNoDigits.SetSettingsInt()
         uiTitleFilename.SetSettingsBool
         uiTitleSerno.SetSettingsBool
-
 
         Me.NavigationService.GoBack()
     End Sub
