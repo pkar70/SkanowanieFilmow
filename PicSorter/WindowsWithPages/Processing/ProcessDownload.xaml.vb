@@ -217,11 +217,13 @@ Public Class ProcessDownload
                 If ProcessPic.IsDefaultBuff(Me) Then
                     Dim oWnd As New ProcessDownloadInternet(oSrc)
                     oWnd.Owner = Me.Owner
+                    Me.Hide()
                     If Not oWnd.ShowDialog() Then
                         retval = 0
                     Else
                         retval = oWnd.Counter
                     End If
+                    Me.Show()
                 Else
                     Me.MsgBox("Nie umiem do nie-default bufora")
                 End If
