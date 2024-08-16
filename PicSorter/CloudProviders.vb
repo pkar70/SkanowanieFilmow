@@ -13,13 +13,13 @@ Public Class CloudPublishersList
         New Publish_Email,
         New Cloud_Skyscraper,
         New Publish_Instagram.Publish_Instagram,
-        New Publish_std2_Facebook.Publish_Facebook_Post,
-        New Publish_std2_Facebook.Publish_Facebook_Album,
         New lib_n6_publishPDF.Publish_PDF,
         New Publish_ZIP,
         New Publish_CBZ
         }
 
+    'New Publish_std2_Facebook.Publish_Facebook_Post,
+    'New Publish_std2_Facebook.Publish_Facebook_Album,
     ' PowerPointa i tak nie używam, a jest to 40 MB w .exe
     'New lib_n6_PowerPoint.Publish_PowerPoint
     '}
@@ -145,13 +145,13 @@ Public Class CloudArchivesList
         Return True
     End Function
 
-    Public Shared Sub CopyToOneDrive(sSourceFileName As String, sSettName As String)
+    Private Sub CopyToOneDrive(sSourceFileName As String, sSettName As String)
         If Not Vblib.GetSettingsBool(sSettName) Then Return
 
-        Dim srcFile As String = IO.Path.Combine(vblib.GetDataFolder, sSourceFileName)
+        Dim srcFile As String = Globs.GetDataFile("", sSourceFileName, False)
         If Not IO.File.Exists(srcFile) Then Return
 
-        Dim dstFile As String = IO.Path.Combine(Application.GetOneDrivePath, sSourceFileName)
+        Dim dstFile As String = IO.Path.Combine(Globs.GetOneDriveFolder, sSourceFileName)
 
         IO.File.Copy(srcFile, dstFile, True)
     End Sub

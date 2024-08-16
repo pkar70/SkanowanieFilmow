@@ -6,18 +6,28 @@ Imports pkar
 
 Public Module Globs
 
-    Private _folder As String
     Private Const APP_NAME As String = "PicSorter"
+    Public Const APP_HTTP_PORT As Integer = 20563
+    Public Const APP_HTTPS_PORT As Integer = 20564
 
-    Public Sub Init(folder As String)
+    Private _folder As String
+    Private _onedriveFolder As String
+
+    Public Sub Init(folder As String, onedriveFolder As String)
         Dim appname As String = GetSettingsString("name", APP_NAME)
         _folder = IO.Path.Combine(folder, appname)
-
+        _onedriveFolder = onedriveFolder
         ' aktualizacja Stage.Requirs
         StageReadRequir()
-
-
     End Sub
+
+    ''' <summary>
+    ''' zwraca folder do OneDrive - ustawiany jest przy Globs.Init
+    ''' </summary>
+    Public Function GetOneDriveFolder() As String
+        Return _onedriveFolder
+    End Function
+
 
     ''' <summary>
     ''' zwraca ścieżkę do plików konfiguracyjnych
@@ -117,6 +127,7 @@ Public Module Globs
     Public Function GetKeywords() As Vblib.KeywordsList
         If gKeywords Is Nothing Then
             gKeywords = New Vblib.KeywordsList(GetDataFolder)
+            If GetSettingsBool("uiUseOneDrive") Then gKeywords.MaintainCopy(_onedriveFolder)
             gKeywords.Load()
         End If
         Return gKeywords

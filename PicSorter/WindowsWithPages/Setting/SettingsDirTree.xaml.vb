@@ -31,7 +31,7 @@ Public Class SettingsDirTree
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
         vblib.GetDirTree.Save(True)
-        CloudArchivesList.CopyToOneDrive("dirstree.json", "uiUseOneDrive")
+        ' CloudArchivesList.CopyToOneDrive("dirstree.json", "uiUseOneDrive") - teraz idzie automatem, bo jest ustawione w BaseList.MaintainCopy
         Me.Close()
     End Sub
 
