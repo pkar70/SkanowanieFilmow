@@ -1,6 +1,7 @@
 ﻿'Imports Vblib
 'Imports PicSorterNS.ProcessBrowse
 Imports pkar.DotNetExtensions
+Imports Vblib
 
 Public NotInheritable Class PicMenuCloudPublish
     Inherits PicMenuCloudBase
@@ -42,13 +43,13 @@ Public NotInheritable Class PicMenuCloudPublish
 
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                If oItem.oPic.IsAdultInExifs OrElse vblib.GetKeywords.IsAdultInAnyKeyword(oItem.oPic.GetAllKeywords) Then
+                If oItem.oPic.IsAdultInExifs OrElse Vblib.GetKeywords.IsAdultInAnyKeyword(oItem.oPic.GetAllKeywords) Then
                     iCnt += 1
                     sNames = sNames & vbCrLf & oItem.oPic.sSuggestedFilename
                 End If
             Next
         Else
-            If _picek.IsAdultInExifs OrElse vblib.GetKeywords.IsAdultInAnyKeyword(_picek.GetAllKeywords) Then
+            If _picek.IsAdultInExifs OrElse Vblib.GetKeywords.IsAdultInAnyKeyword(_picek.GetAllKeywords) Then
                 iCnt = 1
                 sNames = _picek.sSuggestedFilename
             End If
@@ -76,8 +77,28 @@ Public NotInheritable Class PicMenuCloudPublish
         If _engine Is Nothing Then Return
 
         If Await NoPublishBoAdulty() Then Return
+        If _engine.konfiguracja.defaultPostprocess.ContainsCI("faceremove") Then
+            ' mamy usunąć twarze, sprawdź czy możemy to zrobić...
+            Try
+                ' zakładam że wszędzie jest ten sam stan
+                Dim picek As Vblib.OnePic = GetSelectedItemsAsPics(0)
+                ' If picek.GetStage
+                If picek.GetExifOfType(Vblib.ExifSource.AutoWinFace) Is Nothing AndAlso
+                        picek.GetExifOfType(Vblib.ExifSource.AutoAzure) Is Nothing Then
+                    If Not Await Vblib.DialogBoxYNAsync("Miałbym usuwać twarze, ale nie mam WinFace/Azure! Kontynuować?") Then
+                        Return
+                    End If
+                End If
+            Catch ex As Exception
+
+            End Try
+
+        End If
 
         Dim bSendNow As Boolean = True
+
+        ' dla SSC adhoc, pyta o grupę a potem ją kasuje z .konfiguracja.additInfo
+        Dim bResetAdditInfo As Boolean = False
 
         Select Case _engine.sProvider
             Case Vblib.Publish_AdHoc.PROVIDERNAME
@@ -102,6 +123,13 @@ Public NotInheritable Class PicMenuCloudPublish
                 Dim archiveName As String = SettingsGlobal.FileSaveBrowser("", "Podaj nazwę pliku docelowego", "plik.pdf")
                 If archiveName = "" Then Return
                 _engine.sZmienneZnaczenie = archiveName
+            Case Cloud_Skyscraper.PROVIDERNAME
+                If String.IsNullOrWhiteSpace(_engine.konfiguracja.additInfo) Then
+                    Dim grupa As String = Await Vblib.InputBoxAsync("Podaj link do grupy")
+                    If String.IsNullOrWhiteSpace(grupa) Then Return
+                    bResetAdditInfo = True
+                    _engine.konfiguracja.additInfo = grupa
+                End If
             Case Else
                 bSendNow = Await Vblib.DialogBoxYNAsync("Wysłać teraz? Bo mogę tylko zaznaczyć do wysłania")
         End Select
@@ -134,6 +162,9 @@ Public NotInheritable Class PicMenuCloudPublish
             EventRaise(Me)
         End If
         Application.ShowWait(False)
+
+        If bResetAdditInfo Then _engine.konfiguracja.additInfo = ""
+
     End Sub
 
 End Class
