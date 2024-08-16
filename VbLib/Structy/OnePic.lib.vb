@@ -557,10 +557,12 @@ Public Class OnePic
     Public Sub ReplaceAllDescriptions(sDesc As String, Optional copyKwds As Boolean = False)
 
         Dim kwds As String = ""
-        For Each oDesc As OneDescription In descriptions
-            kwds &= oDesc.keywords & " "
-        Next
-        kwds = kwds.Trim
+        If descriptions IsNot Nothing Then
+            For Each oDesc As OneDescription In descriptions
+                kwds &= oDesc.keywords & " "
+            Next
+            kwds = kwds.Trim
+        End If
 
         descriptions = New List(Of OneDescription)
         AddDescription(New OneDescription(sDesc, kwds))
@@ -2201,7 +2203,7 @@ Public Class OnePic
     ''' </summary>
     Public Sub RecalcSumsy(Optional slowka As KeywordsList = Nothing)
         sumOfDescr = GetSumOfDescriptionsText()
-        sumOfKwds = GetAllKeywords() & " " ' zapewnienie spacji do szukania
+        sumOfKwds = GetAllKeywords().Trim & " " ' zapewnienie spacji do szukania
         sumOfUserComment = GetSumOfUserComment()
         sumOfGeo = GetGeoTag()
         If sumOfGeo Is Nothing AndAlso slowka IsNot Nothing Then
@@ -2259,6 +2261,25 @@ Public Class OnePic
         Return ret
     End Function
 
+    ''' <summary>
+    ''' stwórz opisową wersję zakresu dat - *TODO* konwersja na DateRange później
+    ''' </summary>
+    ''' <param name="skrocona">TRUE: dla podpisu, FALSE: dla dymku</param>
+    Public Function GetDateSummary(skrocona As Boolean) As String
+        If HasRealDate() Then
+            If skrocona Then
+                Return "📷: " & GetMostProbablyDate.ToExifString
+            End If
+            Return "Real date: " & GetMostProbablyDate.ToExifString
+        Else
+            If skrocona Then
+                Return GetMinDate.ToString("yyyy.MM.dd") & " .. " & GetMaxDate.ToString("yyyy.MM.dd")
+            End If
+            return $"Date range: {GetMinDate.ToExifString} .. {GetMaxDate.ToExifString}
+Mid date: {GetMostProbablyDate.ToExifString}"
+        End If
+
+    End Function
 
 End Class
 

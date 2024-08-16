@@ -408,8 +408,10 @@ Public Class ProcessBrowse
     Private Async Sub uiSortBy_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
         Me.ProgRingShow(True)
         'Me.ProgRingSetText("sorting...")
+        Await Task.Delay(5)
         Await SortujThumbsy()
         'Me.ProgRingSetText("")
+        Await Task.Delay(5)
         Me.ProgRingShow(False)
     End Sub
 
@@ -585,6 +587,9 @@ Public Class ProcessBrowse
         'uiActionsPopup.IsOpen = False
 
         ReDymkuj()
+        For Each oItem As ThumbPicek In uiPicList.SelectedItems
+            oItem.NotifyPropChange("sumOfDates")
+        Next
 
         ' jeśli sortowanie jest wg dat, to zaktualizuj
         If GetCurrentSortMode() = 1 Then SortujThumbsy()
@@ -2630,6 +2635,7 @@ Public Class ProcessBrowse
 
 
     Private Sub UruchomMenuOpen(meni As MenuBase)
+        Vblib.DumpCurrMethod()
 
         For Each oItem In meni.Items
             Dim pmb As PicMenuBase = TryCast(oItem, PicMenuBase)
@@ -2676,6 +2682,7 @@ Public Class ProcessBrowse
 
                     For iLp = 0 To aKwds.Length - 1 ' było: .Count
                         Dim kwd As String = aKwds(iLp).TrimStart
+                        If String.IsNullOrWhiteSpace(kwd) Then Continue For
                         If Not oCurrExif.Keywords.Contains(kwd) Then
                             oCurrExif.Keywords &= " " & kwd
                             If iLp < aOpisy.Length Then oCurrExif.UserComment &= "|" & aOpisy(iLp)
@@ -2908,6 +2915,11 @@ Public Class ProcessBrowse
             End Get
         End Property
 
+        Public ReadOnly Property sumOfDates As String
+            Get
+                Return oPic.GetDateSummary(True)
+            End Get
+        End Property
 
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek
@@ -2930,13 +2942,7 @@ Public Class ProcessBrowse
                 If oPic.sSourceName.EqualsCI("adhoc") Then newDymek = newDymek & vbCrLf & "Src: " & oPic.sSourceName
             End If
 
-            ' dateMin to GetMostProbablyDate
-            If oPic.HasRealDate Then
-                newDymek = newDymek & vbCrLf & "Real date: " & oPic.GetMostProbablyDate.ToExifString
-            Else
-                newDymek = newDymek & vbCrLf & "Date range: " & oPic.GetMinDate.ToExifString & " .. " & oPic.GetMaxDate.ToExifString
-                newDymek = newDymek & vbCrLf & "Mid date: " & oPic.GetMostProbablyDate.ToExifString
-            End If
+            newDymek = newDymek & vbCrLf & oPic.GetDateSummary(False)
 
             Dim oExifTag As Vblib.ExifTag
 
