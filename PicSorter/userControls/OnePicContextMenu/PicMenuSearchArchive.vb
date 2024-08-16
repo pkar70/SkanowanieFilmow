@@ -6,10 +6,12 @@ Imports Vblib
 Public Class PicMenuSearchArchive
     Inherits PicMenuBase
 
-    Private _ByAzureTags As MenuItem
-    Private _ByAzureObjects As MenuItem
-    Private _ByKeywords As MenuItem
-    Private _ByGeo As MenuItem
+    Private Shared _ByAzureTags As MenuItem
+    Private Shared _ByAzureObjects As MenuItem
+    Private Shared _ByKeywords As MenuItem
+    Private Shared _ByGeo As MenuItem
+    Private Shared _ByFolder As MenuItem
+    Private Shared _ByReel As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -32,6 +34,12 @@ Public Class PicMenuSearchArchive
         _ByKeywords = NewMenuItem("Same people", "Wyszukaj zdjęcia oznaczone tymi samymi słowami kluczowymi osób ('-')", AddressOf SearchByKwds)
         Me.Items.Add(_ByKeywords)
 
+        _ByFolder = NewMenuItem("Same TargetDir", "Wyszukaj zdjęcia w tym folderze", AddressOf SearchByTargetDir)
+        Me.Items.Add(_ByFolder)
+
+        _ByReel = NewMenuItem("Same reel", "Wyszukaj zdjęcia z tej samej reel", AddressOf SearchByReel)
+        Me.Items.Add(_ByReel)
+
         _ByAzureTags = NewMenuItem("Similar (Tags)", "Wyszukaj zdjęcia oznaczone przez Azure tymi samymi Tags", AddressOf SearchByAzureTags)
         Me.Items.Add(_ByAzureTags)
 
@@ -46,6 +54,10 @@ Public Class PicMenuSearchArchive
         MyBase.MenuOtwieramy()
 
         If Not _wasApplied Then Return
+
+        _ByFolder.IsEnabled = If(String.IsNullOrWhiteSpace(GetFromDataContext()?.TargetDir), False, True)
+        Dim oExif As Vblib.ExifTag = GetFromDataContext()?.GetExifOfType(Vblib.ExifSource.SourceDefault)
+        _ByReel.IsEnabled = If(String.IsNullOrWhiteSpace(oExif?.ReelName), False, True)
 
         ' fallback przy błędach
         _ByAzureTags.IsEnabled = False
@@ -244,6 +256,30 @@ Public Class PicMenuSearchArchive
 
         Szukaj(qry)
     End Sub
+
+
+    Private Sub SearchByTargetDir(sender As Object, e As RoutedEventArgs)
+
+        Dim qry As New Vblib.SearchQuery
+        qry.ogolne.adv.TargetDir = GetFromDataContext()?.TargetDir
+        Szukaj(qry)
+
+    End Sub
+
+    Private Sub SearchByReel(sender As Object, e As RoutedEventArgs)
+        Dim oMI As MenuItem = TryCast(sender, MenuItem)
+        Dim tagi As String = TryCast(oMI?.DataContext, String)
+        If String.IsNullOrWhiteSpace(tagi) Then Return
+
+        Dim qry As New Vblib.SearchQuery
+        Dim oExif As Vblib.ExifTag = GetFromDataContext()?.GetExifOfType(Vblib.ExifSource.SourceDefault)
+        qry.ogolne.Reel = oExif?.ReelName
+
+        Szukaj(qry)
+
+    End Sub
+
+
 
     Private Async Sub Szukaj(qry As SearchQuery)
 
