@@ -72,6 +72,13 @@ Public Class OneKeyword
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propName))
     End Sub
 
+    Public Function GetIkonki() As String
+        Dim ret As String = ""
+        If oGeo IsNot Nothing Then ret &= AutotaggerBase.IconGeo
+        If minDate.IsDateValid OrElse maxDate.IsDateValid Then ret &= AutotaggerBase.IconCal
+        Return ret
+    End Function
+
 End Class
 
 Public Class KeywordsList
