@@ -1,0 +1,60 @@
+﻿<Window x:Class="ShowAzureLists"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="ShowAzureLists" Height="450" Width="550" DataContextChanged="Window_DataContextChanged">
+    <local:StretchedGrid Rows="A,*,A">
+        <local:MetaWndFilename x:Name="uiPinUnpin" IsPinned="False"/>
+        <TabControl Grid.Row="1" Name="uiRozpiska">
+            <TabItem Header="ogólne" >
+                <local:StretchedGrid Margin="5,10,0,0" Cols="A,*" Rows="A,A,A,A,A,A">
+
+                    <TextBlock Text="Ograniczenia wiekowe: " Grid.Row="0" Grid.Column="0"/>
+                    <TextBox Text="{Binding Wiekowe}" Width="200" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1"/>
+
+                    <CheckBox Content="IsBW" IsChecked="{Binding IsBW}" Margin="0,5,0,10" Grid.Row="1" Grid.ColumnSpan="2" />
+
+                    <TextBlock Text="Colors:" FontWeight="Bold" Grid.Row="2" Grid.ColumnSpan="2"/>
+
+                    <TextBlock Text="DominantColorBackground" Grid.Row="3" Grid.Column="0"/>
+                    <TextBox Text="{Binding Colors.DominantColorBackground, Mode=TwoWay}" Grid.Row="3" Grid.Column="1" Width="200" HorizontalAlignment="Left"/>
+                    <TextBlock Text="DominantColorForeground" Grid.Row="4" Grid.Column="0"/>
+                    <TextBox Text="{Binding Colors.DominantColorForeground, Mode=TwoWay}" Grid.Row="4" Grid.Column="1" Width="200" HorizontalAlignment="Left"/>
+                    <TextBlock Text="DominantColors" Grid.Row="5" Grid.Column="0"/>
+                    <TextBox Text="{Binding Colors.DominantColors, Mode=TwoWay}" Grid.Row="5" Grid.Column="1" Width="200" HorizontalAlignment="Left"/>
+
+                </local:StretchedGrid>
+            </TabItem>
+            <TabItem Header="Captions" >
+                <local:UserAzureListViewNoBox x:Name="AzureCapt" DataContext="{Binding Captions}" />
+            </TabItem>
+            <TabItem Header="Categories"  >
+                <local:UserAzureListViewNoBox x:Name="AzureCateg" DataContext="{Binding Categories}" />
+            </TabItem>
+            <TabItem Header="Tags"  >
+                <local:UserAzureListViewNoBox x:Name="AzureTags"  DataContext="{Binding Tags}" />
+            </TabItem>
+            <TabItem Header="Landmarks" >
+                <local:UserAzureListViewNoBox  x:Name="AzureLandm" DataContext="{Binding Landmarks}" />
+            </TabItem>
+            
+            <TabItem Header="Brands" >
+                <local:UserAzureListViewWithBox x:Name="AzureBrands"  DataContext="{Binding Brands}" />
+            </TabItem>
+            <TabItem Header="Objects"  >
+                <local:UserAzureListViewWithBox  x:Name="AzureObjs" DataContext="{Binding Objects}" />
+            </TabItem>
+            <TabItem Header="Celebrities"  >
+                <local:UserAzureListViewWithBox  x:Name="AzureCelebs" DataContext="{Binding Celebrities}" />
+            </TabItem>
+            <TabItem Header="Faces"  >
+                <local:UserAzureListViewWithBox  x:Name="AzureFaces" DataContext="{Binding Faces}" />
+            </TabItem>
+        </TabControl>
+
+        <local:pButton Content="Save!" Grid.Row="2" Margin="5,5,5,5" Click="uiOk_Click" />
+    </local:StretchedGrid>
+</Window>
