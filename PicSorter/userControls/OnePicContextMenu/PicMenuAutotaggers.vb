@@ -3,17 +3,12 @@ Public NotInheritable Class PicMenuAutotaggers
     Inherits PicMenuBase
 
     Public Overrides Sub OnApplyTemplate()
-        ' wywoływame było dwa razy! I głupi błąd
-        'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
-
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
         MyBase.OnApplyTemplate()
 
         If Not InitEnableDisable("Auto-taggers", "Uruchamianie automatycznych opisywaczy zdjęć", True) Then Return
 
         WypelnMenuAutotagerami(Me, AddressOf ApplyProcess)
-
-        _wasApplied = True
     End Sub
 
 

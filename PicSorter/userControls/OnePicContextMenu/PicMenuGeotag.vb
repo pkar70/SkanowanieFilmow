@@ -7,11 +7,13 @@ Public NotInheritable Class PicMenuGeotag
 
     Private Shared _clip As BasicGeoposWithRadius
     Private Shared _itemReset As MenuItem
+    Private Shared _miCopy As MenuItem
+    Private Shared _miPaste As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         MyBase.OnApplyTemplate()
 
@@ -19,20 +21,20 @@ Public NotInheritable Class PicMenuGeotag
 
         Me.Items.Clear()
 
-        Me.Items.Add(NewMenuItem("Create Geotag", "Tworzenie znacznika z lokalizacją", AddressOf uiCreateGeotag_Click))
-        Me.Items.Add(NewMenuItem("Make same", "Skopiowanie geografii pomiędzy zdjęciami", AddressOf uiGeotagMakeSame_Click, UseSelectedItems))
+        AddMenuItem("Create Geotag", "Tworzenie znacznika z lokalizacją", AddressOf uiCreateGeotag_Click)
+        AddMenuItem("Make same", "Skopiowanie geografii pomiędzy zdjęciami", AddressOf uiGeotagMakeSame_Click, UseSelectedItems)
 
-        AddCopyMenu("Copy Geotag", "Skopiuj dane geograficzne ze wskazanego zdjęcia do lokalnego schowka ")
-        AddPasteMenu("Paste Geotag", "ustaw dane geograficzne zdjęć wedle lokalnego schowka")
+        _miCopy = AddMenuItem("Copy Geotag", "Skopiuj dane geograficzne ze wskazanego zdjęcia do lokalnego schowka ", AddressOf CopyCalled)
+        _miPaste = AddMenuItem("Paste Geotag", "ustaw dane geograficzne zdjęć wedle lokalnego schowka", AddressOf uiGeotagPaste_Click, False)
 
-        _itemReset = NewMenuItem("Reset Geotag", "Wyczyść dopisane przez program dane geograficzne zdjęcia (ManualGeo, OSM, IMGW)", AddressOf uiGeotagClear_Click)
-        Me.Items.Add(_itemReset)
+        _itemReset = AddMenuItem("Reset Geotag", "Wyczyść dopisane przez program dane geograficzne zdjęcia (ManualGeo, OSM, IMGW)", AddressOf uiGeotagClear_Click)
 
-        _wasApplied = True
     End Sub
 
     Public Overrides Sub MenuOtwieramy()
         MyBase.MenuOtwieramy()
+
+        If _miCopy Is Nothing Then Return
         _miCopy.IsEnabled = Not UseSelectedItems AndAlso GetFromDataContext()?.sumOfGeo IsNot Nothing
         _itemReset.IsEnabled = UseSelectedItems OrElse GetFromDataContext()?.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing
     End Sub
@@ -108,8 +110,7 @@ Public NotInheritable Class PicMenuGeotag
         EventRaise(Me)
     End Sub
 
-    Protected Overrides Sub CopyCalled()
-        MyBase.CopyCalled()
+    Private Sub CopyCalled(sender As Object, e As RoutedEventArgs)
 
         Dim oGeo As BasicGeoposWithRadius = GetFromDataContext.GetGeoTag
         If oGeo Is Nothing Then
@@ -118,6 +119,7 @@ Public NotInheritable Class PicMenuGeotag
         End If
 
         _clip = oGeo
+        _miPaste.IsEnabled = True
     End Sub
 
     Private Sub GeotagSet(oPic As Vblib.OnePic)

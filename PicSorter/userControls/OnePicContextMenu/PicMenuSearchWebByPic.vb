@@ -8,7 +8,7 @@ Public NotInheritable Class PicMenuSearchWebByPic
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         If UseSelectedItems Then Return ' umiemy tylko pojedyńczy picek
 
@@ -17,12 +17,11 @@ Public NotInheritable Class PicMenuSearchWebByPic
         ' *TODO* może być Bing, Google
         If Not InitEnableDisable("Web search by pic", "Przeszukiwanie sieci według zdjęcia", True) Then Return
 
-        Me.Items.Add(NewMenuItem("Google", "Wyszukaj w Google", AddressOf SearchGoogle))
-        Me.Items.Add(NewMenuItem("BING(?)", "Wyszukaj w BING (chwilowo nie działa", AddressOf SearchBing))
+        AddMenuItem("Google", "Wyszukaj w Google", AddressOf SearchGoogle)
+        AddMenuItem("BING(?)", "Wyszukaj w BING (chwilowo nie działa", AddressOf SearchBing)
 
         'AddHandler Me.Click, AddressOf ActionClick
 
-        _wasApplied = True
     End Sub
 
     Private Sub SearchBing(sender As Object, e As RoutedEventArgs)

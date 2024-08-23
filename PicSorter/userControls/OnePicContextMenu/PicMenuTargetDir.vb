@@ -10,12 +10,16 @@ Public NotInheritable Class PicMenuTargetDir
     Private Shared _itemSet As MenuItem
     Private Shared _itemClear As MenuItem
     Private Shared _itemMakeSame As MenuItem
+    Private Shared _miCopy As MenuItem
+    Private Shared _miPaste As MenuItem
+
 
 
     Public Overrides Sub OnApplyTemplate()
+        Vblib.DumpCurrMethod()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         MyBase.OnApplyTemplate()
 
@@ -23,26 +27,22 @@ Public NotInheritable Class PicMenuTargetDir
 
         Me.Items.Clear()
 
-        _itemSet = NewMenuItem("Set target dir", "Ustawianie katalogu docelowego", AddressOf uiCreateTargetDir_Click)
-        Me.Items.Add(_itemSet)
-
-        _itemMakeSame = NewMenuItem("Make same", "Skopiowanie katalogu docelowego między zdjęciami", AddressOf uiTargetMakeSame_Click)
-        Me.Items.Add(_itemMakeSame)
-
-        AddCopyMenu("Copy TargetDir", "Skopiowanie katalogu docelowego do lokalnego schowka")
-        AddPasteMenu("Paste TargetDir", "Narzucenie zdjęciom katalogu docelowego wg lokalnego schowka")
-
-        _itemClear = NewMenuItem("Clear TargetDir", "Usunięcie wskazania katalogu docelowego", AddressOf uiTargetClear_Click)
-        Me.Items.Add(_itemClear)
-
-        _wasApplied = True
+        _itemSet = AddMenuItem("Set target dir", "Ustawianie katalogu docelowego", AddressOf uiCreateTargetDir_Click)
+        _itemMakeSame = AddMenuItem("Make same", "Skopiowanie katalogu docelowego między zdjęciami", AddressOf uiTargetMakeSame_Click)
+        _miCopy = AddMenuItem("Copy TargetDir", "Skopiowanie katalogu docelowego do lokalnego schowka", AddressOf CopyCalled)
+        _miPaste = AddMenuItem("Paste TargetDir", "Narzucenie zdjęciom katalogu docelowego wg lokalnego schowka", AddressOf PasteCalled, False)
+        _itemClear = AddMenuItem("Clear TargetDir", "Usunięcie wskazania katalogu docelowego", AddressOf uiTargetClear_Click)
     End Sub
 
 
     Public Overrides Sub MenuOtwieramy()
+        Vblib.DumpCurrMethod()
+
         MyBase.MenuOtwieramy()
 
-        If Not _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
+
+        If _miCopy Is Nothing Then Return
         _miCopy.IsEnabled = Not UseSelectedItems AndAlso Not String.IsNullOrWhiteSpace(GetFromDataContext()?.TargetDir)
         _itemSet.IsEnabled = UseSelectedItems
         _itemClear.IsEnabled = UseSelectedItems OrElse Not String.IsNullOrWhiteSpace(GetFromDataContext()?.TargetDir)
@@ -95,11 +95,12 @@ Public NotInheritable Class PicMenuTargetDir
         EventRaise(Me)
     End Sub
 
-    Protected Overrides Sub CopyCalled()
+    Private Sub CopyCalled(sender As Object, e As RoutedEventArgs)
         _clipForTargetDir = GetFromDataContext.TargetDir
+        _miPaste.IsEnabled = True
     End Sub
 
-    Protected Overrides Sub PasteCalled()
+    Private Sub PasteCalled(sender As Object, e As RoutedEventArgs)
         OneOrMany(Sub(x) If String.IsNullOrWhiteSpace(x.TargetDir) Then x.TargetDir = _clipForTargetDir)
         EventRaise(Me)
     End Sub

@@ -7,12 +7,14 @@ Public Class PicMenuKwds
 
     Private Shared _itemRemove As MenuItem
     Private Shared _itemForce As MenuItem
+    Private Shared _miCopy As MenuItem
+    Private Shared _miPaste As MenuItem
 
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         MyBase.OnApplyTemplate()
 
@@ -20,20 +22,17 @@ Public Class PicMenuKwds
 
         Me.Items.Clear()
 
-        'Me.Items.Add(NewMenuItem("Add kwd", "Dodanie słowa kluczowego", AddressOf uiAddKwd_Click))
-        _itemRemove = NewMenuItem("Remove kwd", "Usunięcie słowa kluczowego", Nothing)
-        Me.Items.Add(_itemRemove)
+        'Me.Items.Add(AddMenuItem("Add kwd", "Dodanie słowa kluczowego", AddressOf uiAddKwd_Click))
+        _itemRemove = AddMenuItem("Remove kwd", "Usunięcie słowa kluczowego", Nothing)
         _itemRemove.Items.Add("(no entries)")
-        AddCopyMenu("Copy kwds", "Skopiuj słowa kluczowe do lokalnego schowka (ze wszystkich zdjęć)")
-        AddPasteMenu("Paste kwds", "Dodaj słowa kluczowe wedle lokalnego schowka")
-        _itemForce = NewMenuItem("Force kwds", "Narzuć słowa kluczowe lokalnego schowka", AddressOf uiKwdsForce_Click, False)
-        Me.Items.Add(_itemForce)
+        _miCopy = AddMenuItem("Copy kwds", "Skopiuj słowa kluczowe do lokalnego schowka (ze wszystkich zdjęć)", AddressOf CopyCalled)
+        _miPaste = AddMenuItem("Paste kwds", "Dodaj słowa kluczowe wedle lokalnego schowka", AddressOf Pastecalled, False)
+        _itemForce = AddMenuItem("Force kwds", "Narzuć słowa kluczowe lokalnego schowka", AddressOf uiKwdsForce_Click, False)
 
-        Me.Items.Add(NewMenuItem("Reset kwds", "Usuń wszystkie słowa kluczowe", AddressOf uiRemoveAll_Click))
+        AddMenuItem("Reset kwds", "Usuń wszystkie słowa kluczowe", AddressOf uiRemoveAll_Click)
 
         AddHandler Me.SubmenuOpened, AddressOf wypelnKwdsIstniejace
 
-        _wasApplied = True
     End Sub
 
     Private Sub wypelnKwdsIstniejace(sender As Object, e As System.Windows.RoutedEventArgs)
@@ -44,7 +43,7 @@ Public Class PicMenuKwds
 
         For Each kwd As String In From c In temp Distinct
             If String.IsNullOrWhiteSpace(kwd) Then Continue For
-            _itemRemove.Items.Add(NewMenuItem(kwd, Nothing, AddressOf UsunTenJeden_Click))
+            _itemRemove.Items.Add(AddMenuItem(kwd, Nothing, AddressOf UsunTenJeden_Click))
         Next
 
         If _itemRemove.Items.Count < 1 Then
@@ -84,14 +83,14 @@ Public Class PicMenuKwds
 
     Private Shared _clip As String
 
-    Protected Overrides Sub CopyCalled()
-        MyBase.CopyCalled()
+    Private Sub CopyCalled(sender As Object, e As RoutedEventArgs)
         _clip = JakieSaKwds()
+        _miPaste.IsEnabled = True
         _itemForce.IsEnabled = True
     End Sub
 
 
-    Protected Overrides Sub Pastecalled()
+    Private Sub Pastecalled(sender As Object, e As RoutedEventArgs)
 
         OneOrMany(Sub(x)
                       x.ReplaceOrAddExif(Vblib.GetKeywords.CreateManualTagFromKwds(_clip & " " & x.GetAllKeywords))

@@ -5,18 +5,39 @@ Imports pkar
 Public NotInheritable Class PicMenuDeleteTemps
     Inherits PicMenuBase
 
+    Dim _delThumb As MenuItem
+
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         MyBase.OnApplyTemplate()
 
-        If Not InitEnableDisable("Delete temps", "Usuwanie plików tymczasowych związanych ze zdjęciem") Then Return
+        If Not InitEnableDisable("Delete temps", "Usuwanie plików tymczasowych związanych ze zdjęciem", True) Then Return
 
-        AddHandler Me.Click, AddressOf ActionClick
+        _delThumb = AddMenuItem("Del thumb", "Usuń Thumb - zostanie zregenerowany przy najbliższej okazji", AddressOf DelThumb_Click)
+        AddMenuItem("Del temps", "Usuwanie plików tymczasowych związanych ze zdjęciem (thumb, bak, itp.)", AddressOf ActionClick)
 
-        _wasApplied = True
+        ' file  ACT CTX BIG
+        ' thumb ACT
+        ' temps ACT CTX
+    End Sub
+
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
+
+        _delThumb.IsEnabled = UseSelectedItems
+    End Sub
+
+    Private Async Sub DelThumb_Click(sender As Object, e As RoutedEventArgs)
+
+        For Each thumb As ProcessBrowse.ThumbPicek In GetSelectedItems()
+            thumb.oImageSrc = Nothing ' zwalnia pamięć, ale i zwalnia plik
+            thumb.ThumbDelete()
+            ' Await thumb.ThumbWczytajLubStworz(_inArchive:=, True)
+        Next
+
     End Sub
 
     Private Sub ActionClick(sender As Object, e As RoutedEventArgs)
@@ -53,20 +74,6 @@ Public NotInheritable Class PicMenuDeleteOwn
         Me.Items.Add(NewMenuItem("Backup", AddressOf uiDelBack_Click))
 
         _wasApplied = True
-    End Sub
-
-    Private Sub uiDelBack_Click(sender As Object, e As RoutedEventArgs)
-        Throw New NotImplementedException()
-    End Sub
-
-    Private Async Sub uiDelThumb_Click(sender As Object, e As RoutedEventArgs)
-
-        Dim bCacheThumbs As Boolean = Vblib.GetSettingsBool("uiCacheThumbs")
-
-        ' nie można OneOrMany, bo tam operacje są na OnePic, a tu na Thumb trzeba
-        For Each oItem As ThumbPicek In GetSelectedItems()
-            Await ProcessBrowse.DoczytajMiniaturke(bCacheThumbs, oItem, True)
-        Next
     End Sub
 
     Private Async Sub uiDelPic_Click(sender As Object, e As RoutedEventArgs)
@@ -106,8 +113,7 @@ Public NotInheritable Class PicMenuDeleteOwn
         If Not _oBufor.DeleteFile(oPicek.oPic) Then Return   ' nieudane skasowanie
 
         ' kasujemy różne miniaturki i tak dalej. Delete nie robi Exception jak pliku nie ma.
-        IO.File.Delete(oPicek.oPic.InBufferPathName & THUMB_SUFIX)
-        IO.File.Delete(oPicek.oPic.InBufferPathName & THUMB_SUFIX & ".png")
+        oPic.DeleteAllTempFiles()
 
         ' zapisz jako plik do kiedyś-tam usunięcia ze źródła
         Application.GetSourcesList.AddToPurgeList(oPicek.oPic.sSourceName, oPicek.oPic.sInSourceID)

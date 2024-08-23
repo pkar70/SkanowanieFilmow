@@ -16,7 +16,7 @@ Public Class PicMenuSearchArchive
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         If UseSelectedItems Then Return ' umiemy tylko pojedyńczy picek
 
@@ -25,36 +25,22 @@ Public Class PicMenuSearchArchive
         ' *TODO* może być Bing, Google
         If Not InitEnableDisable("Search similar", "Wyszukaj własne zdjęcia w archiwum", True) Then Return
 
-        Me.Items.Add(NewMenuItem("Same day", "Wyszukaj zdjęcia z tego samego dnia", AddressOf SearchExactDay))
-        Me.Items.Add(NewMenuItem("Date ±7 days", "Wyszukaj zdjęcia o podobnych datach", AddressOf SearchSimilarDate))
+        AddMenuItem("Same day", "Wyszukaj zdjęcia z tego samego dnia", AddressOf SearchExactDay)
+        AddMenuItem("Date ±7 days", "Wyszukaj zdjęcia o podobnych datach", AddressOf SearchSimilarDate)
 
-        _ByGeo = NewMenuItem("Same place", "Wyszukaj zdjęcia zrobione w pobliżu tego zdjęcia (1 km)", AddressOf SearchByGeo)
-        Me.Items.Add(_ByGeo)
+        _ByGeo = AddMenuItem("Same place", "Wyszukaj zdjęcia zrobione w pobliżu tego zdjęcia (1 km)", AddressOf SearchByGeo)
+        _ByKeywords = AddMenuItem("Same people", "Wyszukaj zdjęcia oznaczone tymi samymi słowami kluczowymi osób ('-')", AddressOf SearchByKwds)
+        _ByFolder = AddMenuItem("Same TargetDir", "Wyszukaj zdjęcia w tym folderze", AddressOf SearchByTargetDir)
+        _ByReel = AddMenuItem("Same reel", "Wyszukaj zdjęcia z tej samej reel", AddressOf SearchByReel)
+        _ByAzureTags = AddMenuItem("Similar (Tags)", "Wyszukaj zdjęcia oznaczone przez Azure tymi samymi Tags", AddressOf SearchByAzureTags)
+        _ByAzureObjects = AddMenuItem("Similar (Object)", "Wyszukaj zdjęcia oznaczone przez Azure tymi samymi Tags", AddressOf SearchByAzureObjects)
 
-        _ByKeywords = NewMenuItem("Same people", "Wyszukaj zdjęcia oznaczone tymi samymi słowami kluczowymi osób ('-')", AddressOf SearchByKwds)
-        Me.Items.Add(_ByKeywords)
-
-        _ByFolder = NewMenuItem("Same TargetDir", "Wyszukaj zdjęcia w tym folderze", AddressOf SearchByTargetDir)
-        Me.Items.Add(_ByFolder)
-
-        _ByReel = NewMenuItem("Same reel", "Wyszukaj zdjęcia z tej samej reel", AddressOf SearchByReel)
-        Me.Items.Add(_ByReel)
-
-        _ByAzureTags = NewMenuItem("Similar (Tags)", "Wyszukaj zdjęcia oznaczone przez Azure tymi samymi Tags", AddressOf SearchByAzureTags)
-        Me.Items.Add(_ByAzureTags)
-
-        _ByAzureObjects = NewMenuItem("Similar (Object)", "Wyszukaj zdjęcia oznaczone przez Azure tymi samymi Tags", AddressOf SearchByAzureObjects)
-        Me.Items.Add(_ByAzureObjects)
-
-
-        _wasApplied = True
     End Sub
 
     Public Overrides Sub MenuOtwieramy()
         MyBase.MenuOtwieramy()
 
-        If Not _wasApplied Then Return
-
+        If _ByFolder Is Nothing Then Return
         _ByFolder.IsEnabled = If(String.IsNullOrWhiteSpace(GetFromDataContext()?.TargetDir), False, True)
         Dim oExif As Vblib.ExifTag = GetFromDataContext()?.GetExifOfType(Vblib.ExifSource.SourceDefault)
         _ByReel.IsEnabled = If(String.IsNullOrWhiteSpace(oExif?.ReelName), False, True)

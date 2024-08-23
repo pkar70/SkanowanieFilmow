@@ -9,11 +9,13 @@ Public Class PicMenuOCR
     Private Shared _PasteDesc As MenuItem
     Private Shared _CopyOCRclip As MenuItem
     Private Shared _CopyOCRlocal As MenuItem
+    Private Shared _miPaste As MenuItem
+
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         MyBase.OnApplyTemplate()
 
@@ -21,26 +23,20 @@ Public Class PicMenuOCR
 
         Me.Items.Clear()
 
-        Me.Items.Add(NewMenuItem("OCR window", "Otworz okno zarządzania OCR", AddressOf uiOpenOCRwnd_Click))
+        AddMenuItem("OCR window", "Otworz okno zarządzania OCR", AddressOf uiOpenOCRwnd_Click)
 
-        _CopyOCRclip = NewMenuItem("OCR to Clipboard", "Wyślij OCR do clipboard", AddressOf uiOCRtoClip_Click)
-        Me.Items.Add(_CopyOCRclip)
-        _CopyOCRlocal = NewMenuItem("Copy OCR", "Skopiowanie OCR do lokalnego schowka", AddressOf uiOCRcopy_Click)
-        Me.Items.Add(_CopyOCRlocal)
+        _CopyOCRclip = AddMenuItem("OCR to Clipboard", "Wyślij OCR do clipboard", AddressOf uiOCRtoClip_Click)
+        _CopyOCRlocal = AddMenuItem("Copy OCR", "Skopiowanie OCR do lokalnego schowka", AddressOf uiOCRcopy_Click)
 
-        AddPasteMenu("Paste OCR", "Narzucenie zdjęciom OCR wg lokalnego schowka")
-        _PasteDesc = NewMenuItem("Paste as Descr", "Dodanie OCR z lokalnego schowka jako Description", AddressOf uiOCRpasteDescr_Click, False)
-        Me.Items.Add(_PasteDesc)
+        _miPaste = AddMenuItem("Paste OCR", "Narzucenie zdjęciom OCR wg lokalnego schowka", AddressOf Pastecalled, False)
+        _PasteDesc = AddMenuItem("Paste as Descr", "Dodanie OCR z lokalnego schowka jako Description", AddressOf uiOCRpasteDescr_Click, False)
 
-        _wasApplied = True
     End Sub
 
     Public Overrides Sub MenuOtwieramy()
         MyBase.MenuOtwieramy()
 
-        If Not _wasApplied Then Return
-
-        If Not UseSelectedItems Then
+        If Not UseSelectedItems AndAlso _CopyOCRclip IsNot Nothing Then
             Dim oExif As Vblib.ExifTag = GetFromDataContext()?.GetExifOfType(Vblib.ExifSource.AutoWinOCR)
             _CopyOCRclip.IsEnabled = oExif IsNot Nothing
             _CopyOCRlocal.IsEnabled = oExif IsNot Nothing
@@ -53,7 +49,7 @@ Public Class PicMenuOCR
         OneOrMany(Sub(x) If Not x.sumOfDescr.Contains(_Clip) Then x.AddDescription(New Vblib.OneDescription(_Clip, "")))
     End Sub
 
-    Protected Overrides Sub Pastecalled()
+    Private Sub Pastecalled(sender As Object, e As RoutedEventArgs)
         OneOrMany(Sub(x) x.ReplaceOrAddExif(New Vblib.ExifTag(Vblib.ExifSource.AutoWinOCR) With {.UserComment = _Clip}))
     End Sub
 

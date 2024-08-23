@@ -10,31 +10,31 @@ Public Class PicMenuLinksWeb
     Inherits PicMenuBase
 
     Private Shared _itemLinki As MenuItem
+    Private Shared _miCopy As MenuItem
+    Private Shared _miPaste As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         MyBase.OnApplyTemplate()
 
         If Not InitEnableDisable("Pic links", "Operacje na linkach", True) Then Return
 
         Me.Items.Clear()
-        Me.Items.Add(NewMenuItem("Add new", "Dodaj link", AddressOf uiAddLink_Click))
+        AddMenuItem("Add new", "Dodaj link", AddressOf uiAddLink_Click)
 
         AddHandler Me.SubmenuOpened, AddressOf OpeningMenu ' .ContextMenuOpening
         _itemLinki = New MenuItem With {.Header = "Open"}
-        Me.Items.Add(_itemLinki)
 
         Me.Items.Add(New Separator)
-        AddCopyMenu("Create", "Stwórz link do zaznaczonego zdjęcia")
-        AddPasteMenu("Paste", "Dodaj zapamiętany link")
+        _miCopy = AddMenuItem("Create", "Stwórz link do zaznaczonego zdjęcia", AddressOf CopyCalled)
+        _miPaste = AddMenuItem("Paste", "Dodaj zapamiętany link", AddressOf PasteCalled, False)
 
         Me.Items.Add(New Separator)
-        Me.Items.Add(NewMenuItem("Połącz", "Połącz wzajemnie dwa zdjęcia", AddressOf uiWzajemnie_Click))
+        AddMenuItem("Połącz", "Połącz wzajemnie dwa zdjęcia", AddressOf uiWzajemnie_Click)
 
-        _wasApplied = True
     End Sub
 
     Private _clip As OneLink
@@ -44,11 +44,11 @@ Public Class PicMenuLinksWeb
 
         If Not UseSelectedItems Then Return
 
-        _miCopy.IsEnabled = (GetSelectedItems()?.Count = 1)
+        If _miCopy IsNot Nothing Then _miCopy.IsEnabled = (GetSelectedItems()?.Count = 1)
 
     End Sub
 
-    Protected Overrides Async Sub CopyCalled()
+    Private Async Sub CopyCalled()
 
         If GetSelectedItems().Count <> 1 Then
             Vblib.MsgBox("Umiem stworzyć link tylko dla jednego zdjęciaa")
@@ -60,9 +60,10 @@ Public Class PicMenuLinksWeb
         If String.IsNullOrWhiteSpace(opis) Then Return
 
         _clip = New OneLink With {.opis = opis, .link = "pic" & GetSelectedItems(0).oPic.FormattedSerNo}
+        _miPaste.IsEnabled = True
     End Sub
 
-    Protected Overrides Sub PasteCalled()
+    Private Sub PasteCalled()
         OneOrMany(Sub(x) x.AddLink(_clip))
     End Sub
 

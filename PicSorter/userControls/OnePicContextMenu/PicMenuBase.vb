@@ -1,4 +1,5 @@
 ﻿Imports System.Linq
+Imports Vblib
 
 ''' <summary>
 ''' klasa załatwiająca wspólną strukturę dla wszystkich PicMenu*
@@ -22,6 +23,10 @@ Public MustInherit Class PicMenuBase
 DependencyProperty.Register("IsReadOnly", GetType(Boolean),
 GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
 
+    Public Overridable Property ChangePic As Boolean = False
+    Public Overridable Property ChangeMetadata As Boolean = False
+
+
     Public Property IsReadOnly As Boolean
         Get
             Return GetValue(IsReadOnlyProperty)
@@ -41,12 +46,11 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ' musi być OnePic, bo potrzebny jest InBufferPathName i tak dalej, ale może być NULL gdy ma używać listy
     Protected _picek As Vblib.OnePic
 
-    Protected Shared _wasApplied As Boolean
 
     Private _progBar As ProgressBar
 
     ''' <summary>
-    ''' Ustawienie _picek oraz IsEnabled, ret FALSE oznacza 'zakończ'
+    ''' Ustawienie _azurek oraz IsEnabled, ret FALSE oznacza 'zakończ'
     ''' </summary>
     ''' <param name="header">Defaultowy Header dla MenuItem</param>
     ''' <returns>TRUE gdy jest enabled</returns>
@@ -80,7 +84,17 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         Return picek
     End Function
 
-    Protected Shared Function NewMenuItem(header As String, dymek As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
+    Protected Function AddMenuItem(header As String, dymek As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
+        Dim oNew As MenuItem = CreateMenuItem(header, dymek, handler, isenabled)
+        Me.Items.Add(oNew)
+        Return oNew
+    End Function
+
+    Protected Sub AddSeparator()
+        Me.Items.Add(New Separator)
+    End Sub
+
+    Protected Function CreateMenuItem(header As String, dymek As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
         Dim oNew As New MenuItem
         oNew.Header = header
         oNew.IsEnabled = isenabled
@@ -88,7 +102,6 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         If handler IsNot Nothing Then AddHandler oNew.Click, handler
         Return oNew
     End Function
-
 
     Protected Sub EventRaise(sender As Object, Optional data As EventArgs = Nothing)
         RaiseEvent MetadataChanged(sender, data)
@@ -113,7 +126,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
             wnd = Window.GetWindow(TryCast(FindUiElement("uiPicList"), ListView))
         End If
 
-            Return TryCast(wnd, ProcessBrowse)?.GetSelectedThumbs
+        Return TryCast(wnd, ProcessBrowse)?.GetSelectedThumbs
 
         'Dim cbox As CheckBox = TryCast(FindUiElement("uiPodpisCheckbox"), CheckBox)
         'If cbox IsNot Nothing AndAlso cbox.IsChecked Then
@@ -249,35 +262,77 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     End Function
 
     ''' <summary>
-    ''' do override, reakcja na otwieranie menu - wywoływane dla każdego w menu
+    ''' do override, reakcja na otwieranie menu - wywoływane dla każdego w menu, z ProcessBrowse
     ''' </summary>
     Public Overridable Sub MenuOtwieramy()
-        If _miCopy IsNot Nothing Then _miCopy.IsEnabled = Not UseSelectedItems
+        'If _miCopy IsNot Nothing Then _miCopy.IsEnabled = Not UseSelectedItems
+
+        If ChangePic Or ChangeMetadata Then
+
+            Dim allOk As Boolean = True
+
+            ' sprawdź czy można - czy nie ma blokerów
+            If UseSelectedItems Then
+                If ChangePic Then
+                    For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                        If Not String.IsNullOrWhiteSpace(oItem.oPic.CloudArchived) OrElse Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then
+                            allOk = False
+                            Exit For
+                        End If
+                    Next
+                End If
+
+                If allOk And ChangeMetadata Then
+                    For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                        If Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then
+                            allOk = False
+                            Exit For
+                        End If
+                    Next
+                End If
+            Else
+                If ChangePic Then
+                    allOk = String.IsNullOrWhiteSpace(GetFromDataContext.CloudArchived) AndAlso String.IsNullOrWhiteSpace(GetFromDataContext.Archived)
+                End If
+
+                If allOk And ChangeMetadata Then
+                    allOk = String.IsNullOrWhiteSpace(GetFromDataContext.Archived)
+                End If
+            End If
+
+            If Not allOk Then
+                Me.IsEnabled = False
+            End If
+
+        Else
+            ' czyli można uruchomić
+            Me.IsEnabled = True
+        End If
+
     End Sub
 
-    Protected Shared _miPaste As MenuItem
-    Protected Shared _miCopy As MenuItem
+    'Protected Shared _miPaste As MenuItem
+    'Protected Shared _miCopy As MenuItem
 
-    Protected Sub AddCopyMenu(header As String, dymek As String)
-        _miCopy = NewMenuItem(header, dymek, Sub()
-                                                 ' najpierw True, bo można w ten sposób dać False w CopyCalled
-                                                 _miPaste.IsEnabled = True
-                                                 CopyCalled()
-                                             End Sub)
-        Me.Items.Add(_miCopy)
-    End Sub
+    'Protected Function CreateCopyItem(header As String, dymek As String) As MenuItem
+    '    Dim oNew As MenuItem = AddMenuItem(header, dymek, Sub() CopyCalled())
+    '    Me.Items.Add(oNew)
+    '    Return oNew
+    'End Function
 
-    Protected Sub AddPasteMenu(header As String, dymek As String)
-        _miPaste = NewMenuItem(header, dymek, Sub() PasteCalled(), False)
-        Me.Items.Add(_miPaste)
-    End Sub
 
-    Protected Overridable Sub CopyCalled()
+    'Protected Function CreatePasteItem(header As String, dymek As String) As MenuItem
+    '    Dim oNew As MenuItem = AddMenuItem(header, dymek, Sub() PasteCalled(), False)
+    '    Me.Items.Add(oNew)
+    '    Return oNew
+    'End Function
 
-    End Sub
+    'Protected Overridable Sub CopyCalled()
 
-    Protected Overridable Sub PasteCalled()
+    'End Sub
 
-    End Sub
+    'Protected Overridable Sub PasteCalled()
+
+    'End Sub
 
 End Class

@@ -7,19 +7,23 @@ Public NotInheritable Class PicMenuCopyOut
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
-        If _wasApplied Then Return
+        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         MyBase.OnApplyTemplate()
 
-        Dim header As String = If(UseSelectedItems, "Copy files", "Copy File")
-        If Not InitEnableDisable(header, "Kopiowanie plików (takich jak są w buforze, bez pipeline)", True) Then Return
+        If Not InitEnableDisable("Copy files", "Kopiowanie plików (takich jak są w buforze, bez pipeline)", True) Then Return
 
         Me.Items.Clear()
 
-        Me.Items.Add(NewMenuItem("To dir ...", "Kopiowanie do wskazanego katalogu", AddressOf uiCopyOut_Click))
-        Me.Items.Add(NewMenuItem("To Clip", "Kopiowanie do clipboard", AddressOf uiCopyClip_Click))
+        AddMenuItem("To dir ...", "Kopiowanie do wskazanego katalogu", AddressOf uiCopyOut_Click)
+        AddMenuItem("To Clip", "Kopiowanie do clipboard", AddressOf uiCopyClip_Click)
 
-        _wasApplied = True
+    End Sub
+
+    Public Overrides Sub MenuOtwieramy()
+        MyBase.MenuOtwieramy()
+
+        Me.Header = If(UseSelectedItems, "Copy files", "Copy file")
     End Sub
 
     Private Sub uiCopyClip_Click(sender As Object, e As RoutedEventArgs)
