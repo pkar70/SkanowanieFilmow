@@ -3,18 +3,9 @@
 Imports System.IO   ' for AsRandomAccess
 Imports wingraph = Windows.Graphics.Imaging
 Imports winstreams = Windows.Storage.Streams
-Imports vb14 = Vblib.pkarlibmodule14
-Imports Windows.Storage.Streams
-Imports CompactExifLib
-Imports Vblib
-Imports pkar
-'Imports Windows.UI.Xaml.Controls
-Imports MediaDevices
 Imports pkar.DotNetExtensions
 Imports pkar.UI.Extensions
-Imports System.Runtime.CompilerServices
-Imports Windows.Graphics.Imaging
-Imports System.Runtime.InteropServices
+Imports RunInterOp = System.Runtime.InteropServices ' potrzebne przy negatywowaniu
 
 Public Class ShowBig
 
@@ -53,9 +44,12 @@ Public Class ShowBig
 
     Private _bitmap As BitmapImage
 
-    Private _inScaling As Boolean
+    Private _inScaling As Boolean ' w ZmianaRozmiaruOkna, to nie jest to samo co w WInResize
 
-    ' skopiowane z InstaMonitor
+    ' ominięcie jakiegoś błędu w Stretch.None w WPF (którego nie było!)
+    Private _scaleDown As Boolean = True
+
+    ' skopiowane z InstaMonitor; z WinSizeChanged oraz z doubleclick
     Private Sub ZmianaRozmiaruImg()
 
         If _bitmap Is Nothing Then Return
@@ -66,11 +60,7 @@ Public Class ShowBig
         Dim szer As Double = Math.Max(200, _bitmap.PixelWidth)
         Dim wysok As Double = Math.Max(200, _bitmap.PixelHeight)
 
-        If uiFullPicture.Stretch = Stretch.None Then
-            uiFullPicture.Width = szer
-            uiFullPicture.Height = wysok
-        Else
-
+        If _scaleDown Then
             If szer < uiMainPicScroll.ViewportWidth And
                wysok < uiMainPicScroll.ViewportHeight Then
                 uiFullPicture.Width = szer
@@ -84,7 +74,11 @@ Public Class ShowBig
                 uiFullPicture.Height = wysok / dDesiredScale
 
             End If
-
+            uiFullPicture.Stretch = Stretch.Uniform
+        Else
+            uiFullPicture.Stretch = Stretch.Fill
+            uiFullPicture.Width = szer
+            uiFullPicture.Height = wysok
         End If
 
         _inScaling = False
@@ -113,27 +107,14 @@ Public Class ShowBig
         ' *TODO* reakcja jakaś na inne typy niż JPG
         ' *TODO* dla NAR (Lumia950), MP4 (Lumia*), AVI (Fuji), MOV (iPhone) są specjalne obsługi
 
-        '_bitmap = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 0, iObrot)
+        '_bitmap = Await ProcessBrowse.WczytajObrazek(_azurek.oPic.InBufferPathName, 0, iObrot)
         _bitmap = Await _picek.PicForBig(iObrot)
         If _bitmap Is Nothing Then
             Me.MsgBox("Picture is probably corrupted")
             Return
         End If
 
-
-
-        Me.Title = MetaWndFilename.GetHeaderText(_picek.oPic) &
-            $" ({_bitmap.Width.ToString("F0")}×{_bitmap.Height.ToString("F0")})"
-        ' $" [{_picek.nrkol}/{_picek.maxnum}]"
-
-        ' ale to nie tak, bo nrkol jest ustawiany razem z maxnum, i jak jest seria kasowana to może numer wyjść x/y gdzie y byłoby mniejsze niż x
-        Dim oBrowserWnd As ProcessBrowse = Me.Owner
-        If oBrowserWnd IsNot Nothing Then
-            Me.Title &= $" [{_picek.nrkol}/{oBrowserWnd.GetPicCount}]"
-        Else
-            Me.Title &= $" [{_picek.nrkol}/{_picek.maxnum}]"
-        End If
-
+        Me.Title = KonstruujTitle()
 
         UpdateClipRegion() ' tym razem, gdyż editmode=none, likwidacja crop
 
@@ -147,29 +128,41 @@ Public Class ShowBig
         ' skalowanie okna
         ZmienRozmiarOkna(iObrot)
         uiFullPicture.Source = _bitmap
+        ZmianaRozmiaruImg()
 
         ' UpdateClipRegion()
         uiFullPicture.ToolTip = _picek.sDymek & vbCrLf & $"Size: {_bitmap.PixelWidth}×{_bitmap.PixelHeight}"
 
-
         If _inArchive Then
-            uiBatchProcessors.Visibility = Visibility.Collapsed
-            uiEditModes.Visibility = Visibility.Collapsed
-            uiDelete.Visibility = Visibility.Collapsed
+            ' uiEditModes
+            'uiBatchProcessors.Visibility = Visibility.Collapsed
+            'uiEditModes.Visibility = Visibility.Collapsed
+            'uiDelete.Visibility = Visibility.Collapsed
             uiGeotag.Visibility = Visibility.Collapsed
             uiDatetag.Visibility = Visibility.Collapsed
         Else
             'ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
-            uiBatchProcessors.Visibility = Visibility.Visible
-            uiEditModes.Visibility = Visibility.Visible
-            uiDelete.Visibility = Visibility.Visible
+            'uiBatchProcessors.Visibility = Visibility.Visible
+            'uiEditModes.Visibility = Visibility.Visible
+            'uiDelete.Visibility = Visibility.Visible
             uiGeotag.Visibility = Visibility.Visible
             uiDatetag.Visibility = Visibility.Visible
         End If
 
-        'ProcessBrowse.WypelnMenuAutotagerami(uiMenuTaggers, AddressOf ApplyTagger)
-        'ProcessBrowse.WypelnMenuCloudPublish(_picek.oPic, uiMenuPublish, AddressOf ApplyPublish)
-        'ProcessBrowse.WypelnMenuCloudArchives(_picek.oPic, uiMenuCloudArch, AddressOf ApplyCloudArch)
+        ' blokada/odblokada dla zmian zdjęcia - w zależności od cloud/local arch; nieobsłużone przez PicMenuBase
+        If String.IsNullOrWhiteSpace(_picek.oPic.Archived) Then
+            uiDelete.IsEnabled = True
+        Else
+            uiDelete.IsEnabled = False
+        End If
+
+        ' blokada/odblokada dla zmian zdjęcia - w zależności od cloud/local arch; nieobsłużone przez PicMenuBase
+        If String.IsNullOrWhiteSpace(_picek.oPic.Archived) AndAlso String.IsNullOrWhiteSpace(_picek.oPic.CloudArchived) Then
+            uiEditModes.IsEnabled = True
+        Else
+            uiEditModes.IsEnabled = False
+        End If
+
 
         If String.IsNullOrEmpty(_picek.oPic.fileTypeDiscriminator) Then
             uiIkonkaTypu.Visibility = Visibility.Collapsed
@@ -186,14 +179,27 @@ Public Class ShowBig
 
         TimerOnOff()
 
-        ' MenuAutoTaggerow()
-
     End Sub
 
-    Private Sub ZmienRozmiarOkna(iObrot As Rotation)
-        DumpCurrMethod($"(iObrot={iObrot})")
+    Private Function KonstruujTitle() As String
+        Dim title As String = MetaWndFilename.GetHeaderText(_picek.oPic)
+        title &= $" ({_bitmap.PixelWidth}×{_bitmap.PixelHeight})"
 
-        Dim maxPic As Double = vb14.GetSettingsInt("uiBigPicSize", 90) / 100.0
+        ' ale to nie tak, bo nrkol jest ustawiany razem z maxnum, i jak jest seria kasowana to może numer wyjść x/y gdzie y byłoby mniejsze niż x
+        Dim oBrowserWnd As ProcessBrowse = Me.Owner
+        If oBrowserWnd IsNot Nothing Then
+            title &= $" [{_picek.nrkol}/{oBrowserWnd.GetPicCount}]"
+        Else
+            title &= $" [{_picek.nrkol}/{_picek.maxnum}]"
+        End If
+
+        Return title
+    End Function
+
+    Private Sub ZmienRozmiarOkna(iObrot As Rotation)
+        Vblib.DumpCurrMethod($"(iObrot={iObrot})")
+
+        Dim maxPic As Double = Vblib.GetSettingsInt("uiBigPicSize", 90) / 100.0
 
         Dim scrWidth As Double = SystemParameters.FullPrimaryScreenWidth * maxPic
         Dim scrHeight As Double = SystemParameters.FullPrimaryScreenHeight * maxPic
@@ -212,17 +218,14 @@ Public Class ShowBig
 
         If scrHeight > imgSize.Height AndAlso scrWidth > imgSize.Width Then
             ' Screen size: 1152, 873.9; bitmap size: 600, 450, so scale: 0.5208333333333334
-            DumpMessage($"Screen bigger than picture ({imgSize.Width}, {imgSize.Height}), no scaling - full picture")
+            Vblib.DumpMessage($"Screen bigger than picture ({imgSize.Width}, {imgSize.Height}), no scaling - full picture")
 
             ' gdy nie zmieniam uiFullPicture ani Me: OK
             ' gdy nie zmieniam Me: OK (tylko duza ramka wokol)
             Me.Height = Math.Max(200, imgSize.Height + MARGIN_Y)
             Me.Width = Math.Max(200, imgSize.Width + MARGIN_X)
-            uiFullPicture.Width = imgSize.Width
-            uiFullPicture.Height = imgSize.Height
 
-            ' niby powinno być: none
-            uiFullPicture.Stretch = Stretch.Uniform
+            _scaleDown = False
 
         Else
             Dim dScaleX As Double = imgSize.Width / scrWidth
@@ -231,14 +234,10 @@ Public Class ShowBig
 
             Dim scaledImg As New Size(imgSize.Width / dDesiredScale, imgSize.Height / dDesiredScale)
 
-            DumpMessage($"Scaling {dDesiredScale} to image: {scaledImg.Width}, {scaledImg.Height})")
+            Vblib.DumpMessage($"Scaling {dDesiredScale} to image: {scaledImg.Width}, {scaledImg.Height})")
 
             Me.Height = scaledImg.Height + MARGIN_Y
             Me.Width = scaledImg.Width + MARGIN_X
-            uiFullPicture.Width = scaledImg.Width
-            uiFullPicture.Height = scaledImg.Height
-
-            uiFullPicture.Stretch = Stretch.Uniform
         End If
 
 
@@ -247,7 +246,7 @@ Public Class ShowBig
     Private Sub TimerOnOff()
         If _inSlideShow Then
             uiSlideshow.Header = "Stop slideshow"
-            _timer.Interval = TimeSpan.FromSeconds(vb14.GetSettingsInt("uiSlideShowSeconds"))
+            _timer.Interval = TimeSpan.FromSeconds(Vblib.GetSettingsInt("uiSlideShowSeconds"))
             _timer.Start()
         Else
             _timer.Stop()
@@ -258,8 +257,6 @@ Public Class ShowBig
     Private Sub Timer_Ticked(sender As Object, e As EventArgs)
         ChangePicture(1, False)
     End Sub
-
-
 
     Private Shared Function OrientationToRotation(v As Vblib.OrientationEnum?) As Rotation
         If Not v.HasValue Then Return Rotation.Rotate0
@@ -286,6 +283,7 @@ Public Class ShowBig
     Private _inWinResize As Boolean
 
     Private Sub Window_SizeChanged(sender As Object, e As SizeChangedEventArgs)
+        ' bez tego nie zmniejsza się obrazek, tylko się pojawia scroll
         If _inWinResize Then Return
         _inWinResize = True
         ZmianaRozmiaruImg()
@@ -293,21 +291,21 @@ Public Class ShowBig
     End Sub
 
     Private Sub uiResizePic_Click(sender As Object, e As MouseButtonEventArgs)
-        Dim oResize As Stretch = uiFullPicture.Stretch
-        DumpCurrMethod($"(switching from {oResize.ToString})")
 
-        Select Case oResize
-            Case Stretch.Uniform
-                uiFullPicture.Stretch = Stretch.None
-                Me.Width -= 1
-                uiEditCrop.IsEnabled = False
-                ' *TODO* nie widać całości zdjęcia! ale dotyczy chyba tylko zdjęć z auto-obracaniem
-            Case Stretch.None
-                uiFullPicture.Stretch = Stretch.Uniform
-                Me.Width += 1
-                ZmianaRozmiaruImg() ' bez tego nie wraca - prościej, choć może dałoby się inaczej: https://stackoverflow.com/questions/31146750/alternate-between-stretch-uniform-and-stretching-none-for-viewbox-with-scrol
-                uiEditCrop.IsEnabled = True
-        End Select
+        Vblib.DumpCurrMethod($"(switching from scaledown {_scaleDown})")
+
+        _scaleDown = Not _scaleDown
+
+        If _scaleDown Then
+            uiFullPicture.Stretch = Stretch.Uniform
+            ZmianaRozmiaruImg()
+            uiEditCrop.IsEnabled = True
+        Else
+
+            uiFullPicture.Stretch = Stretch.Fill
+            ZmianaRozmiaruImg()
+            uiEditCrop.IsEnabled = False
+        End If
 
     End Sub
 
@@ -316,16 +314,17 @@ Public Class ShowBig
     End Sub
 
     Private Sub uiPictureChanged(sender As Object, e As EventArgs)
+        ' po BatchProcessor - obrazek może być zmieniony
         Window_Loaded(sender, Nothing)
     End Sub
 
 
     'Private Sub uiDescribe_Click(sender As Object, e As RoutedEventArgs)
-    '    Dim oWnd As New AddDescription(_picek.oPic)
+    '    Dim oWnd As New AddDescription(_azurek.oPic)
     '    If Not oWnd.ShowDialog Then Return
 
     '    Dim oDesc As Vblib.OneDescription = oWnd.GetDescription
-    '    _picek.oPic.AddDescription(oDesc)
+    '    _azurek.oPic.AddDescription(oDesc)
     '    SaveMetaData()
     'End Sub
 
@@ -411,8 +410,13 @@ Public Class ShowBig
 
     ' jako zwykły menuitem, bo jest też wywoływany klawiszowo
     Private Async Sub uiDelPic_Click(sender As Object, e As RoutedEventArgs)
-        If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
+
+        If Not Vblib.GetSettingsBool("uiNoDelConfirm") Then
             If Not Await Me.DialogBoxYNAsync($"Skasować zdjęcie ({_picek.oPic.sSuggestedFilename})?") Then Return
+        End If
+
+        If Not String.IsNullOrWhiteSpace(_picek.oPic.CloudArchived) Then
+            If Not Await Me.DialogBoxYNAsync("To zdjęcie jest CloudArchived; po skasowaniu pozostanie w Cloud - skasować?") Then Return
         End If
 
         Dim oBrowserWnd As ProcessBrowse = Me.Owner
@@ -508,6 +512,7 @@ Public Class ShowBig
     '    Return Vblib.OrientationEnum.topLeft
     'End Function
 
+
     Private Async Function SaveChanges() As Task
         If Not OperatingSystem.IsWindows Then Return
         If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return
@@ -532,30 +537,9 @@ Public Class ShowBig
                  $"({Math.Min(uiCropUp.Value, uiCropDown.Value).ToString("F2")} .. {Math.Max(uiCropUp.Value, uiCropDown.Value).ToString("F2")} × " &
                  $"({Math.Min(uiCropLeft.Value, uiCropRight.Value).ToString("F2")} .. {Math.Max(uiCropLeft.Value, uiCropRight.Value).ToString("F2")})"
 
-            Case EditModeEnum.resize
-                ' *TODO* resize
             Case EditModeEnum.rotate
-
-                If uiRotateUp.IsChecked Then
-                    transf = Nothing ' czyli bez zmian, ale trzeba zakończyć
-                Else
-                    sHistory = "Rotated "
-                    If uiRotateRight.IsChecked Then
-                        sHistory += "270"
-                        transf.Rotation = wingraph.BitmapRotation.Clockwise270Degrees
-                    End If
-                    If uiRotateDown.IsChecked Then
-                        sHistory += "180"
-                        transf.Rotation = wingraph.BitmapRotation.Clockwise180Degrees
-                    End If
-                    If uiRotateLeft.IsChecked Then
-                        sHistory += "90"
-                        transf.Rotation = wingraph.BitmapRotation.Clockwise90Degrees
-                    End If
-
-                    sHistory &= " degrees"
-                End If
-
+                sHistory = "Rotated " & _requestedRotate.ToString
+                transf.Rotation = _requestedRotate
             Case EditModeEnum.flip
                 sHistory = "Flipped horizontally"
                 transf.Flip = Windows.Graphics.Imaging.BitmapFlip.Horizontal
@@ -630,8 +614,6 @@ Public Class ShowBig
 
     Private Sub ShowHideEditControls(iMode As EditModeEnum)
         ShowHideCropSliders(iMode = EditModeEnum.crop)
-        ShowHideRotateBoxes(iMode = EditModeEnum.rotate)
-        'ShowHideSizeSlider(iMode = EditModeEnum.resize)
 
         uiSave.IsEnabled = (iMode <> EditModeEnum.none)
     End Sub
@@ -668,6 +650,7 @@ Public Class ShowBig
             Await SaveChanges()
 
             uiFullPicture.Clip = Nothing
+
             Return
         End If
 
@@ -682,33 +665,12 @@ Public Class ShowBig
 #End Region
 
 
-    '        Dim originalBitmap As New BitmapImage(New Uri("your_image_path_here"))
-    '        Dim negativeBitmap As WriteableBitmap = CreateNegativeImage(originalBitmap)
-
-    'Private Function CreateNegativeImage(originalBitmap As BitmapSource) As WriteableBitmap
-    '        Dim width As Integer = originalBitmap.PixelWidth
-    '        Dim height As Integer = originalBitmap.PixelHeight
-    '        Dim stride As Integer = width * ((originalBitmap.Format.BitsPerPixel + 7) / 8)
-    '        Dim pixelData(height * stride - 1) As Byte
-    '        originalBitmap.CopyPixels(pixelData, stride, 0)
-
-    '        For i As Integer = 0 To pixelData.Length - 1 Step 4
-    '            pixelData(i) = CByte(255 - pixelData(i))       ' Blue
-    '            pixelData(i + 1) = CByte(255 - pixelData(i + 1)) ' Green
-    '            pixelData(i + 2) = CByte(255 - pixelData(i + 2)) ' Red
-    '        Next
-
-    '        Dim negativeBitmap As New WriteableBitmap(width, height, originalBitmap.DpiX, originalBitmap.DpiY, originalBitmap.Format, Nothing)
-    '        negativeBitmap.WritePixels(New Int32Rect(0, 0, width, height), pixelData, stride, 0)
-    '        Return negativeBitmap
-    '    End Function
-
 
     Private Async Function ZapiszZmianyObrazka(bmpTrans As wingraph.BitmapTransform) As Task(Of Boolean)
         If Not OperatingSystem.IsWindows Then Return False
         If Not OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) Then Return False
 
-        DumpCurrMethod($"(Transform: rotation={bmpTrans.Rotation.ToString}, crop={bmpTrans.Bounds.X}+{bmpTrans.Bounds.Width}, {bmpTrans.Bounds.Y}+ {bmpTrans.Bounds.Height})")
+        Vblib.DumpCurrMethod($"(Transform: rotation={bmpTrans.Rotation.ToString}, crop={bmpTrans.Bounds.X}+{bmpTrans.Bounds.Width}, {bmpTrans.Bounds.Y}+ {bmpTrans.Bounds.Height})")
 
         ' *TODO* (może) do Settings:Misc, [] ask for confirm after EditSave (przy Crop, i ew. Rotate)
         ' If Not Await vb14.DialogBoxYNAsync("Zapisać zmiany?") Then Return False
@@ -717,7 +679,7 @@ Public Class ShowBig
 
 
 
-        Using oStream As New InMemoryRandomAccessStream
+        Using oStream As New Windows.Storage.Streams.InMemoryRandomAccessStream
 
             Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
 
@@ -736,7 +698,7 @@ Public Class ShowBig
                 Await oEncoder.FlushAsync()
 
                 Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic)
-                'Process_AutoRotate.SaveSoftBitmap(oStream, _picek.oPic.sFilenameEditDst, _picek.oPic.sFilenameEditSrc)
+                'Process_AutoRotate.SaveSoftBitmap(oStream, _azurek.oPic.sFilenameEditDst, _azurek.oPic.sFilenameEditSrc)
 
                 _picek.oPic.EndEdit(True, True)
 
@@ -750,127 +712,40 @@ Public Class ShowBig
         _picek.oImageSrc = Nothing ' zwolnienie zasobów
         IO.File.Delete(_picek.ThumbGetFilename) ' no exception if not found
 
-        '_picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
+        '_azurek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_azurek.oPic.InBufferPathName, 400, Rotation.Rotate0)
         Await _picek.ThumbWczytajLubStworz(_inArchive)
 
         Return True
     End Function
 
-#If RESIZE_HERE Then
-    Private Async Sub uiResize_Click(sender As Object, e As RoutedEventArgs)
-        If Not Await SprawdzCzyJestEdycja(EditModeEnum.resize) Then Return
-
-        ShowHideEditControls(EditModeEnum.resize)
-
-        '    Public void ResizeImage(String sImageFile, Decimal dWidth, Decimal dHeight, String sOutputFile)
-        '{
-        '    Image oImg = Bitmap.FromFile(sImageFile);
-        '    Bitmap oBMP = New Bitmap(Decimal.ToInt16(dWidth), Decimal.ToInt16(dHeight));
-
-        '    Graphics g = Graphics.FromImage(oBMP);
-        '    g.PageUnit = pgUnits;
-        '    g.SmoothingMode = psMode;
-        '    g.InterpolationMode = piMode;
-        '    g.PixelOffsetMode = ppOffsetMode;
-
-        '    g.DrawImage(oImg, 0, 0, Decimal.ToInt16(dWidth), Decimal.ToInt16(dHeight));
-
-        '    ImageCodecInfo oEncoder = GetEncoder();
-        '    EncoderParameters oENC = New EncoderParameters(1);
-
-        '    oENC.Param[0] = New EncoderParameter(System.Drawing.Imaging.Encoder.Quality, plEncoderQuality);
-
-        '    oImg.Dispose();
-
-        '    oBMP.Save(sOutputFile, oEncoder, oENC);
-        '    g.Dispose();
-
-        '}
-    End Sub
-    'Private Sub uiSizing_ValueChanged(sender As Object, e As RoutedPropertyChangedEventArgs(Of Double))
-    '    ' *TODO* pokaż zmianę
-    'End Sub
-
-        'Public Sub ShowHideSizeSlider(bShow As Boolean)
-    '    Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
-
-    '    'uiSizingDown.Visibility = visib
-
-    'End Sub
-
-
-#End If
-
 #Region "rotate"
-    Private Sub ShowHideRotateBoxes(bShow As Boolean)
-        Dim visib As Visibility = If(bShow, Visibility.Visible, Visibility.Collapsed)
 
-        uiRotateUp.Visibility = visib
-        uiRotateDown.Visibility = visib
-        uiRotateLeft.Visibility = visib
-        uiRotateRight.Visibility = visib
+    Private _requestedRotate As wingraph.BitmapRotation = wingraph.BitmapRotation.None
 
-    End Sub
-
-    Private _inRotateInit As Boolean = False
-
-    'Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
-
-    '    _inRotateInit = True
-    '    Await SprawdzCzyJestEdycja(EditModeEnum.rotate)
-
-    '    ShowHideEditControls(EditModeEnum.rotate)
-
-    '    uiRotateUp.IsChecked = True
-    '    uiRotateDown.IsChecked = False
-    '    uiRotateLeft.IsChecked = False
-    '    uiRotateRight.IsChecked = False
-
-    '    _inRotateInit = False
-    'End Sub
-
-    Private Async Function uiRotateMenu2UI(bLeft As Boolean, bDown As Boolean, bRight As Boolean) As Task
-        _inRotateInit = True
+    Private Async Function uiRotateMenu2UI(obrot As wingraph.BitmapRotation) As Task
         Await SprawdzCzyJestEdycja(EditModeEnum.rotate)
 
-        uiRotateRight.IsChecked = bRight
-        uiRotateDown.IsChecked = bDown
-        uiRotateLeft.IsChecked = bLeft
-
-        _inRotateInit = False
-
-        uiRotate_Checked(Nothing, Nothing)
+        _requestedRotate = obrot
+        uiSave_Click(Nothing, Nothing)
     End Function
 
     Private Async Sub uiRotateRight_Click(sender As Object, e As RoutedEventArgs)
-        Await uiRotateMenu2UI(False, False, True)
+        Await uiRotateMenu2UI(wingraph.BitmapRotation.Clockwise90Degrees)
     End Sub
     Private Async Sub uiRotateDown_Click(sender As Object, e As RoutedEventArgs)
-        Await uiRotateMenu2UI(False, True, False)
+        Await uiRotateMenu2UI(wingraph.BitmapRotation.Clockwise180Degrees)
     End Sub
     Private Async Sub uiRotateLeft_Click(sender As Object, e As RoutedEventArgs)
-        Await uiRotateMenu2UI(True, False, False)
+        Await uiRotateMenu2UI(wingraph.BitmapRotation.Clockwise270Degrees)
     End Sub
 
-    Private Sub uiRotate_Checked(sender As Object, e As RoutedEventArgs)
-
-        If _editMode <> EditModeEnum.rotate Then Return
-        If _inRotateInit Then Return
-        ' równoważne Save - wybór góry zdjęcia automatycznie kończy operację, nie trzeba SAVE
-        ' *TODO* (może) do Settings:Misc, [] autosave after manual rotate
-
-        uiSave_Click(sender, e)
-    End Sub
 
 #End Region
 
 
     Private Async Sub uiSave_Click(sender As Object, e As RoutedEventArgs)
         Await SaveChanges()
-
         Window_Loaded(Nothing, Nothing)
-
-        ' ShowHideEditControls(EditModeEnum.none)
     End Sub
 
     Private Sub uiRevert_Click(sender As Object, e As RoutedEventArgs)
@@ -899,7 +774,7 @@ Public Class ShowBig
         Select Case uiIkonkaTypu.Content
             Case "*" ' plik NAR
                 ' otwórz trzy okienka? (po jednym na każdy JPG w NAR, z zablokowaniem DELETE itp.)? Ale mógłby być "wybierator", że wybieramy jeden JPG i zamieniamy buffer.OnePic(NAR) na (JPG)
-                ' jest _picek.oPic.InBufferPathName
+                ' jest _azurek.oPic.InBufferPathName
                 ' z niego for each plik w ZIP
                 ' open 
 
@@ -922,7 +797,7 @@ Public Class ShowBig
                             Continue For ' jeśli nieudany ten pic ("A local file header is corrupt")
                         End Try
 
-                        Dim newPic As New OnePic("NAR extract", _picek.oPic.InBufferPathName, oInArch.Name)
+                        Dim newPic As New Vblib.OnePic("NAR extract", _picek.oPic.InBufferPathName, oInArch.Name)
                         newPic.InBufferPathName = sJpgFileName
                         newPic.sSuggestedFilename = oInArch.Name
                         newPic.Exifs = _picek.oPic.Exifs
@@ -1077,19 +952,19 @@ Public Class ShowBig
 
     ' to mi podał Copilot
 
-    <ComImport>
-    <Guid("5B0D3235-4DBA-4D44-8659-1A1659D6C0F1")>
-    <InterfaceType(ComInterfaceType.InterfaceIsIUnknown)>
+    <RunInterOp.ComImport>
+    <RunInterOp.Guid("5B0D3235-4DBA-4D44-8659-1A1659D6C0F1")>
+    <RunInterOp.InterfaceType(RunInterOp.ComInterfaceType.InterfaceIsIUnknown)>
     Interface IMemoryBufferByteAccess
         Sub GetBuffer(ByRef buffer As IntPtr, ByRef capacity As UInteger)
     End Interface
 
-    Public Function CreateNegativeImage(originalBitmap As SoftwareBitmap) As SoftwareBitmap
+    Public Function CreateNegativeImage(originalBitmap As wingraph.SoftwareBitmap) As wingraph.SoftwareBitmap
         ' Convert to BGRA8 format if necessary
-        Dim bitmap = SoftwareBitmap.Convert(originalBitmap, BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied)
+        Dim bitmap = wingraph.SoftwareBitmap.Convert(originalBitmap, wingraph.BitmapPixelFormat.Bgra8, wingraph.BitmapAlphaMode.Premultiplied)
 
         ' Access the buffer
-        Using buffer = bitmap.LockBuffer(BitmapBufferAccessMode.ReadWrite)
+        Using buffer = bitmap.LockBuffer(wingraph.BitmapBufferAccessMode.ReadWrite)
             Using reference = buffer.CreateReference()
                 ' Get a pointer to the pixel buffer
                 Dim data As IntPtr
@@ -1100,9 +975,10 @@ Public Class ShowBig
                 ' Iterate through each pixel
                 For i As Integer = 0 To capacity - 1 Step 4
                     ' Invert the colors
-                    Marshal.WriteByte(data, i, CByte(255 - Marshal.ReadByte(data, i)))         ' Blue
-                    Marshal.WriteByte(data, i + 1, CByte(255 - Marshal.ReadByte(data, i + 1))) ' Green
-                    Marshal.WriteByte(data, i + 2, CByte(255 - Marshal.ReadByte(data, i + 2))) ' Red
+                    'RunInterOp.Marshal.WriteByte(data, i, CByte(255 - RunInterOp.Marshal.ReadByte(data, i)))         ' Blue
+                    ' RunInterOp.Marshal.WriteByte(data, i + 1, CByte(255 - RunInterOp.Marshal.ReadByte(data, i + 1))) ' Green
+                    RunInterOp.Marshal.WriteInt16(data, i, CShort(RunInterOp.Marshal.ReadInt16(data, i) Xor &HFFFF)) ' Green
+                    RunInterOp.Marshal.WriteByte(data, i + 2, CByte(255 - RunInterOp.Marshal.ReadByte(data, i + 2))) ' Red
                 Next
             End Using
         End Using
@@ -1129,12 +1005,12 @@ Public Class ShowBig
         ' trochę skopiowane z ZapiszZmianyObrazka()
         _picek.oPic.InitEdit(False)
 
-        Dim softbit As SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(_picek.oPic)
-        Dim negatbmp As SoftwareBitmap = CreateNegativeImage(softbit)
+        Dim softbit As wingraph.SoftwareBitmap = Await Process_AutoRotate.LoadSoftBitmapAsync(_picek.oPic)
+        Dim negatbmp As wingraph.SoftwareBitmap = CreateNegativeImage(softbit)
 
         _picek.oPic.InitEdit(False)
 
-        Using oStream As New InMemoryRandomAccessStream
+        Using oStream As New Windows.Storage.Streams.InMemoryRandomAccessStream
 
             Dim oEncoder As wingraph.BitmapEncoder = Await Process_AutoRotate.GetJpgEncoderAsync(oStream)
 
@@ -1160,7 +1036,7 @@ Public Class ShowBig
         _picek.oImageSrc = Nothing ' zwolnienie zasobów
         IO.File.Delete(_picek.ThumbGetFilename) ' no exception if not found
 
-        '_picek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_picek.oPic.InBufferPathName, 400, Rotation.Rotate0)
+        '_azurek.oImageSrc = Await ProcessBrowse.WczytajObrazek(_azurek.oPic.InBufferPathName, 400, Rotation.Rotate0)
         Await _picek.ThumbWczytajLubStworz(_inArchive)
 
         _editMode = EditModeEnum.none

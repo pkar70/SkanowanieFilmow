@@ -34,8 +34,9 @@
 
             <StackPanel Orientation="Horizontal" >
                 <Button Content=" Datogram " Height="Auto" Width="Auto" Click="uiOpenHistoragam_Click" Margin="5,0,0,0"/>
-                <Button Content=" Map " Height="Auto" Width="Auto" IsEnabled="False" Margin="15,0,15,0"/>
+                <Button Content=" Map " Height="Auto" Width="Auto" IsEnabled="False" Margin="10,0,10,0"/>
                 <Button Content=" Stat " Height="Auto" Width="Auto" Click="uiOpenStat_Click" />
+                <Button Content=" DB " Height="Auto" Width="Auto" Click="uiOpenDbGrid_Click" Margin="10,0,10,0"/>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Grid.Column="1">
@@ -111,11 +112,8 @@
                     <ComboBoxItem Content="100" />
                 </ComboBox>
 
-                <ComboBox Name="uiSortBy" SelectionChanged="uiSortBy_SelectionChanged" Margin="10,0,10,0" ToolTip="sort thumbs by">
-                    <ComboBoxItem Content="date" DataContext="1" IsSelected="True"/>
-                    <ComboBoxItem Content="serno" DataContext="2"/>
-                    <ComboBoxItem Content="fname" DataContext="3"/>
-                </ComboBox>
+                <local:UserSortMode x:Name="uiSortBy" SelectionChanged="uiSortBy_SelectionChanged" Margin="10,0,10,0" />
+
                 <Button Content="Podpis" Name="uiPodpis" Click="uiPodpis_Click" Margin="0,0,15,0"/>
                 <Popup IsOpen="False" PlacementTarget="{Binding ElementName=uiPodpis}" StaysOpen="False" Name="uiPodpisWybor">
                     <local:MenuVertical x:Name="uiPodpisMenu">
@@ -159,7 +157,6 @@
                             <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}" StaysOpen="False">
                     <local:MenuVertical x:Name="uiActionsMenu">
                             <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
-                            <MenuItem Header="Save selection" Click="uiActionSaveSelection_Click" />
                             <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
                             <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" UseSelectedItems="True" />
                             <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" UseSelectedItems="True"/>
@@ -169,7 +166,7 @@
                             <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" UseSelectedItems="True" />
                             <local:PicMenuKwds MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
                             <!--<local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />-->
-                            <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" />
+                            <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" ChangePic="True"/>
 
                             <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
                             <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
@@ -188,10 +185,11 @@
                             <Separator/>
                             <MenuItem Header="new window from filter" Click="uiActionNewWndFltr_Click" />
                             <MenuItem Header="new wnd from selection" Click="uiActionNewWndSelection_Click" />
-                            <MenuItem Header="save as contactsheet" Click="uiSaveContactSheetItems_Click" />
+                        <MenuItem Header="Save selection" Click="uiActionSaveSelection_Click" />
+                        <MenuItem Header="save as contactsheet" Click="uiSaveContactSheetItems_Click" />
                             <Separator/>
                             <MenuItem Header="Delete" Click="uiDeleteSelected_Click" Name="uiDeleteSelected"/>
-                            <MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>
+                            <!--<MenuItem Header="Delete thumb" Click="uiDeleteThumbsSelected_Click" Name="uiDeleteThumbsSelected"/>-->
                             <local:PicMenuDeleteTemps UseSelectedItems="True"/>
                             </local:MenuVertical>
             </Popup>

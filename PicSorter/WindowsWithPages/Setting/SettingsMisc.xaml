@@ -14,18 +14,12 @@
         <TextBox Name="uiMaxThumbs" InputScope="Digits" Width="50"  />
         </StackPanel>
         <CheckBox Name="uiCacheThumbs" Content="Twórz pliki thumbs"  />
-        <!--<Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="Stereo thumb" />
-            <ComboBox Name="uiStereoThumb" Grid.Column="1" Margin="5,0,0,0">
-                <ComboBoxItem Content="lewa" />
-                <ComboBoxItem Content="anagif" />
-            </ComboBox>
-        </Grid>-->
         <CheckBox Name="uiHideThumbs" Content="Hide auxiliary files" ToolTip="Czy pliki .bak, .thumbpic, etc. mają być Hidden" />
+
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Default sort: " />
+            <local:UserSortMode x:Name="uiSortBy" />
+        </StackPanel>
         <CheckBox Name="uiHideKeywords" Content="Hide inactive keywords" Margin="0,2,0,2" ToolTip="Default dla okna dodawania słów kluczowych"/>
         <CheckBox Name="uiFullJSON" Content="Pokaż pełne metadane (z NULLami)" />
         <Button Content="Stereography " Click="uiSettStereo_Click" HorizontalAlignment="Left" Margin="0,5,0,5"/>

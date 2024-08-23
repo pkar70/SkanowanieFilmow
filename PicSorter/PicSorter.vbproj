@@ -95,6 +95,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Update="userControls\UserAzureListViewWithBox.xaml.vb">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="WindowsWithPages\Processing\SequenceList.xaml.vb">
       <SubType>Code</SubType>
     </Compile>

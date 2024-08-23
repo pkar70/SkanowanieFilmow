@@ -29,6 +29,17 @@
             <Button Grid.Column="2" Margin="10,0,10,0" Content=" Get " HorizontalAlignment="Right" VerticalAlignment="Center" Click="uiGetFacebookToken_Click"/>
         </local:StretchedGrid>
 
+        <TextBlock Text="Instagram:" FontWeight="Bold" Margin="0,10,0,0" />
+        <local:StretchedGrid Cols="A,*,A" Rows="A,A">
+            <TextBlock Grid.Column="0" Text="AccessToken: " />
+            <TextBox Grid.Column="1" Name="uiInstagramClientToken" HorizontalAlignment="Stretch" ToolTip="This token will be used to access your Instagram page"/>
+
+            <TextBlock Grid.Column="0" Grid.Row="1" Text="Valid to: " />
+            <TextBlock Grid.Column="1" Grid.Row="1" Name="uiInstagramClientTokenValidTo" HorizontalAlignment="Stretch" ToolTip="This token will be used to access your Instagram page"/>
+
+            <Button Grid.Column="2" Margin="10,0,10,0" Content=" Get " HorizontalAlignment="Right" VerticalAlignment="Center" Click="uiGetInstagramToken_Click"/>
+        </local:StretchedGrid>
+
         <local:ButtonOkSave Margin="5,20,5,0" Click="uiOK_Click" />
     </StackPanel>
 </Page>

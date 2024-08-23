@@ -72,12 +72,15 @@ Public Class OneKeyword
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propName))
     End Sub
 
-    Public Function GetIkonki() As String
-        Dim ret As String = ""
-        If oGeo IsNot Nothing Then ret &= AutotaggerBase.IconGeo
-        If minDate.IsDateValid OrElse maxDate.IsDateValid Then ret &= AutotaggerBase.IconCal
-        Return ret
-    End Function
+    <Newtonsoft.Json.JsonIgnore>
+    Public ReadOnly Property GetIkonki As String
+        Get
+            Dim ret As String = ""
+            If oGeo IsNot Nothing Then ret &= AutotaggerBase.IconGeo
+            If minDate.IsDateValid OrElse maxDate.IsDateValid Then ret &= AutotaggerBase.IconCal
+            Return ret
+        End Get
+    End Property
 
 End Class
 

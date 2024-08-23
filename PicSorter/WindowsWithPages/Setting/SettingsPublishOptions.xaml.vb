@@ -101,7 +101,8 @@ scope=public_profile,user_posts"
     Private Async Sub uiGetFacebookToken_Click(sender As Object, e As RoutedEventArgs)
         ' https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow
 
-        Dim sUri As String = "https://www.facebook.com/v20.0/dialog/oauth?"
+        'Dim sUri As String = "https://www.facebook.com/v20.0/dialog/oauth?"
+        Dim sUri As String = "https://www.facebook.com/dialog/oauth?"
         sUri &= $"client_id={FB_APP_ID}"
         ' sUri &= $"&redirect_uri=http://www.facebook.com/connect/login_success.html"
         sUri &= $"&redirect_uri=https://{Await SettingsShareLogins.GetCurrentMeAsWeb}:{Globs.APP_HTTPS_PORT}/fromFB"
@@ -116,6 +117,21 @@ scope=public_profile,user_posts"
 
     End Sub
 
+    Private Async Sub uiGetInstagramToken_Click(sender As Object, e As RoutedEventArgs)
+        ' https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow
+
+        Dim sUri As String = "https://api.instagram.com/oauth/authorize?"
+        sUri &= $"client_id={IG_APP_ID}"
+        sUri &= $"&redirect_uri=https://{Await SettingsShareLogins.GetCurrentMeAsWeb}:{Globs.APP_HTTPS_PORT}/fromIG"
+        sUri &= "&scope=user_profile,user_media"
+        sUri &= "&response_type=code"
+
+        Me.MsgBox(sUri)
+
+        Dim oUri As New Uri(sUri)
+        oUri.OpenBrowser
+
+    End Sub
 
 
     Private Class FB_GetLoginNameResponse

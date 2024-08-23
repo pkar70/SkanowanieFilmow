@@ -22,7 +22,7 @@ Public Class ProcessBrowse
 
     Private _thumbsy As New System.Collections.ObjectModel.ObservableCollection(Of ThumbPicek)
     Private _iMaxRun As Integer  ' po wczytaniu: liczba miniaturek, później: max ciąg zdjęć
-    Private _redrawPending As Boolean = False
+    'Private _redrawPending As Boolean = False
     Private _oBufor As Vblib.IBufor
     'Private _inArchive As Boolean  ' to będzie wyłączać różne funkcjonalności
     Private _title As String
@@ -58,15 +58,17 @@ Public Class ProcessBrowse
         uiDescribeSelected.Visibility = oVis
         uiGeotagSelected.Visibility = oVis
         'uiMenuDateRefit.Visibility = oVis
-        uiBatchProcessors.Visibility = oVis
+        'uiBatchProcessors.Visibility = oVis ' bo robi się samo w zależnosci od *Archived zdjęcia
         uiActionTargetDir.Visibility = oVis
-        uiDeleteThumbsSelected.Visibility = oVis
+        'uiDeleteThumbsSelected.Visibility = oVis
     End Sub
 
     Private Shared Function GetMegabytes() As Long
         'Return GC.GetTotalAllocatedBytes(False) / 1024 / 1024
         Return Process.GetCurrentProcess.WorkingSet64 / 1024 / 1024
     End Function
+
+    Private _afterInit As Boolean = False
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         vb14.DumpCurrMethod()
@@ -80,17 +82,19 @@ Public Class ProcessBrowse
 
         Dim initMem As Integer = GetMegabytes() ' Windows.System.MemoryManager.AppMemoryUsage
 
+        Me.ProgRingSetText("Reading thumbs...")
+
         Await Bufor2Thumbsy()   ' w tym obsługa znikniętych
         SizeMe()
 
         _memSizeKb = GetMegabytes() - initMem + 1
 
-        Await SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat!
-        RefreshMiniaturki(True)
-        'PokazThumbsy() ' tylko test, czy observable zadziała
+        Me.ProgRingSetText("setting sizes etc...")
+        UstawRozmiaryMiniaturki(True) ' to jest bez wstawiania do lisview
+        _afterInit = True
 
-        'WypelnMenuFilterSharing()
-        'WypelnMenuActionSharing()
+        Me.ProgRingSetText("sorting...")
+        Await SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat! i wstawia do listview
 
         ' zaczynamy od wygaszonego stereopack - dla archiwum, oraz gdy nie znamy SPM
         uiStereoPack.Visibility = Visibility.Collapsed
@@ -187,10 +191,10 @@ Public Class ProcessBrowse
 
     ' to jest w związku z DEL w ShowBig
     Private Sub Window_GotFocus(sender As Object, e As RoutedEventArgs)
-        If Not _redrawPending Then Return
+        'If Not _redrawPending Then Return
 
-        _redrawPending = False
-        RefreshMiniaturki(True)
+        '_redrawPending = False
+        'UstawRozmiaryMiniaturki(True)
     End Sub
 
     Private Async Function EwentualneKasowanieBak() As Task
@@ -295,6 +299,9 @@ Public Class ProcessBrowse
         Return lista
     End Function
 
+    ''' <summary>
+    ''' Uzupełnia _thumbsy, bez ruszania UI
+    ''' </summary>
     Private Async Function DoczytajMiniaturki() As Task
         vb14.DumpCurrMethod()
 
@@ -307,6 +314,7 @@ Public Class ProcessBrowse
             uiProgBar.Value += 1
         Next
 
+        uiProgBar.Visibility = Visibility.Collapsed
     End Function
 
 
@@ -317,9 +325,9 @@ Public Class ProcessBrowse
         vb14.DumpCurrMethod()
 
         _iMaxRun = _oBufor.Count.Max(1)
-
         uiProgBar.Maximum = _iMaxRun
-        uiProgBar.Visibility = Visibility.Visible
+
+        Me.ProgRingSetText("creating thumbs list...")
 
         _thumbsy.Clear()
         Dim iMax As Integer = vb14.GetSettingsInt("uiMaxThumbs")
@@ -332,7 +340,7 @@ Public Class ProcessBrowse
         End If
 
         Dim nrkol As Integer = 1
-        For Each oItem As ThumbPicek In From c In lista Order By c.dateMin Take iMax
+        For Each oItem As ThumbPicek In lista.Take(iMax)    ' wyłączam sortowanie na tym etapie, bo będzie później w zależności od trybu sortowania
             oItem.nrkol = nrkol
             oItem.maxnum = Math.Min(iMax, lista.Count)
             _thumbsy.Add(oItem)
@@ -340,10 +348,9 @@ Public Class ProcessBrowse
         Next
         lista.Clear()
 
-        uiProgBar.Value = 0
+        Me.ProgRingSetText("reading thumbs...")
         Await DoczytajMiniaturki()
 
-        uiProgBar.Visibility = Visibility.Collapsed
 
     End Function
 
@@ -364,35 +371,43 @@ Public Class ProcessBrowse
 
 #Region "górny toolbox"
 
-    ''' <summary>
-    ''' zwraca tryb sortowania: 1 daty, 2 serno, 3 filename
-    ''' </summary>
-    ''' <returns></returns>
-    Private Function GetCurrentSortMode() As Integer
-        Dim oCBI As ComboBoxItem = TryCast(uiSortBy.SelectedItem, ComboBoxItem)
-        If oCBI IsNot Nothing Then
-            Return oCBI.DataContext
-        End If
+    '''' <summary>
+    '''' zwraca tryb sortowania: 1 daty, 2 serno, 3 filename
+    '''' </summary>
+    '''' <returns></returns>
+    'Private Function GetCurrentSortMode() As Integer
+    '    Dim oCBI As ComboBoxItem = TryCast(uiSortBy.SelectedItem, ComboBoxItem)
+    '    If oCBI IsNot Nothing Then
+    '        Return oCBI.DataContext
+    '    End If
 
-        Return 1
-    End Function
+    '    Return 1
+    'End Function
 
     ''' <summary>
     ''' ustaw ItemsSource na thumbsy wedle daty - na start, i po zmianach dat - SLOW!
     ''' </summary>
     Private Async Function SortujThumbsy() As Task
+        Vblib.DumpCurrMethod()
+
         If uiPicList Is Nothing Then Return ' tak jest na początku, z uiSortBy_SelectionChanged
+        If Not _afterInit Then
+            Vblib.DumpMessage("ale jest przed afterInit, wiec ignoruje call")
+            Return
+        End If
+
         uiPicList.ItemsSource = Nothing
 
-        Dim sortmode As Integer = GetCurrentSortMode()
+        Dim sortmode As ThumbSortOrder = uiSortBy.GetRequestedSort
 
         Me.ProgRingShow(True)
+        Me.ProgRingSetText("sorting...")
 
         Await Task.Run(Sub()
                            Select Case sortmode
-                               Case 2 ' serno
+                               Case ThumbSortOrder.Serno
                                    _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.oPic.serno)
-                               Case 3 ' 3=filename
+                               Case ThumbSortOrder.Fname
                                    _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.oPic.sSuggestedFilename)
                                Case Else ' 1=date
                                    _thumbsy = New ObjectModel.ObservableCollection(Of ThumbPicek)(From c In _thumbsy Where c.bVisible Order By c.oPic.GetMostProbablyDate)
@@ -435,6 +450,12 @@ Public Class ProcessBrowse
         Dim oWnd As New PokazStatystyke("", lista)
         oWnd.Show()
     End Sub
+
+    Private Sub uiOpenDbGrid_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New DataGridWnd(_oBufor)
+        oWnd.Show()
+    End Sub
+
 
 #End Region
 
@@ -547,7 +568,7 @@ Public Class ProcessBrowse
 
     '    ' pokaz na nowo obrazki
     '    ReDymkuj()
-    '    RefreshMiniaturki(False)
+    '    UstawRozmiaryMiniaturki(False)
 
     '    SaveMetaData()
     'End Sub
@@ -585,6 +606,8 @@ Public Class ProcessBrowse
     Private Sub uiMetadataChangedResort(sender As Object, e As EventArgs)
         ' tu wskakuje po zmianie daty zdjęć...
         'uiActionsPopup.IsOpen = False
+        Vblib.DumpCurrMethod()
+
 
         ReDymkuj()
         For Each oItem As ThumbPicek In uiPicList.SelectedItems
@@ -592,7 +615,7 @@ Public Class ProcessBrowse
         Next
 
         ' jeśli sortowanie jest wg dat, to zaktualizuj
-        If GetCurrentSortMode() = 1 Then SortujThumbsy()
+        If uiSortBy.GetRequestedSort = ThumbSortOrder.Data Then SortujThumbsy()
 
         SaveMetaData()
     End Sub
@@ -638,7 +661,7 @@ Public Class ProcessBrowse
     Private Sub uiMetadataChangedReparse(sender As Object, e As EventArgs)
         uiMetadataChangedDymkuj(Nothing, Nothing)
         SortujThumbsy()
-        RefreshMiniaturki(True)
+        UstawRozmiaryMiniaturki(True)
     End Sub
 
     Private Sub uiMetadataChangedDymkuj(sender As Object, e As EventArgs)
@@ -1234,7 +1257,7 @@ Public Class ProcessBrowse
     Private Sub PokazNaDuzymMain(oPicek As ThumbPicek)
         If oPicek Is Nothing Then Return
 
-        _redrawPending = False
+        '_redrawPending = False
         Dim oWnd As New ShowBig(oPicek, _oBufor.GetIsReadonly, False)
         oWnd.Owner = Me
         oWnd.Show()
@@ -1464,7 +1487,7 @@ Public Class ProcessBrowse
         ' pokaz na nowo obrazki
         If _ReapplyAutoSplit Then
             ' tu można byłoby "przesuwać" splita pomiędzy zdjęciami
-            RefreshMiniaturki(_ReapplyAutoSplit)
+            UstawRozmiaryMiniaturki(_ReapplyAutoSplit)
         End If
     End Sub
 
@@ -1492,7 +1515,7 @@ Public Class ProcessBrowse
         SaveMetaData()    ' tylko raz, po całej serii kasowania
 
         ' pokaz na nowo obrazki
-        RefreshMiniaturki(_ReapplyAutoSplit)
+        UstawRozmiaryMiniaturki(_ReapplyAutoSplit)
     End Sub
 
     Private Async Sub uiDeleteThumbsSelected_Click(sender As Object, e As RoutedEventArgs)
@@ -1622,7 +1645,7 @@ Public Class ProcessBrowse
     ''' autosplit, skalowanie miniaturek - duże zmiany w oknie
     ''' </summary>
     ''' <param name="bReapplyAutoSplit">przelicz także autosplit</param>
-    Private Sub RefreshMiniaturki(bReapplyAutoSplit As Boolean)
+    Private Sub UstawRozmiaryMiniaturki(bReapplyAutoSplit As Boolean)
         If bReapplyAutoSplit Then ApplyAutoSplit()    ' zmienia _iMaxRun
 
         SkalujRozmiarMiniaturek() ' może używać _iMaxRun
@@ -1733,7 +1756,7 @@ Public Class ProcessBrowse
         '        'Next
         'End Select
 
-        RefreshMiniaturki(False)
+        UstawRozmiaryMiniaturki(False)
         Application.ShowWait(False)
 
     End Sub
@@ -1775,7 +1798,7 @@ Public Class ProcessBrowse
         End If
 
 
-        RefreshMiniaturki(True)
+        UstawRozmiaryMiniaturki(True)
     End Sub
 
 #Region "filtry"
@@ -1797,7 +1820,7 @@ Public Class ProcessBrowse
         _isTargetFilterApplied = False
 
         '*PROBA* nieudana zakomentownia
-        'RefreshMiniaturki(False)
+        'UstawRozmiaryMiniaturki(False)
     End Sub
 
     Private Sub uiFilterReverse_Click(sender As Object, e As RoutedEventArgs)
@@ -1814,7 +1837,7 @@ Public Class ProcessBrowse
         Next
 
         '*PROBA* nieudana zakomentownia
-        'RefreshMiniaturki(False)
+        'UstawRozmiaryMiniaturki(False)
     End Sub
 
     Private Sub uiFilterNone_Click(sender As Object, e As RoutedEventArgs)
@@ -1829,7 +1852,7 @@ Public Class ProcessBrowse
         _isTargetFilterApplied = False
 
         '*PROBA* nieudana zakomentownia
-        'RefreshMiniaturki(False)
+        'UstawRozmiaryMiniaturki(False)
     End Sub
 
 
@@ -2291,7 +2314,7 @@ Public Class ProcessBrowse
             Me.MsgBox("Nie ma takich zdjęć, wyłączam filtrowanie")
             uiFilterAll_Click(Nothing, Nothing)
         Else
-            'RefreshMiniaturki(False)
+            'UstawRozmiaryMiniaturki(False)
 
             If bScrollIntoView Then
                 ' scroll do pierwszego niewygaszonego
@@ -2725,7 +2748,7 @@ Public Class ProcessBrowse
         End If
 
         ' PROBA czy bedzie OK przez re-ItemsSource
-        ' RefreshMiniaturki(True)
+        ' UstawRozmiaryMiniaturki(True)
 
         SaveMetaData()
 
@@ -2798,11 +2821,8 @@ Public Class ProcessBrowse
 
 
     Private Sub uiOknaManualAzureExif_Click(sender As Object, e As RoutedEventArgs)
-        OpenSubWindow(New EditOneExif(Vblib.ExifSource.AutoAzure, _oBufor.GetIsReadonly))
-
-        Dim b As New ThumbPicek(Nothing, 10)
-        Dim c As Vblib.OnePic = b
-
+        'OpenSubWindow(New EditOneExif(Vblib.ExifSource.AutoAzure, _oBufor.GetIsReadonly))
+        OpenSubWindow(New ShowAzureLists)
     End Sub
 
 #End Region
@@ -3013,6 +3033,9 @@ Public Class ProcessBrowse
             Return pathname & THUMB_SUFIX
         End Function
 
+        ''' <summary>
+        ''' usuwa plik (ale nie regeneruje go!)
+        ''' </summary>
         Public Sub ThumbDelete()
             IO.File.Delete(ThumbGetFilename)
             IO.File.Delete(ThumbGetFilename() & ".png")   ' pierwsza klatka filmu (pełny rozmiar)
@@ -3113,7 +3136,10 @@ Public Class ProcessBrowse
         End Function
 
         Public Async Function ThumbWczytajLubStworz(_inArchive As Boolean, Optional bRecreate As Boolean = False) As Task
-            If bRecreate Then ThumbDelete()
+            If bRecreate Then
+                oImageSrc = Nothing
+                ThumbDelete()
+            End If
 
             Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
             If _inArchive Then bCacheThumbs = False    ' w archiwum nie robimy tego!
@@ -3165,7 +3191,7 @@ Public Class ProcessBrowse
         Private Function ThumbPlaceholder() As BitmapImage
 
             Dim sExt As String = IO.Path.GetExtension(oPic.InBufferPathName).ToLowerInvariant
-            Dim placeholderThumb As String = vblib.GetDataFile("", $"placeholder{sExt}.jpg")
+            Dim placeholderThumb As String = Vblib.GetDataFile("", $"placeholder{sExt}.jpg")
             If Not IO.File.Exists(placeholderThumb) Then
                 Process_Signature.WatermarkCreate.StworzWatermarkFile(placeholderThumb, sExt, sExt)
                 FileAttrHidden(placeholderThumb, True)

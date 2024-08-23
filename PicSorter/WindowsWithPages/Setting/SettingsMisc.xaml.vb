@@ -44,6 +44,7 @@ Class SettingsMisc
         uiAutoCrop.SetSettingsBool
         'uiStereoThumb.SetSettingsInt
         uiAdvShellExec.SetSettingsBool
+        uiSortBy.SetSettingsInt
 
         Me.NavigationService.GoBack()
     End Sub

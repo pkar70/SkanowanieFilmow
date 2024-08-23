@@ -103,7 +103,9 @@ Public Class Databases
 
         Dim bRet As Boolean = False
         For Each dbase As Vblib.DatabaseInterface In _bazyDanych
-            bRet = bRet Or dbase.AddFiles(nowe)
+            If dbase.IsEnabled Then
+                bRet = bRet Or dbase.AddFiles(nowe)
+            End If
         Next
 
         Return bRet

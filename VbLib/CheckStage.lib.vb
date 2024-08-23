@@ -25,7 +25,7 @@ Public Class SequenceStage_AutoExif
 
     Public Overrides ReadOnly Property Nazwa As String = "Run AutoExif"
     Public Overrides ReadOnly Property AutoCheck As Boolean = True
-    Public Overrides ReadOnly Property StageNo As Integer = 10
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.AutoExif
     Public Overrides ReadOnly Property Icon As String = "A"
 
     Public Overrides ReadOnly Property Dymek As String = "Potrzebne do Crop/Rotate (obrót zapisany w JFIF), tak samo wyciągnięcie Geo"
@@ -57,7 +57,7 @@ Public Class SequenceStage_CropRotate
     Inherits SequenceStageBase
 
     Public Overrides ReadOnly Property Nazwa As String = "Crop & Rotate"
-    Public Overrides ReadOnly Property StageNo As Integer = 20
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.CropRotate
     Public Overrides ReadOnly Property Icon As String = "↻"
 
     Public Overrides Function Check(picek As OnePic) As Boolean
@@ -74,7 +74,7 @@ Public Class SequenceStage_Keywords
     Inherits SequenceStageBase
 
     Public Overrides ReadOnly Property Nazwa As String = "Add keywords"
-    Public Overrides ReadOnly Property StageNo As Integer = 30
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.Keywords
     Public Overrides ReadOnly Property Dymek As String = "Przed Autotag, bo z Kwd jest np. Geo (do pogody)"
     Public Overrides ReadOnly Property Icon As String = "#"
 
@@ -91,7 +91,7 @@ Public Class SequenceStage_Dates
     Inherits SequenceStageBase
 
     Public Overrides ReadOnly Property Nazwa As String = "Set dates"
-    Public Overrides ReadOnly Property StageNo As Integer = 40
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.Dates
     Public Overrides ReadOnly Property Dymek As String = "Przed Autotag, bo data jest potrzebna np. do pogody"
     Public Overrides ReadOnly Property Icon As String = "📆"
 
@@ -111,7 +111,7 @@ Public Class SequenceStage_Geotags
     Inherits SequenceStageBase
 
     Public Overrides ReadOnly Property Nazwa As String = "Add geotags"
-    Public Overrides ReadOnly Property StageNo As Integer = 50
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.Geotags
     Public Overrides ReadOnly Property Dymek As String = "Po Kwd lepiej, bo część geo pójdzie z Kwd i nie trzeba ustawiać"
     Public Overrides ReadOnly Property AutoCheck As Boolean = True
     Public Overrides ReadOnly Property Icon As String = "🚩"
@@ -128,7 +128,7 @@ Public Class SequenceStage_AutoTaggers
     Inherits SequenceStageBase
 
     Public Overrides ReadOnly Property Nazwa As String = "Run AutoTaggers"
-    Public Overrides ReadOnly Property StageNo As Integer = 60
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.AutoTaggers
     Public Overrides ReadOnly Property Icon As String = "A"
 
     Public Overrides Function Check(picek As OnePic) As Boolean
@@ -152,7 +152,7 @@ Public Class SequenceStage_Descriptions
     Inherits SequenceStageBase
 
     Public Overrides ReadOnly Property Nazwa As String = "Add descriptions"
-    Public Overrides ReadOnly Property StageNo As Integer = 70
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.Descriptions
     Public Overrides ReadOnly Property Icon As String = "A"
 
     Public Overrides Function Check(picek As OnePic) As Boolean
@@ -168,7 +168,7 @@ Public Class SequenceStage_TargetDir
 
     Public Overrides ReadOnly Property Nazwa As String = "Set TargetDir"
     Public Overrides ReadOnly Property AutoCheck As Boolean = True
-    Public Overrides ReadOnly Property StageNo As Integer = 80
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.TargetDir
     Public Overrides ReadOnly Property Icon As String = "📂"
 
     Public Overrides Function Check(picek As OnePic) As Boolean
@@ -183,7 +183,7 @@ Public Class SequenceStage_Publish
     Inherits SequenceStageBase
 
     Public Overrides ReadOnly Property Nazwa As String = "Publish"
-    Public Overrides ReadOnly Property StageNo As Integer = 90
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.Publish
     Public Overrides ReadOnly Property Icon As String = "🏛"
 
     Public Overrides Function Check(picek As OnePic) As Boolean
@@ -199,7 +199,7 @@ Public Class SequenceStage_CloudArch
 
     Public Overrides ReadOnly Property Nazwa As String = "Cloud archive"
     Public Overrides ReadOnly Property AutoCheck As Boolean = True
-    Public Overrides ReadOnly Property StageNo As Integer = 100
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.CloudArch
     Public Overrides ReadOnly Property Icon As String = "☁"
 
     Public Overrides Function Check(picek As OnePic) As Boolean
@@ -220,7 +220,7 @@ Public Class SequenceStage_LocalArch
 
     Public Overrides ReadOnly Property Nazwa As String = "Local archive"
     Public Overrides ReadOnly Property AutoCheck As Boolean = True
-    Public Overrides ReadOnly Property StageNo As Integer = 110
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.LocalArch
     Public Overrides ReadOnly Property Dymek As String = "Na końcu, bo wtedy w metadanych jest zapis do cloud i publish"
     Public Overrides ReadOnly Property Icon As String = "💾"
 
@@ -237,3 +237,17 @@ Public Class SequenceStage_LocalArch
     End Function
 End Class
 
+' nie da się zrobić Shared z MustOverride, a chcę wykorzystywac levele symbolicznie a nie numerycznie później
+Public Enum SequenceStages
+    AutoExif = 10
+    CropRotate = 20
+    Keywords = 30
+    Dates = 40
+    Geotags = 50
+    AutoTaggers = 60
+    Descriptions = 70
+    TargetDir = 80
+    Publish = 90
+    CloudArch = 100
+    LocalArch = 110
+End Enum

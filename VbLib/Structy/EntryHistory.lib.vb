@@ -6,9 +6,8 @@ Public Class EntryHistory
     Private _filepath As String
     Private _lista As List(Of String)
 
-    Sub New(sDataFolder As String, sFileName As String)
-        Dim sPath As String = IO.Path.Combine(sDataFolder, sFileName & ".txt")
-        _filepath = sPath
+    Sub New(sFileName As String)
+        _filepath = Globs.GetDataFile("", sFileName & ".txt")
 
         ' load
         If IO.File.Exists(_filepath) Then

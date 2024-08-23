@@ -43,20 +43,10 @@
             </Slider.RenderTransform>
         </Slider>
 
-        <!--- radioButtony, w tych samych miejscach co Slidery -->
-        <RadioButton Name="uiRotateUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" Checked="uiRotate_Checked"/>
-        <RadioButton Name="uiRotateDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Center" Visibility="Collapsed" Checked="uiRotate_Checked"/>
-        <RadioButton Name="uiRotateLeft" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Visibility="Collapsed"  Checked="uiRotate_Checked" />
-        <RadioButton Name="uiRotateRight" Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Visibility="Collapsed"  Checked="uiRotate_Checked" />
-
-        <!--<Slider Name="uiSizingDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiSizing_ValueChanged"  Minimum="0" Maximum="1"/>-->
-
-
-        <ScrollViewer Grid.Row="1" Grid.Column="1" Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-            <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                <!--<Grid Name="uiUsunLeft" HorizontalAlignment="Left" Opacity="0.5" VerticalAlignment="Stretch" />-->
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Grid.Column="1" >
                 <local:UserControlPinUnpin HorizontalAlignment="Right" VerticalAlignment="Top" IsPinned="False" x:Name="uiPinUnpin" />
-                <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center" Width="100" Height="100">
+            <ScrollViewer Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Image.ContextMenu>
                         <ContextMenu>
                             <!-- readonly simple metadata -->
@@ -83,7 +73,7 @@
                                 <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
                                 <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
                             </MenuItem>
-                            <local:PicMenuBatchProc x:Name="uiBatchProcessors"  MetadataChanged="uiPictureChanged" />
+                            <local:PicMenuBatchProc x:Name="uiBatchProcessors"  MetadataChanged="uiPictureChanged" ChangePic="True"/>
                             <!-- sequence step GEOTAG -->
                             <local:PicMenuGeotag x:Name="uiGeotag" MetadataChanged="uiMetadataChanged" />
                             <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" />
@@ -94,7 +84,7 @@
                             <local:PicMenuOCR MetadataChanged="uiMetadataChanged" />
                             <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step TARGET -->
-                            <local:PicMenuLocks MetadataChanged="uiMetadataChanged"  />
+                            <local:PicMenuLocks MetadataChanged="uiMetadataChanged" />
                             <!-- sequence step PUBLISH, ARCHIVE -->
                             <!-- readonly metadata 2 -->
                             <local:PicMenuOnMap />
@@ -124,9 +114,9 @@
                         </ContextMenu>
                     </Image.ContextMenu>
                 </Image>
-                <MediaElement Name="uiMovie" Visibility="Collapsed" MediaEnded="uiMovie_Ended" LoadedBehavior="Manual"/>
+        </ScrollViewer>
+        <MediaElement Name="uiMovie" Visibility="Collapsed" MediaEnded="uiMovie_Ended" LoadedBehavior="Manual"/>
                 <Button VerticalAlignment="Bottom" HorizontalAlignment="Right" Name="uiIkonkaTypu" FontSize="20" Foreground="LimeGreen" Background="Yellow" Click="uiIkonkaTypu_Click" />
             </Grid>
-        </ScrollViewer>
     </Grid>
 </Window>
