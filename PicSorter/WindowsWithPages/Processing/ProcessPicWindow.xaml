@@ -5,14 +5,14 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
         xmlns:local="clr-namespace:PicSorterNS"
       mc:Ignorable="d" 
-      Title="Process" Height="490" Width="250" Activated="Window_Activated" Loaded="Window_Loaded">
+      Title="Process" Height="470" Width="250" Activated="Window_Activated" Loaded="Window_Loaded">
     <Grid Margin="5,5,5,5" Width="160" >
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Name="uiZmiennikBufora">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Name="uiZmiennikBufora" VerticalAlignment="Top" >
             <ComboBox Name="uiBufory" SelectionChanged="uiBufory_SelectionChanged" Width="60" ToolTip="wybierz bufor" FontSize="10"/>
             <Button Content="+" FontWeight="Bold" Click="uiAddBuff_Click" Margin="5,0,0,0" ToolTip="Dodaj bufor" FontSize="10"/>
         </StackPanel>
@@ -22,7 +22,7 @@
             <Button Name="uiBrowse" Content="Browse" Margin="5,15,5,5" FontSize="18" Click="uiBrowse_Click" ToolTip="Przeglądanie zdjęć w buforze i operacje na nich"/>
             <Button Name="uiAutotag" Content="Try autotag (xx)" Margin="5,15,5,5" FontSize="18"  Click="uiAutotag_Click" ToolTip="Dodawanie metadanych przy pomocy automatów"/>
             <Button Name="uiSharingDescrips" Content="Peers' descs (xx)" Margin="5,15,5,5" FontSize="18" Click="uiSharingDescrips_Click"  ToolTip="Opisy które nadesłano"/>
-            <Button Name="uiBatchEdit" Content="Batch edit" Margin="5,15,5,5" FontSize="18" Click="uiBatchEdit_Click"  ToolTip="Grupowe przetwarzanie zdjęć"/>
+            <!--<Button Name="uiBatchEdit" Content="Batch edit" Margin="5,15,5,5" FontSize="18" Click="uiBatchEdit_Click"  ToolTip="Grupowe przetwarzanie zdjęć"/>-->
             <Button Name="uiCloudArch" Content="Cloud arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudArch_Click"  ToolTip="Archiwizowanie zdjęć w chmurze"/>
             <Button Name="uiLocalArch" Content="Local arch (xx)" Margin="5,15,5,5" FontSize="18" Click="uiLocalArch_Click"  ToolTip="Archiwizowanie zdjęć na dyskach"/>
             <Button Name="uiPublish" Content="Publish (xx)" Margin="5,15,5,5" FontSize="18" Click="uiCloudPublish_Click"  ToolTip="Publikowanie zdjęć w sieci"/>
