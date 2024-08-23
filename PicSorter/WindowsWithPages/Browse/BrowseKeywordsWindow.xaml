@@ -33,13 +33,13 @@
                 <DataTemplate>
                     <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0"  >
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="80" Name="naCheckBoxOrazTag" />
-                            <ColumnDefinition Width="*" Name="naOpis" />
+                            <ColumnDefinition Width="Auto" Name="naCheckBoxOrazTag" />
                             <ColumnDefinition Width="Auto" Name="naIkonki" />
+                            <ColumnDefinition Width="*" Name="naOpis" />
                         </Grid.ColumnDefinitions>
                         <CheckBox IsChecked="{Binding bChecked}" IsEnabled="{Binding bEnabled}" Content="{Binding sId}" Checked="uiZmianaCheck" Unchecked="uiZmianaCheck" />
-                        <TextBlock Grid.Column="1" Text="{Binding sDisplayName}" />
-                        <TextBlock Grid.Column="2" Text="{Binding GetIkonki}" />
+                        <TextBlock Grid.Column="2" Text="{Binding sDisplayName}" />
+                        <TextBlock Grid.Column="1" Text="{Binding GetIkonki}" Margin="5,0,2,0"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
