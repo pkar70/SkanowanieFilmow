@@ -1,0 +1,213 @@
+﻿<Window x:Class="DataGridWnd"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
+        mc:Ignorable="d"
+        Title="DataGridWnd" Height="450" Width="800" Loaded="Window_Loaded" Closing="Window_Closing">
+    <Window.Resources>
+        <local:ReadOnlyFromMode x:Key="ReadOnlyFromMode"/>
+        <local:ForegroundFromMode x:Key="ForegroundFromMode"/>
+        <local:KonwerterGeo x:Key="KonwerterGeo"/>
+    </Window.Resources>
+    
+    
+    <local:StretchedGrid Rows="A,A,*">
+        <local:TextBlockPageTitle Text="Baza danych" MouseDoubleClick="uiGoAdvanced_Click" />
+        <TextBlock Text="(uwaga! pracujesz bezpośrednio na danych, nie ma Undo!" HorizontalAlignment="Center" FontSize="10" Margin="5,5,5,5" Grid.Row="1"/>
+        
+        <DataGrid Name="uiGridek" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+
+                <local:UserDGridColumnRO Binding="{Binding FormattedSerNo, Mode=OneTime}" FontWeight="Bold" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="serno" Header="serno" FontWeight="Bold" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+                <local:UserDGridColumnAdv Binding="{Binding sSourceName, Mode=TwoWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                                <local:UserDGridHdrFilter Field="sSourceName" Header="source" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnAdv>
+
+                <local:UserDGridColumnAdv Binding="{Binding sInSourceID, Mode=TwoWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="sInSourceID" Header="sInSourceID" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnAdv>
+
+                <local:UserDGridColumnAdv Binding="{Binding sSuggestedFilename, Mode=TwoWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="sSuggestedFilename" Header="sSuggestedFilename" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnAdv>
+
+                <local:UserDGridColumnAdv Binding="{Binding InBufferPathName, Mode=TwoWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="InBufferPathName" Header="InBufferPathName" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnAdv>
+
+                <local:UserDGridColumnRO Binding="{Binding fileTypeDiscriminator, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="typ" />
+                                <ComboBox SelectionChanged="uiFiltrTyp_SelChanged">
+                                    <ComboBoxItem Content="all" IsSelected="True" />
+                                    <ComboBoxItem Content="►" />
+                                    <ComboBoxItem Content="* (nar)" />
+                                    <ComboBoxItem Content="⧉" />
+                                </ComboBox>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+
+                <local:UserDGridColumnRO Binding="{Binding sumOfKwds, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="sumOfKwds" Header="sumOfKwds" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+                <local:UserDGridColumnRO Binding="{Binding sumOfDescr, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="sumOfDescr" Header="sumOfDescr" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+                <local:UserDGridColumnRO Binding="{Binding linki, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="linki" Header="linki" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+
+                <local:UserDGridColumnRO Binding="{Binding sumOfUserComment, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="sumOfUserComment" Header="sumOfUserComment" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+                <local:UserDGridColumnRO Binding="{Binding sumOfGeo, Mode=OneWay, Converter={StaticResource KonwerterGeo}}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="sumOfGeo" Header="sumOfGeo" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+                <local:UserDGridColumnRO Binding="{Binding editHistory, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="editHistory" Header="editHistory" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+
+                <DataGridTextColumn Binding="{Binding TargetDir, Mode=TwoWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="TargetDir" Header="TargetDir" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </DataGridTextColumn>
+
+                <DataGridCheckBoxColumn Binding="{Binding locked, Mode=TwoWay}">
+                    <DataGridCheckBoxColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="lock" />
+                        </DataTemplate>
+                    </DataGridCheckBoxColumn.HeaderTemplate>
+                </DataGridCheckBoxColumn>
+
+                <local:UserDGridColumnRO Binding="{Binding Published, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="Published" Header="Published" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+                <local:UserDGridColumnRO Binding="{Binding CloudArchived, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="CloudArchived" Header="CloudArchived" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+
+                <local:UserDGridColumnRO Binding="{Binding Archived, Mode=OneWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="Archived" Header="Archived" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnRO>
+
+                <local:UserDGridColumnAdv Binding="{Binding sharingFromGuid, Mode=TwoWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="sharingFromGuid" Header="sharingFromGuid" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnAdv>
+
+
+                <DataGridCheckBoxColumn Header="sharelock"  Binding="{Binding sharingLockSharing, Mode=OneWay}" />
+
+
+
+                <local:UserDGridColumnAdv Binding="{Binding allowedPeers, Mode=TwoWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="allowedPeers" Header="allowedPeers" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnAdv>
+
+
+
+                <local:UserDGridColumnAdv Binding="{Binding deniedPeers, Mode=TwoWay}" >
+                    <DataGridTextColumn.HeaderTemplate>
+                        <DataTemplate>
+                            <local:UserDGridHdrFilter Field="deniedPeers" Header="deniedPeers" QueryChanged="uiFiltr_Changed" />
+                        </DataTemplate>
+                    </DataGridTextColumn.HeaderTemplate>
+                </local:UserDGridColumnAdv>
+
+
+                
+            </DataGrid.Columns>
+
+            <DataGrid.RowDetailsTemplate>
+                <DataTemplate>
+                    <DataGrid Margin="20,0,0,2" AutoGenerateColumns="True" ItemsSource="{Binding Exifs}" AutoGeneratingColumn="Exifs_AutoGeneratingColumn"/>
+                </DataTemplate>
+            </DataGrid.RowDetailsTemplate>
+        </DataGrid>
+    </local:StretchedGrid>
+</Window>
