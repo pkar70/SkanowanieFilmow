@@ -5,13 +5,15 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       mc:Ignorable="d" 
       Title="Listy" >
-    <StackPanel>
-        <Button Content="List of (C) tags" Margin="5,15,5,25" FontSize="18" Click="uiListCopyr_Click" Width="150"/>
-        <Button Content="List of Authors" Margin="5,15,5,25" FontSize="18" Click="uiListAuthor_Click" Width="150"/>
+    <StackPanel Width="170">
+        <Button Content="List of (C) tags" Margin="5,15,5,25" FontSize="18" Click="uiListCopyr_Click" />
+        <Button Content="List of Authors" Margin="5,15,5,25" FontSize="18" Click="uiListAuthor_Click" />
         <!--<Button Content="List of camera makers" Margin="5,15,5,25" FontSize="18" Click="uiListCameraMakers_Click" Width="190"/>-->
-        <Button Content="List of Inet authors" Margin="5,15,5,25" FontSize="18" Click="uiListInetAuthor_Click" Width="150"/>
-        <Button Content="List of cameras" Margin="5,15,5,25" FontSize="18" Click="uiListCameraModels_Click" Width="150"/>
+        <Button Content="List of Inet authors" Margin="5,15,5,25" FontSize="18" Click="uiListInetAuthor_Click" />
+        <Button Content="List of cameras" Margin="5,15,5,25" FontSize="18" Click="uiListCameraModels_Click" />
 
-        <Button Content="List of maps" Margin="5,15,5,25" FontSize="18" Click="uiSettMaps_Click" Width="150"/>
+        <Button Content="List of maps" Margin="5,15,5,25" FontSize="18" Click="uiSettMaps_Click" />
+
+        <Button Content="List of programs" Margin="5,15,5,25" FontSize="18" Click="uiListExec_Click" />
     </StackPanel>
 </Page>
