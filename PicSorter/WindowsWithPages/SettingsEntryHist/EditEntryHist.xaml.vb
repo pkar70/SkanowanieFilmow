@@ -8,7 +8,7 @@ Public Class EditEntryHist
     Private _addComment As String
     Private _defaultNew As String
 
-    Public Sub New(sDataFolder As String, sFileTitle As String, sAddComment As String, sDefaultNew As String)
+    Public Sub New(sFileTitle As String, sAddComment As String, sDefaultNew As String)
 
         ' This call is required by the designer.
         InitializeComponent()
@@ -18,7 +18,7 @@ Public Class EditEntryHist
         _addComment = sAddComment
         _defaultNew = sDefaultNew
 
-        _lista = New Vblib.EntryHistory(sDataFolder, sFileTitle)
+        _lista = New Vblib.EntryHistory(sFileTitle)
         PokazListe()
     End Sub
 
