@@ -32,6 +32,13 @@ Class ProcessPic
         AktualizujGuziki()
 
         Await MozeClearPustyBufor()
+
+        Await Task.Delay(500)   ' bo zaraz po zamknięciu okna wraca Activate, a okno jeszcze nie jest do końca skasowane
+
+        If OwnedWindows Is Nothing OrElse OwnedWindows.Count < 1 Then
+            uiZmiennikBufora.IsEnabled = True
+        End If
+
     End Sub
 
     Private _niekasujArchived As Boolean
@@ -101,7 +108,7 @@ Class ProcessPic
         uiAutotag.Content = $"Try autotag ({counter})"
 
         uiAutotag.IsEnabled = (counter > 0)
-        uiBatchEdit.IsEnabled = (counter > 0)
+        'uiBatchEdit.IsEnabled = (counter > 0)
 
         ' z licznika do archiwizacji
         counter = CountDoArchiwizacji(_buforek)
@@ -124,7 +131,7 @@ Class ProcessPic
     ''' włącza/wyłącza guziki sharingu, odpowiednio zmieniając rozmiar okna
     ''' </summary>
     Private Sub AktualizujGuzikiSharingu()
-        Dim wysok As Integer = 490
+        Dim wysok As Integer = 470
 
         'uiSharingRetrieve.Visibility = Visibility.Collapsed
         uiSharingDescrips.Visibility = Visibility.Collapsed
