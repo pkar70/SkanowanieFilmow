@@ -15,7 +15,7 @@
     
     <local:StretchedGrid Rows="A,A,*">
         <local:TextBlockPageTitle Text="Baza danych" MouseDoubleClick="uiGoAdvanced_Click" />
-        <TextBlock Text="(uwaga! pracujesz bezpośrednio na danych, nie ma Undo!" HorizontalAlignment="Center" FontSize="10" Margin="5,5,5,5" Grid.Row="1"/>
+        <TextBlock Text="(uwaga! pracujesz bezpośrednio na danych, nie ma Undo!" HorizontalAlignment="Center" FontSize="10" Margin="5,5,5,5" Grid.Row="1" Foreground="DarkRed"/>
         
         <DataGrid Name="uiGridek" Grid.Row="2" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="False">
             <DataGrid.Columns>
