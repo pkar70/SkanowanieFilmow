@@ -138,14 +138,14 @@ Public Class ShowBig
             'uiBatchProcessors.Visibility = Visibility.Collapsed
             'uiEditModes.Visibility = Visibility.Collapsed
             'uiDelete.Visibility = Visibility.Collapsed
-            uiGeotag.Visibility = Visibility.Collapsed
+            'uiGeotag.Visibility = Visibility.Collapsed
             uiDatetag.Visibility = Visibility.Collapsed
         Else
             'ProcessBrowse.WypelnMenuBatchProcess(uiBatchProcessors, AddressOf ApplyBatchProcess)
             'uiBatchProcessors.Visibility = Visibility.Visible
             'uiEditModes.Visibility = Visibility.Visible
             'uiDelete.Visibility = Visibility.Visible
-            uiGeotag.Visibility = Visibility.Visible
+            'uiGeotag.Visibility = Visibility.Visible
             uiDatetag.Visibility = Visibility.Visible
         End If
 
@@ -722,21 +722,23 @@ Public Class ShowBig
 
     Private _requestedRotate As wingraph.BitmapRotation = wingraph.BitmapRotation.None
 
-    Private Async Function uiRotateMenu2UI(obrot As wingraph.BitmapRotation) As Task
+    Private Async Sub uiRotate_Click(sender As Object, e As RoutedEventArgs)
+        Dim oFE As MenuItem = TryCast(sender, MenuItem)
+        Dim kat As Integer = CType(oFE.CommandParameter, Integer) ' w stopniach
+
         Await SprawdzCzyJestEdycja(EditModeEnum.rotate)
 
-        _requestedRotate = obrot
-        uiSave_Click(Nothing, Nothing)
-    End Function
+        Select Case kat
+            Case 90
+                _requestedRotate = wingraph.BitmapRotation.Clockwise90Degrees
+            Case 180
+                _requestedRotate = wingraph.BitmapRotation.Clockwise180Degrees
+            Case 270
+                _requestedRotate = wingraph.BitmapRotation.Clockwise270Degrees
+        End Select
 
-    Private Async Sub uiRotateRight_Click(sender As Object, e As RoutedEventArgs)
-        Await uiRotateMenu2UI(wingraph.BitmapRotation.Clockwise90Degrees)
-    End Sub
-    Private Async Sub uiRotateDown_Click(sender As Object, e As RoutedEventArgs)
-        Await uiRotateMenu2UI(wingraph.BitmapRotation.Clockwise180Degrees)
-    End Sub
-    Private Async Sub uiRotateLeft_Click(sender As Object, e As RoutedEventArgs)
-        Await uiRotateMenu2UI(wingraph.BitmapRotation.Clockwise270Degrees)
+        uiSave_Click(Nothing, Nothing)
+
     End Sub
 
 

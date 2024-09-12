@@ -62,9 +62,9 @@
                                     <!--<MenuItem Header="→ ► ⊏ ◨ ↠ ↶ ⇉ ⇒" FontSize="18"/>
                                     <MenuItem Header="↓ ▼ ⊓ ⬓ ⨅ ↡ ↺ ⇊ ⇓" FontSize="18"/>
                                     <MenuItem Header="← ◄ ⊐ ◧ ↞ ↷ ⇇ ⇐" FontSize="18"/>-->
-                                    <MenuItem Icon="↶"  Header="anticlockwise ⇉" FontSize="16" Click="uiRotateRight_Click"/>
-                                    <MenuItem Icon="↺" Header="180° ⇊" FontSize="15" Click="uiRotateDown_Click"/>
-                                    <MenuItem Icon="↷" Header="clockwise ⇇" FontSize="14" Click="uiRotateLeft_Click"/>
+                                    <MenuItem Icon="↶"  Header="anticlockwise" FontSize="16" Click="uiRotate_Click" CommandParameter="270"/>
+                                    <MenuItem Icon="↺" Header="180°" FontSize="15" Click="uiRotate_Click" CommandParameter="180"/>
+                                    <MenuItem Icon="↷" Header="clockwise" FontSize="14" Click="uiRotate_Click" CommandParameter="90"/>
                                     <!--<MenuItem Header="Rotate UI" Click="uiRotate_Click" />-->
                                 </MenuItem>
                                 <MenuItem Icon="⇔" Header="Flip" Click="uiFlipHoriz_Click" />
@@ -73,7 +73,7 @@
                                 <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
                                 <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
                             </MenuItem>
-                            <local:PicMenuBatchProc x:Name="uiBatchProcessors"  MetadataChanged="uiPictureChanged" ChangePic="True"/>
+                            <local:PicMenuBatchProc x:Name="uiBatchProcessors"  MetadataChanged="uiPictureChanged" />
                             <!-- sequence step GEOTAG -->
                             <local:PicMenuGeotag x:Name="uiGeotag" MetadataChanged="uiMetadataChanged" />
                             <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" />
