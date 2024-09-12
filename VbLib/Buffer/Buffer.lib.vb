@@ -37,6 +37,10 @@ Public Interface IBufor
 
     Function GetBufferName() As String
 
+    Sub SetStagesSettings(listaCheckow As String)
+
+    Function RunAutoExif() As Task
+
 End Interface
 
 
@@ -98,7 +102,7 @@ Public Class BufferSortowania
         Return Vblib.GetSettingsString(GetStagesSettName)
     End Function
 
-    Public Sub SetStagesSettings(listaCheckow As String)
+    Public Sub SetStagesSettings(listaCheckow As String) Implements IBufor.SetStagesSettings
         Vblib.SetSettingsString(GetStagesSettName, listaCheckow)
     End Sub
 
@@ -288,6 +292,7 @@ Public Class BufferSortowania
         ' oPic.sortOrder = oExif.DateMax.ToExifString 'ToString("yyyy.MM.dd HH.mm.ss")
 
         oPic.SetDefaultFileTypeDiscriminator()
+        oPic.RecalcSumsy()
 
         _pliki.Add(oPic)
 
@@ -405,6 +410,42 @@ Public Class BufferSortowania
         Return False
     End Function
 
+    Public Async Function RunAutoExif() As Task Implements IBufor.RunAutoExif
+        Dim oEngine As AutotaggerBase = Vblib.gAutoTagery.Where(Function(x) x.Nazwa = Vblib.ExifSource.FileExif).ElementAt(0)
+        ' się nie powinno zdarzyć, no ale cóż...
+        If oEngine Is Nothing Then Return
+
+        Dim iSerNo As Integer = Vblib.GetSettingsInt("lastSerNo")
+
+        For Each oItem As Vblib.OnePic In _pliki
+
+            ' najpierw Serial Number zrobimy - obojętnie co dalej...
+            If oItem.serno < 1 Then
+                iSerNo += 1
+                oItem.serno = iSerNo
+            End If
+
+            If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
+
+            ' niby nie ma prawa być, chyba że to Peer - albo mappedSource
+            If oItem.GetExifOfType(oEngine.Nazwa) Is Nothing Then
+                Try
+                    Dim oExif As Vblib.ExifTag = Await oEngine.GetForFile(oItem)
+                    If oExif IsNot Nothing Then
+                        oItem.ReplaceOrAddExif(oExif)
+                        oItem.TagsChanged = True
+                    End If
+                    'Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
+                Catch ex As Exception
+                    ' zabezpieczenie, żeby mi na pewno nie zrobił crash przy nadawaniu serno!
+                End Try
+            End If
+        Next
+
+        Vblib.SetSettingsInt("lastSerNo", iSerNo)
+
+    End Function
+
     Public Class FilesInBuffer
         Inherits pkar.BaseList(Of OnePic)
 
@@ -514,5 +555,15 @@ Public Class BufferFromQuery
     Public Function GetBufferName() As String Implements IBufor.GetBufferName
         Return "Query"
     End Function
+
+    Public Sub SetStagesSettings(listaCheckow As String) Implements IBufor.SetStagesSettings
+        ' empty
+    End Sub
+
+    Public Async Function RunAutoExif() As Task Implements IBufor.RunAutoExif
+        ' empty dla query
+    End Function
+
+
 End Class
 
