@@ -45,13 +45,14 @@ Public NotInheritable Class PicMenuOnMap
     End Sub
 
     Private Sub uiOnMap_Click(sender As Object, e As RoutedEventArgs)
-        Dim oGps As BasicGeopos = GetFromDataContext.GetGeoTag
+        Dim oGps As BasicGeoposWithRadius = GetFromDataContext.GetGeoTag
         If oGps Is Nothing Then Return
 
         Dim oFE As FrameworkElement = sender
         Dim mapsvc As String = oFE?.DataContext
-
-        Dim sUri As Uri = oGps.ToUri(mapsvc)
+        Dim zoom As Integer = 18
+        If oGps.Radius > 500 Then zoom = 16
+        Dim sUri As Uri = oGps.ToUri(mapsvc, zoom)
 
         'Dim sUri As New Uri("https://www.openstreetmap.org/#map=16/" & oGps.Latitude & "/" & oGps.Longitude)
         sUri.OpenBrowser
