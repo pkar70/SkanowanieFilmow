@@ -10,23 +10,27 @@
         <local:MetaWndFilename x:Name="uiPinUnpin" IsPinned="False"/>
         <TabControl Grid.Row="1" Name="uiRozpiska">
             <TabItem Header="ogólne" >
-                <local:StretchedGrid Margin="5,10,0,0" Cols="A,*" Rows="A,A,A,A,A,A">
 
-                    <TextBlock Text="Ograniczenia wiekowe: " Grid.Row="0" Grid.Column="0"/>
-                    <TextBox Text="{Binding Wiekowe}" Width="200" HorizontalAlignment="Left" Grid.Row="0" Grid.Column="1"/>
+                <StackPanel Margin="5,10,0,0">
+                    <TextBlock Text="Ograniczenia wiekowe: " FontWeight="Bold"/>
+                        <CheckBox Content="Adult" Name="uiAdult" ToolTip="gł. przen. krwawy, ociekający krwią" Margin="5,2,0,0"/>
+                    <CheckBox Content="Gory" Name="uiGory" ToolTip="gł. przen. krwawy, ociekający krwią" Margin="5,2,0,0"/>
+                    <CheckBox Content="Racy" Name="uiRacy" ToolTip="żywy, barwny; wyrazisty (np. o smaku); pikantny (np. o dowcipie, książce)."  Margin="5,2,0,0"/>
 
-                    <CheckBox Content="IsBW" IsChecked="{Binding IsBW}" Margin="0,5,0,10" Grid.Row="1" Grid.ColumnSpan="2" />
+                    <CheckBox Content="IsBW" IsChecked="{Binding IsBW}" Margin="0,15,0,10"  />
 
-                    <TextBlock Text="Colors:" FontWeight="Bold" Grid.Row="2" Grid.ColumnSpan="2"/>
+                    <TextBlock Text="Colors:" FontWeight="Bold" />
+                    <local:StretchedGrid Margin="5,0,0,0" Cols="A,*" Rows="A,A,A">
+                        <TextBlock Text="DominantColorBackground" Grid.Row="0" Grid.Column="0"/>
+                        <TextBox Text="{Binding Colors.DominantColorBackground, Mode=TwoWay}" Grid.Row="0" Grid.Column="1" Width="200" HorizontalAlignment="Left"/>
+                        <TextBlock Text="DominantColorForeground" Grid.Row="1" Grid.Column="0"/>
+                        <TextBox Text="{Binding Colors.DominantColorForeground, Mode=TwoWay}" Grid.Row="1" Grid.Column="1" Width="200" HorizontalAlignment="Left"/>
+                        <TextBlock Text="DominantColors" Grid.Row="2" Grid.Column="0"/>
+                        <TextBox Text="{Binding Colors.DominantColors, Mode=TwoWay}" Grid.Row="6" Grid.Column="2" Width="200" HorizontalAlignment="Left"/>
 
-                    <TextBlock Text="DominantColorBackground" Grid.Row="3" Grid.Column="0"/>
-                    <TextBox Text="{Binding Colors.DominantColorBackground, Mode=TwoWay}" Grid.Row="3" Grid.Column="1" Width="200" HorizontalAlignment="Left"/>
-                    <TextBlock Text="DominantColorForeground" Grid.Row="4" Grid.Column="0"/>
-                    <TextBox Text="{Binding Colors.DominantColorForeground, Mode=TwoWay}" Grid.Row="4" Grid.Column="1" Width="200" HorizontalAlignment="Left"/>
-                    <TextBlock Text="DominantColors" Grid.Row="5" Grid.Column="0"/>
-                    <TextBox Text="{Binding Colors.DominantColors, Mode=TwoWay}" Grid.Row="5" Grid.Column="1" Width="200" HorizontalAlignment="Left"/>
-
-                </local:StretchedGrid>
+                    </local:StretchedGrid>
+                </StackPanel>
+                
             </TabItem>
             <TabItem Header="Captions" >
                 <local:UserAzureListViewNoBox x:Name="AzureCapt" DataContext="{Binding Captions}" />

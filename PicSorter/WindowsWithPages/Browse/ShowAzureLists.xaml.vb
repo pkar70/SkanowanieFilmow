@@ -1,6 +1,7 @@
-﻿Imports Auto_WinOCR
-Imports MetadataExtractor.Formats
-Imports Vblib
+﻿'Imports Auto_WinOCR
+'Imports MetadataExtractor.Formats
+'Imports Vblib
+Imports pkar.DotNetExtensions
 
 Public Class ShowAzureLists
     'Public Property Captions As ListTextWithProbability
@@ -33,6 +34,17 @@ Public Class ShowAzureLists
         _azurek = picek?.GetExifOfType(Vblib.ExifSource.AutoAzure)?.AzureAnalysis
 
         uiRozpiska.DataContext = _azurek
+
+        If String.IsNullOrWhiteSpace(_azurek?.Wiekowe) Then
+            uiAdult.IsChecked = False
+            uiGory.IsChecked = False
+            uiRacy.IsChecked = False
+        Else
+            uiAdult.IsChecked = _azurek.Wiekowe.ContainsCI("ADULT")
+            uiGory.IsChecked = _azurek.Wiekowe.ContainsCI("GORY")
+            uiRacy.IsChecked = _azurek.Wiekowe.ContainsCI("RACY")
+        End If
+
     End Sub
 
     Private Sub uiOk_Click(sender As Object, e As RoutedEventArgs)
@@ -49,6 +61,23 @@ Public Class ShowAzureLists
         _azurek.Objects = AzureObjs.GetChanged
         _azurek.Celebrities = AzureCelebs.GetChanged
         _azurek.Faces = AzureFaces.GetChanged
+
+        Dim wiek As String = ""
+        If uiAdult.IsChecked Then wiek = "ADULTPIC"
+        If uiGory.IsChecked Then
+            If wiek <> "" Then wiek &= ", "
+            wiek &= "GORYPIC"
+        End If
+        If uiRacy.IsChecked Then
+            If wiek <> "" Then wiek &= ", "
+            wiek &= "RACYPIC"
+        End If
+
+        If wiek = "" Then
+            _azurek.Wiekowe = Nothing
+        Else
+            _azurek.Wiekowe = wiek
+        End If
     End Sub
 End Class
 
