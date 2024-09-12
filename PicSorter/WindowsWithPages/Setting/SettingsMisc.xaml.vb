@@ -20,6 +20,7 @@ Class SettingsMisc
         uiUseSpellCheck.GetSettingsBool
         uiAutoCrop.GetSettingsBool
         uiAdvShellExec.GetSettingsBool
+        uiMiesDatesFromKwds.GetSettingsInt
         'uiStereoThumb.GetSettingsInt()
     End Sub
 
@@ -45,6 +46,7 @@ Class SettingsMisc
         'uiStereoThumb.SetSettingsInt
         uiAdvShellExec.SetSettingsBool
         uiSortBy.SetSettingsInt
+        uiMiesDatesFromKwds.SetSettingsInt
 
         Me.NavigationService.GoBack()
     End Sub
