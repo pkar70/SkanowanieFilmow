@@ -9,8 +9,9 @@
     <StackPanel Margin="5,5,5,5">
         <local:TextBlockPageTitle Text="Pipeline"/>
         <TextBlock FontWeight="Bold" Text="FaceRemove" />
-        <local:SliderWithHdr Header="Nie zamazuj twarzy dla zdjęć starszych niż lat:" x:Name="uiWinFaceMaxAge" Minimum="20" Maximum="100" />
-        <local:SliderWithHdr Header="Nie zamazuj twarzy gdy ≤ %:" x:Name="uiWinFaceMinSize" Minimum="0" Maximum="25" ToolTip="Sprawdza rozmiar procentowy; 0 oznacza zawsze. Art 81 ustawy o prawach autorskich, plus Sąd Apelacyjny w Warszawie z dnia 4 lipca 2018 (sygn. akt V ACa 484/17)"/>
+        <local:SliderWithHdr Header="Nie zamazuj dla zdjęć starszych niż lat:" x:Name="uiWinFaceMaxAge" Minimum="20" Maximum="100" />
+        <local:SliderWithHdr Header="Nie zamazuj gdy ≤ %:" x:Name="uiWinFaceMinSize" Minimum="0" Maximum="25" ToolTip="Sprawdza rozmiar procentowy; 0 oznacza zawsze. Art 81 ustawy o prawach autorskich, plus Sąd Apelacyjny w Warszawie z dnia 4 lipca 2018 (sygn. akt V ACa 484/17)"/>
+        <local:SliderWithHdr Header="Nie zamazuj gdy zmarli > miesięcy:" x:Name="uiWinFaceAfterDeath" Minimum="0" Maximum="25" ToolTip="Gdy liczba twarzy (Azure/WinFace) odpowiada liczbie słów kluczowych, i wszystkie osoby są już (gdy FaceRemove działa) zmarłe od podanej liczby miesięcy"/>
 
         <Button Margin="0,15,0,5" Content="Watermark" HorizontalAlignment="Left" Click="uiWatermark_Click" />
 
