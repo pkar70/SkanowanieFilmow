@@ -104,6 +104,7 @@ Public Class KeywordsList
     End Sub
 
     Public Function GetKeyword(sKey As String) As OneKeyword
+        If sKey.StartsWith("!") Then sKey = sKey.Substring(1)
         Return ToFlatList.Find(Function(x) x.sId = sKey)
     End Function
 
@@ -114,7 +115,7 @@ Public Class KeywordsList
 
         Dim lista As New List(Of OneKeyword)
         For Each sKwd As String In aKwds
-            Dim oNew As OneKeyword = GetKeyword(sKwd)
+            Dim oNew As OneKeyword = GetKeyword(sKwd.Trim)
             If oNew IsNot Nothing Then lista.Add(oNew)
         Next
 
@@ -223,7 +224,7 @@ Public Class KeywordsList
         Dim sRet As String = keyword.sId
         If keyword?.SubItems Is Nothing Then Return sRet
         For Each subkey As OneKeyword In keyword.SubItems
-            sRet &= GetAllChilds(subkey)
+            sRet &= " " & GetAllChilds(subkey)
         Next
 
         Return sRet
