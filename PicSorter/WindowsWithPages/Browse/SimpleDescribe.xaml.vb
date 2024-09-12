@@ -115,8 +115,15 @@ Public Class SimpleDescribe
         _orgDescribe = oPicek.oPic.GetSumOfDescriptionsText
         uiAllDescribe.Text = _orgDescribe
 
-        Dim tagsy As String() = oPicek.oPic.sumOfKwds.Split(" ")
-        If tagsy.Length > 0 AndAlso tagsy.Any(Function(x) x.Length > 1 AndAlso Not x.StartsWith("=NO")) Then
+        Dim dscKwds As String = ""
+        If oPicek.oPic.descriptions IsNot Nothing Then
+            For Each oDsc As Vblib.OneDescription In oPicek.oPic.descriptions
+                dscKwds &= " " & oDsc.keywords
+            Next
+        End If
+
+        Dim tagsy As String() = dscKwds.Split(" ")
+        If tagsy.Length > 0 AndAlso tagsy.Any(Function(x) x.Length > 1 AndAlso Not x.StartsWith("=NO") AndAlso Not x.StartsWith("-f")) Then
             uiAllDescribe.IsReadOnly = True
             uiAllDescribe.ToolTip = "W description są słowa kluczowe, więc nie można tu tego zmieniać"
         Else
