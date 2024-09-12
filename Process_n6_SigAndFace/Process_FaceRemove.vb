@@ -1,6 +1,7 @@
 ﻿Imports System.Drawing
 Imports System.Drawing.Imaging
 Imports System.IO
+Imports Vblib
 
 Public Class Process_FaceRemove
     Inherits Vblib.PostProcBase
@@ -39,6 +40,11 @@ Public Class Process_FaceRemove
             Return True
         End If
         If oExif.AzureAnalysis.Faces.lista.Count < 1 Then
+            oPic.SkipEdit()
+            Return True
+        End If
+
+        If SprawdzCzyWszyscyDawnoZmarli(oPic.sumOfKwds, oExif.AzureAnalysis.Faces.lista.Count) Then
             oPic.SkipEdit()
             Return True
         End If
@@ -100,6 +106,30 @@ Public Class Process_FaceRemove
         If iInd > 1 Then sSignature = sSignature.Substring(0, iInd)
 
         Return sSignature
+    End Function
+
+    Private Function SprawdzCzyWszyscyDawnoZmarli(sumKwds As String, facescount As Integer) As Boolean
+
+        Dim monthsDelay As Integer = Vblib.GetSettingsInt("uiWinFaceAfterDeath")
+
+        Dim oKwds As List(Of Vblib.OneKeyword) = Globs.GetKeywords.GetKeywordsList(sumKwds)
+        Dim cntKwdsOsob As Integer = 0
+
+        For Each kwd As OneKeyword In oKwds
+            If Not kwd.sId.StartsWith("-") Then Continue For
+            cntKwdsOsob += 1
+            ' jeśli nie wiemy kiedy ktoś zmarł, to zakładamy że nie zmarł
+            If Not kwd.maxDate.IsDateValid Then Return False
+
+            ' jeszcze nie minęło odpowiednio dużo czasu
+            If kwd.maxDate.AddMonths(monthsDelay) > Date.Now Then Return False
+
+        Next
+
+        ' nie wszyscy są zidentyfikowani
+        If facescount <> cntKwdsOsob Then Return False
+
+        Return True
     End Function
 
 
