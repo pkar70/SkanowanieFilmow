@@ -149,6 +149,7 @@ Public Class SearchWindow
         If lista Is Nothing Then
             ' po pełnym
             Await Task.Run(Sub() _queryResults = Application.gDbase.Search(query))
+            ' _queryResults = _queryResults.Concat(Await Globs.GetBuffer.se)
         Else
             ' po już ograniczonym
             Await Task.Run(Sub() _queryResults = lista.Where(Function(x) x.CheckIfMatchesQuery(query)))
@@ -166,7 +167,11 @@ Public Class SearchWindow
         'Return iCount
     End Function
 
-    Private Async Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiSearch_Click(sender As Object, e As RoutedEventArgs)
+        SzukajOdZeraLubWyniki(_inputList)
+    End Sub
+
+    Private Async Sub SzukajOdZeraLubWyniki(inputList As IEnumerable(Of OnePic))
 
         ' clickcli
         _query = Await uiKwerenda.QueryValidityCheck
@@ -174,12 +179,10 @@ Public Class SearchWindow
 
         ' przeniesienie z UI do _query - większość się zrobi samo, ale daty - nie
         Dim iCount As Integer
-        'If _inputList Is Nothing Then
-        '    iCount = Szukaj(_fullArchive.GetList, _query)
-        'Else
+
         Dim dtStart As Date = Date.Now
         iCount = Await Szukaj(_inputList, _query)
-        'End If
+
         Dim dtEnd As Date = Date.Now
 
         Dim msec As String = $"[{(dtEnd - dtStart).TotalSeconds.ToString("F1")} sec]"
@@ -209,7 +212,7 @@ Public Class SearchWindow
 
             Dim listaFolderow As New List(Of Vblib.OneDir)
             For Each nazwa As String In From c In listaNazwFolderow Order By c Distinct
-                Dim oFolder As Vblib.OneDir = vblib.GetDirTree.GetDirFromTargetDir(nazwa)
+                Dim oFolder As Vblib.OneDir = Vblib.GetDirTree.GetDirFromTargetDir(nazwa)
                 If oFolder Is Nothing Then
                     oFolder = New Vblib.OneDir
                     oFolder.fullPath = nazwa
@@ -261,8 +264,6 @@ Public Class SearchWindow
 
         stopTime = Date.Now
         'Await Me.MsgBoxAsync("wstawienie do UI files took ms: " & (stopTime - startTime).TotalMilliseconds)
-
-
     End Sub
 
 
@@ -272,7 +273,7 @@ Public Class SearchWindow
 
 
     Private Sub uiSubSearch_Click(sender As Object, e As RoutedEventArgs)
-        Me.msgBox("jeszcze nie umiem")
+        SzukajOdZeraLubWyniki(_queryResults)
     End Sub
 
     Private Sub uiGoMiniaturki_Click(sender As Object, e As RoutedEventArgs)
@@ -297,7 +298,8 @@ Public Class SearchWindow
                 Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
                 vb14.DumpMessage($"real path of index file: {sRealPath}")
                 If Not String.IsNullOrWhiteSpace(sRealPath) Then
-                    Dim oPicNew As Vblib.OnePic = oPic.Clone
+                    ' nie ma clone, więc InBufferPathName się zmienia - ważne dla ewentualnego zmieniania metadanych w archiwum
+                    'Dim oPicNew As Vblib.OnePic = oPic.Clone
                     oPic.InBufferPathName = sRealPath
                     lista.AddFile(oPic)
                     Exit For
