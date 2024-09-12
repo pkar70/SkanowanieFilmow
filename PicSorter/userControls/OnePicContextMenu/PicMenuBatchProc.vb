@@ -2,6 +2,8 @@
 Public NotInheritable Class PicMenuBatchProc
     Inherits PicMenuBase
 
+    Public Overrides Property ChangePic As Boolean = True
+    Public Overrides Property ChangeMetadata As Boolean = True
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd

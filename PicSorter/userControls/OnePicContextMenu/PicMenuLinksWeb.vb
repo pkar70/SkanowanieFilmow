@@ -27,6 +27,7 @@ Public Class PicMenuLinksWeb
 
         AddHandler Me.SubmenuOpened, AddressOf OpeningMenu ' .ContextMenuOpening
         _itemLinki = New MenuItem With {.Header = "Open"}
+        Me.Items.Add(_itemLinki)
 
         Me.Items.Add(New Separator)
         _miCopy = AddMenuItem("Create", "Stwórz link do zaznaczonego zdjęcia", AddressOf CopyCalled)
@@ -42,12 +43,24 @@ Public Class PicMenuLinksWeb
     Public Overrides Sub MenuOtwieramy()
         MyBase.MenuOtwieramy()
 
+        If _miCopy Is Nothing Then Return
+
+        OpeningMenu(Nothing, Nothing)
+
         If Not UseSelectedItems Then Return
 
         If _miCopy IsNot Nothing Then _miCopy.IsEnabled = (GetSelectedItems()?.Count = 1)
 
     End Sub
+    Private Sub OpeningMenu(sender As Object, e As RoutedEventArgs)
+        ' przetworzenie Menu - dodanie linków
+        _itemLinki.Items.Clear()
 
+        OneOrMany(AddressOf DodajLinkizJednego)
+
+        _itemLinki.IsEnabled = _itemLinki.Items.Count > 0
+
+    End Sub
     Private Async Sub CopyCalled()
 
         If GetSelectedItems().Count <> 1 Then
@@ -147,15 +160,7 @@ Public Class PicMenuLinksWeb
         EventRaise(Me)
     End Sub
 
-    Private Sub OpeningMenu(sender As Object, e As RoutedEventArgs)
-        ' przetworzenie Menu - dodanie linków
-        _itemLinki.Items.Clear()
 
-        OneOrMany(AddressOf DodajLinkizJednego)
-
-        _itemLinki.IsEnabled = _itemLinki.Items.Count > 0
-
-    End Sub
 
     Private Sub DodajLinkizJednego(oPic As OnePic)
         If oPic.linki IsNot Nothing Then

@@ -204,7 +204,8 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
                 akcja(oItem.oPic)
             Next
         Else
-            akcja(GetFromDataContext)
+            Dim picek As Vblib.OnePic = GetFromDataContext()
+            If picek IsNot Nothing Then akcja(picek)
         End If
     End Sub
 
@@ -266,50 +267,46 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ''' </summary>
     Public Overridable Sub MenuOtwieramy()
         'If _miCopy IsNot Nothing Then _miCopy.IsEnabled = Not UseSelectedItems
+        Me.IsEnabled = CheckNieMaBlokerow()
+    End Sub
 
-        If ChangePic Or ChangeMetadata Then
+    Protected Function CheckNieMaBlokerow()
 
-            Dim allOk As Boolean = True
+        If Not ChangePic AndAlso Not ChangeMetadata Then Return True
 
-            ' sprawdź czy można - czy nie ma blokerów
-            If UseSelectedItems Then
-                If ChangePic Then
-                    For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                        If Not String.IsNullOrWhiteSpace(oItem.oPic.CloudArchived) OrElse Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then
-                            allOk = False
-                            Exit For
-                        End If
-                    Next
-                End If
-
-                If allOk And ChangeMetadata Then
-                    For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                        If Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then
-                            allOk = False
-                            Exit For
-                        End If
-                    Next
-                End If
-            Else
-                If ChangePic Then
-                    allOk = String.IsNullOrWhiteSpace(GetFromDataContext.CloudArchived) AndAlso String.IsNullOrWhiteSpace(GetFromDataContext.Archived)
-                End If
-
-                If allOk And ChangeMetadata Then
-                    allOk = String.IsNullOrWhiteSpace(GetFromDataContext.Archived)
-                End If
+        ' sprawdź czy można - czy nie ma blokerów
+        If UseSelectedItems Then
+            If ChangePic Then
+                For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                    If Not String.IsNullOrWhiteSpace(oItem.oPic.CloudArchived) OrElse Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then
+                        Return False
+                    End If
+                Next
             End If
 
-            If Not allOk Then
-                Me.IsEnabled = False
+            If ChangeMetadata Then
+                For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                    If Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then
+                        Return False
+                    End If
+                Next
             End If
 
+            Return True
         Else
-            ' czyli można uruchomić
-            Me.IsEnabled = True
+            ' jeden plik; gdy zarchiwizowany, to nie wolno zmieniać ani pic ani metadata
+            If Not String.IsNullOrWhiteSpace(GetFromDataContext.Archived) Then Return False
+
+            ' nie zmieniamy pic, więc zmiana tylko metadata - nie ma blokera
+            If Not ChangePic Then Return True
+
+            ' obrazka nie zmieniamy także gdy już w cloud jest
+            If String.IsNullOrWhiteSpace(GetFromDataContext.CloudArchived) Then Return True
+            Return False
         End If
 
-    End Sub
+    End Function
+
 
     'Protected Shared _miPaste As MenuItem
     'Protected Shared _miCopy As MenuItem

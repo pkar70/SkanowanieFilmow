@@ -35,6 +35,7 @@ Public Class PicMenuSearchArchive
         _ByAzureTags = AddMenuItem("Similar (Tags)", "Wyszukaj zdjęcia oznaczone przez Azure tymi samymi Tags", AddressOf SearchByAzureTags)
         _ByAzureObjects = AddMenuItem("Similar (Object)", "Wyszukaj zdjęcia oznaczone przez Azure tymi samymi Tags", AddressOf SearchByAzureObjects)
 
+        MenuOtwieramy()
     End Sub
 
     Public Overrides Sub MenuOtwieramy()

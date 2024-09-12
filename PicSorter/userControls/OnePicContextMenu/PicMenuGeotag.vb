@@ -5,10 +5,14 @@ Imports pkar
 Public NotInheritable Class PicMenuGeotag
     Inherits PicMenuBase
 
+    Public Overrides Property ChangeMetadata As Boolean = True
+
     Private Shared _clip As BasicGeoposWithRadius
     Private Shared _itemReset As MenuItem
     Private Shared _miCopy As MenuItem
     Private Shared _miPaste As MenuItem
+    Private Shared _miCreate As MenuItem
+    Private Shared _miMakeSame As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -22,6 +26,7 @@ Public NotInheritable Class PicMenuGeotag
         Me.Items.Clear()
 
         AddMenuItem("Create Geotag", "Tworzenie znacznika z lokalizacją", AddressOf uiCreateGeotag_Click)
+
         AddMenuItem("Make same", "Skopiowanie geografii pomiędzy zdjęciami", AddressOf uiGeotagMakeSame_Click, UseSelectedItems)
 
         _miCopy = AddMenuItem("Copy Geotag", "Skopiuj dane geograficzne ze wskazanego zdjęcia do lokalnego schowka ", AddressOf CopyCalled)
@@ -29,14 +34,28 @@ Public NotInheritable Class PicMenuGeotag
 
         _itemReset = AddMenuItem("Reset Geotag", "Wyczyść dopisane przez program dane geograficzne zdjęcia (ManualGeo, OSM, IMGW)", AddressOf uiGeotagClear_Click)
 
+        MenuOtwieramy()
     End Sub
 
     Public Overrides Sub MenuOtwieramy()
         MyBase.MenuOtwieramy()
 
-        If _miCopy Is Nothing Then Return
+        If _miCopy Is Nothing OrElse _miCreate Is Nothing Then Return
+        If _itemReset Is Nothing OrElse _miMakeSame Is Nothing Then Return
+
         _miCopy.IsEnabled = Not UseSelectedItems AndAlso GetFromDataContext()?.sumOfGeo IsNot Nothing
         _itemReset.IsEnabled = UseSelectedItems OrElse GetFromDataContext()?.GetExifOfType(Vblib.ExifSource.ManualGeo) IsNot Nothing
+
+        _miPaste.IsEnabled = _clip IsNot Nothing
+
+        _miMakeSame.IsEnabled = UseSelectedItems AndAlso GetSelectedItems.Count > 1
+
+        If Not CheckNieMaBlokerow() Then
+            _miPaste.IsEnabled = False
+            _itemReset.IsEnabled = False
+            _miMakeSame.IsEnabled = False
+            _miCreate.IsEnabled = False
+        End If
     End Sub
 
 

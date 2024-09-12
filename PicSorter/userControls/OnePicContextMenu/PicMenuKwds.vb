@@ -43,6 +43,7 @@ Public Class PicMenuKwds
 
         For Each kwd As String In From c In temp Distinct
             If String.IsNullOrWhiteSpace(kwd) Then Continue For
+            '  tu się dzieje: System.InvalidOperationException: Element already has a logical parent. It must be detached from the old parent before it is attached to a new one.
             _itemRemove.Items.Add(AddMenuItem(kwd, Nothing, AddressOf UsunTenJeden_Click))
         Next
 

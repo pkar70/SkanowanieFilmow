@@ -32,6 +32,8 @@ Public NotInheritable Class PicMenuTargetDir
         _miCopy = AddMenuItem("Copy TargetDir", "Skopiowanie katalogu docelowego do lokalnego schowka", AddressOf CopyCalled)
         _miPaste = AddMenuItem("Paste TargetDir", "Narzucenie zdjęciom katalogu docelowego wg lokalnego schowka", AddressOf PasteCalled, False)
         _itemClear = AddMenuItem("Clear TargetDir", "Usunięcie wskazania katalogu docelowego", AddressOf uiTargetClear_Click)
+
+        MenuOtwieramy()
     End Sub
 
 
@@ -40,7 +42,7 @@ Public NotInheritable Class PicMenuTargetDir
 
         MyBase.MenuOtwieramy()
 
-        If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
+        'If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
 
         If _miCopy Is Nothing Then Return
         _miCopy.IsEnabled = Not UseSelectedItems AndAlso Not String.IsNullOrWhiteSpace(GetFromDataContext()?.TargetDir)
