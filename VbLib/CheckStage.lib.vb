@@ -153,7 +153,7 @@ Public Class SequenceStage_Descriptions
 
     Public Overrides ReadOnly Property Nazwa As String = "Add descriptions"
     Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.Descriptions
-    Public Overrides ReadOnly Property Icon As String = "A"
+    Public Overrides ReadOnly Property Icon As String = "💬"
 
     Public Overrides Function Check(picek As OnePic) As Boolean
         Return Not String.IsNullOrWhiteSpace(picek.sumOfDescr)
@@ -237,6 +237,28 @@ Public Class SequenceStage_LocalArch
     End Function
 End Class
 
+
+Public Class SequenceStageAzureCheck
+    Inherits SequenceStageBase
+
+    Public Overrides ReadOnly Property Nazwa As String = "Check Azure data"
+    Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.AzureCheck
+    Public Overrides ReadOnly Property Dymek As String = "Po Azure - sprawdzić rozpoznanie Brands, Landmarks, Celebrities, GoryPic"
+    Public Overrides ReadOnly Property Icon As String = "🗷"
+
+    Public Overrides Function Check(picek As OnePic) As Boolean
+        Return False
+        'Dim ileArchiwow As Integer = 0 ' ile ma być archiwów *TODO*
+        'If ileArchiwow < 1 Then Return True
+
+        'If String.IsNullOrWhiteSpace(picek.Archived) Then Return False
+        'Return picek.Archived.Split(";").Count >= ileArchiwow
+    End Function
+    Public Overrides Function Check(picki As List(Of OnePic)) As Boolean
+        Return False
+    End Function
+End Class
+
 ' nie da się zrobić Shared z MustOverride, a chcę wykorzystywac levele symbolicznie a nie numerycznie później
 Public Enum SequenceStages
     AutoExif = 10
@@ -245,6 +267,7 @@ Public Enum SequenceStages
     Dates = 40
     Geotags = 50
     AutoTaggers = 60
+    AzureCheck = 65
     Descriptions = 70
     TargetDir = 80
     Publish = 90
