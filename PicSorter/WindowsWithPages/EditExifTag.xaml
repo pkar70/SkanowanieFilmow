@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="Edit EXIF tag" Height="650" Width="500" Loaded="Window_Loaded">
     <StackPanel Margin="5,5,5,5">
@@ -41,12 +42,13 @@
             <Button Content=" + " Grid.Column="1"  Margin="20,0,0,0" Click="uiOpenCamera_Click"/>
         </Grid>
 
-        <TextBlock Text="Data min" FontWeight="Bold" Margin="0,10,0,0" Name="uiDateMinHdr"/>
+        <!--<TextBlock Text="Data min" FontWeight="Bold" Margin="0,10,0,0" Name="uiDateMinHdr"/>
         <DatePicker Name="uiDateMin"  />
 
         <TextBlock Text="Data max" FontWeight="Bold" Margin="0,10,0,0" Name="uiDateMaxHdr" />
-        <DatePicker Name="uiDateMax" />
+        <DatePicker Name="uiDateMax" />-->
 
+        <local:UserDateRange x:Name="uiDateRange" Margin="0,10,0,0" UseMax="False" UseMin="False"/>
         <TextBlock Text="Keywords:" FontWeight="Bold" Margin="0,10,0,0" Name="uiKeywordsHdr" />
         <TextBox Name="uiKeywords" />
 

@@ -72,16 +72,16 @@ Public Class EditExifTag
 
     Private Sub WypelnDatePickery(dateMin As DateTime, dateMax As DateTime)
 
-        Dim dateStart As New DateTime(1800, 1, 1)
+        'Dim dateStart As New DateTime(1800, 1, 1)
 
-        uiDateMax.DisplayDateEnd = DateTime.Now
-        uiDateMin.DisplayDateEnd = DateTime.Now
-        uiDateMax.DisplayDateStart = dateStart
-        uiDateMin.DisplayDateStart = dateStart
+        'uiDateMax.DisplayDateEnd = DateTime.Now
+        'uiDateMin.DisplayDateEnd = DateTime.Now
+        'uiDateMax.DisplayDateStart = dateStart
+        'uiDateMin.DisplayDateStart = dateStart
 
-        If dateMax.IsDateValid Then uiDateMax.SelectedDate = dateMax
+        If dateMax.IsDateValid Then uiDateRange.MaxDate = dateMax
 
-        If dateMin.IsDateValid Then uiDateMin.SelectedDate = dateMin
+        If dateMin.IsDateValid Then uiDateRange.MinDate = dateMin
 
     End Sub
 
@@ -113,10 +113,10 @@ Public Class EditExifTag
         ' w zaleznosci od _scope
         Select Case _scope
             Case EditExifTagScope.LimitedToSourceDir
-                uiDateMax.Visibility = Visibility.Visible
-                uiDateMin.Visibility = Visibility.Visible
-                uiDateMinHdr.Visibility = Visibility.Visible
-                uiDateMaxHdr.Visibility = Visibility.Visible
+                uiDateRange.Visibility = Visibility.Visible
+                'uiDateMin.Visibility = Visibility.Visible
+                'uiDateMinHdr.Visibility = Visibility.Visible
+                'uiDateMaxHdr.Visibility = Visibility.Visible
 
                 uiKeywordsHdr.Visibility = Visibility.Collapsed
                 uiKeywords.Visibility = Visibility.Collapsed
@@ -124,10 +124,10 @@ Public Class EditExifTag
                 uiUserComment.Visibility = Visibility.Collapsed
 
             Case EditExifTagScope.LimitedToCloudPublish
-                uiDateMax.Visibility = Visibility.Collapsed
-                uiDateMin.Visibility = Visibility.Collapsed
-                uiDateMinHdr.Visibility = Visibility.Collapsed
-                uiDateMaxHdr.Visibility = Visibility.Collapsed
+                uiDateRange.Visibility = Visibility.Collapsed
+                'uiDateMin.Visibility = Visibility.Collapsed
+                'uiDateMinHdr.Visibility = Visibility.Collapsed
+                'uiDateMaxHdr.Visibility = Visibility.Collapsed
 
                 uiKeywordsHdr.Visibility = Visibility.Visible
                 uiKeywords.Visibility = Visibility.Visible
@@ -160,14 +160,14 @@ Public Class EditExifTag
         _exifTag.Author = uiAuthor.SelectedValue
         _exifTag.Copyright = uiCopyright.SelectedValue
         _exifTag.CameraModel = uiCameraModel.SelectedValue
-        If uiDateMin.SelectedDate.HasValue Then
-            _exifTag.DateMin = uiDateMin.SelectedDate.Value
+        If uiDateRange.UseMin Then
+            _exifTag.DateMin = uiDateRange.MinDate
         Else
             _exifTag.DateMin = DateTime.MinValue
         End If
 
-        If uiDateMax.SelectedDate.HasValue Then
-            _exifTag.DateMax = uiDateMax.SelectedDate.Value
+        If uiDateRange.UseMax Then
+            _exifTag.DateMax = uiDateRange.MaxDate
         Else
             _exifTag.DateMax = DateTime.MinValue
         End If
@@ -178,6 +178,8 @@ Public Class EditExifTag
         Dim sDevType As String = uiFileSourceDeviceType.SelectedValue
         If String.IsNullOrWhiteSpace(sDevType) Then sDevType = "0"
         _exifTag.FileSourceDeviceType = sDevType.Substring(0, 1)
+
+        DialogResult = True
 
         Me.Close()
     End Sub
