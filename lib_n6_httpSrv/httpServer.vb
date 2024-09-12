@@ -1,7 +1,7 @@
 Imports System.Collections.Specialized
 Imports System.IO
 Imports System.Net
-Imports System.Runtime.CompilerServices
+Imports lib_PicSource
 Imports pkar
 Imports pkar.DotNetExtensions
 
@@ -11,8 +11,8 @@ Public Class ServerWrapper
     Inherits ServerWrapperBase
 
 
-    Public Sub New(databases As Vblib.DatabaseInterface)
-        MyBase.New(databases)
+    Public Sub New(databases As Vblib.DatabaseInterface, sources As lib_PicSource.PicSourceList)
+        MyBase.New(databases, sources)
     End Sub
 
     ' uwaga: port tak¿e w PicMenuSearchWebByPic
@@ -26,8 +26,8 @@ End Class
 Public Class ServerWrapperHttps
     Inherits ServerWrapperBase
 
-    Public Sub New(databases As Vblib.DatabaseInterface)
-        MyBase.New(databases)
+    Public Sub New(databases As Vblib.DatabaseInterface, sources As lib_PicSource.PicSourceList)
+        MyBase.New(databases, sources)
     End Sub
 
     Protected Overrides Function baseUri() As String
@@ -49,13 +49,14 @@ Public MustInherit Class ServerWrapperBase
     Private Shared _shareDescOut As pkar.BaseList(Of Vblib.ShareDescription)
     Private Shared _postProcs As Vblib.PostProcBase()
     Private Shared _dataFolder As String
+    Private Shared _sources As lib_PicSource.PicSourceList
 
     ''' <summary>
     ''' Kiedy ostatnio coœ siê komunikowa³o
     ''' </summary>
     Public Shared _lastNetAccess As New LastNetAccess
 
-    Public Sub New(databases As Vblib.DatabaseInterface)
+    Public Sub New(databases As Vblib.DatabaseInterface, sources As lib_PicSource.PicSourceList)
         _databases = databases
         _loginy = Vblib.GetShareLogins
         _lastAccess = Vblib.gLastLoginSharing
@@ -64,6 +65,7 @@ Public MustInherit Class ServerWrapperBase
         _shareDescOut = Vblib.GetShareDescriptionsOut
         _postProcs = Vblib.gPostProcesory
         _dataFolder = Vblib.GetDataFolder
+        _sources = sources
     End Sub
 
     Public Function IsRunning() As Boolean
@@ -222,20 +224,20 @@ Public MustInherit Class ServerWrapperBase
         _lastAccess.kiedy = Date.Now
         _lastAccess.IPaddr = clientAddress.ToString
 
-        Dim tmp As String = queryString.Item("guid")
+        Dim guidStr As String = queryString.Item("guid")
         Dim loginGuid As Guid
-        If String.IsNullOrWhiteSpace(tmp) Then Return "Who you are?"
+        If String.IsNullOrWhiteSpace(guidStr) Then Return "Who you are?"
         Try
-            loginGuid = New Guid(tmp)
+            loginGuid = New Guid(guidStr)
         Catch ex As Exception
             Return "Who you really are?"
         End Try
 
-        tmp = queryString.Item("clientHost")
-        _lastAccess.remoteHostName = tmp
+        guidStr = queryString.Item("clientHost")
+        _lastAccess.remoteHostName = guidStr
 
-        Dim oLogin As Vblib.ShareLogin = ResolveLogin(loginGuid, clientAddress, tmp)
-        If oLogin Is Nothing Then Return "Sorry Winnetou"
+        Dim oLogin As Vblib.ShareLogin = ResolveLogin(loginGuid, clientAddress, guidStr)
+        If oLogin Is Nothing Then Return Await TryMappedSource(guidStr, command, request)
 
         ' /JakasKomenda -> jakaskomenda
         command = command.Substring(1).ToLowerInvariant
@@ -358,6 +360,59 @@ Public MustInherit Class ServerWrapperBase
     End Function
 
 
+    Private Shared _zapowiedzianyFilename As String
+
+    Private Async Function TryMappedSource(guidStr As String, command As String, request As HttpListenerRequest) As Task(Of String)
+        Dim oSource As PicSourceImplement = Nothing
+        oSource = _sources.Where(Function(x) x.mappedGuid = guidStr).FirstOrDefault
+        If oSource Is Nothing Then Return "Sorry Winnetou"  ' gdy nie jest to ani zwyk³y login, ani mapped source
+
+        command = command.Substring(1).ToLowerInvariant
+
+        Select Case command
+
+            Case "expectfilename"
+                Dim queryString As NameValueCollection = request.QueryString
+                _zapowiedzianyFilename = queryString.Item("filename")
+                If OnePic.MatchesMasks(_zapowiedzianyFilename, oSource.includeMask, oSource.excludeMask) Then
+                    Return "OK, now send file"
+                End If
+                _zapowiedzianyFilename = Nothing
+                Return "DONT WANT: this file doesn't match source masks"
+
+            Case "putpicdata" ' przyjêcie zdjêcia
+                If String.IsNullOrEmpty(_zapowiedzianyFilename) Then Return "FAIL no filename set"
+
+                Dim oNew As New Vblib.OnePic(oSource.SourceName, _zapowiedzianyFilename, _zapowiedzianyFilename)
+                oNew.Exifs.Add(oSource.defaultExif.Clone) ' clone, bo jakby potem gdzieœ zmieniaæ (jak by³o w InetDownld), to by siê zmienia³o wszêdzie
+                Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.SourceFile)
+                oExif.DateMax = Date.Now
+                oNew.Exifs.Add(oExif)
+
+                oNew.oContent = request.InputStream
+                Await _buffer.AddFile(oNew)   ' ten oDesc jest zmieniony, o InBufferPathname, wiêc trzeba zrobiæ clone by pomin¹æ te zmiany
+
+                ' to mog³oby byæ raz, na endtransmission, ale wtedy trzeba by³oby czekaæ na koniec RunAutoExif - mo¿e d³ugo
+                _buffer.SetStagesSettings("")
+                Await _buffer.RunAutoExif() ' teoretycznie to mo¿e byæ bez awaita...
+
+                Return "OK"
+
+            Case "endtransmission"
+                _buffer.SaveData()
+                Return "OK"
+
+            Case "purgegetlist" ' wys³anie listy plikow do usuniêcia
+                Return oSource.GetPurgeList
+            Case "purgeresetlist" ' skasowanie listy plikow do usuniêcia
+                oSource.DelPurgeList()
+                Return "OK"
+            Case Else
+                Return "PROTOERROR, here is " & PROTO_VERS
+        End Select
+
+    End Function
+
     Private Function RequestAllowsPL(request As HttpListenerRequest) As Boolean
         If request.UserLanguages Is Nothing Then Return True
         For Each lang In request.UserLanguages
@@ -395,7 +450,7 @@ Public MustInherit Class ServerWrapperBase
 
             Try
                 If Vblib.GetSettingsBool("uiAsWebPrintDates") Then
-                    sPage &= $"Date: {oPic.GetMinDate.ToExifString} .. {oPic.GetMaxDate.ToExifString}" & "<br />"
+                    sPage &= $"Date: {oPic.GetDateSummary(False)}" & "<br />"
                 End If
             Catch ex As Exception
 
@@ -771,6 +826,7 @@ Public MustInherit Class ServerWrapperBase
     End Function
 
     Private Function CanUpload(oLogin As Vblib.ShareLogin) As Boolean
+        If oLogin Is Nothing Then Return False
         Return oLogin.allowUpload
     End Function
 

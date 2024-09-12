@@ -291,6 +291,52 @@ Public Class httpKlient
 
 #End Region
 
+#Region "mappedSource"
+
+    Private Async Function MS_sendPicData(oServer As ShareServer, filename As String) As Task(Of String)
+
+        If Not IO.File.Exists(filename) Then Return "FAIL: no such file"
+
+        If Not EnsureClient() Then Return "FAIL EnsureClient"
+
+        Try ' dla Finally - zwolnienie zasobów
+
+            Dim retVal As String = Await _clientQuick.GetStringAsync(
+                GetUri(oServer, "expectfilename", $"filename={IO.Path.GetFileName(filename)}"))
+            If Not retVal.StartsWithCI("OK") Then Return retVal
+
+            Dim contentPic As ByteArrayContent
+            Using strumykMem As New MemoryStream
+                Using strumykFile As FileStream = IO.File.OpenRead(filename)
+                    strumykFile.CopyTo(strumykMem)
+                End Using
+
+                contentPic = New ByteArrayContent(strumykMem.ToArray)
+            End Using
+            Dim resp As HttpResponseMessage
+
+            Dim newPicUri As Uri = GetUri(oServer, "putpicdata")
+
+            Try
+                resp = Await _clientSlow.PutAsync(newPicUri, contentPic)
+                If Not resp.IsSuccessStatusCode Then Return "FAIL data notOK"
+            Catch ex As Exception
+                Return "FAIL Sending data"
+            End Try
+
+            Return "OK"
+
+        Finally
+            _inuse = False  ' =true jest w EnsureClient
+        End Try
+
+    End Function
+
+
+
+#End Region
+
+
 #Region "plik purge"
 
     ''' <summary>

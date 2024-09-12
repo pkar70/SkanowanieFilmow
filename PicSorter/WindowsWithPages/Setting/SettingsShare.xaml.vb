@@ -48,7 +48,7 @@ Class SettingsShare
     End Sub
 
     Public Shared Sub StartServicing()
-        Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(Application.gDbase)
+        Application.gWcfServer = New lib_sharingNetwork.ServerWrapper(Application.gDbase, Application.GetSourcesList)
         Application.gWcfServer.StartSvc()
 
     End Sub

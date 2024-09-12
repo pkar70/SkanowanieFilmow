@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <RootNamespace>lib_sharingNetwork</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.19041.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\lib_PicSource\lib_n6_PicSource.vbproj" />
     <ProjectReference Include="..\VbLib\VbLib.vbproj" />
   </ItemGroup>
 
