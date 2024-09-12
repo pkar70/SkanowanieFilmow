@@ -26,6 +26,43 @@ Class SettingsShareLogins
         uiPeerID.IsEnabled = False
         ShowToEdit(oLogin)
     End Sub
+    Private Sub uiDump_Click(sender As Object, e As RoutedEventArgs)
+        Dim oLogin As ShareLogin = TryCast(sender, FrameworkElement)?.DataContext
+        If oLogin Is Nothing Then Return
+
+        Dim sTxt As String = "Login: " & oLogin.displayName
+
+        If Not String.IsNullOrWhiteSpace(oLogin.processing) Then
+            sTxt &= vbCrLf & $" (⚙: {oLogin.processing})"
+        End If
+
+        If oLogin?.channels IsNot Nothing Then
+
+            For Each kanal As Vblib.ShareChannelProcess In oLogin.channels
+                sTxt = sTxt & vbCrLf & $"+ Channel: {kanal.channelName}"
+                If Not String.IsNullOrWhiteSpace(kanal.processing) Then
+                    sTxt &= $"  (⚙: {kanal.processing})"
+                End If
+
+                If kanal?.channel?.queries IsNot Nothing Then
+                    For Each kwerenda As Vblib.ShareQueryProcess In kanal.channel.queries
+                        sTxt = sTxt & vbCrLf & $"  + Query:" ' {kwerenda.queryName}" - nie trzeba nazwy, bo nazwa będzie w AsDymek
+                        If Not String.IsNullOrWhiteSpace(kwerenda.processing) Then
+                            sTxt &= $" (⚙: {kwerenda.processing})"
+                        End If
+
+                        sTxt = sTxt & kwerenda.query.AsDymek ' zaczynamy od zmiany linii
+
+                    Next
+                End If
+
+            Next
+
+        End If
+
+        sTxt.SendToClipboard
+        Me.MsgBox(sTxt)
+    End Sub
 
     Public Shared Async Function GetCurrentMeAsWeb() As Task(Of String)
         Dim adres As String = Vblib.GetSettingsString("uiAdresOverride") ' DDNS, jak u mnie - nie adres fizyczny ale symboliczny, spisek...

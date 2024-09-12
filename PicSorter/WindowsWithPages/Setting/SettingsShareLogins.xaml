@@ -46,15 +46,16 @@
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
 
                             <CheckBox IsChecked="{Binding enabled, Mode=TwoWay}" MinWidth="20" Checked="uiEnabled_Checked" Unchecked="uiEnabled_Checked" ToolTip="Odznaczenie spowoduje zablokowanie logowania przez sieć"/>
                             <TextBlock Text="{Binding displayName, Mode=OneTime}"  Grid.Column="1"/>
-                            <Button Content=" Edit " Grid.Column="2" Click="uiEdit_Click" Margin="5,0,5,0" />
-                            <Button Content=" Email " Grid.Column="3" Click="uiEmail_Click" Margin="5,0,5,0" />
-                            <Button Content=" Del " Grid.Column="4" Click="uiDel_Click" />
+                            <StackPanel Orientation="Horizontal" Grid.Column="2">
+                                <Button Content=" 🔍 " Click="uiDump_Click" Margin="2,0,2,0" ToolTip="Dump to clipboard"/>
+                                <Button Content=" 🖉 " Click="uiEdit_Click" Margin="2,0,2,0" ToolTip="Edit"/>
+                                <Button Content=" 🖃 " Click="uiEmail_Click" Margin="2,0,2,0" ToolTip="Send email with links"/>
+                                <Button Content=" Ⓧ " Click="uiDel_Click" Margin="2,0,2,0" ToolTip="Delete"/>
+                            </StackPanel>
 
                         </Grid>
                     </DataTemplate>
