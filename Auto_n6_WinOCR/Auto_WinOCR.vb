@@ -22,13 +22,29 @@ Public Class AutoTag_WinOCR
     Public Overrides ReadOnly Property Nazwa As String = ExifSource.AutoWinOCR ' "AUTO_WINOCR"
     Public Overrides ReadOnly Property MinWinVersion As String = "10.0"
     Public Overrides ReadOnly Property DymekAbout As String = "Próbuje zrobiæ OCR u¿ywaj¹c Windows." & vbCrLf & "U¿ywa pola UserComment"
-    Public Shared ReadOnly Property includeMask As String = OnePic.ExtsPic & OnePic.ExtsStereo
+    Public Overrides ReadOnly Property includeMask As String = OnePic.ExtsPic & ";" & OnePic.ExtsStereo & ";*.txt"
 
     Public Overrides Async Function GetForFile(oFile As Vblib.OnePic) As Task(Of Vblib.ExifTag)
         If Not oFile.MatchesMasks(includeMask) Then Return Nothing
 
-        Dim teksty As String = Await ZrobOCR(oFile)
-        If teksty Is Nothing Then Return Nothing
+        Dim teksty As String
+        If oFile.MatchesMasks("*.txt") Then
+            teksty = IO.File.ReadAllText(oFile.InBufferPathName)
+            If teksty.Length > 4096 Then
+                Dim iInd As Integer = teksty.LastIndexOf(" ", 4096)
+                If iInd < 100 Then
+                    teksty = teksty.Substring(0, 4096)
+                Else
+                    teksty = teksty.Substring(0, iInd)
+                End If
+                teksty &= " ... (ciach)"
+            End If
+        Else
+            teksty = Await ZrobOCR(oFile)
+        End If
+
+
+        If String.IsNullOrWhiteSpace(teksty) Then Return Nothing
 
         Dim oExif As New Vblib.ExifTag(Nazwa)
         oExif.UserComment = teksty
