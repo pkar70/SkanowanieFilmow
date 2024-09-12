@@ -242,6 +242,7 @@ Public Module Globs
     New SequenceStage_Dates,
     New SequenceStage_Geotags,
     New SequenceStage_AutoTaggers,
+    New SequenceStageAzureCheck,
     New SequenceStage_Descriptions,
     New SequenceStage_TargetDir,
     New SequenceStage_Publish,

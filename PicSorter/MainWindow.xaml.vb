@@ -4,6 +4,7 @@ Imports Vblib
 Imports pkar.UI.Extensions
 Imports System.Windows.Interop
 Imports System.Threading
+Imports MetadataExtractor.Formats
 
 Class MainWindow
     Inherits Window
@@ -427,6 +428,63 @@ Class MainWindow
     End Sub
 #End Region
 
+    Private Shared Function GetOneDrivePath() As String
+        Dim sOneDrivePath As String = Environment.GetEnvironmentVariable("OneDriveConsumer")
+        If sOneDrivePath Is Nothing Then Return ""
+
+        If Not IO.Directory.Exists(sOneDrivePath) Then Return ""
+
+        sOneDrivePath = IO.Path.Combine(sOneDrivePath, "Apps")
+        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
+
+        Dim appName As String = GetAppName()
+
+        sOneDrivePath = IO.Path.Combine(sOneDrivePath, appName)
+        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
+
+        Return sOneDrivePath
+    End Function
+
+
+    Private Shared Sub InitGlobsy()
+        Globs.Init(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            GetOneDrivePath)
+
+        Globs.gAutoTagery = {
+        New Vblib.AutoTag_EXIF,
+        New Vblib.AutoTag_FullEXIF,
+        New Auto_std2_Astro.Auto_Pogoda,
+        New Auto_std2_Astro.Auto_Astro,
+        New Auto_std2_Astro.Auto_MoonPhase,
+        New Auto_std2_Meteo.Auto_Meteo_Opad,
+        New Vblib.Auto_GeoNamePl,
+        New Vblib.Auto_OSM_POI,
+        New Auto_WinOCR.AutoTag_WinOCR,
+        New Auto_WinFace.Auto_WinFace,
+        New Vblib.Auto_AzureTest(New Process_ResizeHalf)
+    }
+
+        Globs.gPostProcesory = {
+        New Process_AutoRotate,
+        New Process_Resize800,
+        New Process_Resize1024,
+        New Process_Resize1280,
+        New Process_Resize1600,
+        New Process_Resize2048,
+        New Process_ResizeHalf,
+        New Process_FlipHorizontal,
+        New Process_EmbedBasicExif,
+        New Process_EmbedGeoExif,
+        New Process_EmbedExif,
+        New Process_RemoveExif,
+        New Process_Signature.Process_FaceRemove,
+        New Process_Signature.Process_Signature,
+        New Process_Watermark
+    }
+
+
+    End Sub
 
     Private Async Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
@@ -487,69 +545,50 @@ Class MainWindow
 
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
-        'PoprawZeszyty
+        'PoprawDateMinMaxKwds()
     End Sub
 
-    Private Shared Function GetOneDrivePath() As String
-        Dim sOneDrivePath As String = Environment.GetEnvironmentVariable("OneDriveConsumer")
-        If sOneDrivePath Is Nothing Then Return ""
-
-        If Not IO.Directory.Exists(sOneDrivePath) Then Return ""
-
-        sOneDrivePath = IO.Path.Combine(sOneDrivePath, "Apps")
-        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
-
-        Dim appName As String = GetAppName()
-
-        sOneDrivePath = IO.Path.Combine(sOneDrivePath, appName)
-        If Not IO.Directory.Exists(sOneDrivePath) Then IO.Directory.CreateDirectory(sOneDrivePath)
-
-        Return sOneDrivePath
-    End Function
-
-
-    Private Shared Sub InitGlobsy()
-        Globs.Init(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            GetOneDrivePath)
-
-        Globs.gAutoTagery = {
-        New Vblib.AutoTag_EXIF,
-        New Vblib.AutoTag_FullEXIF,
-        New Auto_std2_Astro.Auto_Pogoda,
-        New Auto_std2_Astro.Auto_Astro,
-        New Auto_std2_Astro.Auto_MoonPhase,
-        New Auto_std2_Meteo.Auto_Meteo_Opad,
-        New Vblib.Auto_GeoNamePl,
-        New Vblib.Auto_OSM_POI,
-        New Auto_WinOCR.AutoTag_WinOCR,
-        New Auto_WinFace.Auto_WinFace,
-        New Vblib.Auto_AzureTest(New Process_ResizeHalf)
-    }
-
-        Globs.gPostProcesory = {
-        New Process_AutoRotate,
-        New Process_Resize800,
-        New Process_Resize1024,
-        New Process_Resize1280,
-        New Process_Resize1600,
-        New Process_Resize2048,
-        New Process_ResizeHalf,
-        New Process_FlipHorizontal,
-        New Process_EmbedBasicExif,
-        New Process_EmbedGeoExif,
-        New Process_EmbedExif,
-        New Process_RemoveExif,
-        New Process_Signature.Process_FaceRemove,
-        New Process_Signature.Process_Signature,
-        New Process_Watermark
-    }
-
-
-    End Sub
 
 
 #Region "poprawianie plików"
+
+
+    Private Sub PoprawDateMinMaxKwds()
+        Dim buff As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "buffer.json")
+        buff.Load()
+
+        For Each oPic As Vblib.OnePic In buff
+
+            'Dim srcExif As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.SourceFile)
+            'If String.IsNullOrWhiteSpace(srcExif.Keywords) Then Continue For
+
+            Dim mantag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.ManualTag)
+            If mantag Is Nothing Then Continue For
+            ' If mantag Is Nothing Then mantag = New ExifTag(Vblib.ExifSource.ManualTag)
+
+            'mantag.Keywords = srcExif.Keywords
+            'srcExif.Keywords = ""
+
+            Dim fromKeywords As List(Of Vblib.OneKeyword) = Globs.GetKeywords.GetKeywordsList(mantag.Keywords)
+
+            Dim oMinDate As Date = Date.MinValue
+            Dim oMaxDate As Date = Date.MaxValue
+
+            For Each oItem As Vblib.OneKeyword In fromKeywords
+                If oItem.minDate.IsDateValid Then oMinDate = oMinDate.Max(oItem.minDate)
+                If oItem.maxDate.IsDateValid Then oMaxDate = oMaxDate.Min(oItem.maxDate)
+            Next
+
+            If oMaxDate.IsDateValid Then mantag.DateMax = oMaxDate
+            If oMinDate.IsDateValid Then mantag.DateMin = oMinDate
+
+            oPic.ReplaceOrAddExif(mantag)
+
+        Next
+
+        buff.Save()
+    End Sub
+
 
 #If False Then
     Private Sub PoprawZeszyty()

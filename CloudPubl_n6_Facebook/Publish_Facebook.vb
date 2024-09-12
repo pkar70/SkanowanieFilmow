@@ -2,6 +2,8 @@ Imports System.IO
 Imports vb14 = Vblib.pkarlibmodule14
 Imports Vblib
 Imports Facebook
+Imports System.ComponentModel
+Imports System.Collections.Specialized
 
 Public Class Publish_Facebook_Post
     Inherits Publish_Facebook
@@ -247,6 +249,19 @@ Partial Public MustInherit Class Publish_Facebook
 
         '        ' https://developers.facebook.com/docs/pages/access-tokens
 
+        ' 2024.08.24, mamy token
+
+        Dim fb = New Facebook.FacebookClient(AppToken)
+        Dim resp = fb.Get("me?fields=id,name")
+
+
+
+        '        graph = Facebook.GraphAPI(access_token = os.getenv('FACEBOOK_ACCESS_TOKEN'), version='3.1')
+        'api_request = graph.put_photo(image = img_byte_arr,
+        '                message = msg, album_path = album_id + "/photos")
+
+
+
         '        If String.IsNullOrWhiteSpace(konfiguracja.sUsername) Then
         '            Await vb14.DialogBoxAsync("ERROR: use username for App ID")
         '            Return False
@@ -369,3 +384,22 @@ Partial Public MustInherit Class Publish_Facebook
 #End Region
 End Class
 
+Public Class SprobujFacebook
+
+    Public Shared Async Function SprawdzKtoJa() As Task
+        ' za³ó¿my ¿e mam TOKEN
+
+        ' zwróæ kto ja jestem
+    End Function
+
+    Public Shared Async Function GetAlbumsList() As Task(Of List(Of String))
+
+    End Function
+
+    Public Shared Async Function GetGroupsList() As Task(Of List(Of String))
+
+    End Function
+
+
+
+End Class

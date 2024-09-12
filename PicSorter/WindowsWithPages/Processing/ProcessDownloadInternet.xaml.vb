@@ -60,7 +60,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
     Private Sub NextPic()
         Vblib.DumpCurrMethod()
 
-        Dim countnew As Integer = _source.ReadDirectory(Nothing)
+        Dim countnew As Integer = _source.ReadDirectory(False)
         If countnew <= 0 Then Return
 
         _picek = _source.GetLast

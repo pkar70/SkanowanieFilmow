@@ -39,6 +39,7 @@ uiTitleSerno=True
 uiAutoCrop=True
 
 uiWinFaceMinSize=2
+uiWinFaceAfterDeath=12
 
 # remark
 ' remark

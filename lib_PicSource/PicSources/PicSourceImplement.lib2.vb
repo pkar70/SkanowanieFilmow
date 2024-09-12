@@ -151,7 +151,7 @@ Public Class PicSourceImplement
         Dim iInd As Integer = sVolLabel.IndexOf("(")
         If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd).Trim
 
-        Dim oDrives = IO.DriveInfo.GetDrives()
+        Dim oDrives = IO.DriveInfo.GetDrives() 'DriveInfo: .Net Std 2.0
         For Each oDrive As IO.DriveInfo In oDrives
             If oDrive.IsReady AndAlso oDrive.VolumeLabel.ToLowerInvariant = sVolLabel Then
                 If String.IsNullOrWhiteSpace(sPath) Then Return oDrive.RootDirectory.Name

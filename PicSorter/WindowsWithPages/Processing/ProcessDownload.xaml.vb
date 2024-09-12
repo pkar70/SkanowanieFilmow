@@ -89,6 +89,7 @@ Public Class ProcessDownload
             If oSrc.Typ <> PicSourceType.Inet Then
                 Dim oWnd As New EditExifTag(oSrc.currentExif, oSrc.SourceName & " (chwilowe)", EditExifTagScope.LimitedToSourceDir, False)
                 oWnd.ShowDialog()
+                If Not oWnd.DialogResult Then Return
             End If
 
         End If
@@ -244,8 +245,10 @@ Public Class ProcessDownload
         Me.ProgRingSetText("Saving metadata...")
 
         ProcessPic.GetBuffer(Me).SaveData()
-        oSrc.lastDownload = Date.Now
-        Application.GetSourcesList.Save()   ' zmieniona data
+        If retval > 0 Then
+            oSrc.lastDownload = Date.Now
+            Application.GetSourcesList.Save()   ' zmieniona data
+        End If
 
         Me.ProgRingShow(False)
 
@@ -256,45 +259,14 @@ Public Class ProcessDownload
         Me.ProgRingSetText("Reading EXIFs...")
         Me.ProgRingSetVal(0)
 
-        Dim oEngine As AutotaggerBase = Vblib.gAutoTagery.Where(Function(x) x.Nazwa = Vblib.ExifSource.FileExif).ElementAt(0)
-        ' się nie powinno zdarzyć, no ale cóż...
-        If oEngine Is Nothing Then Return
+        Await ProcessPic.GetBuffer(Me).RunAutoExif
 
-        Dim iSerNo As Integer = vb14.GetSettingsInt("lastSerNo")
-
-        For Each oItem As Vblib.OnePic In ProcessPic.GetBuffer(Me).GetList
-
-            ' najpierw Serial Number zrobimy - obojętnie co dalej...
-            If oItem.serno < 1 Then
-                iSerNo += 1
-                oItem.serno = iSerNo
-            End If
-
-            If Not IO.File.Exists(oItem.InBufferPathName) Then Continue For   ' zabezpieczenie przed samoznikaniem
-
-            ' niby nie ma prawa być, chyba że to Peer
-            If oItem.GetExifOfType(oEngine.Nazwa) Is Nothing Then
-                Try
-                    Dim oExif As Vblib.ExifTag = Await oEngine.GetForFile(oItem)
-                    If oExif IsNot Nothing Then
-                        oItem.ReplaceOrAddExif(oExif)
-                        oItem.TagsChanged = True
-                    End If
-                    'Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
-                Catch ex As Exception
-                    ' zabezpieczenie, żeby mi na pewno nie zrobił crash przy nadawaniu serno!
-                End Try
-            End If
-            Me.ProgRingInc
-        Next
-
-        vb14.SetSettingsInt("lastSerNo", iSerNo)
     End Function
 
     Private Async Function RetrieveFromDisk(oSrc As PicSourceBase) As Task(Of Integer)
         Me.ProgRingSetText($"Dir {oSrc.SourceName}")
 
-        Dim iCount As Integer = oSrc.ReadDirectory(vblib.GetKeywords.ToFlatList)
+        Dim iCount As Integer = oSrc.ReadDirectory()
         'Await vb14.DialogBoxAsync($"read {iCount} files")
         vb14.DumpMessage($"Read {iCount} files")
 
@@ -337,7 +309,7 @@ Public Class ProcessDownload
     Private Async Function RetrieveFromReel(oSrc As PicSourceBase) As Task(Of Integer)
         Me.ProgRingSetText($"Dir {oSrc.SourceName}")
 
-        Dim iCount As Integer = oSrc.ReadDirectory(vblib.GetKeywords.ToFlatList)
+        Dim iCount As Integer = oSrc.ReadDirectory()
         'Await vb14.DialogBoxAsync($"read {iCount} files")
         vb14.DumpMessage($"Read {iCount} files")
 

@@ -7,8 +7,14 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <CheckBox Content="Dołącz zdjęcia przed rozpoznaniem twarzy" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia dla których nie uruchomiono WinFace ani Azure" IsChecked="{Binding AlsoEmpty, Mode=TwoWay}" />
+        <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -23,5 +29,5 @@
         <Slider Grid.ColumnSpan="2" Grid.Row="3" Value="{Binding MaxValue, Mode=TwoWay}" Minimum="0" Maximum="7" ToolTip="Liczba twarzy" IsEnabled="{Binding IsChecked, ElementName=uiFacesMaxCheck}"/>
 
             </Grid>
-
+    </Grid>
 </UserControl>

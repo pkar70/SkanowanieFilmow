@@ -87,14 +87,12 @@ Public Class BrowseKeywordsWindow
     End Sub
     Private Shared Sub SetDatesByKeywords(inExif As Vblib.ExifTag, fromKeywords As List(Of Vblib.OneKeyword))
 
-        Dim oMinDate As Date = Date.MaxValue
-        Dim oMaxDate As Date = Date.MinValue
+        Dim oMinDate As Date = Date.MinValue
+        Dim oMaxDate As Date = Date.MaxValue
 
         For Each oItem As Vblib.OneKeyword In fromKeywords
-
-            oMinDate = oMinDate.Min(oItem.minDate)
-            oMaxDate = oMaxDate.Max(oItem.maxDate)
-
+            If oItem.minDate.IsDateValid Then oMinDate = oMinDate.Max(oItem.minDate)
+            If oItem.maxDate.IsDateValid Then oMaxDate = oMaxDate.Min(oItem.maxDate)
         Next
 
         If oMaxDate.IsDateValid Then inExif.DateMax = oMaxDate

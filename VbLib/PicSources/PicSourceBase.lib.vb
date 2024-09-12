@@ -13,7 +13,7 @@ Public MustInherit Class PicSourceBase
 	Public Property enabled As Boolean = True
 	Public Property Path As String  ' znaczenie zmienne w zależności od Type
 	Public Property VolLabel As String  ' device MTP, albo vollabel dysku do sprawdzania
-	Public Property Recursive As Boolean
+	Public Property Recursive As Boolean ' dla INET: immediately delete
 	Public Property sourcePurgeDelay As TimeSpan = TimeSpan.FromDays(7)
 	Public Property defaultPublish As List(Of String)   ' lista IDs
 	Public Property includeMask As String = OnePic.ExtsPic & OnePic.ExtsMovie & ";*.nar;*.jpg.thumb;*.raf" ' maski regexp
@@ -21,6 +21,8 @@ Public MustInherit Class PicSourceBase
 	Public Property lastDownload As DateTime
 	Public Property defaultKwds As String
 	Public Property defaultExif As ExifTag
+
+	Public Property mappedGuid As String
 
 	<Newtonsoft.Json.JsonIgnore>
 	Public Property currentExif As ExifTag  ' default + aktualne zmiany
@@ -66,7 +68,11 @@ Public MustInherit Class PicSourceBase
 	''' </summary>
 	''' <param name="lKeywords">Lista słów kluczowych, które są wyciągane z nazwy pliku</param>
 	''' <returns>count(files), gdy = 0 wtedy nie ma sensu iterować</returns>
-	Public Function ReadDirectory(lKeywords As List(Of OneKeyword)) As Integer
+	Public Function ReadDirectory(Optional useKeywords As Boolean = True) As Integer
+
+		Dim lKeywords As New List(Of OneKeyword)
+		If useKeywords Then lKeywords = Globs.GetKeywords.ToFlatList.Where(Function(x) x.SubItems Is Nothing OrElse x.SubItems.Count < 1).ToList
+
 		DumpCurrMethod()
 		If Not IsPresent_Main() Then Return -1
 
@@ -104,6 +110,14 @@ Public MustInherit Class PicSourceBase
 
 		For Each oPic As OnePic In lPicki
 
+			Dim manualTag As New ExifTag(ExifSource.ManualTag) With
+				{
+			.DateMin = Date.MinValue,
+			.DateMax = Date.MaxValue,
+			.Keywords = "",
+			.UserComment = ""
+				}
+
 			Dim oExif As ExifTag = oPic.GetExifOfType(ExifSource.SourceFile)
 			' można się zabezpieczyć i dawać nowy, ale ten i tak zawsze będzie
 			If oExif Is Nothing Then Continue For
@@ -116,17 +130,22 @@ Public MustInherit Class PicSourceBase
 				If oKey.IsRoot Then Continue For
 
 				If sFilename.Contains(oKey.sId) Then
-					oExif.Keywords = oExif.Keywords & " " & oKey.sId
-					oExif.UserComment = oExif.UserComment & " | " & oKey.sDisplayName
+					manualTag.Keywords = manualTag.Keywords & " " & oKey.sId
+					manualTag.UserComment = manualTag.UserComment & " | " & oKey.sDisplayName
+
+					If oKey.minDate.IsDateValid Then manualTag.DateMin = manualTag.DateMin.Max(oKey.minDate)
+					If oKey.maxDate.IsDateValid Then manualTag.DateMax = manualTag.DateMax.Min(oKey.maxDate)
 
 					sFilename = sFilename.Replace(oKey.sId, "")  ' kasujemy istniejące
 				End If
-			Next
+            Next
 
 			' wycięcie pierwszego sklejenia
-			If Not String.IsNullOrEmpty(oExif.Keywords) Then
-				oExif.Keywords = oExif.Keywords.Trim
-				If oExif.UserComment.StartsWith(" | ") Then oExif.UserComment = oExif.UserComment.Substring(3)
+			If Not String.IsNullOrEmpty(manualTag.Keywords) Then
+				manualTag.Keywords = manualTag.Keywords.Trim
+				If manualTag.UserComment.StartsWith(" | ") Then manualTag.UserComment = manualTag.UserComment.Substring(3)
+
+				oPic.ReplaceOrAddExif(manualTag)
 			End If
 
 			' *TODO* reszta -do userdescription
@@ -469,6 +488,8 @@ Public MustInherit Class PicSourceBase
 	''' <param name="sId"></param>
 	Public Sub AddToPurgeList(sId As String)
 		If Typ = PicSourceType.AdHOC Then Return
+		' dla INET, Recursive oznacza natychmiastowe kasowanie - więc nie ma po co trzymać tego w liście plików
+		If Typ = PicSourceType.Inet AndAlso Recursive Then Return
 		IO.File.AppendAllText(_purgeFile, Date.Now.ToString("yyyyMMdd.HHmm") & vbTab & sId & vbCrLf)
 	End Sub
 
@@ -517,6 +538,15 @@ Public MustInherit Class PicSourceBase
 
 		Return iCnt
 	End Function
+
+	Public Function GetPurgeList() As String
+		Return IO.File.ReadAllText(_purgeFile)
+	End Function
+
+	Public Sub DelPurgeList()
+		IO.File.Delete(_purgeFile)
+	End Sub
+
 #End Region
 
 

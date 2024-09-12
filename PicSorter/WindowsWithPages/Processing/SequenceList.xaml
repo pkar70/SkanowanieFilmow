@@ -13,7 +13,9 @@
 
     <local:StretchedGrid Margin="5,5,5,5" Width="200" Rows="A,*">
         <local:TextBlockPageTitle Visibility="Collapsed" x:Name="uiTitle" />
-        <StackPanel Grid.Row="1" x:Name="uiLista" />
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Hidden">
+        <StackPanel  x:Name="uiLista" />
+        </ScrollViewer>
         <!--<local:StretchedListView Grid.Row="1" x:Name="uiLista"/>-->
     </local:StretchedGrid>
 </Window>
