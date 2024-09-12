@@ -123,53 +123,59 @@ Public Class Helper
 
         If _oMD Is Nothing Then Return False    ' nie powinno siê zdarzyæ, chyba ¿e bêdzie b³¹d w programowaniu
 
-        For Each sDir As String In _oMD.EnumerateDirectories(sSrcPath)
-            If Not ReadDirectory_Recursion(sDir, sSourceName, sIncludeMask, sExcludeMask, oCurrentExif) Then Return Nothing
-        Next
+        Try
 
-        For Each sFilePathName As String In _oMD.EnumerateFiles(sSrcPath)
-            Dim sFileName As String = IO.Path.GetFileName(sFilePathName)
+            For Each sDir As String In _oMD.EnumerateDirectories(sSrcPath)
+                If Not ReadDirectory_Recursion(sDir, sSourceName, sIncludeMask, sExcludeMask, oCurrentExif) Then Return Nothing
+            Next
 
-            If Vblib.OnePic.MatchesMasks(sFileName, sIncludeMask, sExcludeMask) Then
+            For Each sFilePathName As String In _oMD.EnumerateFiles(sSrcPath)
+                Dim sFileName As String = IO.Path.GetFileName(sFilePathName)
 
-                Dim oNew As New Vblib.OnePic(sSourceName, sFilePathName, sFileName)
-                oNew.Exifs.Add(oCurrentExif)
+                If Vblib.OnePic.MatchesMasks(sFileName, sIncludeMask, sExcludeMask) Then
 
-                ' i teraz daty sprobuj sciagnac
-                Dim oFI As MediaDevices.MediaFileInfo = _oMD.GetFileInfo(sFilePathName)
-                Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.SourceFile)
-                Dim createDate As Date? = oFI.CreationTime
-                Dim writeDate As Date? = oFI.LastWriteTime
+                    Dim oNew As New Vblib.OnePic(sSourceName, sFilePathName, sFileName)
+                    oNew.Exifs.Add(oCurrentExif)
 
-                If createDate.HasValue AndAlso writeDate.HasValue Then
+                    ' i teraz daty sprobuj sciagnac
+                    Dim oFI As MediaDevices.MediaFileInfo = _oMD.GetFileInfo(sFilePathName)
+                    Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.SourceFile)
+                    Dim createDate As Date? = oFI.CreationTime
+                    Dim writeDate As Date? = oFI.LastWriteTime
 
-                    If createDate < writeDate Then
-                        oExif.DateMax = writeDate.Value
-                        oExif.DateMin = createDate.Value
+                    If createDate.HasValue AndAlso writeDate.HasValue Then
+
+                        If createDate < writeDate Then
+                            oExif.DateMax = writeDate.Value
+                            oExif.DateMin = createDate.Value
+                        Else
+                            oExif.DateMin = writeDate.Value
+                            oExif.DateMax = createDate.Value
+                        End If
+                        oNew.Exifs.Add(oExif)
                     Else
-                        oExif.DateMin = writeDate.Value
-                        oExif.DateMax = createDate.Value
-                    End If
-                    oNew.Exifs.Add(oExif)
-                Else
-                    ' czyli albo tylko jedno, albo ¿adno nie ma daty
-                    If createDate.HasValue Then
-                        oExif.DateMax = createDate.Value
-                        oExif.DateMin = createDate.Value
+                        ' czyli albo tylko jedno, albo ¿adno nie ma daty
+                        If createDate.HasValue Then
+                            oExif.DateMax = createDate.Value
+                            oExif.DateMin = createDate.Value
+                        End If
+
+                        If writeDate.HasValue Then
+                            oExif.DateMax = writeDate.Value
+                            oExif.DateMin = writeDate.Value
+                        End If
                     End If
 
-                    If writeDate.HasValue Then
-                        oExif.DateMax = writeDate.Value
-                        oExif.DateMin = writeDate.Value
-                    End If
+                    _listaPlikow.Add(oNew)
                 End If
 
-                _listaPlikow.Add(oNew)
-            End If
+            Next
 
-        Next
+            Return True
 
-        Return True
+        Catch
+            Return False
+        End Try
 
     End Function
 
