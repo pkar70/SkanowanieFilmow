@@ -166,7 +166,7 @@
                             <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" UseSelectedItems="True" />
                             <local:PicMenuKwds MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
                             <!--<local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />-->
-                            <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" ChangePic="True"/>
+                            <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" />
 
                             <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
                             <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />

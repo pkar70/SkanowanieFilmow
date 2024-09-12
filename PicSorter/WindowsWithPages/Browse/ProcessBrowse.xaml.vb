@@ -56,7 +56,7 @@ Public Class ProcessBrowse
         uiDeleteSelected.Visibility = oVis
         uiMenuAutotags.Visibility = oVis
         uiDescribeSelected.Visibility = oVis
-        uiGeotagSelected.Visibility = oVis
+        'uiGeotagSelected.Visibility = oVis
         'uiMenuDateRefit.Visibility = oVis
         'uiBatchProcessors.Visibility = oVis ' bo robi się samo w zależnosci od *Archived zdjęcia
         uiActionTargetDir.Visibility = oVis
@@ -924,7 +924,7 @@ Public Class ProcessBrowse
         pic0.oPic.Archived = "" ' takiej wersji na pewno nie było zarchiwizowanej :)
         pic0.oPic.sSuggestedFilename = IO.Path.GetFileName(packZipName)
         pic0.oPic.SetDefaultFileTypeDiscriminator() ' ikonka przy picku
-
+        pic0.NotifyPropChange("oPic.fileTypeDiscriminator")
         If pic1 IsNot Nothing Then DeletePicekMain(pic1)   ' zmieni _Reapply, jeśli picek miał splita; ze wszystkąd usuwa
 
         ' *TODO* ewentualnie stereoautoalign, własny anagl z *aligned*, ustalenie R/L, i zrobienie pliku JPS - tak by do StereoViewer wysłac pliki aligned
@@ -1704,10 +1704,10 @@ Public Class ProcessBrowse
         If _thumbsy.Count < 1 Then Return
 
         If uiPicList.Items Is Nothing Then Return
-        If uiPicList.Items.CurrentPosition < 0 Then
-            ' Me.MsgBox("uiPicList.Items.CurrentPosition < 0")
-            Return
-        End If
+        'If uiPicList.Items.CurrentPosition < 0 Then
+        '    ' Me.MsgBox("uiPicList.Items.CurrentPosition < 0")
+        '    Return
+        'End If
 
         ' ominięcie podwójnego OnSelectionChanged, które się łączyło z:
         ' System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'ListViewItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
@@ -2504,9 +2504,9 @@ Public Class ProcessBrowse
 
 
 
-    Private Sub FilterSharingLogin(sender As Object, e As RoutedEventArgs)
+    Private Sub FilterSharingAnyLogin(sender As Object, e As RoutedEventArgs)
         'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "login"
+        uiFilters.Content = "login*"
 
         Dim oFE As FrameworkElement = sender
         Dim oLogin As Vblib.ShareLogin = oFE?.DataContext
@@ -2582,6 +2582,13 @@ Public Class ProcessBrowse
 
         Dim iCnt As Integer = 0
 
+        ' "dowolny"
+        Dim oNewMarked As New MenuItem With {.Header = "any"}
+        AddHandler oNewMarked.Click, AddressOf FilterSharingAnyLogin
+        uiFilterLoginsMarked.Items.Add(oNewMarked)
+        uiFilterLoginsMarked.Items.Add(New Separator)
+
+        ' kolejne loginy
         For Each oLogin As Vblib.ShareLogin In From c In Vblib.GetShareLogins Order By c.displayName
 
             'Dim oNew As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
@@ -2589,7 +2596,7 @@ Public Class ProcessBrowse
             'uiFilterLogins.Items.Add(oNew)
             iCnt += 1
 
-            Dim oNewMarked As New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
+            oNewMarked = New MenuItem With {.Header = oLogin.displayName, .DataContext = oLogin}
             AddHandler oNewMarked.Click, AddressOf FilterSharingLoginMarked
             uiFilterLoginsMarked.Items.Add(oNewMarked)
 
@@ -3146,7 +3153,7 @@ Public Class ProcessBrowse
 
             Dim bitmapa As BitmapImage = Await ThumbGet(bCacheThumbs)
             oImageSrc = bitmapa
-
+            NotifyPropChange("oImageSrc")
         End Function
 
         Private Async Function ThumbGet(bCacheThumbs As Boolean) As Task(Of BitmapImage)
@@ -3419,7 +3426,7 @@ End Class
 Public Class KonwersjaPasekWysok
     Implements IMultiValueConverter
 
-    Public Function Convert(values() As Object, targetType As Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
+    Public Function Convert(values As Object(), targetType As Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements IMultiValueConverter.Convert
 
         Dim splitBefore As Integer = CType(values.ElementAt(0), Integer)
         Dim height As Integer = CType(values.ElementAt(1), Integer)
