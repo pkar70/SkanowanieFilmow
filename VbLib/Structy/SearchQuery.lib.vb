@@ -31,6 +31,23 @@ Public Class SearchQuery
 
     Public Property fullDirs As Boolean
 
+    <JsonIgnore>
+    Public ReadOnly Property AsDymek As String
+        Get
+            Dim txtMe As String = Me.DumpAsJSON(True)
+            Dim txtDef As String = (New SearchQuery).DumpAsJSON(True)
+
+            Dim ret As String = ""
+            For Each linia As String In txtMe.Split(vbCrLf)
+                If txtDef.Contains(linia) Then Continue For
+                'If linia.Contains(": """"") Then Continue For
+                ret = ret & vbCrLf & linia.Replace(vbCr, "").Replace(vbLf, "")
+            Next
+            Return ret
+        End Get
+    End Property
+
+
 End Class
 
 #Region "pomocnicze sub-query"
@@ -78,6 +95,7 @@ End Class
 
 
 Public Class QueryFaces
+    Public Property AlsoEmpty As Boolean
     Public Property MinCheck As Boolean
     Public Property MinValue As Integer
     Public Property MaxCheck As Boolean

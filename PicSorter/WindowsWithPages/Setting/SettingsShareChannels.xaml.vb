@@ -4,15 +4,15 @@ Imports Vblib
 
 Class SettingsShareChannels
 
-    Dim _lista As ObservableList(Of Vblib.ShareChannel)
+    Dim _lista As List(Of Vblib.ShareChannel)
 
-    Private _kwerendy As List(Of String) 'ObservableList(Of SearchQuery)
+    'Private _kwerendy As List(Of String) 'ObservableList(Of SearchQuery)
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        _lista = Vblib.GetShareChannels.OrderBy(Function(x) x.nazwa)
+        _lista = Vblib.GetShareChannels.OrderBy(Function(x) x.nazwa).ToList
         uiLista.ItemsSource = _lista
 
-        _kwerendy = Vblib.GetQueries.OrderBy(Of String)(Function(x) x.nazwa).Select(Of String)(Function(x) x.nazwa).ToList
+        '_kwerendy = Vblib.GetQueries.OrderBy(Of String)(Function(x) x.nazwa).Select(Of String)(Function(x) x.nazwa).ToList
     End Sub
 
 #Region "lista kanałów"
@@ -129,16 +129,46 @@ Class SettingsShareChannels
     'End Sub
 
     Private Sub uiAddQuery_Click(sender As Object, e As RoutedEventArgs)
-        Dim oFE As FrameworkElement = sender
-        Dim oChannel As ShareChannel = oFE?.DataContext
-        If oChannel Is Nothing Then Return
 
-        Dim oNew As New ShareQueryProcess
+        ' wygeneruj menu
+        WypelnMenuAddKwerenda()
+        ' otwórz popup
+        uiAddQueryPopup.IsOpen = Not uiAddQueryPopup.IsOpen
+    End Sub
+
+    Private Sub DodajToQuery(sender As Object, e As RoutedEventArgs)
+        Dim oChannel As ShareChannel = uiEditChannel.DataContext
+        Dim oFE As FrameworkElement = sender
+        Dim oQuery As Vblib.SearchQuery = oFE?.DataContext
+        If oQuery Is Nothing Then Return
+
         If oChannel.queries Is Nothing Then oChannel.queries = New List(Of ShareQueryProcess)
-        oChannel.queries.Add(oNew)
+
+        Dim shQrProc As New ShareQueryProcess
+        shQrProc.query = oQuery
+        shQrProc.queryName = oQuery.nazwa
+        oChannel.queries.Add(shQrProc)
 
         uiListaKwerend.ItemsSource = Nothing
         uiListaKwerend.ItemsSource = oChannel.queries
+
+    End Sub
+
+    Private Sub WypelnMenuAddKwerenda()
+
+        If uiMenuQueries.Items IsNot Nothing AndAlso uiMenuQueries.Items.Count > 0 Then Return
+
+        ' uiMenuQueries.Items.Clear()
+        For Each oQuery As Vblib.SearchQuery In Globs.GetQueries.OrderBy(Of String)(Function(x) x.nazwa)
+            Dim oNew As New MenuItem
+            oNew.Header = oQuery.nazwa
+            oNew.DataContext = oQuery
+            oNew.ToolTip = oQuery.AsDymek
+
+            AddHandler oNew.Click, AddressOf DodajToQuery
+
+            uiMenuQueries.Items.Add(oNew)
+        Next
 
     End Sub
 
@@ -158,7 +188,7 @@ Class SettingsShareChannels
         Dim oCB As ComboBox = sender
         If oCB Is Nothing Then Return
 
-        oCB.ItemsSource = _kwerendy
+        oCB.ItemsSource = Vblib.GetQueries.OrderBy(Of String)(Function(x) x.nazwa).Select(Of String)(Function(x) x.nazwa).ToList
 
     End Sub
 #End Region

@@ -80,7 +80,11 @@
                     </Grid.ColumnDefinitions>
                     <TextBlock Text="kwerenda" HorizontalAlignment="Center" FontSize="10" VerticalAlignment="Bottom" />
                     <TextBlock Text="processing" HorizontalAlignment="Center" FontSize="10" Grid.Column="1" VerticalAlignment="Bottom" />
-                    <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddQuery_Click" Grid.Column="2"/>
+                    <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddQuery_Click" Grid.Column="2" Name="uiAddQuery"/>
+                    <Popup IsOpen="False" Name="uiAddQueryPopup" PlacementTarget="{Binding ElementName=uiAddQuery}">
+                        <local:MenuVertical x:Name="uiMenuQueries" />
+                    </Popup>
+
                 </Grid>
                 
                 
@@ -100,7 +104,8 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
 
-                                <ComboBox SelectedValue="{Binding queryName, Mode=TwoWay}" Loaded="uiComboQuery_Loaded" />
+                                <TextBox IsReadOnly="true" Text="{Binding queryName, Mode=OneWay}" ToolTip="{Binding query.AsDymek, Mode=OneTime}" BorderThickness="0"/>
+                                <!--<ComboBox SelectedValue="{Binding queryName, Mode=TwoWay}" Loaded="uiComboQuery_Loaded" ToolTip="{Binding AsDymek, Mode=OneTime}"/> -->
 
                                 <!--<TextBlock Text="{Binding queryName}" />-->
                                 <!--<Button Content=" ... " Grid.Column="1" Click="uiSelQuery_Click" />-->
