@@ -2,7 +2,8 @@
 Imports Vblib
 Imports pkar.DotNetExtensions
 Imports pkar.UI.Extensions
-Imports System.Windows.Forms.VisualStyles
+'Imports System.Windows.Forms.VisualStyles
+'Imports PdfSharp.Snippets
 
 Public NotInheritable Class PicMenuSetDate
     Inherits PicMenuBase
@@ -12,12 +13,14 @@ Public NotInheritable Class PicMenuSetDate
     Private Shared _clipOrg As Date
 
     'Private _itemPaste As MenuItem
-    Private Shared _itemInterpolate As MenuItem
+    Private _itemInterpolate As MenuItem
     'Private _itemCopy As MenuItem
-    Private Shared _itemCalcDiff As MenuItem
-    Private Shared _miCopy As MenuItem
+    Private _itemCalcDiff As MenuItem
+    Private _miCopy As MenuItem
     Private _timeDiff As String
-    Private Shared _miPaste As MenuItem
+    Private _miPaste As MenuItem
+    Private _miReelKwds As MenuItem
+    Private _miReelKwdsDelta As MenuItem
 
 
     Public Overrides Sub OnApplyTemplate()
@@ -50,10 +53,49 @@ Public NotInheritable Class PicMenuSetDate
         tools.Items.Add(CreateMenuItem($"To local ({timediff.Hours})", "Zamienia czas UTC na lokalny", AddressOf uiToLocal_Click))
         tools.Items.Add(CreateMenuItem($"To universal (-{timediff.Hours})", "Zamienia czas lokalny na UTC", AddressOf uiToUTC_Click))
         tools.Items.Add(CreateMenuItem("Adjust offset", "Przesuwa czas o podane minuty", AddressOf uiAdjustOffset_Click))
+        tools.Items.Add(New Separator)
+        _miReelKwds = CreateMenuItem("Dates from kwds", "Ustawia datę wszystkich zdjęć wedle sumy słów kluczowych (korzysta z aktualnych dat dopisanych do słów kluczowych, może więc zostać użyte do aktualizacji)", AddressOf uiDatesFromKwds_Click)
+        tools.Items.Add(_miReelKwds)
+        _miReelKwdsDelta = CreateMenuItem("Dates from kwds w/Δ", "Ustawia datę wszystkich zdjęć wedle sumy słów kluczowych z uwzględnieniem marginesu błędu (korzysta z aktualnych dat dopisanych do słów kluczowych, może więc zostać użyte do aktualizacji)", AddressOf uiDatesFromKwdsDelta_Click)
+        tools.Items.Add(_miReelKwdsDelta)
 
         _itemCalcDiff = CreateMenuItem("Calculate diff", "Wylicza różnicę czasu pomiędzy zdjęciami", AddressOf uiCalcDiff_Click)
         tools.Items.Add(_itemCalcDiff)
 
+        MenuOtwieramy()
+    End Sub
+
+    Private Async Sub uiDatesFromKwds_Click(sender As Object, e As RoutedEventArgs)
+        DatesFromKwds(0)
+    End Sub
+
+    Private Sub uiDatesFromKwdsDelta_Click(sender As Object, e As RoutedEventArgs)
+        DatesFromKwds(Vblib.GetSettingsInt("uiMiesDatesFromKwds"))
+    End Sub
+
+    Private Async Sub DatesFromKwds(delta As Integer)
+        If GetSelectedItemsAsPics.Any(Function(x) x.GetExifOfType(Vblib.ExifSource.ManualDate) IsNot Nothing) Then
+            If Not Await Vblib.DialogBoxYNAsync("Są zdjęcia z narzuconymi datami, kontynuować?") Then Return
+        End If
+
+        Dim kwds As String = ""
+        OneOrMany(Sub(x) kwds &= x.sumOfKwds & " ")
+
+        ' sobie policzymy daty (a także GEO...)
+        Dim oCalcDate As Vblib.ExifTag = Globs.GetKeywords.CreateManualTagFromKwds(kwds)
+        If oCalcDate.DateMin.IsDateValid Then oCalcDate.DateMin = oCalcDate.DateMin.AddMonths(-delta)
+        If oCalcDate.DateMax.IsDateValid Then oCalcDate.DateMax = oCalcDate.DateMax.AddMonths(delta)
+
+        Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
+        oExif.DateMin = oCalcDate.DateMin
+        oExif.DateMax = oCalcDate.DateMax
+
+        OneOrMany(Sub(x)
+                      x.ReplaceOrAddExif(oExif)
+                      ' x.RecalcSumsy() a to nie, bo nie ma sumy datemin/max
+                  End Sub)
+
+        EventRaise(Me)
     End Sub
 
     Public Overrides Sub MenuOtwieramy()
@@ -63,6 +105,7 @@ Public NotInheritable Class PicMenuSetDate
 
         _itemCalcDiff.IsEnabled = UseSelectedItems
         _itemInterpolate.IsEnabled = UseSelectedItems
+        _miReelKwds.IsEnabled = UseSelectedItems
     End Sub
 
 
