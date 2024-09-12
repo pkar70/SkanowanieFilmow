@@ -1281,6 +1281,36 @@ Public Class OnePic
         Return True
     End Function
 
+    ''' <summary>
+    ''' sprawdza czy spełnione są warunki keywords (z ! jako zaprzeczeniem), używa SumOfKwd - z podrzędnymi (np. -ROK rozpisuje na -JA, -AS...)
+    ''' </summary>
+    Public Function MatchesKeywordsWithSubKwds(aTags As String()) As Boolean
+
+        For Each sTag As String In aTags
+            If String.IsNullOrWhiteSpace(sTag) Then Continue For
+
+            Dim listaTagow As String = Globs.GetKeywords.GetAllChilds(sTag)
+            If sTag.StartsWith("!") Then
+                If HasKeyword(sTag.Substring(1)) Then Return False
+                For Each subTag As String In listaTagow.Split(" ")
+                    If HasKeyword(subTag) Then Return False
+                Next
+            Else
+                If Not HasKeyword(sTag) Then
+                    Dim bNieMa As Boolean = True
+                    For Each subTag As String In listaTagow.Split(" ")
+                        If HasKeyword(subTag) Then
+                            bNieMa = False
+                            Exit For
+                        End If
+                    Next
+                    If bNieMa Then Return False
+                End If
+                End If
+        Next
+        Return True
+    End Function
+
     Public Function GetDescriptionForCloud() As String
 
         Dim sRet As String = GetSumOfDescriptionsText()
@@ -1538,7 +1568,7 @@ Public Class OnePic
             End If
             ' automatyczne wyłączenie =X, jeśli nie jest podane wprost
             If Not kwrds.Contains("=X") Then kwrds &= " !=X"
-            If Not MatchesKeywords(kwrds.Split(" ")) Then Return False
+            If Not MatchesKeywordsWithSubKwds(kwrds.Split(" ")) Then Return False
         End If
 
         Dim descripsy As String = GetSumOfDescriptionsText() & " " & GetSumOfCommentText()
@@ -1736,6 +1766,8 @@ Public Class OnePic
                     End If
                 End If
             End If
+
+            If oExif Is Nothing AndAlso Not query.faces.AlsoEmpty Then Return False
 
             If iFaces > -1 Then
                 If query.faces.MinCheck Then If iFaces < query.faces.MinValue Then Return False
@@ -2266,11 +2298,18 @@ Public Class OnePic
     ''' </summary>
     ''' <param name="skrocona">TRUE: dla podpisu, FALSE: dla dymku</param>
     Public Function GetDateSummary(skrocona As Boolean) As String
+
         If HasRealDate() Then
-            If skrocona Then
-                Return "📷: " & GetMostProbablyDate.ToExifString
+            Dim tekstowo As String = If(skrocona, "📷: ", "Real date: ")
+            Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualDate)
+
+            If oExif Is Nothing Then Return GetMostProbablyDate.ToExifString
+
+            If String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then
+                Return tekstowo & oExif.DateMin.ToString("yyyy.MM.dd")
             End If
-            Return "Real date: " & GetMostProbablyDate.ToExifString
+
+            Return tekstowo & GetMostProbablyDate.ToExifString
         Else
             If skrocona Then
                 Return GetMinDate.ToString("yyyy.MM.dd") & " .. " & GetMaxDate.ToString("yyyy.MM.dd")
