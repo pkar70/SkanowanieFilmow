@@ -153,7 +153,8 @@ BROWSER: droptarget, zassanie pliku; a jak shellobject, to razem z metadanymi?
 BROWSER: filtry: filtr "grdziekolwiek" jako wrapper do istniejacego 'full'
 BROWSER: kasowanie w pełni zarchiwizowanych - z progring
 BROWSER: rozmiar _thumbspickow? https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.marshal.sizeof?view=net-8.0
-
+BROWSER: filtr: przesłane (Application.gWcfServer.GetLogDir, a) getminserno(buffer) b) zacznij przegladac logi http sprwadzając serno az bedzie taki ktorego nie ma w buforze c) pokaz do wyboru osoby
+BROWSER: ContextMenu: w ramach Sharing, poszukaj kto zdjęcie ściągał
 BROWSER: przejęcie UnHandledException i zapisanie na nim buffor.json?
 
 CMDLINE: retrieve SOURCE

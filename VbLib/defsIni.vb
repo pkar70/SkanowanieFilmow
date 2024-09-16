@@ -33,7 +33,9 @@ uiAstroNotWhenWether=True
 
 uiSpellCheck=True
 
-uiWebBuffPicLimit=99
+PublishMetadataPicLimit=99
+PublishMetadataPrintKwd=True
+PublishMetadataPrintSerno=True
 
 uiTitleSerno=True
 uiAutoCrop=True

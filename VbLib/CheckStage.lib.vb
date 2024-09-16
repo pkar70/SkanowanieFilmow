@@ -243,7 +243,7 @@ Public Class SequenceStageAzureCheck
 
     Public Overrides ReadOnly Property Nazwa As String = "Check Azure data"
     Public Overrides ReadOnly Property StageNo As Integer = SequenceStages.AzureCheck
-    Public Overrides ReadOnly Property Dymek As String = "Po Azure - sprawdzić rozpoznanie Brands, Landmarks, Celebrities, GoryPic"
+    Public Overrides ReadOnly Property Dymek As String = "Po Azure - sprawdzić rozpoznanie Brands, Landmarks, Celebrities, GoryPic; skopiować ADULT do kwd=X"
     Public Overrides ReadOnly Property Icon As String = "🗷"
 
     Public Overrides Function Check(picek As OnePic) As Boolean

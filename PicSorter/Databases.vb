@@ -151,12 +151,12 @@ Public Class Databases
     End Function
 
     Public Function Connect() As Boolean Implements DatabaseInterface.Connect
-        Vblib.pkarlibmodule14.DialogBox("na poziomie Databases nie powinno być Connect")
+        Vblib.DialogBox("na poziomie Databases nie powinno być Connect")
         Return Nothing
     End Function
 
     Public Function Init() As Boolean Implements DatabaseInterface.Init
-        Vblib.pkarlibmodule14.DialogBox("na poziomie Databases nie powinno być Init")
+        Vblib.DialogBox("na poziomie Databases nie powinno być Init")
         Return Nothing
     End Function
 
