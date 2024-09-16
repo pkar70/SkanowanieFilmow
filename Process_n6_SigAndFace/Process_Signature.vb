@@ -163,23 +163,19 @@ Public Class Process_EmbedTexts
         Return Nothing
     End Function
 
-    ''' <summary>
-    ''' zwraca Copyright po FlattenExifs
-    ''' </summary>
-    Private Function GetSignatureString(oPic As Vblib.OnePic) As String
+End Class
 
-        Dim oExif As Vblib.ExifTag = oPic.FlattenExifs(False)
-        Return oExif.Copyright
-        'Dim sSignature As String = ""
+Public Class Process_SerNo
+    Inherits Vblib.PostProcBase
 
-        'For Each oExif As Vblib.ExifTag In oPic.Exifs
-        '    If Not String.IsNullOrWhiteSpace(oExif.Copyright) Then sSignature = oExif.Copyright
-        'Next
+    Public Overrides Property Nazwa As String = "Serno"
 
-        'Dim iInd As Integer = sSignature.IndexOfAny({".", ","})
-        'If iInd > 1 Then sSignature = sSignature.Substring(0, iInd)
+    Public Overrides Property dymekAbout As String = "Dodawanie #serno"
 
-        'Return sSignature
+    Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
+
+        Return Await Process_EmbedTexts.ApplyMainShared(oPic, bPipeline, "Bl|12|0.03|30|" & oPic.FormattedSerNo)
+
     End Function
 
 

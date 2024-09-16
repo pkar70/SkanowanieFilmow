@@ -10,8 +10,6 @@ Class MainWindow
     Inherits Window
 
 
-
-
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         InitLib(Nothing)
 
@@ -135,7 +133,7 @@ Class MainWindow
         Return True
     End Function
 
-    Private Async Function CmdLineRunToolFile(toolName As String, toolParam As String) As Task(Of String)
+    Private Shared Async Function CmdLineRunToolFile(toolName As String, toolParam As String) As Task(Of String)
 
         If Not IO.File.Exists(toolParam) Then
             Console.WriteLine("Non existent file (for tool)")
@@ -161,7 +159,7 @@ Class MainWindow
         Return ""
     End Function
 
-    Private Async Function CmdLineRunToolData(toolName As String, toolParam As String) As Task(Of String)
+    Private Shared Async Function CmdLineRunToolData(toolName As String, toolParam As String) As Task(Of String)
 
         Dim data As Date
         If Not Date.TryParseExact(toolParam, "yyyy.MM.dd", System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AllowWhiteSpaces, data) Then
@@ -414,7 +412,7 @@ Class MainWindow
     End Sub
 
 
-    Private Function CreateMenuItem(hdr As String, dymek As String, handlerek As RoutedEventHandler) As MenuItem
+    Private Shared Function CreateMenuItem(hdr As String, dymek As String, handlerek As RoutedEventHandler) As MenuItem
         Dim oNew As New MenuItem With {.Header = hdr, .ToolTip = dymek}
         If handlerek IsNot Nothing Then AddHandler oNew.Click, handlerek
         Return oNew
@@ -479,6 +477,7 @@ Class MainWindow
         New Process_EmbedExif,
         New Process_RemoveExif,
         New Process_Signature.Process_FaceRemove,
+        New Process_Signature.Process_SerNo,
         New Process_Signature.Process_Signature,
         New Process_Watermark
     }
@@ -505,7 +504,7 @@ Class MainWindow
 
         ' *TODO* guziki pozostałe wyłączane jak nie ma LocalStorage
 
-        Dim count As Integer = Vblib.GetBuffer.Count
+        Dim count As Integer = Globs.GetBuffer.Count
         uiProcess.Content = $"Current ({count})"
         If count = 0 Then
             Dim path As String = IO.Path.Combine(Vblib.GetDataFolder, "buffer.json")
@@ -553,7 +552,7 @@ Class MainWindow
 #Region "poprawianie plików"
 
 
-    Private Sub PoprawDateMinMaxKwds()
+    Private Shared Sub PoprawDateMinMaxKwds()
         Dim buff As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "buffer.json")
         buff.Load()
 
@@ -1097,6 +1096,7 @@ Class MainWindow
 
     Private Sub ZamykamPodokno(sender As Object, e As EventArgs)
         JeslimSamToPokaz()
+        uiProcess.Content = $"Current ({Globs.GetBuffer.Count})"
     End Sub
 
     Private Sub uiBrowseArch_Click(sender As Object, e As RoutedEventArgs)
@@ -1129,7 +1129,6 @@ Class MainWindow
         'Next
         'Return False
     End Function
-
 
 End Class
 
