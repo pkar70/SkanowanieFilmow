@@ -39,7 +39,9 @@ Public NotInheritable Class PicMenuOnMap
     Public Overrides Sub MenuOtwieramy()
         MyBase.MenuOtwieramy()
 
+        Me.IsEnabled = False
         If UseSelectedItems Then Return
+
         Me.IsEnabled = GetFromDataContext()?.sumOfGeo IsNot Nothing
 
     End Sub
