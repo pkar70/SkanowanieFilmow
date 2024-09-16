@@ -43,8 +43,9 @@ Public Class AutoTag_WinOCR
             teksty = Await ZrobOCR(oFile)
         End If
 
+        ' tak byæ nie mo¿e, bo potem zostaje jako "do zrobienia"
+        'If String.IsNullOrWhiteSpace(teksty) Then Return Nothing
 
-        If String.IsNullOrWhiteSpace(teksty) Then Return Nothing
 
         Dim oExif As New Vblib.ExifTag(Nazwa)
         oExif.UserComment = teksty
