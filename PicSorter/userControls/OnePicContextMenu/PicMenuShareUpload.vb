@@ -49,6 +49,7 @@ Public NotInheritable Class PicMenuShareUpload
             Dim oPic As Vblib.OnePic = GetFromDataContext()
 
             oMI.IsEnabled = True
+            oMI.IsChecked = False
 
             If oPic Is Nothing Then Continue For ' gdy otwieramy dla SelectedItems
 
@@ -86,6 +87,7 @@ Public NotInheritable Class PicMenuShareUpload
             Dim oPic As Vblib.OnePic = GetFromDataContext()
 
             oMI.IsEnabled = True
+            oMI.IsChecked = False
 
             If oPic Is Nothing Then Continue For ' gdy otwieramy dla SelectedItems
 
@@ -217,12 +219,16 @@ Public NotInheritable Class PicMenuShareUpload
 
     End Sub
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Private Async Function MarkOnePicForLogin(oPic As OnePic) As Task
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         ' *TODO* dla tego loginu, w zależności od aktualnego stanu, dopuść sharing
         oPic.PeerForceAllow(_ShareLogin)
     End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Private Async Function UnMarkOnePicForLogin(oPic As OnePic) As Task
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         ' *TODO* dla tego loginu, w zależności od aktualnego stanu, zablokuj sharing
         oPic.PeerForceDeny(_ShareLogin)
     End Function
@@ -287,7 +293,9 @@ Public NotInheritable Class PicMenuShareUpload
     End Sub
 
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Private Async Function MarkOnePic(oPic As OnePic) As Task
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         oPic.AddCloudPublished("S:" & _ShareSrvr.login.ToString, "")
     End Function
 
