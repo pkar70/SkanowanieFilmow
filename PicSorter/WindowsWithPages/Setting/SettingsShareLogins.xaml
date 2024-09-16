@@ -71,6 +71,7 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <!-- lista: query/postprocess; guzik add, guzik delete -->
@@ -137,7 +138,13 @@
                 <local:UserControlPostProcessPipeline Pipeline="{Binding processing, Mode=TwoWay}" Grid.Row="1" ToolTip="Tu wpisane mechanizmy będą zaaplikowane po mechanizmach z kanału oraz query (nie: zamiast nich)"/>
             </Grid>
 
-            <Grid Grid.Row="3">
+            <Expander Header="Metadata options" Grid.Row="3">
+                <local:UserControlMetadataOptions ShowHttpLogOption="True" ShowPicLimitOption="True" DataContext="{Binding MetaOptions, Mode=TwoWay}" />
+            </Expander>
+
+
+            <Expander Header="IP network" Grid.Row="4">
+            <Grid >
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
@@ -172,8 +179,9 @@
                 <TextBlock Text="{Binding lastLogin.IPaddr, Mode=OneTime}" Grid.Row="5" Grid.Column="1"/>
 
             </Grid>
-            
-            <Button Content=" OK " HorizontalAlignment="Center" Width="Auto" Grid.Row="4" Margin="5,5,5,0" Click="uiOK_Click"/>
+            </Expander>
+
+            <Button Content=" OK " HorizontalAlignment="Center" Width="Auto" Grid.Row="5" Margin="5,5,5,0" Click="uiOK_Click"/>
 
         </Grid>
 

@@ -276,7 +276,7 @@ Public Class Cloud_Skyscraper
 
     End Function
 
-    Private Function Link2ThreadId(sLink As String) As String
+    Private Shared Function Link2ThreadId(sLink As String) As String
         ' https://www.skyscrapercity.com/threads/krak%C3%B3w-archiwalia.1925740
         ' https://www.skyscrapercity.com/forums/testing.88/
 
@@ -365,21 +365,20 @@ Public Class Cloud_Skyscraper
 
 
             sPostBody &= $"<p>&nbsp;</p><p>&nbsp;</p>"
-            Dim temp As String = oPic.GetDescriptionForCloud_Header
-            If Not String.IsNullOrWhiteSpace(temp) Then sPostBody &= $"<p>{temp}</p>"
+
+            Dim temp As String = ""
+            If konfiguracja.MetaOptions.PrintSerno Then temp = oPic.FormattedSerNo & "; "
+            If konfiguracja.MetaOptions.PrintDescr Then temp &= oPic.GetSumOfDescriptionsText()
+            If temp <> "" Then sPostBody &= $"<p>{temp}</p>"
+
+
             sPostBody &= $"<p><img src='{oJsonPicRet.link}' style='width: auto;' class='fr-fic fr-dii' data-attachment='full:{oJsonPicRet.attachment.attachment_id}'/></p>"
-            'temp = oPic.GetDescriptionForCloud_Footer
 
-            If GetSettingsBool("uiPublishUseDate") Then
-                sPostBody &= $"<p>{oPic.GetDateSummary(True)}</p>"
-            End If
-
-
-            If oPic.sumOfGeo IsNot Nothing Then
-                If GetSettingsBool("uiPublishAddMaplink") Then
-                    sPostBody &= $"<p><a href='{oPic.sumOfGeo.ToOSMLink(17)}'>na mapie</a></p>"
-                End If
-            End If
+            ' reszta danych idzie poni¿ej obrazka - ale ¿eby nie powtarzaæ tego co ju¿ by³o nad obrazkiem...
+            Dim metaklon As Vblib.PublishMetadataOptions = konfiguracja.MetaOptions.Clone
+            metaklon.PrintSerno = False
+            metaklon.PrintDescr = False
+            sPostBody &= oPic.GetMetaDataForPublish(metaklon, True)
 
             If oNextPic IsNot Nothing Then oNextPic()
         Next

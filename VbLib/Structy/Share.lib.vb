@@ -85,6 +85,8 @@ Public Class ShareLogin
     Public Property lastLogin As New ShareLoginData
     Public Property maintainPurge As Boolean
 
+    Public Property MetaOptions As New PublishMetadataOptions
+
 End Class
 
 Public Class ShareChannelProcess

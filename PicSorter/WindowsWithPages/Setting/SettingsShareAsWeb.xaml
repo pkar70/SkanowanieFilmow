@@ -15,12 +15,8 @@
         
         <local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="499" IsEnabled="{Binding IsChecked, ElementName=uiAsWebServer}"/>
 
-        <CheckBox Name="uiAsWebPrintFilename" Content="show filename" />
-        <CheckBox Name="uiAsWebPrintSerno" Content="show #serno" />
-        <CheckBox Name="uiAsWebPrintDates" Content="show dates" />
-        <CheckBox Name="uiAsWebPrintKwd" Content="show keywords" />
-        <CheckBox Name="uiAsWebPrintDescr" Content="show descriptions" />
-        <CheckBox Name="uiAsWebPrintGeo" Content="show geo link" />
+        <local:UserControlMetadataOptions ShowHttpLogOption="False" ShowPicLimitOption="False" x:Name="uiMetaOptions"/>
+        
         <!--<CheckBox Name="uiAsWebPrintDump" Content="show 'dump metadata' link" />-->
 
         <local:StretchedGrid Cols="*,A">

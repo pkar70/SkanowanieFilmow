@@ -1,6 +1,5 @@
-﻿Imports System.Runtime.InteropServices.WindowsRuntime
-Imports pkar
-Imports Vblib
+﻿
+Imports pkar.UI.Extensions
 
 Class SettingsShareChannels
 
@@ -9,7 +8,9 @@ Class SettingsShareChannels
     'Private _kwerendy As List(Of String) 'ObservableList(Of SearchQuery)
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        _lista = Vblib.GetShareChannels.OrderBy(Function(x) x.nazwa).ToList
+        Me.InitDialogs
+
+        _lista = Vblib.Globs.GetShareChannels.OrderBy(Function(x) x.nazwa).ToList
         uiLista.ItemsSource = _lista
 
         '_kwerendy = Vblib.GetQueries.OrderBy(Of String)(Function(x) x.nazwa).Select(Of String)(Function(x) x.nazwa).ToList
@@ -18,64 +19,64 @@ Class SettingsShareChannels
 #Region "lista kanałów"
 
     Private Sub uiAddChannel_Click(sender As Object, e As RoutedEventArgs)
-        Dim oNew As New ShareChannel
+        Dim oNew As New Vblib.ShareChannel
         'oNew.nazwa = "channelProc " & Date.Now.ToString("yyyy.MM.dd")
         '_lista.Add(oNew)
         ShowToEdit(oNew)
     End Sub
 
-    Private Sub ShowToEdit(oChannel As ShareChannel)
+    Private Sub ShowToEdit(oChannel As Vblib.ShareChannel)
         uiEditChannel.Visibility = Visibility.Visible
         uiEditChannel.DataContext = oChannel.Clone
     End Sub
 
     Private Sub uiEdit_Click(sender As Object, e As RoutedEventArgs)
-        Dim oChannel As ShareChannel = TryCast(sender, FrameworkElement)?.DataContext
+        Dim oChannel As Vblib.ShareChannel = TryCast(sender, FrameworkElement)?.DataContext
         If oChannel Is Nothing Then Return
         ShowToEdit(oChannel)
     End Sub
 
     Private Async Sub uiDel_Click(sender As Object, e As RoutedEventArgs)
-        Dim oChannel As ShareChannel = TryCast(sender, FrameworkElement)?.DataContext
+        Dim oChannel As Vblib.ShareChannel = TryCast(sender, FrameworkElement)?.DataContext
         If oChannel Is Nothing Then Return
 
         Dim sLogins As String = GetLoginyKorzystajace(oChannel)
 
         If sLogins <> "" Then
-            Vblib.DialogBox("Nie można usunąć kanału, bo jest używany przez " & sLogins)
+            Me.MsgBox("Nie można usunąć kanału, bo jest używany przez " & sLogins)
             Return
         End If
 
 
-        If Not Await Vblib.DialogBoxYNAsync($"Usunąć channel {oChannel.nazwa}?") Then Return
+        If Not Await Me.DialogBoxYNAsync($"Usunąć channel {oChannel.nazwa}?") Then Return
 
-        Vblib.GetShareChannels.Remove(oChannel)
+        Vblib.Globs.GetShareChannels.Remove(oChannel)
         Page_Loaded(Nothing, Nothing)
 
     End Sub
 
     Private Sub uiFind_Click(sender As Object, e As RoutedEventArgs)
-        Dim oChannel As ShareChannel = TryCast(sender, FrameworkElement)?.DataContext
+        Dim oChannel As Vblib.ShareChannel = TryCast(sender, FrameworkElement)?.DataContext
         If oChannel Is Nothing Then Return
 
         Dim sLogins As String = GetLoginyKorzystajace(oChannel)
 
         If sLogins = "" Then
-            Vblib.DialogBox("Żaden login nie korzysta z tego kanału")
+            Me.MsgBox("Żaden login nie korzysta z tego kanału")
             Return
         End If
 
-        Vblib.DialogBox("Loginy korzystające z tego kanału:" & vbCrLf & vbCrLf & sLogins & vbCrLf & vbCrLf & "(lista skopiowana do clipboard)")
-        Vblib.ClipPut(sLogins)
+        Me.MsgBox("Loginy korzystające z tego kanału:" & vbCrLf & vbCrLf & sLogins & vbCrLf & vbCrLf & "(lista skopiowana do clipboard)")
+        sLogins.SendToClipboard
 
     End Sub
 
-    Private Function GetLoginyKorzystajace(oChannel As ShareChannel) As String
+    Private Function GetLoginyKorzystajace(oChannel As Vblib.ShareChannel) As String
         Dim sLogins As String = ""
 
-        For Each oLogin As ShareLogin In Vblib.GetShareLogins
+        For Each oLogin As Vblib.ShareLogin In Vblib.Globs.GetShareLogins
             If oLogin.channels Is Nothing Then Continue For
-            For Each channelProc As ShareChannelProcess In oLogin.channels
+            For Each channelProc As Vblib.ShareChannelProcess In oLogin.channels
                 If channelProc.channelName = oChannel.nazwa Then
                     sLogins &= oLogin.displayName & vbCrLf
                     Exit For
@@ -91,18 +92,18 @@ Class SettingsShareChannels
 
     Private Async Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        Dim oChannel As ShareChannel = oFE?.DataContext
+        Dim oChannel As Vblib.ShareChannel = oFE?.DataContext
         If oChannel Is Nothing Then Return
 
         ' default name
         If String.IsNullOrWhiteSpace(oChannel.nazwa) Then oChannel.nazwa = "channel " & Date.Now.ToString("yyyy.MM.dd")
 
-        Dim sName As String = Await Vblib.DialogBoxInputAllDirectAsync("Podaj nazwę kanału", oChannel.nazwa)
+        Dim sName As String = Await Me.InputBoxAsync("Podaj nazwę kanału", oChannel.nazwa)
         If String.IsNullOrWhiteSpace(sName) Then Return
 
-        For Each oChan As ShareChannel In _lista
+        For Each oChan As Vblib.ShareChannel In _lista
             If oChan.nazwa = sName Then
-                If Not Await Vblib.DialogBoxYNAsync($"Kanał '{sName}' już istnieje, zastąpić?") Then Return
+                If Not Await Me.DialogBoxYNAsync($"Kanał '{sName}' już istnieje, zastąpić?") Then Return
 
                 _lista.Remove(oChan)
                 Exit For
@@ -113,8 +114,8 @@ Class SettingsShareChannels
 
         uiLista.ItemsSource = Nothing   ' żeby nie pokazywał w kółko tego samego
 
-        With Vblib.GetShareChannels
-            .GetList.Add(oChannel)
+        With Vblib.Globs.GetShareChannels
+            .Add(oChannel)
             .ReResolveQueries()
             .Save(True)
         End With
@@ -137,14 +138,14 @@ Class SettingsShareChannels
     End Sub
 
     Private Sub DodajToQuery(sender As Object, e As RoutedEventArgs)
-        Dim oChannel As ShareChannel = uiEditChannel.DataContext
+        Dim oChannel As Vblib.ShareChannel = uiEditChannel.DataContext
         Dim oFE As FrameworkElement = sender
         Dim oQuery As Vblib.SearchQuery = oFE?.DataContext
         If oQuery Is Nothing Then Return
 
-        If oChannel.queries Is Nothing Then oChannel.queries = New List(Of ShareQueryProcess)
+        If oChannel.queries Is Nothing Then oChannel.queries = New List(Of Vblib.ShareQueryProcess)
 
-        Dim shQrProc As New ShareQueryProcess
+        Dim shQrProc As New Vblib.ShareQueryProcess
         shQrProc.query = oQuery
         shQrProc.queryName = oQuery.nazwa
         oChannel.queries.Add(shQrProc)
@@ -159,7 +160,7 @@ Class SettingsShareChannels
         If uiMenuQueries.Items IsNot Nothing AndAlso uiMenuQueries.Items.Count > 0 Then Return
 
         ' uiMenuQueries.Items.Clear()
-        For Each oQuery As Vblib.SearchQuery In Globs.GetQueries.OrderBy(Of String)(Function(x) x.nazwa)
+        For Each oQuery As Vblib.SearchQuery In Vblib.Globs.GetQueries.OrderBy(Of String)(Function(x) x.nazwa)
             Dim oNew As New MenuItem
             oNew.Header = oQuery.nazwa
             oNew.DataContext = oQuery
@@ -174,10 +175,10 @@ Class SettingsShareChannels
 
     Private Sub uiDelQuery_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
-        Dim oQuery As ShareQueryProcess = oFE?.DataContext
+        Dim oQuery As Vblib.ShareQueryProcess = oFE?.DataContext
         If oQuery Is Nothing Then Return
 
-        Dim oChannel As ShareChannel = uiEditChannel.DataContext
+        Dim oChannel As Vblib.ShareChannel = uiEditChannel.DataContext
         oChannel.queries.Remove(oQuery)
 
         uiListaKwerend.ItemsSource = Nothing
@@ -188,7 +189,7 @@ Class SettingsShareChannels
         Dim oCB As ComboBox = sender
         If oCB Is Nothing Then Return
 
-        oCB.ItemsSource = Vblib.GetQueries.OrderBy(Of String)(Function(x) x.nazwa).Select(Of String)(Function(x) x.nazwa).ToList
+        oCB.ItemsSource = Vblib.Globs.GetQueries.OrderBy(Of String)(Function(x) x.nazwa).Select(Of String)(Function(x) x.nazwa).ToList
 
     End Sub
 #End Region

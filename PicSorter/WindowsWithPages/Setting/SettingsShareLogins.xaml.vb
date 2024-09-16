@@ -123,6 +123,8 @@ Class SettingsShareLogins
         uiPeerID.IsEnabled = True
         oNew.displayName = "login " & Date.Now.ToString("yyyy.MM.dd")
         oNew.login = Guid.NewGuid
+        oNew.MetaOptions.LoadDefaults()
+
         ShowToEdit(oNew)
     End Sub
 

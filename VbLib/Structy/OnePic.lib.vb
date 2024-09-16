@@ -751,7 +751,7 @@ Public Class OnePic
         If bCopyExif Then
             ' próba przeniesienia kopiowania EXIF tutaj
             _PipelineInput.Seek(0, SeekOrigin.Begin)
-            Dim oExifLib As CompactExifLib.ExifData
+            Dim oExifLib As CompactExifLib.ExifData = Nothing
             Try
                 oExifLib = New CompactExifLib.ExifData(_PipelineInput)
             Catch ex As Exception
@@ -1328,20 +1328,53 @@ Public Class OnePic
 
     End Function
 
-    Public Function GetDescriptionForCloud_Header() As String
-        Dim serno As String = If(GetSettingsBool("uiPublishShowSerno"), FormattedSerNo, "")
-        Dim comm As String = GetDescriptionForCloud()
-        If serno <> "" AndAlso comm <> "" Then
-            Return serno & "; " & comm
+
+    Public Function GetMetaDataForPublish(opcje As PublishMetadataOptions, asHTML As Boolean) As String
+
+        Dim opis As String = ""
+
+        If opcje.PrintSerno Then opis &= "serno: " & FormattedSerNo & If(asHTML, "<br />", vbCrLf)
+
+        If opcje.PrintReel Then
+            ' może z "flattened" exif?
+            Dim oExif As ExifTag = GetExifOfType(ExifSource.SourceDefault)
+            If Not String.IsNullOrWhiteSpace(oExif?.ReelName) Then
+                opis &= "Reel: " & oExif.ReelName & If(asHTML, "<br />", vbCrLf)
+            End If
         End If
 
-        Return serno & comm
-    End Function
 
-    Public Function GetDescriptionForCloud_Footer() As String
-        If sumOfGeo Is Nothing Then Return ""
-        If Not GetSettingsBool("uiPublishAddMaplink") Then Return ""
-        Return sumOfGeo.ToOSMLink(17)
+        If opcje.PrintFilename Then opis &= sSuggestedFilename & If(asHTML, "<br />", vbCrLf)
+        If opcje.PrintDates Then opis &= $"Date: {GetDateSummary(False)}" & If(asHTML, "<br />", vbCrLf)
+        If opcje.PrintKwd Then opis &= sumOfKwds & If(asHTML, "<br />", vbCrLf)
+        If opcje.PrintDescr Then opis &= sumOfDescr & If(asHTML, "<br />", vbCrLf)
+
+        If opcje.PrintOCR Then
+            ' może z "flattened" exif?
+            Dim oExif As ExifTag = GetExifOfType(ExifSource.AutoWinOCR)
+            If Not String.IsNullOrWhiteSpace(oExif?.UserComment) AndAlso oExif.UserComment.Length > 3 Then
+                opis &= "OCR: " & oExif.UserComment & If(asHTML, "<br />", vbCrLf)
+            End If
+        End If
+
+        If opcje.AllLinks Then
+            If linki IsNot Nothing Then
+                For Each linek As OneLink In linki
+                    opis &= $"<a href='{linek.link}'>{linek.opis}</a>" & If(asHTML, "<br />", vbCrLf)
+                Next
+            End If
+        End If
+
+
+        If opcje.PrintGeo Then
+            Dim geo As pkar.BasicGeoposWithRadius = GetGeoTag()
+
+            If geo IsNot Nothing Then
+                opis &= $"<a href='{geo.ToOSMLink}'>mapa</a>"
+            End If
+        End If
+
+        Return opis
     End Function
 
 #Region "sharing"

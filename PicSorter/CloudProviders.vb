@@ -44,6 +44,9 @@ Public Class CloudPublishersList
         For Each oItem As Vblib.CloudConfig In gCloudConfigs
             Dim oNew As Vblib.CloudPublish = GetCloudPublishInstantion(oItem, _DataDir)
             If oNew IsNot Nothing Then
+                If oNew.konfiguracja.MetaOptions Is Nothing Then
+                    oNew.konfiguracja.MetaOptions = Vblib.PublishMetadataOptions.GetDefault
+                End If
                 gCloudPublishers.Add(oNew)
                 If oNew.konfiguracja.sProvider.ContainsCI("adhoc") Then bMamAdHoc = True
             End If

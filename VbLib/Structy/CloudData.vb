@@ -20,6 +20,8 @@ Public Class CloudConfig
     Public Property sUsername As String
     Public Property sPswd As String
 
+    Public Property MetaOptions As PublishMetadataOptions
+
     Public Property enabled As Boolean = True
     Public Property includeMask As String = "*.jpg;*.tif;*.png" ' maski regexp
     Public Property excludeMask As String  ' maski regexp

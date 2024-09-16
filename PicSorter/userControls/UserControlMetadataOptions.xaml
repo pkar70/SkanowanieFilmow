@@ -1,0 +1,31 @@
+﻿<UserControl x:Class="UserControlMetadataOptions"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PicSorterNS"
+             mc:Ignorable="d" 
+             d:DesignHeight="250" d:DesignWidth="200">
+    <StackPanel>
+        <StackPanel Orientation="Horizontal" Name="uiPicLimitOption">
+            <TextBlock Text="Limit zdjęć: " />
+            <TextBox Width="25" Text="{Binding PicLimit, Mode=TwoWay}" InputScope="Digits"/>
+        </StackPanel>
+        <!--<local:SliderWithHdr x:Name="uiWebBuffPicLimit" Header="Limit number of pics (for web)" Minimum="16" Maximum="499" IsEnabled="{Binding IsChecked, ElementName=uiAsWebServer}"/>-->
+
+
+        <CheckBox IsChecked="{Binding PrintKwd, Mode=TwoWay}" Content="Show keywords"/>
+        <CheckBox IsChecked="{Binding PrintDescr, Mode=TwoWay}" Content="Show descriptions"/>
+        <CheckBox IsChecked="{Binding PrintGeo, Mode=TwoWay}" Content="Show geo link"/>
+        <CheckBox IsChecked="{Binding PrintFilename, Mode=TwoWay}" Content="Show filename"/>
+        <CheckBox IsChecked="{Binding PrintSerno, Mode=TwoWay}" Content="Show serno"/>
+        <CheckBox IsChecked="{Binding PrintReel, Mode=TwoWay}" Content="Show reel name"/>
+        <CheckBox IsChecked="{Binding PrintDates, Mode=TwoWay}" Content="Show date"/>
+        <CheckBox IsChecked="{Binding PrintOCR, Mode=TwoWay}" Content="Show OCR"/>
+
+        <CheckBox IsChecked="{Binding AllLinks, Mode=TwoWay}" Content="Show links"/>
+
+        <CheckBox IsChecked="{Binding noHttpLog, Mode=TwoWay}" Content="Do not use httpLog" Name="uiNoHttpLog"/>
+
+    </StackPanel>
+</UserControl>

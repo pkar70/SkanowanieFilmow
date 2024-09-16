@@ -2,6 +2,7 @@
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
+Imports pkar.UI.Extensions
 
 Class SettingsCloudPublisher
 
@@ -11,6 +12,8 @@ Class SettingsCloudPublisher
 
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
+
         ShowSourcesList()
         WypelnMenuTypyZrodel()
         'WypelnMenuPeers
@@ -35,7 +38,7 @@ Class SettingsCloudPublisher
         Dim oFE As FrameworkElement = sender
         Dim oItem As Vblib.CloudPublish = oFE?.DataContext
 
-        If Not Await vb14.DialogBoxYNAsync("Na pewno usunąć, a nie tylko zablokować?") Then Return
+        If Not Await Me.DialogBoxYNAsync("Na pewno usunąć, a nie tylko zablokować?") Then Return
 
         Application.GetCloudPublishers.Remove(oItem)
         ShowSourcesList()
@@ -169,6 +172,11 @@ Class SettingsCloudPublisher
         uiSrcLastSave.Text = "-"
         If _item.lastSave.IsDateValid Then uiSrcLastSave.Text = _item.lastSave.ToString("yyyy-MM-dd HH:mm")
 
+
+        If _item.MetaOptions Is Nothing Then
+            _item.MetaOptions = Vblib.PublishMetadataOptions.GetDefault
+        End If
+        uiMetaOptions.DataContext = _item.MetaOptions
     End Sub
 
     Private Sub uiEditExif_Click(sender As Object, e As RoutedEventArgs)
@@ -186,7 +194,7 @@ Class SettingsCloudPublisher
         If uiSrcName.Text <> _item.nazwa Then
             For Each oItem In Application.GetCloudPublishers.GetList
                 If oItem.konfiguracja.nazwa.EqualsCIAI(uiSrcName.Text) Then
-                    vb14.DialogBox("Już istnieje miejsce publikowania z taką nazwą")
+                    Me.MsgBox("Już istnieje miejsce publikowania z taką nazwą")
                     Return
                 End If
             Next
@@ -199,7 +207,7 @@ Class SettingsCloudPublisher
             Try
                 dPurgeDelay = uiSrcPurge.Text
             Catch ex As Exception
-                vb14.DialogBox("Niepoprawna liczba (purge delay)")
+                Me.MsgBox("Niepoprawna liczba (purge delay)")
                 Return
             End Try
         End If
@@ -220,6 +228,8 @@ Class SettingsCloudPublisher
         _item.includeMask = uiSrcInclude.Text
         _item.excludeMask = uiSrcExclude.Text
         _item.stereoAnaglyph = uiStereoAnaglyph.IsChecked
+
+        _item.MetaOptions = uiMetaOptions.DataContext
 
         ShowSourcesList()
     End Sub
