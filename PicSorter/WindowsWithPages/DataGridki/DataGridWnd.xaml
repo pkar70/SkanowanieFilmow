@@ -205,7 +205,12 @@
 
             <DataGrid.RowDetailsTemplate>
                 <DataTemplate>
-                    <DataGrid Margin="20,0,0,2" AutoGenerateColumns="True" ItemsSource="{Binding Exifs}" AutoGeneratingColumn="Exifs_AutoGeneratingColumn"/>
+                    <StackPanel>
+                        <TextBlock Text="Exifs:" />
+                        <DataGrid Margin="20,0,0,2" AutoGenerateColumns="True" ItemsSource="{Binding Exifs}" AutoGeneratingColumn="Exifs_AutoGeneratingColumn"/>
+                        <TextBlock Text="Descriptions:" />
+                        <DataGrid Margin="20,0,0,2" AutoGenerateColumns="True" ItemsSource="{Binding descriptions}" AutoGeneratingColumn="Descr_AutoGeneratingColumn"/>
+                    </StackPanel>
                 </DataTemplate>
             </DataGrid.RowDetailsTemplate>
         </DataGrid>

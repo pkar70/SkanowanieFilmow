@@ -218,6 +218,18 @@ Public Class DataGridWnd
     End Sub
 
 
+    Private Sub Descr_AutoGeneratingColumn(sender As Object, e As DataGridAutoGeneratingColumnEventArgs) Handles uiGridek.AutoGeneratingColumn
+        ' ewentualne ukrycie kolumny: e.Column.Visibility = Visibility.Collapsed
+        ' kolumna zawsza read-only: e.Column.IsReadOnly = True
+        ' kolumna read-only gdy zwykły tryb:  e.Column.IsReadOnly = _standardMode
+
+        '    e.Column.MaxWidth = 350
+
+        Select Case e.Column.Header.ToString()
+            Case "PeerGUID"
+                e.Column.IsReadOnly = True
+        End Select
+    End Sub
 
 End Class
 
