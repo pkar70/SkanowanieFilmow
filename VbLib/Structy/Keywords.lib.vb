@@ -36,7 +36,7 @@ Public Class OneKeyword
     Public Property bEnabled As Boolean
     <JsonIgnore>
     Public Property bChecked As Boolean
-    Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
+    'Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
 
 #End Region
 
@@ -68,9 +68,9 @@ Public Class OneKeyword
         Return sId.Length = 1
     End Function
 
-    Public Sub NotifyChange(propName As String)
-        RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propName))
-    End Sub
+    'Public Sub NotifyChange(propName As String)
+    '    RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(propName))
+    'End Sub
 
     <Newtonsoft.Json.JsonIgnore>
     Public ReadOnly Property GetIkonki As String

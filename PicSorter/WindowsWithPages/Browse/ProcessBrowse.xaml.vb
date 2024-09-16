@@ -760,7 +760,9 @@ Public Class ProcessBrowse
         StartDragOut()
     End Sub
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Private Async Function StartDragOut() As Task
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         vb14.DumpCurrMethod()
 
         '' sprawdzamy czy mamy odpowiedni Publisher do tego
@@ -2181,7 +2183,7 @@ Public Class ProcessBrowse
         ShowFilterAzureTag("Celebrities")
     End Sub
 
-    Private Async Sub ShowFilterAzureTag(listaPropName As String)
+    Private Sub ShowFilterAzureTag(listaPropName As String)
         'uiFilterPopup.IsOpen = False
 
         Me.ProgRingShow(True)
@@ -2839,12 +2841,12 @@ Public Class ProcessBrowse
 
 
     Public Class ThumbPicek
-        Implements INotifyPropertyChanged
-
+        Inherits BaseStruct
+        'Implements INotifyPropertyChanged
 
         Public Const THUMB_SUFIX As String = ".PicSortThumb.jpg"
 
-        Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
+        'Public Event PropertyChanged As PropertyChangedEventHandler Implements INotifyPropertyChanged.PropertyChanged
 
         Public Property oPic As Vblib.OnePic
         Public Property sDymek As String 'XAML dymekCount
@@ -3078,7 +3080,7 @@ Public Class ProcessBrowse
         End Function
 
 
-        Private Function ThumbCreateFromJPS(sInputFile As String) As BitmapSource
+        Private Shared Function ThumbCreateFromJPS(sInputFile As String) As BitmapSource
 
             ' z temp (.png) należy stworzyć THUMB
             Dim bitmapa As New BitmapImage()
@@ -3285,11 +3287,11 @@ Public Class ProcessBrowse
         End Function
 
 
-        Public Sub NotifyPropChange(propertyName As String)
-            ' ale do niektórych to onepic się zmienia, więc niby rekurencyjnie powinno być :)
-            Dim evChProp As New PropertyChangedEventArgs(propertyName)
-            RaiseEvent PropertyChanged(Me, evChProp)
-        End Sub
+        'Public Sub NotifyPropChange(propertyName As String)
+        '    ' ale do niektórych to onepic się zmienia, więc niby rekurencyjnie powinno być :)
+        '    Dim evChProp As New PropertyChangedEventArgs(propertyName)
+        '    RaiseEvent PropertyChanged(Me, evChProp)
+        'End Sub
 
     End Class
 
