@@ -23,7 +23,9 @@ Public Class SequenceHelperList
 
     End Sub
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Private Async Function LoadLista() As Task
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         Dim checkboxy As String = ProcessPic.GetBuffer(Me).GetStagesSettings
 

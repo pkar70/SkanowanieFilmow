@@ -63,7 +63,7 @@ Public Class PicMenuSearchArchive
     End Sub
 
 
-    Private Sub UstawWidocznoscMenuItemGeo(oPic As OnePic)
+    Private Shared Sub UstawWidocznoscMenuItemGeo(oPic As OnePic)
 
         _ByGeo.DataContext = oPic?.GetGeoTag
         If _ByGeo.DataContext Is Nothing Then
@@ -75,7 +75,7 @@ Public Class PicMenuSearchArchive
 
     End Sub
 
-    Private Sub UstawWidocznoscMenuItemKeywords(oPic As OnePic)
+    Private Shared Sub UstawWidocznoscMenuItemKeywords(oPic As OnePic)
         Dim lista As String = ""
 
         Try
@@ -106,7 +106,7 @@ Public Class PicMenuSearchArchive
         End Try
     End Sub
 
-    Private Sub UstawWidocznoscMenuItemObjects(azurek As MojeAzure)
+    Private Shared Sub UstawWidocznoscMenuItemObjects(azurek As MojeAzure)
         Dim lista As String = ""
 
         Try
@@ -135,7 +135,7 @@ Public Class PicMenuSearchArchive
         End Try
     End Sub
 
-    Private Sub UstawWidocznoscMenuItemTagi(azurek As MojeAzure)
+    Private Shared Sub UstawWidocznoscMenuItemTagi(azurek As MojeAzure)
         Dim lista As String = ""
 
         Try

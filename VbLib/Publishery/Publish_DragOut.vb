@@ -7,6 +7,7 @@ Public Class Publish_DragOut
 
     Public Overrides Property sProvider As String = PROVIDERNAME
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function SendFileMain(oPic As Vblib.OnePic) As Task(Of String)
         Return "ERROR: should not be called directly!"
     End Function
@@ -15,7 +16,6 @@ Public Class Publish_DragOut
         Return "ERROR: should not be called directly!"
     End Function
 
-#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function GetMBfreeSpace() As Task(Of Integer)
         ' *TODO* jak w localstorage
         Throw New NotImplementedException()

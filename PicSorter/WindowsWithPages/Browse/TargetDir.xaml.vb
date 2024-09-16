@@ -10,6 +10,7 @@ Imports Windows.Devices
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
 Imports System.Drawing.Text
+Imports pkar.UI.Extensions
 
 Public Class TargetDir
 
@@ -40,6 +41,7 @@ Public Class TargetDir
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
 
         Dim sFirstItemFilename As String = _selected(0).oPic.InBufferPathName
 
@@ -76,7 +78,7 @@ Public Class TargetDir
         uiGeoCalendar.DisplayDateEnd = centerDate.AddDays(7)
     End Sub
 
-    Private Function DataWgPola(pole As String, domyslna As Date) As Date
+    Private Shared Function DataWgPola(pole As String, domyslna As Date) As Date
         If String.IsNullOrWhiteSpace(pole) Then Return domyslna
         If pole.Length < 7 Then Return domyslna
 
@@ -104,7 +106,7 @@ Public Class TargetDir
         Dim sDataDo As String = aboutDateDo.AddDays(5).ToExifString
 
         ' teraz mozna wedle stringow
-        For Each oDir As Vblib.OneDir In vblib.GetDirTree.ToFlatList
+        For Each oDir As Vblib.OneDir In Vblib.Globs.GetDirTree.ToFlatList
             ' If oDir.sId.StartsWith("_") Then lLista.Add(oDir.ToComboDisplayName)
             If Not oDir.IsFromDate Then Continue For
             If oDir.sId > sDataOd AndAlso oDir.sId < sDataDo Then
@@ -202,7 +204,7 @@ Public Class TargetDir
 
     Private Shared Function CountSubdirInDate(sData As String) As Char
         Dim iCount As Integer = 65
-        For Each oDir As Vblib.OneDir In vblib.GetDirTree.ToFlatList
+        For Each oDir As Vblib.OneDir In Vblib.Globs.GetDirTree.ToFlatList
             If oDir.sId.StartsWithOrdinal(sData) Then iCount += 1
         Next
 
@@ -244,7 +246,7 @@ Public Class TargetDir
     Private Sub DopiszKatalogi()
 
         If uiComboExisting.SelectedIndex < 0 Then
-            vb14.DialogBox("Niewybrany katalog w combo")
+            Me.MsgBox("Niewybrany katalog w combo")
             Return
         End If
 
@@ -284,7 +286,7 @@ Public Class TargetDir
         oDir = GetSubdirGeo(oPicek, oDir)
 
         If oDir Is Nothing Then
-            vb14.DialogBox("Got NULL OneDir?")
+            Me.MsgBox("Got NULL OneDir?")
             Return
         End If
 
@@ -469,7 +471,7 @@ Public Class TargetDir
 
     Private Async Sub uiSearchTree_Click(sender As Object, e As RoutedEventArgs)
 
-        Dim sQuery As String = Await vb14.DialogBoxInputAllDirectAsync("Czego szukać?")
+        Dim sQuery As String = Await Me.InputBoxAsync("Czego szukać?")
         If sQuery = "" Then Return
         sQuery = sQuery.ToLowerInvariant
 

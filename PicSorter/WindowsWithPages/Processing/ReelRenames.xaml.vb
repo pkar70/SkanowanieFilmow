@@ -40,7 +40,7 @@ Public Class ReelRenames
         Next
     End Sub
 
-    Private Function StworzToDir(sourceId As String, rootDir As String)
+    Private Shared Function StworzToDir(sourceId As String, rootDir As String)
         Dim ret As String = IO.Path.GetDirectoryName(sourceId).Replace(rootDir, "")
         If ret.StartsWith("\") Then ret = ret.Substring(1)
         Return ret
@@ -77,7 +77,7 @@ Public Class ReelRenames
 
     End Function
 
-    Private Function JustifiedFrameNumber(renDir As OneRenameDir, bDown As Boolean) As String
+    Private Shared Function JustifiedFrameNumber(renDir As OneRenameDir, bDown As Boolean) As String
         Dim maxNumLen As Integer = renDir.counter.ToString.Length
 
         Dim currnum = If(bDown, renDir.counter - renDir.currNum + 1, renDir.currNum)

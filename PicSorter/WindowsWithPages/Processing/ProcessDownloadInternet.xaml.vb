@@ -292,7 +292,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         End If
     End Sub
 
-    Private Function TryWyraz2Miesiac(wyraz As String) As Integer
+    Private Shared Function TryWyraz2Miesiac(wyraz As String) As Integer
         ' wedle liczby rzymskiej lub nazwy
         Select Case wyraz.ToLowerInvariant
             Case "stycznia", "styczeń", "styczniu"
@@ -430,7 +430,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
 
         Await Task.Run(Sub() _queryResults = Application.gDbase.Search(query))
 
-        If _queryResults Is Nothing OrElse _queryResults.Count < 1 Then
+        If _queryResults Is Nothing OrElse Not _queryResults.Any Then
             Me.MsgBox("Nie znalazłem takich zdjęć")
             Me.ProgRingShow(False)
             Return

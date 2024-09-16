@@ -37,7 +37,9 @@ Public Class Publish_PDF
         Return Await SendFilesMain(New List(Of Vblib.OnePic) From {oPic}, Nothing)
     End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function SendFilesMain(oPicki As List(Of Vblib.OnePic), oNextPic As Vblib.JedenWiecejPlik) As Task(Of String)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         If String.IsNullOrEmpty(sZmienneZnaczenie) Then Return "ERROR: Publish_PDF, PDF path is not set!"
 

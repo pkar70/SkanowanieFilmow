@@ -36,6 +36,8 @@ Public Class Mov2jpg
         'Return bRet
     End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+
     Public Async Function KonwersjaObrazka(sFromPicture As String, sToPicture As String, iMaxSize As Integer) As Task(Of Boolean)
 
         'Dim oSoftBitmap As wingraph.SoftwareBitmap
@@ -67,9 +69,14 @@ Public Class Mov2jpg
 
     Public Async Function IsFfmpegInstalled() As Task(Of Boolean)
         ' ffmpeg po sciezce szukamy
+        Return False
     End Function
 
     Public Async Function TryInstallFfmpeg() As Task(Of Boolean)
         ' linki do instalki
+        Return False
     End Function
+
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
+
 End Class

@@ -556,6 +556,7 @@ Public Class BufferFromQuery
         Return "Query"
     End Function
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Sub SetStagesSettings(listaCheckow As String) Implements IBufor.SetStagesSettings
         ' empty
     End Sub
@@ -563,6 +564,7 @@ Public Class BufferFromQuery
     Public Async Function RunAutoExif() As Task Implements IBufor.RunAutoExif
         ' empty dla query
     End Function
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
 
 End Class

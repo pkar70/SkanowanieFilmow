@@ -65,7 +65,7 @@ Public NotInheritable Class PicMenuSetDate
         MenuOtwieramy()
     End Sub
 
-    Private Async Sub uiDatesFromKwds_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiDatesFromKwds_Click(sender As Object, e As RoutedEventArgs)
         DatesFromKwds(0)
     End Sub
 

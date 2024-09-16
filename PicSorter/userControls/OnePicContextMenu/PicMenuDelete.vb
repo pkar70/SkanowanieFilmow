@@ -30,7 +30,9 @@ Public NotInheritable Class PicMenuDeleteTemps
         _delThumb.IsEnabled = UseSelectedItems
     End Sub
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Private Async Sub DelThumb_Click(sender As Object, e As RoutedEventArgs)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         For Each thumb As ProcessBrowse.ThumbPicek In GetSelectedItems()
             thumb.oImageSrc = Nothing ' zwalnia pamięć, ale i zwalnia plik

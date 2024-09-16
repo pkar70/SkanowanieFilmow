@@ -141,7 +141,7 @@ Public Class PicMenuLinksWeb
     ''' <summary>
     ''' uzupełnia linki o #serno, i dodaje do OnePic. Na wejściu linki mają mieć zdefiniowane opisy
     ''' </summary>
-    Private Sub PolaczZeSoba(thumb0 As ThumbPicek, dokad0 As String, thumb1 As ThumbPicek, dokad1 As String)
+    Private Shared Sub PolaczZeSoba(thumb0 As ThumbPicek, dokad0 As String, thumb1 As ThumbPicek, dokad1 As String)
         ' # jest w Formatted
         Dim link0 As New OneLink With {.opis = dokad0, .link = "pic" & thumb1.oPic.FormattedSerNo}
         Dim link1 As New OneLink With {.opis = dokad1, .link = "pic" & thumb0.oPic.FormattedSerNo}

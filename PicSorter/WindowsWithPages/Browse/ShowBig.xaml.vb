@@ -961,7 +961,7 @@ Public Class ShowBig
         Sub GetBuffer(ByRef buffer As IntPtr, ByRef capacity As UInteger)
     End Interface
 
-    Public Function CreateNegativeImage(originalBitmap As wingraph.SoftwareBitmap) As wingraph.SoftwareBitmap
+    Public Shared Function CreateNegativeImage(originalBitmap As wingraph.SoftwareBitmap) As wingraph.SoftwareBitmap
         ' Convert to BGRA8 format if necessary
         Dim bitmap = wingraph.SoftwareBitmap.Convert(originalBitmap, wingraph.BitmapPixelFormat.Bgra8, wingraph.BitmapAlphaMode.Premultiplied)
 

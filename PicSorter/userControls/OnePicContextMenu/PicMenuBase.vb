@@ -94,7 +94,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         Me.Items.Add(New Separator)
     End Sub
 
-    Protected Function CreateMenuItem(header As String, dymek As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
+    Protected Shared Function CreateMenuItem(header As String, dymek As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
         Dim oNew As New MenuItem
         oNew.Header = header
         oNew.IsEnabled = isenabled

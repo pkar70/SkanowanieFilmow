@@ -3,6 +3,7 @@
 ' ma pokazać listę autotag engines, dla każdego policzyć ile zdjęc jest nieotagowanych
 
 Imports vb14 = Vblib.pkarlibmodule14
+Imports pkar.UI.Extensions
 
 Public Class BatchEdit
 
@@ -10,7 +11,7 @@ Public Class BatchEdit
     Private _iMax As Integer
 
     Private Async Sub uiGetAll_Click(sender As Object, e As RoutedEventArgs)
-        If Not Await vb14.DialogBoxYNAsync("Aplikować wszystkie zaznaczone mechanizmy?") Then Return
+        If Not Await Me.DialogBoxYNAsync("Aplikować wszystkie zaznaczone mechanizmy?") Then Return
 
         Dim iSelected As Integer = 0
         For Each oSrc As JedenEngine In _lista
@@ -48,6 +49,7 @@ Public Class BatchEdit
     End Sub
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Me.InitDialogs
 
         _lista = New List(Of JedenEngine)
         _iMax = ProcessPic.GetBuffer(Me).Count

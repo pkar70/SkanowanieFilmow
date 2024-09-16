@@ -78,15 +78,15 @@ Public Class AutoTags
 
     End Sub
 
-    Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+    Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
         Me.ProgRingInit(True, True)
 
         Dim tryb As Boolean = Vblib.GetSettingsBool("uiAutotagsExact")
-        Await UstawListe(tryb)
+        UstawListe(tryb)
     End Sub
 
-    Private Async Function UstawListe(tryb As Boolean) As Task
+    Private Sub UstawListe(tryb As Boolean)
 
 
         ' najpierw pokazujemy to co nie wymaga liczenia
@@ -132,7 +132,7 @@ Public Class AutoTags
         Me.ProgRingShow(False)
         Me.ProgRingSetText("")
 
-    End Function
+    End Sub
 
     Private Sub UstawDymekCount(oNew As JedenEngine)
         oNew.count = PoliczUstawione(oNew.nazwa)

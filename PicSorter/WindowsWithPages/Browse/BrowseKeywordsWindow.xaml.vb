@@ -358,7 +358,7 @@ Public Class BrowseKeywordsWindow
 
     End Sub
 
-    Private Function SzukajMinDatyRecursive(oItem As Vblib.OneKeyword, minDate As Date) As Date
+    Private Shared Function SzukajMinDatyRecursive(oItem As Vblib.OneKeyword, minDate As Date) As Date
         'vb14.DumpCurrMethod()
 
         If oItem.SubItems IsNot Nothing Then
@@ -377,7 +377,7 @@ Public Class BrowseKeywordsWindow
 
 
 
-    Private Function SzukajMaxDatyRecursive(oItem As Vblib.OneKeyword, maxDate As Date) As Date
+    Private Shared Function SzukajMaxDatyRecursive(oItem As Vblib.OneKeyword, maxDate As Date) As Date
         'vb14.DumpCurrMethod()
 
         If oItem.SubItems IsNot Nothing Then

@@ -19,7 +19,9 @@ Public Class Publish_ZIP
     .defaultExif = New Vblib.ExifTag(Vblib.ExifSource.CloudPublish)
     }
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function SendFilesMain(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         If String.IsNullOrEmpty(sZmienneZnaczenie) Then Return "ERROR: Publish_ZIP, folderForFiles is not set"
 
@@ -81,7 +83,9 @@ Public Class Publish_CBZ
     .defaultExif = New Vblib.ExifTag(Vblib.ExifSource.CloudPublish)
     }
 
+#Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Public Overrides Async Function SendFilesMain(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
+#Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
         If String.IsNullOrEmpty(sZmienneZnaczenie) Then Return "ERROR: Publish_ZIP, folderForFiles is not set"
 
