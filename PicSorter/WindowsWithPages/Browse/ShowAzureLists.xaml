@@ -32,15 +32,6 @@
                 </StackPanel>
                 
             </TabItem>
-            <TabItem Header="Captions" >
-                <local:UserAzureListViewNoBox x:Name="AzureCapt" DataContext="{Binding Captions}" />
-            </TabItem>
-            <TabItem Header="Categories"  >
-                <local:UserAzureListViewNoBox x:Name="AzureCateg" DataContext="{Binding Categories}" />
-            </TabItem>
-            <TabItem Header="Tags"  >
-                <local:UserAzureListViewNoBox x:Name="AzureTags"  DataContext="{Binding Tags}" />
-            </TabItem>
             <TabItem Header="Landmarks" >
                 <local:UserAzureListViewNoBox  x:Name="AzureLandm" DataContext="{Binding Landmarks}" />
             </TabItem>
@@ -48,14 +39,23 @@
             <TabItem Header="Brands" >
                 <local:UserAzureListViewWithBox x:Name="AzureBrands"  DataContext="{Binding Brands}" />
             </TabItem>
-            <TabItem Header="Objects"  >
-                <local:UserAzureListViewWithBox  x:Name="AzureObjs" DataContext="{Binding Objects}" />
-            </TabItem>
             <TabItem Header="Celebrities"  >
                 <local:UserAzureListViewWithBox  x:Name="AzureCelebs" DataContext="{Binding Celebrities}" />
             </TabItem>
+            <TabItem Header="Categories"  >
+                <local:UserAzureListViewNoBox x:Name="AzureCateg" DataContext="{Binding Categories}" />
+            </TabItem>
+            <TabItem Header="Tags"  >
+                <local:UserAzureListViewNoBox x:Name="AzureTags"  DataContext="{Binding Tags}" />
+            </TabItem>
+            <TabItem Header="Objects"  >
+                <local:UserAzureListViewWithBox  x:Name="AzureObjs" DataContext="{Binding Objects}" />
+            </TabItem>
             <TabItem Header="Faces"  >
                 <local:UserAzureListViewWithBox  x:Name="AzureFaces" DataContext="{Binding Faces}" />
+            </TabItem>
+            <TabItem Header="Captions" >
+                <local:UserAzureListViewNoBox x:Name="AzureCapt" DataContext="{Binding Captions}" />
             </TabItem>
         </TabControl>
 
