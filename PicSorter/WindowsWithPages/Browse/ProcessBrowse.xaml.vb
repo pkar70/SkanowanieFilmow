@@ -12,6 +12,7 @@ Imports Windows.UI.Notifications
 Imports PicSorterNS.BrowseFullSearch
 Imports Newtonsoft.Json
 Imports System.Windows.Controls.Primitives
+Imports Microsoft.Rest.Azure
 'Imports System.Windows.Forms
 'Imports Windows.ApplicationModel.Background
 'Imports Microsoft.EntityFrameworkCore.Internal
@@ -926,7 +927,7 @@ Public Class ProcessBrowse
         pic0.oPic.Archived = "" ' takiej wersji na pewno nie było zarchiwizowanej :)
         pic0.oPic.sSuggestedFilename = IO.Path.GetFileName(packZipName)
         pic0.oPic.SetDefaultFileTypeDiscriminator() ' ikonka przy picku
-        pic0.NotifyPropChange("oPic.fileTypeDiscriminator")
+        pic0.NotifyPropChange("fileTypeDiscriminator")
         If pic1 IsNot Nothing Then DeletePicekMain(pic1)   ' zmieni _Reapply, jeśli picek miał splita; ze wszystkąd usuwa
 
         ' *TODO* ewentualnie stereoautoalign, własny anagl z *aligned*, ustalenie R/L, i zrobienie pliku JPS - tak by do StereoViewer wysłac pliki aligned
@@ -1057,7 +1058,7 @@ Public Class ProcessBrowse
     Public Shared Async Function StereoRunSpmOnPack(stereopackfolder As String, askIfOk As Boolean) As Task(Of Boolean)
 
         Dim twoPics As String() = StereoGetTwoPics(stereopackfolder)
-        If twoPics.Count > 2 Then Return False
+        If twoPics.Length > 2 Then Return False
 
         Dim spmpathname As String = vb14.GetSettingsString("uiStereoSPMPath")
 
@@ -2095,7 +2096,7 @@ Public Class ProcessBrowse
             End If
         Next
         If Not allAzure Then
-            If Not Await vb14.DialogBoxYNAsync("Niektóre zdjęcia nie mają analizy Azure, kontynuować?") Then Return
+            If Not Await Me.DialogBoxYNAsync("Niektóre zdjęcia nie mają analizy Azure, kontynuować?") Then Return
         End If
 
         Dim oMI As MenuItem = sender
@@ -2143,7 +2144,7 @@ Public Class ProcessBrowse
 
     Private Sub uiFilterAzureAdult_Click(sender As Object, e As RoutedEventArgs)
         'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "adult"
+        uiFilters.Content = "Az 🔞"
 
         Dim bMamy As Boolean = False
 
@@ -2165,26 +2166,27 @@ Public Class ProcessBrowse
     End Sub
 
     Private Sub uiFilterAzureTag_Click(sender As Object, e As RoutedEventArgs)
-        ShowFilterAzureTag("Tags")
+        ShowFilterAzureTag("Tags", "Az #")
     End Sub
     Private Sub uiFilterAzureObject_Click(sender As Object, e As RoutedEventArgs)
-        ShowFilterAzureTag("Objects")
+        ShowFilterAzureTag("Objects", "Az obj")
     End Sub
     Private Sub uiFilterAzureBrand_Click(sender As Object, e As RoutedEventArgs)
-        ShowFilterAzureTag("Brands")
+        ShowFilterAzureTag("Brands", "Az ™")
     End Sub
     Private Sub uiFilterAzureLandmarks_Click(sender As Object, e As RoutedEventArgs)
-        ShowFilterAzureTag("Landmarks")
+        ShowFilterAzureTag("Landmarks", "Az ⛰")
     End Sub
     Private Sub uiFilterAzureCategories_Click(sender As Object, e As RoutedEventArgs)
-        ShowFilterAzureTag("Categories")
+        ShowFilterAzureTag("Categories", "Az cat")
     End Sub
     Private Sub uiFilterAzureCelebrities_Click(sender As Object, e As RoutedEventArgs)
-        ShowFilterAzureTag("Celebrities")
+        ShowFilterAzureTag("Celebrities", "Az 👤")
     End Sub
 
-    Private Sub ShowFilterAzureTag(listaPropName As String)
+    Private Sub ShowFilterAzureTag(listaPropName As String, selectedFilter As String)
         'uiFilterPopup.IsOpen = False
+        uiFilters.Content = selectedFilter
 
         Me.ProgRingShow(True)
 
@@ -2208,6 +2210,43 @@ Public Class ProcessBrowse
 
         Dim oWnd As New Window With {.Content = oSP, .Width = 200, .Height = 290}
         oWnd.Show()
+
+    End Sub
+    Private Sub uiFilterAzureCheck_Click(sender As Object, e As RoutedEventArgs)
+        uiFilters.Content = "™⛰🔞👤"
+
+        Dim bMamy As Boolean = False
+
+        For Each oItem In _thumbsy
+            oItem.opacity = _OpacityWygas   ' domyślnie: nie pokazujemy 
+            Dim oAzure As Vblib.ExifTag = oItem.oPic.GetExifOfType("AUTO_AZURE")
+            If oAzure Is Nothing Then Continue For
+
+            If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then
+                    oItem.opacity = 1
+                    bMamy = True
+                End If
+
+            If oAzure.AzureAnalysis.Brands IsNot Nothing AndAlso oAzure.AzureAnalysis.Brands.lista.Count > 0 Then
+                oItem.opacity = 1
+                bMamy = True
+            End If
+
+            If oAzure.AzureAnalysis.Landmarks IsNot Nothing AndAlso oAzure.AzureAnalysis.Landmarks.lista.Count > 0 Then
+                oItem.opacity = 1
+                bMamy = True
+            End If
+
+            If oAzure.AzureAnalysis.Celebrities IsNot Nothing AndAlso oAzure.AzureAnalysis.Celebrities.lista.Count > 0 Then
+                oItem.opacity = 1
+                bMamy = True
+            End If
+        Next
+
+        _isGeoFilterApplied = False
+        _isTargetFilterApplied = False
+
+        KoniecFiltrowania(bMamy, True)
 
     End Sub
 
@@ -2950,6 +2989,12 @@ Public Class ProcessBrowse
             End Get
         End Property
 
+        Public ReadOnly Property fileTypeDiscriminator
+            Get
+                Return oPic.fileTypeDiscriminator
+            End Get
+        End Property
+
         Sub New(picek As Vblib.OnePic, iMaxBok As Integer)
             oPic = picek
             iDuzoscH = iMaxBok
@@ -3050,12 +3095,13 @@ Public Class ProcessBrowse
             IO.File.Delete(ThumbGetFilename() & ".png")   ' pierwsza klatka filmu (pełny rozmiar)
         End Sub
 
-        Private Async Function ThumbCreate(bCacheThumbs As Boolean) As Task(Of BitmapImage)
+        Private Async Function ThumbCreate(bCacheThumbs As Boolean, _inArchive As Boolean) As Task(Of BitmapImage)
             ' async, bo robienie np. z filmu może potrwać
 
             Dim sExt As String = IO.Path.GetExtension(oPic.InBufferPathName).ToLowerInvariant
 
             If Vblib.OnePic.ExtsMovie.ContainsCI(sExt) Then
+                If _inArchive Then Return Nothing
                 Return Await ThumbCreateFromMovie(bCacheThumbs)
             End If
 
@@ -3153,12 +3199,12 @@ Public Class ProcessBrowse
             Dim bCacheThumbs As Boolean = vb14.GetSettingsBool("uiCacheThumbs")
             If _inArchive Then bCacheThumbs = False    ' w archiwum nie robimy tego!
 
-            Dim bitmapa As BitmapImage = Await ThumbGet(bCacheThumbs)
+            Dim bitmapa As BitmapImage = Await ThumbGet(bCacheThumbs, _inArchive)
             oImageSrc = bitmapa
             NotifyPropChange("oImageSrc")
         End Function
 
-        Private Async Function ThumbGet(bCacheThumbs As Boolean) As Task(Of BitmapImage)
+        Private Async Function ThumbGet(bCacheThumbs As Boolean, _inArchive As Boolean) As Task(Of BitmapImage)
 
             Dim bitmapa As BitmapImage
 
@@ -3177,7 +3223,7 @@ Public Class ProcessBrowse
                 End Try
             End If
 
-            bitmapa = Await ThumbCreate(bCacheThumbs)
+            bitmapa = Await ThumbCreate(bCacheThumbs, _inArchive)
             If bitmapa Is Nothing Then Return ThumbPlaceholder()
 
             If Not bCacheThumbs Then Return bitmapa

@@ -67,14 +67,15 @@
                                 <MenuItem Header="person" Click="uiFilterAzure_Click" Icon="🧍"/>
                                 <MenuItem Header="no person" Click="uiFilterAzure_Click" />
                                 <Separator/>
-                                <MenuItem Header="by tag..." Click="uiFilterAzureTag_Click" />
+                                <MenuItem Header="by tag..." Click="uiFilterAzureTag_Click" Icon="#"/>
                                 <MenuItem Header="by object..." Click="uiFilterAzureObject_Click" />
-                                <MenuItem Header="by brand..." Click="uiFilterAzureBrand_Click" />
+                                <MenuItem Header="by brand..." Click="uiFilterAzureBrand_Click" Icon="™"/>
                                 <MenuItem Header="by category..." Click="uiFilterAzureCategories_Click" />
-                                <MenuItem Header="by landmark..." Click="uiFilterAzureLandmarks_Click" />
-                                <MenuItem Header="by celebrities..." Click="uiFilterAzureCelebrities_Click" />
+                                <MenuItem Header="by landmark..." Click="uiFilterAzureLandmarks_Click" Icon="⛰"/>
+                                <MenuItem Header="by celebrities..." Click="uiFilterAzureCelebrities_Click" Icon="👤"/>
                                 <Separator/>
-                                <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" />
+                                <MenuItem Header="™⛰🔞👤" Click="uiFilterAzureCheck_Click" />
+                                <MenuItem Header="adult" Click="uiFilterAzureAdult_Click" Icon="🔞"/>
                             </MenuItem>
                             <MenuItem Header="no Description" Click="uiFilterNoDescr_Click" Name="uiFilterNoDescr"/>
                             <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget" Icon="📂"/>
@@ -293,7 +294,7 @@
                                     </CheckBox.ContextMenu>
                                 </CheckBox>
                                 <!--<TextBlock Margin="-15,0,0,0" VerticalAlignment="Bottom" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
-                            <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" Text="{Binding oPic.fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
+                            <TextBlock VerticalAlignment="Bottom" HorizontalAlignment="Right" Text="{Binding fileTypeDiscriminator}" FontSize="20" Foreground="LimeGreen" Background="Yellow" Visibility="{Binding oPic.fileTypeDiscriminator, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />
                             </Grid>
                             <!--<TextBlock Margin="0,1,0,2" Text="{Binding podpis}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding podpis, Converter={StaticResource KonwersjaFileDiscrVisibility}}" />-->
                             <TextBlock Margin="0,0,0,0" Text="{Binding oPic.serno}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSerNo, Converter={StaticResource KonwersjaVisibility}}" />
