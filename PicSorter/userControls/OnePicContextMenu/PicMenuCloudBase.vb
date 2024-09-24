@@ -20,9 +20,9 @@ Public MustInherit Class PicMenuCloudBase
         Dim lista As IEnumerable(Of Vblib.AnyStorage)
 
         If IsForCloudArchive Then
-            lista = Application.GetCloudArchives.GetList
+            lista = Application.GetCloudArchives.GetList.OrderBy(Of String)(Function(x) x.konfiguracja.nazwa)
         Else
-            lista = Application.GetCloudPublishers.GetList
+            lista = Application.GetCloudPublishers.GetList.OrderBy(Of String)(Function(x) x.konfiguracja.nazwa)
         End If
 
         For Each oEngine As Vblib.CloudArchPublBase In lista
