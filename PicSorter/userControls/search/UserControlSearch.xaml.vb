@@ -140,7 +140,7 @@ Public Class UserControlSearch
 
         Dim fname As String = query.ogolne.adv.Filename
         If Not String.IsNullOrWhiteSpace(fname) Then
-            If Not fname.Contains("*") AndAlso Not fname.Contains("?") Then
+            If Not fname.Contains("*"c) AndAlso Not fname.Contains("?"c) Then
                 If Not Await vb14.DialogBoxYNAsync("Filename nie ma * ani ?, czy tak ma być?") Then
                     Return Nothing
                 End If

@@ -36,12 +36,12 @@ Class MainWindow
 
         ' specjalne uruchomienia
         Dim argsy As String() = Environment.CommandLine.Split(" ")
-        If argsy.Count < 2 Then Return
+        If argsy.Length < 2 Then Return
 
 
         Select Case argsy(1).ToLowerInvariant
             Case "expl"
-                If argsy.Count <> 3 Then
+                If argsy.Length <> 3 Then
                     Console.WriteLine("No param for 'expl'")
                     Return
                 End If
@@ -64,7 +64,7 @@ Class MainWindow
             '    Environment.CurrentDirectory = folder
             '    Window_Closing(Nothing, Nothing)
             Case "ntp"
-                If argsy.Count <> 3 Then
+                If argsy.Length <> 3 Then
                     Console.WriteLine("No param for 'ntp'")
                     Return
                 End If
@@ -80,7 +80,7 @@ Class MainWindow
 
 
             Case "tool"
-                If argsy.Count <> 4 Then
+                If argsy.Length <> 4 Then
                     Console.WriteLine("No params for 'tools'")
                     Return
                 End If

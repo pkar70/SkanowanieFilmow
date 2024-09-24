@@ -85,7 +85,7 @@ Public Class TargetDir
         Dim retDate As Date
 
         If pole.Length > 9 Then
-            If Date.TryParse(pole.Substring(0, 10), retDate) Then Return retDate
+            If Date.TryParse(pole.AsSpan(0, 10), retDate) Then Return retDate
         End If
 
         If Date.TryParse(pole.Substring(0, 7) & ".15", retDate) Then Return retDate

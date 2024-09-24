@@ -218,10 +218,10 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         If mam.Success Then
             Dim iInd As Integer = mam.Value.IndexOf("-")
             Dim tempInt As Integer
-            If Integer.TryParse(mam.Value.Substring(0, iInd), tempInt) Then
+            If Integer.TryParse(mam.Value.AsSpan(0, iInd), tempInt) Then
                 uiDateRange.MinDate = New Date(tempInt, 1, 1)
             End If
-            If Integer.TryParse(mam.Value.Substring(iInd + 1), tempInt) Then
+            If Integer.TryParse(mam.Value.AsSpan(iInd + 1), tempInt) Then
                 uiDateRange.MaxDate = New Date(tempInt, 12, 31)
             End If
         End If
@@ -255,8 +255,8 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         If mam.Success Then
             Dim tempStr As String = mam.Value.Replace("ata ", "")
             Dim rokOd, rokDo As Integer
-            Integer.TryParse(tempStr.Substring(0, 2), rokOd)
-            Integer.TryParse(tempStr.Substring(3, 2), rokDo)
+            Integer.TryParse(tempStr.AsSpan(0, 2), rokOd)
+            Integer.TryParse(tempStr.AsSpan(3, 2), rokDo)
             uiDateRange.MinDate = New Date(rokOd, 1, 1)
             uiDateRange.MinDate = (New Date(rokDo + 1, 1, 1)).AddMinutes(-1)
             Return

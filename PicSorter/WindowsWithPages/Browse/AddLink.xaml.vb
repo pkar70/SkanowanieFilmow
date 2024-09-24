@@ -51,12 +51,12 @@ Public Class AddLink
         uiOpis.Text = "wiki"
 
         Dim iInd As Integer = link.IndexOf("wikipedia")
-        If link.Substring(iInd - 1, 1) = "." Then
+        If link.AsSpan(iInd - 1, 1) = "." Then
 
             link = link.Substring(0, iInd - 1)
             iInd = link.LastIndexOf("/")
 
-            uiOpis.Text &= " (" & link.Substring(iInd + 1) & ")"
+            uiOpis.Text &= $" ({link.Substring(iInd + 1)})"
         End If
 
         uiOpis.Focus() ' ominięcie "za krótki"
