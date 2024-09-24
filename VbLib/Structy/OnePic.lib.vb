@@ -1345,7 +1345,7 @@ Public Class OnePic
 
 
         If opcje.PrintFilename Then opis &= sSuggestedFilename & If(asHTML, "<br />", vbCrLf)
-        If opcje.PrintDates Then opis &= $"Date: {GetDateSummary(False)}" & If(asHTML, "<br />", vbCrLf)
+        If opcje.PrintDates Then opis &= $"Date: {GetDateSummary(True)}" & If(asHTML, "<br />", vbCrLf)
         If opcje.PrintKwd Then opis &= sumOfKwds & If(asHTML, "<br />", vbCrLf)
         If opcje.PrintDescr Then opis &= sumOfDescr & If(asHTML, "<br />", vbCrLf)
 
