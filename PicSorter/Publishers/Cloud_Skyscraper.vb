@@ -2,7 +2,7 @@
 Imports System.IO
 Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
-
+Imports pkar.DotNetExtensions
 
 ' wersja z Windows...http, bo to dzia³a, a System.Web nie dzia³a - przesta³. Zwraca Http 409 na GetAsync
 
@@ -320,7 +320,14 @@ Public Class Cloud_Skyscraper
 
             ' ta linijka wymaga mapki mimetypów, Nuget - ale on wymaga .Net Std 2.0
             'mimetajp = MimeTypes.MimeTypeMap.GetMimeType(mimetajp)
-            Dim mimetajp As String = MimeTypesy.GetMimeTypeFromFilename(oPic.InBufferPathName)
+
+            ' dla stereo - typem bêdzie JPG tak naprawdê, bo nie ZIP
+            Dim tempname As String = oPic.sSuggestedFilename
+            If tempname.EndsWithCI("stereo.zip") Then tempname &= ".jpg"
+            If tempname.EndsWithCI(".nar") Then tempname &= ".jpg"
+
+
+            Dim mimetajp As String = MimeTypesy.GetMimeTypeFromFilename(tempname)
 
             oPicContent.Headers.ContentType = New Windows.Web.Http.Headers.HttpMediaTypeHeaderValue(mimetajp)
 
@@ -329,7 +336,7 @@ Public Class Cloud_Skyscraper
                 {New Windows.Web.Http.HttpStringContent(xfToken), "_xfToken"},
                 {New Windows.Web.Http.HttpStringContent("json"), "_xfResponseType"},
                 {New Windows.Web.Http.HttpStringContent("1"), "_xfWithData"},
-                {oPicContent, "upload", oPic.sSuggestedFilename}
+                {oPicContent, "upload", tempname}
             }
 
             'Content-Disposition: form-data; name=^\^"upload^\^"; filename=^\^"average-adult-weight-by-year.png^\^"^
