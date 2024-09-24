@@ -5,6 +5,7 @@ Imports System.IO.Compression
 Imports System.Text.RegularExpressions
 Imports System.IO
 Imports pkar.DotNetExtensions
+Imports Org.BouncyCastle.Crypto.Prng
 
 Public Class PicMenuLinksWeb
     Inherits PicMenuBase
@@ -12,6 +13,7 @@ Public Class PicMenuLinksWeb
     Private Shared _itemLinki As MenuItem
     Private Shared _miCopy As MenuItem
     Private Shared _miPaste As MenuItem
+    Private Shared _miOpenReverse As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -29,6 +31,10 @@ Public Class PicMenuLinksWeb
         _itemLinki = New MenuItem With {.Header = "Open"}
         Me.Items.Add(_itemLinki)
 
+        _miOpenReverse = New MenuItem With {.Header = "Reverse"}
+        Me.Items.Add(_miOpenReverse)
+
+
         Me.Items.Add(New Separator)
         _miCopy = AddMenuItem("Create", "Stwórz link do zaznaczonego zdjęcia", AddressOf CopyCalled)
         _miPaste = AddMenuItem("Paste", "Dodaj zapamiętany link", AddressOf PasteCalled, False)
@@ -43,6 +49,7 @@ Public Class PicMenuLinksWeb
     Public Overrides Sub MenuOtwieramy()
         MyBase.MenuOtwieramy()
 
+        ' otwieranie menu CONTEXT
         If _miCopy Is Nothing Then Return
 
         OpeningMenu(Nothing, Nothing)
@@ -53,12 +60,24 @@ Public Class PicMenuLinksWeb
 
     End Sub
     Private Sub OpeningMenu(sender As Object, e As RoutedEventArgs)
-        ' przetworzenie Menu - dodanie linków
+
+        ' przetworzenie Menu - dodanie linków - otwieranie menu ME
         _itemLinki.Items.Clear()
-
         OneOrMany(AddressOf DodajLinkizJednego)
-
         _itemLinki.IsEnabled = _itemLinki.Items.Count > 0
+
+        _miOpenReverse.IsEnabled = False
+        If Not Application.gDbase.IsLoaded Then Return
+        _miOpenReverse.IsEnabled = True
+        _miOpenReverse.Items.Clear()
+
+        ' znajdz
+        OneOrMany(AddressOf DodajRevLinkizJednego)
+
+        ' jesli nie
+        If _miOpenReverse.Items.Count < 1 Then
+            _miOpenReverse.Items.Add(New MenuItem With {.Header = "(empty)", .IsEnabled = False})
+        End If
 
     End Sub
     Private Async Sub CopyCalled()
@@ -160,7 +179,36 @@ Public Class PicMenuLinksWeb
         EventRaise(Me)
     End Sub
 
+    Private Sub DodajRevLinkizJednego(oPic As OnePic)
 
+        opicserno = oPic.serno
+
+        Dim skadlinki As IEnumerable(Of OnePic) =
+            Application.gDbase.GetFirstLoaded.GetAll.Where(AddressOf DodajRevLinkizJednego_Where).
+        Concat(Globs.GetBuffer.GetList.Where(AddressOf DodajRevLinkizJednego_Where))
+
+        If Not skadlinki.Any Then Return
+
+        For Each picekFrom As Vblib.OnePic In skadlinki
+            Dim linkname As String = "pic#" & picekFrom.serno
+            Dim linek As New Vblib.OneLink() With {.opis = linkname, .link = linkname}
+            _miOpenReverse.Items.Add(CreateLinkMenuItem(linek))
+        Next
+
+    End Sub
+
+    Private opicserno As Integer
+
+    Private Function DodajRevLinkizJednego_Where(x As Vblib.OnePic)
+        If x.linki Is Nothing Then Return False
+        For Each linek As Vblib.OneLink In x.linki
+            If Not linek.link.StartsWithCI("pic#") Then Continue For
+            Dim tempno As Integer
+            If Not Integer.TryParse(linek.link.AsSpan(4), tempno) Then Continue For
+            If opicserno = tempno Then Return True
+        Next
+        Return False
+    End Function
 
     Private Sub DodajLinkizJednego(oPic As OnePic)
         If oPic.linki IsNot Nothing Then
