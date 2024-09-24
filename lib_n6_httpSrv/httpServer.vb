@@ -146,7 +146,7 @@ Public MustInherit Class ServerWrapperBase
                 Dim request As HttpListenerRequest = context?.Request
                 If request Is Nothing Then Exit Do   ' takie zabezpieczenie to tylko u³atwienie gdy jest pod debuggerem podczas wy³¹czania programu
 
-                _lastNetAccess.Zapisz("??", "??")
+                _lastNetAccess.Zapisz("??", request.RawUrl)
 
                 Vblib.DumpMessage("Mam request: " & request.RawUrl) ' on jest typu: /canupload?guid=xxx&clientHost=Hxxxx
 
@@ -828,7 +828,11 @@ Public Class LastNetAccess
         If datediff.TotalDays > 365 Then
             Return "No recent logins"
         Else
-            Return $"Last request: {kto}:{cmd} @{(Date.Now - kiedy).ToStringDHMS} ago"
+            If kiedy.AddHours(12) > Date.Now Then
+                Return $"Last request: {kto}:{cmd} @{(Date.Now - kiedy).ToStringDHMS} ago"
+            Else
+                Return $"Last request: {kto}:{cmd} @{kiedy.ToExifString}"
+            End If
         End If
 
     End Function
