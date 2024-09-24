@@ -3,9 +3,26 @@ Imports pkar
 Imports pkar.DotNetExtensions
 
 Public Class EnterGeoTag
+
+    Private _inTextChanged As Boolean = False
+
     Private Sub uiLatLon_TextChanged(sender As Object, e As TextChangedEventArgs)
+
+        If _inTextChanged Then Return
+
         Dim oTB As TextBox = sender
         If TryFromLink(oTB.Text) Then Return
+
+        Dim oArr As String() = oTB.Text.Split(",")
+        If oArr.Length = 2 Then
+            _inTextChanged = True
+            uiLatitude.Text = oArr(0).Trim
+            uiLongitude.Text = oArr(1).Trim
+            uiOK.IsEnabled = True
+            _inTextChanged = False
+        End If
+
+
         CheckEnableOk()
     End Sub
 
