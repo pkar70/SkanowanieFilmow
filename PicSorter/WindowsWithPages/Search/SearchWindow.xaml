@@ -41,7 +41,7 @@
 
                         <ListView.ItemTemplate>
                             <DataTemplate >
-                                <Grid HorizontalAlignment="Stretch" ToolTip="{Binding sumOfDescr}">
+                                <Grid HorizontalAlignment="Stretch" ToolTip="{Binding dymek}">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="60" Name="naID" />
                                         <ColumnDefinition Width="*" Name="naFolder" />

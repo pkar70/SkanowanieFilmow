@@ -56,7 +56,7 @@ Public Class SimpleDescribe
 
                 vblib.GetShareDescriptionsOut.AddPicDescForPicLastPeer(oPicek.oPic, descr)
 
-                Dim peer = oPicek.GetLastSharePeer
+                Dim peer = oPicek.oPic.GetLastSharePeer
                 If peer IsNot Nothing Then
                     If peer.GetType Is GetType(ShareServer) Then
                         ' zdjęcie jest z serwera, więc jest mu jak wysłać komentarz

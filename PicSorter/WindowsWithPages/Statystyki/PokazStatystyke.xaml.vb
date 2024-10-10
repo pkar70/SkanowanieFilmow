@@ -562,8 +562,8 @@ Public Class PokazStatystyke
     Private Sub uiPicByTarget_Click(sender As Object, e As RoutedEventArgs)
         ZrobStatystyke(sender, Function(x)
                                    If x Is Nothing Then Return "?"
-                                   If x.TargetDir.StartsWith("reel") Then Return "reel"
-                                   If x.TargetDir.StartsWith("inet") Then Return "inet"
+                                   If x.TargetDir.StartsWithCI("reel") Then Return "reel"
+                                   If x.TargetDir.StartsWithCI("inet") Then Return "inet"
                                    Return "std"
                                End Function)
     End Sub
@@ -573,9 +573,9 @@ Public Class PokazStatystyke
                                    If x Is Nothing Then Return "?"
                                    Dim ext As String = System.IO.Path.GetExtension(x.sSuggestedFilename).ToLowerInvariant & ";"
 
-                                   If OnePic.ExtsMovie.Contains(ext) Then Return "movie"
-                                   If OnePic.ExtsPic.Contains(ext) Then Return "pic"
-                                   If OnePic.ExtsStereo.Contains(ext) Then Return "stereo"
+                                   If OnePic.ExtsMovie.ContainsCI(ext) Then Return "movie"
+                                   If OnePic.ExtsPic.ContainsCI(ext) Then Return "pic"
+                                   If OnePic.ExtsStereo.ContainsCI(ext) Then Return "stereo"
 
                                    Return "other"
                                End Function)

@@ -539,10 +539,17 @@ Public MustInherit Class PicSourceBase
 		Return iCnt
 	End Function
 
+	''' <summary>
+	''' zwraca zawartość pliku Purge (jako string, nie array)
+	''' </summary>
+	''' <returns></returns>
 	Public Function GetPurgeList() As String
 		Return IO.File.ReadAllText(_purgeFile)
 	End Function
 
+	''' <summary>
+	''' po prostu usuwa plik Purge (a więc usuwa wszystkie pliki z niego)
+	''' </summary>
 	Public Sub DelPurgeList()
 		IO.File.Delete(_purgeFile)
 	End Sub

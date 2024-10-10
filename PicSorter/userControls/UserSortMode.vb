@@ -28,6 +28,12 @@
                      .IsSelected = (defSort = mode)})
     End Sub
 
+    Public Sub SetCurrentSortMode(mode As ThumbSortOrder)
+        For Each tryb As ComboBoxItem In Me.Items
+            tryb.IsSelected = (tryb.DataContext = mode)
+        Next
+    End Sub
+
 End Class
 
 

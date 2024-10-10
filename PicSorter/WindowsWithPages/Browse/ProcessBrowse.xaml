@@ -172,7 +172,7 @@
                             <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
                             <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
                             <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
-                            <local:PicMenuShareUpload UseSelectedItems="True" UseProgBar="True"/>
+                        <local:PicMenuShareUpload UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged"/>
 
                             <!--<MenuItem Header="Publish  »" Name="uiMenuPublish"  />-->
                             <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />

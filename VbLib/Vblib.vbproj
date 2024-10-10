@@ -19,7 +19,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="1.1.2" />
     <PackageReference Include="pkar.BasicGeopos" Version="1.5.5" />
-    <PackageReference Include="pkar.DotNetExts" Version="1.2.6" />
+    <PackageReference Include="pkar.DotNetExts" Version="1.2.7" />
     <PackageReference Include="pkar.Localize" Version="1.0.2" />
     <PackageReference Include="pkar.NetConfigs" Version="1.0.3" />
     <PackageReference Include="pkar.StructList" Version="1.7.0" />

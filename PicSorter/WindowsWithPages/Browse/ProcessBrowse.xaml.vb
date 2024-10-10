@@ -13,6 +13,7 @@ Imports PicSorterNS.BrowseFullSearch
 Imports Newtonsoft.Json
 Imports System.Windows.Controls.Primitives
 Imports Microsoft.Rest.Azure
+Imports Windows.Storage.Streams
 'Imports System.Windows.Forms
 'Imports Windows.ApplicationModel.Background
 'Imports Microsoft.EntityFrameworkCore.Internal
@@ -49,6 +50,7 @@ Public Class ProcessBrowse
         '_inArchive = onlyBrowse
 
         _title = title
+
     End Sub
 
     Private Sub MenuActionReadOnly()
@@ -95,7 +97,7 @@ Public Class ProcessBrowse
         _afterInit = True
 
         Me.ProgRingSetText("sorting...")
-        Await SortujThumbsy()   ' proszę posortować - robimy to tylko po zmianach dat! i wstawia do listview
+        Await SortujThumbsy(False)   ' proszę posortować - robimy to tylko po zmianach dat! i wstawia do listview
 
         ' zaczynamy od wygaszonego stereopack - dla archiwum, oraz gdy nie znamy SPM
         uiStereoPack.Visibility = Visibility.Collapsed
@@ -388,7 +390,7 @@ Public Class ProcessBrowse
     ''' <summary>
     ''' ustaw ItemsSource na thumbsy wedle daty - na start, i po zmianach dat - SLOW!
     ''' </summary>
-    Private Async Function SortujThumbsy() As Task
+    Private Async Function SortujThumbsy(useUI As Boolean) As Task
         Vblib.DumpCurrMethod()
 
         If uiPicList Is Nothing Then Return ' tak jest na początku, z uiSortBy_SelectionChanged
@@ -400,6 +402,17 @@ Public Class ProcessBrowse
         uiPicList.ItemsSource = Nothing
 
         Dim sortmode As ThumbSortOrder = uiSortBy.GetRequestedSort
+        ' initial sort - czyli automatyczny
+        If Not useUI Then
+            If _oBufor.GetList.All(Function(x) x.HasRealDate) Then
+                ' wszystkie mają dokładne daty, sortujemy wedle dat
+                sortmode = ThumbSortOrder.Data
+            Else
+                ' są zdjęcia bez dat, więc pewnie skany - sortujemy wedle serno
+                sortmode = ThumbSortOrder.Serno
+            End If
+            uiSortBy.SetCurrentSortMode(sortmode)
+        End If
 
         Me.ProgRingShow(True)
         Me.ProgRingSetText("sorting...")
@@ -425,7 +438,7 @@ Public Class ProcessBrowse
         Me.ProgRingShow(True)
         'Me.ProgRingSetText("sorting...")
         Await Task.Delay(5)
-        Await SortujThumbsy()
+        Await SortujThumbsy(True)
         'Me.ProgRingSetText("")
         Await Task.Delay(5)
         Me.ProgRingShow(False)
@@ -616,7 +629,7 @@ Public Class ProcessBrowse
         Next
 
         ' jeśli sortowanie jest wg dat, to zaktualizuj
-        If uiSortBy.GetRequestedSort = ThumbSortOrder.Data Then SortujThumbsy()
+        If uiSortBy.GetRequestedSort = ThumbSortOrder.Data Then SortujThumbsy(True)
 
         SaveMetaData()
     End Sub
@@ -659,9 +672,9 @@ Public Class ProcessBrowse
         If _isGeoFilterApplied Then uiFilterNoGeo_Click(Nothing, Nothing)
     End Sub
 
-    Private Sub uiMetadataChangedReparse(sender As Object, e As EventArgs)
+    Private Async Sub uiMetadataChangedReparse(sender As Object, e As EventArgs)
         uiMetadataChangedDymkuj(Nothing, Nothing)
-        SortujThumbsy()
+        Await SortujThumbsy(True)
         UstawRozmiaryMiniaturki(True)
     End Sub
 
@@ -1436,7 +1449,7 @@ Public Class ProcessBrowse
             Application.GetSourcesList.AddToPurgeList(oPic.sSourceName, oPic.sInSourceID)
         Else
             ' możemy mieć Client ktory jest naszym telefonem, więc do niego trzeba byłoby mieć Purge
-            Dim oLogin As Vblib.ShareLogin = TryCast(oPic.GetLastSharePeer(Nothing, Vblib.GetShareLogins), Vblib.ShareLogin)
+            Dim oLogin As Vblib.ShareLogin = TryCast(oPic.GetLastSharePeer, Vblib.ShareLogin)
             If oLogin IsNot Nothing AndAlso oLogin.maintainPurge Then
                 Dim _purgeFile As String = IO.Path.Combine(Vblib.GetDataFolder, $"purge.{oLogin.login.ToString}.txt")
                 IO.File.AppendAllText(_purgeFile, Date.Now.ToString("yyyyMMdd.HHmm") & vbTab & oPic.sInSourceID & vbCrLf)
@@ -2223,8 +2236,8 @@ Public Class ProcessBrowse
             If oAzure Is Nothing Then Continue For
 
             If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then
-                    oItem.opacity = 1
-                    bMamy = True
+                oItem.opacity = 1
+                bMamy = True
                 End If
 
             If oAzure.AzureAnalysis.Brands IsNot Nothing AndAlso oAzure.AzureAnalysis.Brands.lista.Count > 0 Then
@@ -2583,7 +2596,8 @@ Public Class ProcessBrowse
 
         Dim oFE As FrameworkElement = sender
         Dim oLogin As Vblib.ShareLogin = oFE?.DataContext
-        If oLogin?.channels Is Nothing Then Return
+        If oLogin Is Nothing Then Return
+        'If oLogin?.channels Is Nothing Then Return
 
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
@@ -3001,70 +3015,9 @@ Public Class ProcessBrowse
             ZrobDymek()
         End Sub
 
-        Public Function GetLastSharePeer() As Vblib.SharePeer
-            Return oPic.GetLastSharePeer(Vblib.GetShareServers, Vblib.GetShareLogins)
-        End Function
-
         Public Sub ZrobDymek()
 
-            Dim newDymek = oPic.sSuggestedFilename
-
-            ' line 0: jeśli przybywa "skądś"
-            If Not String.IsNullOrWhiteSpace(oPic.sharingFromGuid) Then
-                newDymek &= vbCrLf & GetLastSharePeer()?.displayName & "\" & oPic.sSourceName
-            Else
-                If oPic.sSourceName.EqualsCI("adhoc") Then newDymek = newDymek & vbCrLf & "Src: " & oPic.sSourceName
-            End If
-
-            newDymek = newDymek & vbCrLf & oPic.GetDateSummary(False)
-
-            Dim oExifTag As Vblib.ExifTag
-
-            ' line 1: data
-            'Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
-            'If oExifTag IsNot Nothing Then
-            '    newDymek = newDymek & vbCrLf & "Taken: " & oExifTag.DateTimeOriginal
-            'Else
-            '    oExifTag = oPic.GetExifOfType(Vblib.ExifSource.SourceFile)
-            '    newDymek = newDymek & vbCrLf & "(file: " & oExifTag.DateMin.ToExifString & ")"
-            'End If
-
-            ' line 2: geoname / lat&lon
-            Dim sGeo As String = ""
-            For Each oExif As Vblib.ExifTag In oPic.Exifs
-                If oExif.GeoName <> "" Then sGeo = sGeo & vbCrLf & oExif.GeoName
-            Next
-            sGeo = sGeo.Trim
-            If sGeo = "" Then
-                Dim oPos As BasicGeopos = oPic.GetGeoTag
-                If oPos IsNot Nothing Then sGeo = $"[{oPos.StringLat}, {oPos.StringLon}]"
-            End If
-            If sGeo <> "" Then newDymek = newDymek & vbCrLf & sGeo
-
-            ' line 3: Azure caption
-            oExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
-            If oExifTag IsNot Nothing Then
-                Dim sCaption As String = oExifTag.AzureAnalysis?.Captions?.GetList(0).ToDisplay
-                newDymek = newDymek & vbCrLf & sCaption
-            End If
-
-            ' line 4: descriptions
-            newDymek = newDymek & vbCrLf & "Descriptions: " & oPic.GetSumOfDescriptionsText & vbCrLf
-
-            ' line 5: keywords
-            newDymek = newDymek & "Keywords: " & oPic.sumOfKwds & vbCrLf
-
-            ' line 6: targetdir
-            If Not String.IsNullOrWhiteSpace(oPic.TargetDir) Then
-                newDymek = newDymek & vbCrLf & "► " & oPic.TargetDir
-            End If
-
-            ' line 7: picid - właściwie tylko do picków z archiwum
-            newDymek = newDymek & vbCrLf & oPic.FormattedSerNo
-
-            If oPic.locked Then
-                newDymek = newDymek & vbCrLf & "🔒 LOCKED"
-            End If
+            Dim newDymek = oPic.GetDymek
 
             If newDymek <> sDymek Then
                 sDymek = newDymek

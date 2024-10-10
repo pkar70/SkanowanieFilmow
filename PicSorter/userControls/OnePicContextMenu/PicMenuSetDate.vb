@@ -74,7 +74,13 @@ Public NotInheritable Class PicMenuSetDate
     End Sub
 
     Private Async Sub DatesFromKwds(delta As Integer)
-        If GetSelectedItemsAsPics.Any(Function(x) x.GetExifOfType(Vblib.ExifSource.ManualDate) IsNot Nothing) Then
+        If GetSelectedItemsAsPics.Any(
+            Function(x)
+                Dim exif As Vblib.ExifTag = x.GetExifOfType(Vblib.ExifSource.ManualDate)
+                If exif Is Nothing Then Return False
+                If exif.UserComment.EqualsCI("(from reel)") Then Return False
+                Return True
+            End Function) Then
             If Not Await Vblib.DialogBoxYNAsync("Są zdjęcia z narzuconymi datami, kontynuować?") Then Return
         End If
 
@@ -89,6 +95,7 @@ Public NotInheritable Class PicMenuSetDate
         Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.ManualDate)
         oExif.DateMin = oCalcDate.DateMin
         oExif.DateMax = oCalcDate.DateMax
+        oExif.UserComment = "(from reel)"
 
         OneOrMany(Sub(x)
                       x.ReplaceOrAddExif(oExif)
