@@ -18,6 +18,8 @@
             <ColumnDefinition Width="Auto" />
         </Grid.ColumnDefinitions>
 
+        <local:UserControlPinUnpin HorizontalAlignment="Right" VerticalAlignment="Top" IsPinned="False" x:Name="uiPinUnpin" Grid.Row="0" Grid.Column="2"/>
+
         <!-- dla CROP -->
         <Slider Name="uiCropUp" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiCrop_ValueChanged" Minimum="0" Maximum="1"/>
         <Slider Name="uiCropDown" Grid.Row="2" Grid.Column="1" HorizontalAlignment="Stretch" Visibility="Collapsed" ValueChanged="uiCrop_ValueChanged"  Minimum="0" Maximum="1"/>
@@ -44,7 +46,6 @@
         </Slider>
 
         <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Grid.Row="1" Grid.Column="1" >
-                <local:UserControlPinUnpin HorizontalAlignment="Right" VerticalAlignment="Top" IsPinned="False" x:Name="uiPinUnpin" />
             <ScrollViewer Name="uiMainPicScroll" HorizontalContentAlignment="Center" MouseDoubleClick="uiResizePic_Click" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                 <Image Name="uiFullPicture" VerticalAlignment="Center" HorizontalAlignment="Center">
                     <Image.ContextMenu>
