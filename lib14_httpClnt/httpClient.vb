@@ -1,6 +1,7 @@
 ﻿
 Imports System.IO
 Imports System.Net.Http
+Imports System.Text
 Imports pkar
 Imports Vblib
 
@@ -54,6 +55,10 @@ Public Class httpKlient
     Private Shared _clientSlow As HttpClient    ' 60 sekund timeout
     Private Shared _inuse As Boolean
 
+    ''' <summary>
+    ''' stworzenie _client* jeśli ich nie ma, włącza _inUse!
+    ''' </summary>
+    ''' <returns>FALSE: _inUse jest TRUE, więc nie można kontynuować</returns>
     Private Shared Function EnsureClient() As Boolean
         If _inuse Then Return False
         If _clientQuick Is Nothing Or _clientSlow Is Nothing Then
@@ -72,6 +77,12 @@ Public Class httpKlient
         Return True
     End Function
 
+    ''' <summary>
+    ''' Stwórz URI (z wbudowanym GUID)
+    ''' </summary>
+    ''' <param name="oServer">z tego ważny jest tylko .serverAddress i .login (guid)</param>
+    ''' <param name="command">komenda</param>
+    ''' <param name="addit">dodatkowe parametry, bez &amp; ani pytajnika</param>
     Private Shared Function GetUri(oServer As Vblib.ShareServer, command As String, Optional addit As String = "") As Uri
         ' dla: trylogin, CanUpload, ver
         ' reszta ma dodatkowe parametry
@@ -79,7 +90,7 @@ Public Class httpKlient
 
         Dim sUri As String = $"http://{oServer.serverAddress}:{Globs.APP_HTTP_PORT}/{command}?guid={oServer.login}&clientHost={_machineName}"
         If addit <> "" Then
-            If Not addit.StartsWith("&") Then sUri &= "&"
+            If addit.NotStartsWith("&") Then sUri &= "&"
             sUri &= addit
         End If
 
@@ -87,6 +98,7 @@ Public Class httpKlient
         Return New Uri(sUri)
 
     End Function
+
 
 #End Region
 
@@ -145,7 +157,7 @@ Public Class httpKlient
 
             ' extract GUID obrazka - czyli response.string; format: OK GUID
             Dim respStr As String = Await resp.Content.ReadAsStringAsync
-            If Not respStr.StartsWith("OK ") Then Return "FAIL meta " & respStr
+            If respStr.NotStartsWith("OK ") Then Return "FAIL meta " & respStr
 
             Dim newPicGuid As String = respStr.Substring(3)
             Dim newPicUri As Uri = GetUri(oServer, "putpicdata", "picguid=" & newPicGuid)
@@ -293,29 +305,90 @@ Public Class httpKlient
 
 #Region "mappedSource"
 
-    Private Async Function MS_sendPicData(oServer As ShareServer, filename As String) As Task(Of String)
+    Private Shared _MS_ShareServer As ShareServer
 
-        If Not IO.File.Exists(filename) Then Return "FAIL: no such file"
+    Public Shared Sub MS_SetServer(linek As String)
+        _MS_ShareServer = New ShareServer
 
+        ' $"http://{adres}:{APP_HTTP_PORT}/?guid={_item.mappedGuid}"
+        Dim iInd As Integer = linek.IndexOf(":")
+        If iInd < 2 Then Return
+        linek = linek.Substring(iInd + 3) ' $"{adres}:{APP_HTTP_PORT}/?guid={_item.mappedGuid}"
+
+        iInd = linek.IndexOf(":")
+        If iInd < 2 Then Return
+        _MS_ShareServer.serverAddress = linek.Substring(0, iInd)
+        linek = linek.Substring(iInd + 1) ' $"{APP_HTTP_PORT}/?guid={_item.mappedGuid}"
+
+        ' że port jest na sztywno, i nie ma go co podawać?
+        'iInd = linek.IndexOf("/")
+        'If iInd < 2 Then Return
+        'Integer.TryParse(linek.Substring(0, iInd), _MS_ShareSe)
+
+        iInd = linek.IndexOf("=")
+        If iInd < 2 Then Return
+        _MS_ShareServer.login = New Guid(linek.Substring(iInd + 1))
+
+    End Sub
+
+    Public Shared Async Function MS_TryConnect() As Task(Of String)
+        Return Await TryConnect(_MS_ShareServer)
+    End Function
+
+    Public Shared Async Function MS_GetLastImport() As Task(Of String)
         If Not EnsureClient() Then Return "FAIL EnsureClient"
 
+        Return Await _clientQuick.GetStringAsync(GetUri(_MS_ShareServer, "getlastupload"))
+    End Function
+
+    Public Shared Async Function MS_sendPic(fname As String, strumyk As FileStream) As Task(Of String)
+        If Not EnsureClient() Then Return "FAIL EnsureClient"
+
+        Dim ret As String = Await MS_AnnouncePic(fname)
+        If ret.NotStartsWith("OK") Then Return ret
+
+        ret = Await MS_sendPicData(strumyk)
+        _inuse = False  ' =true jest w EnsureClient
+        Return ret
+
+    End Function
+
+    Public Shared Async Function MS_SignalEndOfPics() As Task(Of String)
+        Return Await _clientQuick.GetStringAsync(GetUri(_MS_ShareServer, "endofpics"))
+    End Function
+
+    Public Shared Async Function MS_GetPurgeList() As Task(Of String)
+        Return Await _clientSlow.GetStringAsync(GetUri(_MS_ShareServer, "purgegetlist"))
+    End Function
+
+    Public Shared Async Function MS_ClearPurgeList() As Task(Of String)
+        Return Await _clientSlow.GetStringAsync(GetUri(_MS_ShareServer, "purgeclearlist"))
+    End Function
+
+    Public Shared Async Function MS_GetPurgeDelay() As Task(Of Integer)
+        Dim kiedy As String = Await _clientSlow.GetStringAsync(GetUri(_MS_ShareServer, "purgegetdelay"))
+        If kiedy.NotStartsWith("OK") Then Return -1
+        Return kiedy.ParseInt(-1)
+    End Function
+
+    Private Shared Async Function MS_AnnouncePic(filename As String) As Task(Of String)
+        If Not EnsureClient() Then Return "FAIL EnsureClient"
+
+        Return Await _clientQuick.GetStringAsync(GetUri(_MS_ShareServer, "expectfilename", "fname=" & filename))
+    End Function
+
+
+    Private Shared Async Function MS_sendPicData(strumyk As FileStream) As Task(Of String)
+
         Try ' dla Finally - zwolnienie zasobów
-
-            Dim retVal As String = Await _clientQuick.GetStringAsync(
-                GetUri(oServer, "expectfilename", $"filename={IO.Path.GetFileName(filename)}"))
-            If Not retVal.StartsWithCI("OK") Then Return retVal
-
             Dim contentPic As ByteArrayContent
             Using strumykMem As New MemoryStream
-                Using strumykFile As FileStream = IO.File.OpenRead(filename)
-                    strumykFile.CopyTo(strumykMem)
-                End Using
-
+                strumyk.CopyTo(strumykMem)
                 contentPic = New ByteArrayContent(strumykMem.ToArray)
             End Using
             Dim resp As HttpResponseMessage
 
-            Dim newPicUri As Uri = GetUri(oServer, "putpicdata")
+            Dim newPicUri As Uri = GetUri(_MS_ShareServer, "putpicdata")
 
             Try
                 resp = Await _clientSlow.PutAsync(newPicUri, contentPic)
@@ -331,7 +404,6 @@ Public Class httpKlient
         End Try
 
     End Function
-
 
 
 #End Region

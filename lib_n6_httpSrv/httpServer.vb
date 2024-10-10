@@ -1,8 +1,4 @@
-Imports System.Collections.Specialized
-Imports System.IO
 Imports System.Net
-Imports lib_PicSource
-Imports pkar
 Imports pkar.DotNetExtensions
 
 Imports Vblib
@@ -218,7 +214,7 @@ Public MustInherit Class ServerWrapperBase
         End If
 
         Dim clientAddress As IPAddress = request.LocalEndPoint.Address
-        Dim queryString As NameValueCollection = request.QueryString
+        Dim queryString As Collections.Specialized.NameValueCollection = request.QueryString
 
         _lastAccess.remoteHostName = ""
         _lastAccess.kiedy = Date.Now
@@ -353,6 +349,9 @@ Public MustInherit Class ServerWrapperBase
                 AppendLog(oLogin, $"webpic #{queryString.Item("serno")}")
                 Await WyslijFotke(oLogin, queryString.Item("serno"), response, True)
                 Return "NOTXTRESPONSE"
+            Case "favicon.ico"
+                Await WyslijFavIcon(response)
+                Return "NOTXTRESPONSE"
             Case Else
                 Return "PROTOERROR, here is " & PROTO_VERS
         End Select
@@ -360,10 +359,12 @@ Public MustInherit Class ServerWrapperBase
     End Function
 
 
+#Region "Mapped source"
+
     Private Shared _zapowiedzianyFilename As String
 
     Private Async Function TryMappedSource(guidStr As String, command As String, request As HttpListenerRequest) As Task(Of String)
-        Dim oSource As PicSourceImplement = Nothing
+        Dim oSource As lib_PicSource.PicSourceImplement = Nothing
         oSource = _sources.Where(Function(x) x.mappedGuid = guidStr).FirstOrDefault
         If oSource Is Nothing Then Return "Sorry Winnetou"  ' gdy nie jest to ani zwyk³y login, ani mapped source
 
@@ -371,9 +372,12 @@ Public MustInherit Class ServerWrapperBase
 
         Select Case command
 
+            Case "getlastupload"
+                Return "OK " & oSource.lastDownload.ToExifString
+
             Case "expectfilename"
-                Dim queryString As NameValueCollection = request.QueryString
-                _zapowiedzianyFilename = queryString.Item("filename")
+                Dim queryString As Collections.Specialized.NameValueCollection = request.QueryString
+                _zapowiedzianyFilename = queryString.Item("fname")
                 If OnePic.MatchesMasks(_zapowiedzianyFilename, oSource.includeMask, oSource.excludeMask) Then
                     Return "OK, now send file"
                 End If
@@ -398,13 +402,17 @@ Public MustInherit Class ServerWrapperBase
 
                 Return "OK"
 
-            Case "endtransmission"
+            Case "endofpics"
                 _buffer.SaveData()
+                oSource.lastDownload = Date.Now
+                _sources.Save()
                 Return "OK"
 
             Case "purgegetlist" ' wys³anie listy plikow do usuniêcia
                 Return oSource.GetPurgeList
-            Case "purgeresetlist" ' skasowanie listy plikow do usuniêcia
+            Case "purgegetdelay"
+                Return "OK " & oSource.sourcePurgeDelay.TotalHours
+            Case "purgecleartlist" ' skasowanie listy plikow do usuniêcia
                 oSource.DelPurgeList()
                 Return "OK"
             Case Else
@@ -412,6 +420,7 @@ Public MustInherit Class ServerWrapperBase
         End Select
 
     End Function
+#End Region
 
     Private Function RequestAllowsPL(request As HttpListenerRequest) As Boolean
         If request.UserLanguages Is Nothing Then Return True
@@ -466,6 +475,24 @@ Public MustInherit Class ServerWrapperBase
 
     End Function
 
+    Private Async Function WyslijFavIcon(response As HttpListenerResponse) As Task
+        Dim fname As String = Reflection.Assembly.GetExecutingAssembly().Location
+        fname = IO.Path.Combine({IO.Path.GetDirectoryName(fname), "icons", "trayIcon1.ico"})
+        If Not IO.File.Exists(fname) Then Return
+
+        Dim strumyk As IO.FileStream = IO.File.OpenRead(fname)
+        response.ContentLength64 = strumyk.Length
+        Using output As System.IO.Stream = response.OutputStream
+            Await strumyk.CopyToAsync(output)
+            'You must close the output stream.
+            output.Close()
+        End Using
+
+
+    End Function
+
+
+
     Private Async Function WyslijFotke(oLogin As ShareLogin, serno As String, response As HttpListenerResponse, fullPic As Boolean) As Task
 
         Dim oPic As Vblib.OnePic = _buffer.GetList.FirstOrDefault(Function(x) x.serno = serno)
@@ -480,10 +507,10 @@ Public MustInherit Class ServerWrapperBase
 
         ' tylko thumba wysy³amy
         Dim fname As String = oPic.InBufferPathName & ".PicSortThumb.jpg"
-        If Not File.Exists(fname) Then Return
+        If Not IO.File.Exists(fname) Then Return
 
         Try
-            Dim strumyk As FileStream = File.OpenRead(fname)
+            Dim strumyk As IO.FileStream = IO.File.OpenRead(fname)
             response.ContentLength64 = strumyk.Length
             Using output As System.IO.Stream = response.OutputStream
                 Await strumyk.CopyToAsync(output)
@@ -550,7 +577,7 @@ Public MustInherit Class ServerWrapperBase
         oPic.ResetPipeline()
         Dim ret As String = Await oPic.RunPipeline(oLogin.processing, _postProcs, False)
         If ret <> "" Then Return "ERROR: " & ret
-        oPic._PipelineOutput.Seek(0, SeekOrigin.Begin)
+        oPic._PipelineOutput.Seek(0, io.SeekOrigin.Begin)
 
         response.ContentLength64 = oPic._PipelineOutput.Length
         response.ContentType = "image/jpeg"
@@ -731,7 +758,7 @@ Public MustInherit Class ServerWrapperBase
 
 #Region "tools"
     Private Function ReadReqAsString(request As HttpListenerRequest) As String
-        Using rdr As New StreamReader(request.InputStream)
+        Using rdr As New IO.StreamReader(request.InputStream)
             Return rdr.ReadToEnd
         End Using
     End Function
@@ -828,7 +855,7 @@ Public Class LastNetAccess
         If datediff.TotalDays > 365 Then
             Return "No recent logins"
         Else
-            If kiedy.AddHours(12) > Date.Now Then
+            If kiedy.AddMinutes(59) > Date.Now Then
                 Return $"Last request: {kto}:{cmd} @{(Date.Now - kiedy).ToStringDHMS} ago"
             Else
                 Return $"Last request: {kto}:{cmd} @{kiedy.ToExifString}"

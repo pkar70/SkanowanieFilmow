@@ -1,5 +1,5 @@
 ﻿<Page
-    x:Class="PicSorter_upl.MainPage"
+    x:Class="PicSorter_upl.MainPageOld"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:PicSorter_upl"
@@ -21,31 +21,22 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition/>
                 <ColumnDefinition/>
-                <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Last inet upload" />
-            <TextBlock Grid.Row="0" Grid.Column="1" Name="uiLastInetUploadTime" />
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Last upload" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Name="uiLastUploadTime" />
 
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="Last upload" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Name="uiLastUploadTime" />
-            <Button Grid.Row="1" Grid.Column="2" Content="Check!" Click="uiLastUpload_Click"/>
-
-            <TextBlock Grid.Row="2" Grid.Column="0" Text="New pics"  />
-            <TextBlock Grid.Row="2" Grid.Column="1" Name="uiNewPics" />
-            <TextBlock Grid.Row="2" Grid.Column="2" Name="uiNewPicsSrc" FontSize="10"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="New pics" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Name="uiNewPics" />
 
             <Button Content="Upload" Name="uiUpload" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="5,5,5,0" Click="uiUpload_Click"/>
         </Grid>
 
+        <Button Grid.Row="2" Content="Settings" HorizontalAlignment="Center" Click="uiSettings_Click" Margin="5,20,5,5"/>
+
+
     </Grid>
-    <Page.BottomAppBar>
-        <CommandBar ClosedDisplayMode="Minimal">
-            <AppBarButton Icon="Setting" Label="Settings" Click="uiSettings_Click" />
-        </CommandBar>
-    </Page.BottomAppBar>
 </Page>

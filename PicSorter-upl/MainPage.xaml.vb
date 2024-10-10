@@ -1,75 +1,114 @@
 ﻿
 Imports Vblib
-Imports pkar.Uwp.Ext
+Imports pkar.UI.Extensions
+Imports pkar.UI.Configs
 Imports Windows.Storage
-Imports Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models
+Imports pkar.DotNetExtensions
+Imports Windows.Storage.Streams
 
 Public NotInheritable Class MainPage
     Inherits Page
 
-    Private _countNew As Integer = -1
-
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
-        pkar.Uwp.Configs.InitSettings("", True, Nothing)
+        pkar.UI.Configs.InitSettings("", True, Nothing)
+        Me.ProgRingInit(True, True)
+
         lib14_httpClnt.httpKlient._machineName = GetHostName()    ' musi być tak, bo lib jest też używana w std 1.4, a tam nie ma machinename
 
-        UpdateUiUpload()
-
-        Me.ProgRingInit(True, True)
+        If Not UpdateUiInitial() Then
+            uiSettings_Click(Nothing, Nothing)
+        End If
     End Sub
 
-    Private Sub UpdateUiUpload()
+    Private Function UpdateUiInitial() As Boolean
 
-        If String.IsNullOrWhiteSpace(GetSettingsString("uiServer")) Then
-            uiUploadGrid.Visibility = Visibility.Collapsed
-        Else
-            uiUploadGrid.Visibility = Visibility.Visible
-            Dim lastupload As DateTimeOffset = Vblib.GetSettingsDate("uiLastUploadTime", New Date(1970, 1, 1))
-            uiLastUploadTime.Text = lastupload.ToString("ddd, dd-MM-yyyy HH:mm")
+        uiLastInetUploadTime.GetSettingsString
 
-            AktualizujCounter(lastupload) ' może sobie aktualizować w tle przecież
+        If Not String.IsNullOrWhiteSpace(uiLastInetUploadTime.Text) Then
+            PoliczZdjeciaOd(uiLastInetUploadTime.Text, "(local)")
         End If
 
+
+        Dim serwer As String = Vblib.GetSettingsString("linkFromQRcode")
+
+        If String.IsNullOrWhiteSpace(serwer) Then
+            uiUploadGrid.Visibility = Visibility.Collapsed
+            Return False
+        End If
+
+        lib14_httpClnt.httpKlient.MS_SetServer(serwer)
+        uiUploadGrid.Visibility = Visibility.Visible
+        Return True
+
+    End Function
+
+    Private Async Sub uiLastUpload_Click(sender As Object, e As RoutedEventArgs)
+        Dim lastimport As String = Await lib14_httpClnt.httpKlient.MS_GetLastImport
+        If lastimport.NotStartsWith("OK") Then
+            Me.MsgBox("Server error:" & vbCrLf & lastimport)
+            Return
+        End If
+
+        PoliczZdjeciaOd(lastimport.Substring(3), "(srvr)")
     End Sub
 
+    Private Shared _countNew As Integer
+
+    Private Async Sub PoliczZdjeciaOd(odDaty As String, dymek As String)
+        ' data w formacie Exif
+
+        ' "yyyy.MM.dd HH:mm:ss" -> 20240922_13_04_30
+        odDaty = odDaty.Replace(".", "")    ' 20240922 13:04:30
+        odDaty = odDaty.Replace(":", "_")   ' 20240922 13_04_30
+        odDaty = odDaty.Replace(" ", "_")   ' 20240922_13_04_30
+
+        odDaty = "WP_" & odDaty
+
+        Dim oFold As StorageFolder = GetPhotoDir()
+        Dim iSize As Integer = 0
+
+        For Each oFile As StorageFile In Await oFold.GetFilesAsync
+            If oFile.Name > odDaty Then
+                iSize += (Await oFile.GetBasicPropertiesAsync).Size / 1024 + 1
+                _countNew += 1
+            End If
+        Next
+
+        uiNewPics.Text = $"{_countNew} ({iSize} KiB)"
+        ToolTipService.SetToolTip(uiNewPics, dymek)
+        uiNewPicsSrc.Text = dymek
+    End Sub
 
     Private Async Sub uiUpload_Click(sender As Object, e As RoutedEventArgs)
 
         Me.ProgRingShow(True)
         uiUpload.IsEnabled = False
-        Dim oServer As ShareServer = ShareServer.CreateFromLink(Vblib.GetSettingsString("uiServer"))
 
-        Dim lastDate As Date = Date.Now
-
-        If Await UploadPics(oServer) Then
-            ' data sprzed początku wysyłania - bo może będzie zdezaktualizowane (foto podczas wysyłania)
-            SetSettingsDate("uiLastUploadTime", lastDate)
-            Await PurgePics(oServer)
-        End If
+        Await MS_UploadPics()
 
         Me.ProgRingShow(False)
         uiUpload.IsEnabled = True
 
+        If Not Await Me.DialogBoxYNAsync("Obsłużyć purge?") Then Return
 
+        Await PurgePics()
     End Sub
 
-    Private Async Function PurgePics(oServer As ShareServer) As Task
-        If Not Vblib.GetSettingsBool("uiUsePurge") Then Return
+    Private Async Function PurgePics() As Task
 
-        Dim sRet As String = Await lib14_httpClnt.httpKlient.PurgeIsMaintained(oServer)
-        If Not sRet.StartsWith("YES") Then
-            Me.MsgBox("Serwer nie ma listy do purge:" & vbCrLf & sRet)
-            Return
-        End If
+        Dim purgeList As String = Await lib14_httpClnt.httpKlient.MS_GetPurgeList
 
-        sRet = Await lib14_httpClnt.httpKlient.PurgeGetList(oServer)
-        Dim entries As String() = sRet.Split(vbCrLf)
+        ' *TODO* skasowanie plików wedle niego
 
         ' ale to narzuca 7 dni, nie m tu dostępu do dni purgowania
-        Dim sPurgeDate As String = Date.Now.AddDays(-7).ToString("yyyyMMdd.HHmm")
+        Dim zwloka As Integer = Await lib14_httpClnt.httpKlient.MS_GetPurgeDelay
+        If zwloka < 0 Then zwloka = 7 * 24
+        Dim sPurgeDate As String = Date.Now.AddHours(zwloka).ToString("yyyyMMdd.HHmm")
 
-        For Each purgeEntry As String In entries
-            If Not purgeEntry.Contains(lib14_httpClnt.httpKlient._machineName) Then Continue For
+        Dim folder As StorageFolder = GetPhotoDir()
+
+        For Each purgeEntryLp As String In purgeList.Split(vbCrLf)
+            Dim purgeEntry As String = purgeEntryLp.Trim
 
             If purgeEntry > sPurgeDate Then Continue For
 
@@ -78,126 +117,128 @@ Public NotInheritable Class MainPage
                 Me.MsgBox("Błędny plik PURGE!")
                 Return
             End If
-            ' kasowanie gdy data niepoprawna
-            ' DeleteFile(sFile.Substring(iInd + 1))
+
+            Dim plik As StorageFile = Await folder.TryGetItemAsync(purgeEntry.Substring(iInd))
+            If plik IsNot Nothing Then Await plik.DeleteAsync
         Next
 
+        Dim ret As String = Await lib14_httpClnt.httpKlient.MS_ClearPurgeList
+
+        If ret.NotStartsWith("OK") Then
+            Me.MsgBox("FAIL clearing purge list:" & vbCrLf & ret)
+        End If
 
     End Function
 
-    Private Async Function UploadPics(oServer As ShareServer) As Task(Of Boolean)
+
+
+
+#Region "QRcode"
+
+    Private Async Function TryScanBarCode(oDispatch As Windows.UI.Core.CoreDispatcher, bAllFormats As Boolean) As Task(Of ZXing.Result)
+
+        Dim oScanner As ZXing.Mobile.MobileBarcodeScanner
+        oScanner = New ZXing.Mobile.MobileBarcodeScanner(oDispatch)
+        'Tell our scanner to use the default overlay 
+        oScanner.UseCustomOverlay = False
+        ' //We can customize the top And bottom text of our default overlay 
+        oScanner.TopText = "Ustaw barcode w polu widzenia" ' "Hold camera up to barcode"
+        oScanner.BottomText = "Kod zostanie rozpoznany automatycznie" & vbCrLf & "Użyj 'back' by anulować" ' "Camera will automatically scan barcode" & vbCrLf & "Press the 'Back' button to Cancel"
+        Dim oRes As ZXing.Result = Await oScanner.Scan()
+
+        If oRes Is Nothing Then Return Nothing
+
+        If oRes.BarcodeFormat = ZXing.BarcodeFormat.QR_CODE Then Return oRes
+
+        Me.MsgBox("To nie jest QRcode!")
+        Return Nothing
+    End Function
+
+
+    Private Async Function Skanowanie() As Task(Of ZXing.Result)
+        ' kod paskowy do fotografowania
+        Dim oRes As ZXing.Result = Await TryScanBarCode(Me.Dispatcher, False)
+
+        ' ominiecie bledu? ale wczesniej (WezPigulka) bylo dobrze? Teraz jest 0:MainPage 1:Details
+        If Me.Frame.BackStack.Count > 0 Then
+            If Me.Frame.BackStack.ElementAt(Me.Frame.BackStack.Count - 1).GetType Is Me.GetType Then
+                Me.Frame.BackStack.RemoveAt(Me.Frame.BackStack.Count - 1)
+            End If
+        End If
+
+        Return oRes
+
+    End Function
+    Private Async Sub uiSettings_Click(sender As Object, e As RoutedEventArgs)
+        Dim oRes As ZXing.Result = Await Skanowanie()
+        If oRes.Text = "" Then Return
+
+        Vblib.SetSettingsString("linkFromQRcode", oRes.Text)
+        lib14_httpClnt.httpKlient.MS_SetServer(oRes.Text)
+
+        UpdateUiInitial()
+    End Sub
+#End Region
+
+
+    Private Async Function MS_UploadPics() As Task(Of Boolean)
         If _countNew < 1 Then Return True
 
         Me.ProgRingSetVal(0)
         Me.ProgRingSetMax(_countNew)
 
-        Dim sRet As String = Await lib14_httpClnt.httpKlient.TryConnect(oServer)
-        If Not sRet.StartsWith("OK") Then
-            Me.MsgBox("Nie mogę się połączyć z serwerem:" & vbCrLf & sRet)
+        Dim sRet As String = Await lib14_httpClnt.httpKlient.MS_GetLastImport
+        If sRet.NotStartsWith("OK") Then
+            Me.MsgBox("Server error:" & vbCrLf & sRet)
             Return False
         End If
 
-        sRet = Await lib14_httpClnt.httpKlient.CanUpload(oServer)
-        If Not sRet.StartsWith("YES") Then
-            Me.MsgBox("Serwer nie chce zdjęć:" & vbCrLf & sRet)
-            Return False
-        End If
+        Dim lastimport As String = sRet.Replace(".", "")    ' 20240922 13:04:30
+        lastimport = lastimport.Replace(":", "_")   ' 20240922 13_04_30
+        lastimport = lastimport.Replace(" ", "_")   ' 20240922_13_04_30
 
-        Dim lastupload As DateTimeOffset = Vblib.GetSettingsDate("uiLastUploadTime", New Date(1970, 1, 1))
+        lastimport = "WP_" & lastimport
+
         Dim oFold As StorageFolder = GetPhotoDir()
-        Dim iCnt As Integer = 0
 
-        Dim exif As Vblib.ExifTag = CreateExifSource()
+        Dim lastName As String
 
         For Each oFile As StorageFile In Await oFold.GetFilesAsync
-            If oFile.DateCreated <= lastupload Then Continue For
-            ' tylko dla Windows - wp_
-            If Not oFile.Name.StartsWith("WP_") Then Continue For
+            If oFile.Name > lastimport Then
+                lastName = oFile.Name
 
-            Dim oOnePic As Vblib.OnePic = Await CreateOnePic(oFile, exif)
-            If oOnePic Is Nothing Then
-                Me.MsgBox($"Nie udało się stworzyć metadnych dla zdjęcia")
-                Return False
+                Using strumyk As IRandomAccessStreamWithContentType = Await oFile.OpenReadAsync
+                    sRet = Await lib14_httpClnt.httpKlient.MS_sendPic(lastName, strumyk)
+                    If sRet.NotStartsWith("OK") Then
+                        Me.MsgBox($"Błąd wysyłania zdjęcia {lastName}: " & vbCrLf & sRet)
+                        Return False
+                    End If
+                End Using
+
+                Me.ProgRingInc
             End If
-
-            sRet = Await lib14_httpClnt.httpKlient.UploadPic(oServer, oOnePic)
-            If Not sRet.StartsWith("OK") Then
-                Me.MsgBox($"Błąd wysyłania zdjęcia {oOnePic.sSuggestedFilename}: " & vbCrLf & sRet)
-                Return False
-            End If
-
-            Me.ProgRingInc
         Next
+
+        sRet = Await lib14_httpClnt.httpKlient.MS_SignalEndOfPics
+        If sRet.NotStartsWith("OK") Then
+            Me.MsgBox("Błąd po wysyłaniu zdjęć" & vbCrLf & sRet)
+            Return False
+        End If
+
         Vblib.SetSettingsDate("uiLastUploadTime", Date.Now)
+
+        Me.MsgBox("Transfer udany! :)")
 
         Return True
 
     End Function
 
-    Private Sub uiSettings_Click(sender As Object, e As RoutedEventArgs)
-        Me.Navigate(GetType(Settings))
-    End Sub
-
-    Private Async Function CreateOnePic(oFile As StorageFile, exif As Vblib.ExifTag) As Task(Of Vblib.OnePic)
-        Dim oPic As New Vblib.OnePic
-        oPic.Exifs.Add(exif)
-
-        ' plik do pipelineoutput (jakby po pipeline)
-        oPic._PipelineOutput = (Await oFile.OpenAsync(FileAccessMode.Read)).AsStream
-
-        oPic.sSourceName = lib14_httpClnt.httpKlient._machineName
-        oPic.sSuggestedFilename = oFile.Name
-        oPic.sInSourceID = oPic.sSourceName & ":" & oPic.sSuggestedFilename  ' potrzebne dla purge
-
-        Dim newExif As Vblib.ExifTag = New ExifTag(Vblib.ExifSource.SourceFile)
-        newExif.DateMin = oFile.DateCreated.Date
-        newExif.DateMax = (Await oFile.GetBasicPropertiesAsync).DateModified.Date
-        oPic.Exifs.Add(newExif)
-
-        Return oPic
-    End Function
-
-    Private Function CreateExifSource() As Vblib.ExifTag
-        Dim exif As New ExifTag(Vblib.ExifSource.SourceDefault) With
-            {
-            .FileSourceDeviceType = FileSourceDeviceTypeEnum.digital,
-            .Author = Vblib.GetSettingsString("uiAutor"),
-            .Copyright = Vblib.GetSettingsString("uiCopyr")
-            }
-
-        Dim camera As String = Vblib.GetSettingsString("uiCamera")
-        If Not String.IsNullOrWhiteSpace(camera) Then exif.CameraModel = camera
-
-        Return exif
-
-    End Function
 
     Private Function GetPhotoDir() As StorageFolder
         Dim oFold = KnownFolders.CameraRoll
         Return oFold
-
-        'library = Await Windows.Storage.StorageLibrary.GetLibraryAsync(KnownLibraryId.Pictures)
-        'For Each oFold In library.Folders
-        '    Debug.WriteLine(oFold.Path)
-        'Next
     End Function
 
-    Private Async Function AktualizujCounter(lastupload As DateTimeOffset) As Task
-
-        Dim oFold As StorageFolder = GetPhotoDir()
-        Dim iCnt As Integer = 0
-        Dim iSize As Integer = 0
-
-        For Each oFile As StorageFile In Await oFold.GetFilesAsync
-            If oFile.DateCreated > lastupload Then
-                iCnt += 1
-                iSize += (Await oFile.GetBasicPropertiesAsync).Size / 1024 + 1
-            End If
-        Next
-
-        uiNewPics.Text = $"{iCnt} ({iSize} KiB)"
-        _countNew = iCnt
-    End Function
 
     Public Shared Function GetHostName() As String
         Dim hostNames As IReadOnlyList(Of Windows.Networking.HostName) =

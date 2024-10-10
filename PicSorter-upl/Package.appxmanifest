@@ -9,7 +9,7 @@
   <Identity
     Name="622PKar.PicSorterUploader"
     Publisher="CN=pkar"
-    Version="1.0.2.0" />
+    Version="1.0.7.0" />
 
   <mp:PhoneIdentity PhoneProductId="1e4c47e4-2cf8-498c-87f5-631ef492a609" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

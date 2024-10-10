@@ -1,5 +1,5 @@
-﻿Imports pkar.Uwp.Configs.Extensions
-Imports pkar.Uwp.Ext
+﻿Imports pkar.UI.Configs
+Imports pkar.UI.Extensions
 Imports pkar.DotNetExtensions
 Imports Windows.Devices
 Imports Vblib
@@ -7,7 +7,7 @@ Imports Vblib
 ''' <summary>
 ''' An empty page that can be used on its own or navigated to within a Frame.
 ''' </summary>
-Public NotInheritable Class Settings
+Public NotInheritable Class SettingsOld
     Inherits Page
 
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
