@@ -178,6 +178,20 @@ Class SettingsKeywords
 
         If itemToShow Is Nothing Then Return
 
+        Pokaz_VTH(itemToShow)
+    End Sub
+
+    Private Sub Pokaz_TV(itemToShow As OneKeyword)
+
+        ' Itemsy są typu OneKeyword jednak
+        For Each oItem As TreeViewItem In uiTreeView.Items
+            Dim dtx As Vblib.OneKeyword = TryCast(oItem.DataContext, Vblib.OneKeyword)
+            If dtx Is Nothing Then Continue For
+            If itemToShow.sId.StartsWithCI(dtx.sId) Then oItem.IsExpanded = True
+        Next
+    End Sub
+
+    Private Sub Pokaz_VTH(itemToShow As OneKeyword)
         Dim stck As FrameworkElement = ProcessBrowse.GetDescendantByType(uiTreeView, GetType(StackPanel))
         If stck Is Nothing Then Return
 
@@ -186,14 +200,32 @@ Class SettingsKeywords
             Dim oItem As Vblib.OneKeyword = TryCast(vsl?.DataContext, Vblib.OneKeyword)
             If oItem Is Nothing Then Continue For
 
-            If oItem.sId.StartsWith(itemToShow.sId.Substring(0, 1)) Then
-                ' vsl.ExpandSubtree() - to rozwija wszystko
+            If itemToShow.sId.StartsWith(oItem.sId) Then
                 vsl.IsExpanded = True
+                Pokaz_VTH_Recur(vsl, itemToShow)
                 Exit For
             End If
         Next
-
     End Sub
+
+    Private Async Sub Pokaz_VTH_Recur(treeItem As TreeViewItem, itemToShow As Vblib.OneKeyword)
+        Await Task.Delay(100) ' bez tego nie ma childów, z tym: już są :)
+        Dim stck As FrameworkElement = ProcessBrowse.GetDescendantByType(treeItem, GetType(StackPanel))
+        If stck Is Nothing Then Return
+
+        For iLp As Integer = 0 To VisualTreeHelper.GetChildrenCount(stck) - 1
+            Dim vsl As TreeViewItem = VisualTreeHelper.GetChild(stck, iLp)
+            Dim oItem As Vblib.OneKeyword = TryCast(vsl?.DataContext, Vblib.OneKeyword)
+            If oItem Is Nothing Then Continue For
+
+            If itemToShow.sId.StartsWith(oItem.sId) Then
+                vsl.IsExpanded = True
+                vsl.IsSelected = True
+                Pokaz_VTH_Recur(vsl, itemToShow)
+            End If
+        Next
+    End Sub
+
 
     Private Sub uiExportItem_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
