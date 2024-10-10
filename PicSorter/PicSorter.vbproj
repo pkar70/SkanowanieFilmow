@@ -53,6 +53,7 @@
     <ProjectReference Include="..\lib_n6_httpSrv\lib_n6_httpSrv.vbproj" />
     <ProjectReference Include="..\lib_n6_MediaDevices\lib_n6_MediaDevices.vbproj" />
     <ProjectReference Include="..\lib_n6_publishPDF\lib_n6_publishPDF.vbproj" />
+    <ProjectReference Include="..\lib_n6_QRcode\lib_n6_QRcode.vbproj" />
     <ProjectReference Include="..\lib_n6_UseMapi\lib_n6_UseMapi.vbproj" />
     <ProjectReference Include="..\lib_PicSource\lib_n6_PicSource.vbproj" />
     <ProjectReference Include="..\Process_n6_SigAndFace\Process_n6_SigAndFace.vbproj" />
