@@ -207,6 +207,7 @@ Public NotInheritable Class PicMenuShareUpload
         If _ShareLogin Is Nothing Then Return
 
         Await OneOrManyAsync(AddressOf MarkOnePicForLogin)
+        EventRaise(Me)
 
     End Sub
 
@@ -216,6 +217,7 @@ Public NotInheritable Class PicMenuShareUpload
         If _ShareLogin Is Nothing Then Return
 
         Await OneOrManyAsync(AddressOf UnMarkOnePicForLogin)
+        EventRaise(Me)
 
     End Sub
 
@@ -283,6 +285,7 @@ Public NotInheritable Class PicMenuShareUpload
         Else
             Await OneOrManyAsync(AddressOf MarkOnePic)
         End If
+        EventRaise(Me)
 
 
         If _allErrs <> "" Then
