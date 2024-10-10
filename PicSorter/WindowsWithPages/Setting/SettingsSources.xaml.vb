@@ -6,6 +6,7 @@ Imports Vblib
 Imports vb14 = Vblib.pkarlibmodule14
 Imports pkar.DotNetExtensions
 Imports pkar.UI.Extensions
+Imports System.IO
 
 Class SettingsSources
 
@@ -80,20 +81,20 @@ Class SettingsSources
         Dim oMI As MenuItem = sender
         Select Case oMI.Header.ToString.Trim.ToLowerInvariant
             Case "folder"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.FOLDER, vblib.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.FOLDER, Vblib.GetDataFolder)
             Case "mtp"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.MTP, vblib.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.MTP, Vblib.GetDataFolder)
             Case "adhoc"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.AdHOC, vblib.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.AdHOC, Vblib.GetDataFolder)
             Case "inet"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Inet, vblib.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Inet, Vblib.GetDataFolder)
                 oNewSrc.defaultExif = New ExifTag With
                     {
                     .ExifSource = Vblib.ExifSource.SourceDefault,
                     .FileSourceDeviceType = FileSourceDeviceTypeEnum.internet
                     }
             Case "reel"
-                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Reel, vblib.GetDataFolder)
+                oNewSrc = New lib_PicSource.PicSourceImplement(Vblib.PicSourceType.Reel, Vblib.GetDataFolder)
                 oNewSrc.defaultExif = New ExifTag With
                     {
                     .ExifSource = Vblib.ExifSource.SourceDefault,
@@ -232,6 +233,14 @@ Class SettingsSources
                 uiSrcRecursive.IsEnabled = False
         End Select
 
+        If String.IsNullOrEmpty(_item.mappedGuid) Then
+            uiMappedGuid.Text = "(none)"
+            uiMappedGuidQR.IsEnabled = False
+        Else
+            uiMappedGuid.Text = _item.mappedGuid
+            uiMappedGuidQR.IsEnabled = True
+        End If
+
     End Sub
 
     Private Sub uiSrcBrowse_Click(sender As Object, e As RoutedEventArgs)
@@ -323,7 +332,54 @@ Class SettingsSources
         ShowSourcesList()
     End Sub
 
+    Private Async Sub uiMappedGuidNew_Click(sender As Object, e As RoutedEventArgs)
+        If Not String.IsNullOrEmpty(_item.mappedGuid) Then
+            If Not Await Me.DialogBoxYNAsync("Źródło już posiada GUID - chcesz go podmienić?") Then Return
+        End If
 
+        uiMappedGuidQR.IsEnabled = True
+        _item.mappedGuid = Guid.NewGuid.ToString
+        uiMappedGuid.Text = _item.mappedGuid
+
+    End Sub
+
+    Private Async Sub uiMappedGuidQR_Click(sender As Object, e As RoutedEventArgs)
+        ' pokaż QRcode w oknie z "OK" i cancel (dialog, modal)
+
+        If String.IsNullOrEmpty(_item.mappedGuid) Then
+            Me.MsgBox("Źródło nie ma GUID!")
+            Return
+        End If
+
+        Dim adres As String = Await SettingsShareLogins.GetCurrentMeAsWeb()
+        Dim qrText As String = $"http://{adres}:{APP_HTTP_PORT}/?guid={_item.mappedGuid}"
+
+        Dim bmpImg As New BitmapImage
+
+        ' testowy dał mi kwadraciki 6 pikseli, ~50 w rządku; 300 więc jest ok
+        Using bitki As System.Drawing.Bitmap = lib_n6_QRcode.QRgen.GenerateQR(qrText, 350)
+            Using memStrum As New MemoryStream
+                bitki.Save(memStrum, System.Drawing.Imaging.ImageFormat.Bmp)
+                memStrum.Position = 0
+                bmpImg.BeginInit()
+                bmpImg.StreamSource = memStrum
+                bmpImg.CacheOption = BitmapCacheOption.OnLoad
+                bmpImg.EndInit()
+            End Using
+        End Using
+
+        Dim realbok As Integer = bmpImg.Height
+
+        Dim oStck As New StackPanel
+        oStck.Children.Add(New TextBlockPageTitle With {.Text = "QRcode"})
+        oStck.Children.Add(New TextBlock With {.Text = "zeskanuj go w app na telefonie", .HorizontalAlignment = HorizontalAlignment.Center})
+        oStck.Children.Add(New Image With {.Source = bmpImg, .Height = realbok, .Width = realbok, .HorizontalAlignment = HorizontalAlignment.Center})
+        Dim guzik As New Button With {.Content = " OK ", .IsCancel = True}
+        oStck.Children.Add(guzik)
+        Dim oWnd As New Window With {.Content = oStck, .WindowStyle = WindowStyle.ToolWindow, .Width = realbok + 24, .Height = realbok + 120}
+        oWnd.ShowDialog()
+
+    End Sub
 
 
 
