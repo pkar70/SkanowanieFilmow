@@ -23,9 +23,10 @@ Public Class Process_Watermark
     Private Shared _watermark As HiddenWatermark.Watermark
 
     Private Shared Function EnsureWatermarkData() As Boolean
+        ' see also: settingswatermark.xaml.vb
         If _watermark IsNot Nothing Then Return True
 
-        Dim sWatermarkFile As String = vblib.GetDataFile("", "watermark.jpg")
+        Dim sWatermarkFile As String = Vblib.GetDataFile("", "watermark.jpg")
         If Not IO.File.Exists(sWatermarkFile) Then Return False     ' musimy mieć plik ze znakiem wodnym
 
         Dim watermarkBytes As Byte() = File.ReadAllBytes(sWatermarkFile)
@@ -36,7 +37,7 @@ Public Class Process_Watermark
     End Function
 
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
-
+        ' see also: settingswatermark.xaml.vb
 
         If Not EnsureWatermarkData() Then Return False
 

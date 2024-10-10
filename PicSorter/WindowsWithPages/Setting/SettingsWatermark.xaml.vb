@@ -1,5 +1,7 @@
 ﻿'Imports System.IO
 'Imports System.Net.WebRequestMethods
+Imports System.IO
+Imports Chomikuj
 Imports HiddenWatermark
 Imports pkar.UI.Extensions
 
@@ -30,7 +32,7 @@ Class SettingsWatermark
         uiImage.Source = bitmapa
 
         ' skopiowanie do DataFolder
-        IO.File.Copy(sFile, vblib.GetDataFile("", "watermark.jpg", False))
+        IO.File.Copy(sFile, Vblib.GetDataFile("", "watermark.jpg", False))
 
     End Sub
 
@@ -41,7 +43,7 @@ Class SettingsWatermark
             Return
         End If
 
-        Dim sTargetFilename As String = vblib.GetDataFile("", "watermark.jpg", False)
+        Dim sTargetFilename As String = Vblib.GetDataFile("", "watermark.jpg", False)
 
         Process_Signature.WatermarkCreate.StworzWatermarkFile(sTargetFilename, uiWatermarkText1.Text, uiWatermarkText2.Text)
 
@@ -50,11 +52,11 @@ Class SettingsWatermark
         uiImage.Source = bitmapa
     End Sub
 
-    Public Shared Function BrowseFile(sTitle) As String
+    Public Shared Function BrowseFile(sTitle As String) As String
         Dim oPicker As New Microsoft.Win32.OpenFileDialog
         oPicker.Title = sTitle
         oPicker.CheckPathExists = True
-        oPicker.InitialDirectory = vblib.GetDataFolder
+        oPicker.InitialDirectory = Vblib.GetDataFolder
 
         ' Show open file dialog box
         Dim result? As Boolean = oPicker.ShowDialog()
@@ -85,7 +87,7 @@ Class SettingsWatermark
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
 
-        Dim sFile As String = vblib.GetDataFile("", "watermark.jpg", False)
+        Dim sFile As String = Vblib.GetDataFile("", "watermark.jpg", False)
         If Not IO.File.Exists(sFile) Then Return
 
         Dim fileBytes As Byte() = IO.File.ReadAllBytes(sFile)
@@ -97,6 +99,42 @@ Class SettingsWatermark
         End If
 
         uiImage.Source = bitmapa
+
+    End Sub
+
+    Private Sub uiEmbed_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim oPicker As Microsoft.Win32.FileDialog
+        oPicker = New Microsoft.Win32.OpenFileDialog
+        oPicker.Title = "Wskaż źródłowy plik ze zdjęciem"
+        oPicker.CheckPathExists = True
+        Dim result? As Boolean = oPicker.ShowDialog()
+        If result <> True Then Return
+        Dim srcJpg As String = oPicker.FileName
+
+        oPicker = New Microsoft.Win32.SaveFileDialog
+        oPicker.Title = "Wskaż docelowy plik (zdjęcie + watermark)"
+        oPicker.InitialDirectory = IO.Path.GetDirectoryName(srcJpg)
+        result = oPicker.ShowDialog()
+        If result <> True Then Return
+
+        Dim dstJpg As String = oPicker.FileName
+
+        ' zmienione EnsureWatermarkData z picsort/postprocess/process_watermark
+        Dim sWatermarkFile As String = Vblib.GetDataFile("", "watermark.jpg")
+        If Not IO.File.Exists(sWatermarkFile) Then
+            Me.MsgBox("... ale niestety nie mam ustawionego pliku watermark")
+            Return
+        End If
+
+        Dim watermarkBytes As Byte() = File.ReadAllBytes(sWatermarkFile)
+
+        Dim watermark As New HiddenWatermark.Watermark(watermarkBytes, True)
+
+        Dim fileBytes As Byte() = IO.File.ReadAllBytes(srcJpg)
+        Dim newFileBytes As Byte() = watermark.EmbedWatermark(fileBytes, Vblib.GetSettingsInt("uiJpgQuality"))
+
+        IO.File.WriteAllBytes(dstJpg, newFileBytes)
 
     End Sub
 End Class
