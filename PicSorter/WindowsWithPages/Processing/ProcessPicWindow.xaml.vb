@@ -72,7 +72,7 @@ Class ProcessPic
 
         _buforek.RemoveAllFiles()
 
-        Me.ProgRingShow(True)
+        Me.ProgRingShow(False)
 
         AktualizujGuziki()
 
