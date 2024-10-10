@@ -5,6 +5,7 @@ Imports System.IO
 Imports System.Text.RegularExpressions
 Imports System.Threading
 Imports CompactExifLib
+
 'Imports MetadataExtractor
 Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
@@ -90,6 +91,13 @@ Public Class OnePic
     Public Property sumOfUserComment As String
     <Newtonsoft.Json.JsonIgnore>
     Public Property sumOfGeo As BasicGeoposWithRadius
+
+    <Newtonsoft.Json.JsonIgnore>
+    Public ReadOnly Property dymek
+        Get
+            Return GetDymek()
+        End Get
+    End Property
 
     Public Sub New(sourceName As String, inSourceId As String, suggestedFilename As String)
         DumpCurrMethod()
@@ -1306,7 +1314,7 @@ Public Class OnePic
                     Next
                     If bNieMa Then Return False
                 End If
-                End If
+            End If
         Next
         Return True
     End Function
@@ -1425,14 +1433,14 @@ Public Class OnePic
     ''' <summary>
     ''' Zwraca ShareLogin bądź ShareServer, ostatni który jest na ścieżce; łatwiej użyć z ThumbsPicek
     ''' </summary>
-    Public Function GetLastSharePeer(serwery As ShareServerList, loginy As ShareLoginsList) As SharePeer
+    Public Function GetLastSharePeer() As SharePeer
         Dim tempGuid As String = GetLastShareGuid()
         If tempGuid = "" Then Return Nothing
         If tempGuid.StartsWith("L:") Then
-            Return loginy.FindByGuid(tempGuid.Substring(2))
+            Return Globs.GetShareLogins.FindByGuid(tempGuid.Substring(2))
         ElseIf tempGuid.StartsWith("S:") Then
             ' to będzie w takim razie z ShareServer, nie ShareLogin
-            Return serwery.FindByGuid(tempGuid.Substring(2))
+            Return Globs.GetShareServers.FindByGuid(tempGuid.Substring(2))
         Else
             Return Nothing
         End If
@@ -1575,10 +1583,10 @@ Public Class OnePic
             End If
 
             If query.ogolne.MaxDateCheck AndAlso query.ogolne.MaxDate.IsDateValid Then
-                    If picMinDate > query.ogolne.MaxDate Then Return False
-                End If
+                If picMinDate > query.ogolne.MaxDate Then Return False
+            End If
 
-                If query.ogolne.MinDateCheck AndAlso query.ogolne.MinDate.IsDateValid Then
+            If query.ogolne.MinDateCheck AndAlso query.ogolne.MinDate.IsDateValid Then
                 If picMaxDate < query.ogolne.MinDate Then Return False
             End If
 
@@ -1591,7 +1599,10 @@ Public Class OnePic
 
         If Not CheckStringContains(PicGuid, query.ogolne.GUID) Then Return False
 
-        If Not String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
+        If String.IsNullOrWhiteSpace(query.ogolne.Tags) Then
+            ' jeśli nie szukamy tagów, to na pewno =X nie chcemy
+            If HasKeyword("=X") Then Return False
+        Else
             ' TAGS może mieć "!"
             Dim kwrds As String = query.ogolne.Tags
             If kwrds = "!" Then
@@ -2352,6 +2363,72 @@ Mid date: {GetMostProbablyDate.ToExifString}"
         End If
 
     End Function
+
+    Public Function GetDymek() As String
+
+        Dim newDymek = sSuggestedFilename
+
+        ' line 0: jeśli przybywa "skądś"
+        If Not String.IsNullOrWhiteSpace(sharingFromGuid) Then
+            newDymek &= vbCrLf & GetLastSharePeer()?.displayName & "\" & sSourceName
+        Else
+            If sSourceName.EqualsCI("adhoc") Then newDymek = newDymek & vbCrLf & "Src: " & sSourceName
+        End If
+
+        newDymek = newDymek & vbCrLf & GetDateSummary(False)
+
+        Dim oExifTag As Vblib.ExifTag
+
+        ' line 1: data
+        'Dim oExifTag As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.FileExif)
+        'If oExifTag IsNot Nothing Then
+        '    newDymek = newDymek & vbCrLf & "Taken: " & oExifTag.DateTimeOriginal
+        'Else
+        '    oExifTag = oPic.GetExifOfType(Vblib.ExifSource.SourceFile)
+        '    newDymek = newDymek & vbCrLf & "(file: " & oExifTag.DateMin.ToExifString & ")"
+        'End If
+
+        ' line 2: geoname / lat&lon
+        Dim sGeo As String = ""
+        For Each oExif As Vblib.ExifTag In Exifs
+            If oExif.GeoName <> "" Then sGeo = sGeo & vbCrLf & oExif.GeoName
+        Next
+        sGeo = sGeo.Trim
+        If sGeo = "" Then
+            Dim oPos As BasicGeopos = GetGeoTag()
+            If oPos IsNot Nothing Then sGeo = $"[{oPos.StringLat}, {oPos.StringLon}]"
+        End If
+        If sGeo <> "" Then newDymek = newDymek & vbCrLf & sGeo
+
+        ' line 3: Azure caption
+        oExifTag = GetExifOfType(Vblib.ExifSource.AutoAzure)
+        If oExifTag IsNot Nothing Then
+            Dim sCaption As String = oExifTag.AzureAnalysis?.Captions?.GetList(0).ToDisplay
+            newDymek = newDymek & vbCrLf & sCaption
+        End If
+
+        ' line 4: descriptions
+        newDymek = newDymek & vbCrLf & "Descriptions: " & GetSumOfDescriptionsText() & vbCrLf
+
+        ' line 5: keywords
+        newDymek = newDymek & "Keywords: " & sumOfKwds & vbCrLf
+
+        ' line 6: targetdir
+        If Not String.IsNullOrWhiteSpace(TargetDir) Then
+            newDymek = newDymek & vbCrLf & "► " & TargetDir
+        End If
+
+        ' line 7: picid - właściwie tylko do picków z archiwum
+        newDymek = newDymek & vbCrLf & FormattedSerNo
+
+        If locked Then
+            newDymek = newDymek & vbCrLf & "🔒 LOCKED"
+        End If
+
+        Return newDymek
+
+    End Function
+
 
 End Class
 
