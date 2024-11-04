@@ -5,6 +5,7 @@ Imports pkar.UI.Extensions
 Imports System.Windows.Interop
 Imports System.Threading
 Imports MetadataExtractor.Formats
+Imports Windows.Media.Playback
 
 Class MainWindow
     Inherits Window
@@ -16,6 +17,8 @@ Class MainWindow
         'ShowMaxButton(False)
 
         Page_Loaded(Nothing, Nothing)    ' tak prościej, bo wklejam tu zawartość dawnego Page
+
+        Await CheckEventLog()
 
         lib14_httpClnt.httpKlient._machineName = Environment.MachineName    ' musi być tak, bo lib jest też używana w std 1.4, a tam nie ma machinename
         SettingsMapsy.DodajMapyDoNugeta() ' lokalnie zdefiniowane mapy
@@ -251,6 +254,7 @@ Class MainWindow
         '    If Not Await Vblib.DialogBoxYNAsync("Zamknąć program?") Then Return
         ' bez tego zamyka tylko to jedno okno, a reszty już NIE
         _closinguje = True
+        Vblib.SetSettingsDate("lastAppExit", Date.Now)
         Application.Current.Shutdown()
         'End If
 
@@ -1130,6 +1134,38 @@ Class MainWindow
         'Return False
     End Function
 
+
+    Private Async Function CheckEventLog() As Task
+        'za duże opóźnienie by zawsze testować, to musi być "on demand"
+
+        Dim lastExit As DateTimeOffset = Vblib.GetSettingsDate("lastAppExit", "1700.01.01 10:10:10")
+        Dim lastStart As DateTimeOffset = Vblib.GetSettingsDate("lastAppStart", "1700.01.01 10:10:10")
+
+        Vblib.SetSettingsDate("lastAppStart", Date.Now)
+
+        If lastExit > lastStart Then Return
+
+        Using log As New EventLog("Application", ".", ".NET Runtime")
+
+            Dim listka = From c As EventLogEntry In log.Entries
+                         Where c.EntryType = EventLogEntryType.Error AndAlso
+                                (c.InstanceId And &HFFFF) = 1026 AndAlso
+                                c.TimeGenerated > lastExit
+
+            For Each wpis As EventLogEntry In From c In listka Order By c.TimeGenerated Descending
+
+                Dim tekst As String = wpis.Message
+
+                If tekst.NotContains("PicSorter.exe") Then Continue For
+
+                tekst.SendToClipboard
+                Await Me.MsgBoxAsync("Znalazłem Fail (also in Clip): " & vbCrLf & tekst)
+                Exit For
+            Next
+
+        End Using
+
+    End Function
 End Class
 
 
