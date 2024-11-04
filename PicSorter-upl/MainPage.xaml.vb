@@ -22,10 +22,10 @@ Public NotInheritable Class MainPage
 
     Private Function UpdateUiInitial() As Boolean
 
-        uiLastInetUploadTime.GetSettingsString
+        uiLastLocalUploadTime.GetSettingsString
 
-        If Not String.IsNullOrWhiteSpace(uiLastInetUploadTime.Text) Then
-            PoliczZdjeciaOd(uiLastInetUploadTime.Text, "(local)")
+        If Not String.IsNullOrWhiteSpace(uiLastLocalUploadTime.Text) Then
+            PoliczZdjeciaOd(uiLastLocalUploadTime.Text, "(local)")
         End If
 
 
@@ -43,14 +43,24 @@ Public NotInheritable Class MainPage
     End Function
 
     Private Async Sub uiLastUpload_Click(sender As Object, e As RoutedEventArgs)
-        Dim lastimport As String = Await lib14_httpClnt.httpKlient.MS_GetLastImport
-        If lastimport.NotStartsWith("OK") Then
-            Me.MsgBox("Server error:" & vbCrLf & lastimport)
-            Return
-        End If
-
-        PoliczZdjeciaOd(lastimport.Substring(3), "(srvr)")
+        Await KiedySerwerMialImport()
     End Sub
+
+    Private Async Function KiedySerwerMialImport() As Task
+        Try
+
+            Dim lastimport As String = Await lib14_httpClnt.httpKlient.MS_GetLastImport
+            If lastimport.NotStartsWith("OK") Then
+                Me.MsgBox("Server error:" & vbCrLf & lastimport)
+                Return
+            End If
+
+            uiLastSrvrUploadTime.Text = lastimport.Substring(3)
+            PoliczZdjeciaOd(lastimport.Substring(3), "(srvr)")
+        Catch ex As Exception
+            Me.MsgBox("Error checking server")
+        End Try
+    End Function
 
     Private Shared _countNew As Integer
 
@@ -64,17 +74,37 @@ Public NotInheritable Class MainPage
 
         odDaty = "WP_" & odDaty
 
+        'Await Me.MsgBoxAsync("odDaty=" & odDaty)
+
         Dim oFold As StorageFolder = GetPhotoDir()
+        'Await Me.MsgBoxAsync("folder=" & oFold.Path)
+
         Dim iSize As Integer = 0
+        _countNew = 0
 
-        For Each oFile As StorageFile In Await oFold.GetFilesAsync
-            If oFile.Name > odDaty Then
-                iSize += (Await oFile.GetBasicPropertiesAsync).Size / 1024 + 1
-                _countNew += 1
-            End If
-        Next
+        Try
+            For Each oFile As StorageFile In Await oFold.GetFilesAsync
+                'Await Me.MsgBoxAsync($"{oFile.Name} ? {odDaty}")
+                If oFile.Name.Substring(0, odDaty.Length) > odDaty Then
+                    Dim basProp As FileProperties.BasicProperties = Await oFile.GetBasicPropertiesAsync
+                    If basProp IsNot Nothing Then
+                        iSize += (Await oFile.GetBasicPropertiesAsync).Size / 1024 + 1
+                    End If
+                    _countNew += 1
+                End If
+            Next
+        Catch ex As Exception
+            uiNewPics.Text = $"FAIL counting"
+            Me.MsgBox("FAIL counting" & vbCr & ex.Message)
+        End Try
 
-        uiNewPics.Text = $"{_countNew} ({iSize} KiB)"
+        If _countNew > 0 Then
+            iSize = iSize / 1024 + 1
+            uiNewPics.Text = $"{_countNew} ({iSize} MiB)"
+        Else
+            uiNewPics.Text = $"0 (no new pics)"
+        End If
+
         ToolTipService.SetToolTip(uiNewPics, dymek)
         uiNewPicsSrc.Text = dymek
     End Sub
@@ -84,12 +114,21 @@ Public NotInheritable Class MainPage
         Me.ProgRingShow(True)
         uiUpload.IsEnabled = False
 
-        Await MS_UploadPics()
+        If String.IsNullOrWhiteSpace(uiLastSrvrUploadTime.Text) Then
+            If Await Me.DialogBoxYNAsync("Nie odpytałeś serwera o lastupload, zrobić to teraz?") Then
+                Await KiedySerwerMialImport()
+            End If
+        End If
 
+
+        Dim ret As Boolean = Await MS_UploadPics()
         Me.ProgRingShow(False)
         uiUpload.IsEnabled = True
 
-        If Not Await Me.DialogBoxYNAsync("Obsłużyć purge?") Then Return
+        ' jeśli był błądu, to koniec
+        If Not ret Then Return
+
+        If Not Await Me.DialogBoxYNAsync("Transfer udany! :)" & vbCrLf & "Obsłużyć purge?") Then Return
 
         Await PurgePics()
     End Sub
@@ -137,8 +176,7 @@ Public NotInheritable Class MainPage
 
     Private Async Function TryScanBarCode(oDispatch As Windows.UI.Core.CoreDispatcher, bAllFormats As Boolean) As Task(Of ZXing.Result)
 
-        Dim oScanner As ZXing.Mobile.MobileBarcodeScanner
-        oScanner = New ZXing.Mobile.MobileBarcodeScanner(oDispatch)
+        Dim oScanner As New ZXing.Mobile.MobileBarcodeScanner(oDispatch)
         'Tell our scanner to use the default overlay 
         oScanner.UseCustomOverlay = False
         ' //We can customize the top And bottom text of our default overlay 
@@ -160,11 +198,11 @@ Public NotInheritable Class MainPage
         Dim oRes As ZXing.Result = Await TryScanBarCode(Me.Dispatcher, False)
 
         ' ominiecie bledu? ale wczesniej (WezPigulka) bylo dobrze? Teraz jest 0:MainPage 1:Details
-        If Me.Frame.BackStack.Count > 0 Then
-            If Me.Frame.BackStack.ElementAt(Me.Frame.BackStack.Count - 1).GetType Is Me.GetType Then
-                Me.Frame.BackStack.RemoveAt(Me.Frame.BackStack.Count - 1)
-            End If
-        End If
+        'If Me.Frame.BackStack.Count > 0 Then
+        '    If Me.Frame.BackStack.ElementAt(Me.Frame.BackStack.Count - 1).GetType Is Me.GetType Then
+        '        Me.Frame.BackStack.RemoveAt(Me.Frame.BackStack.Count - 1)
+        '    End If
+        'End If
 
         Return oRes
 
@@ -187,16 +225,10 @@ Public NotInheritable Class MainPage
         Me.ProgRingSetVal(0)
         Me.ProgRingSetMax(_countNew)
 
-        Dim sRet As String = Await lib14_httpClnt.httpKlient.MS_GetLastImport
-        If sRet.NotStartsWith("OK") Then
-            Me.MsgBox("Server error:" & vbCrLf & sRet)
-            Return False
-        End If
-
+        Dim sRet As String = uiLastSrvrUploadTime.Text
         Dim lastimport As String = sRet.Replace(".", "")    ' 20240922 13:04:30
         lastimport = lastimport.Replace(":", "_")   ' 20240922 13_04_30
         lastimport = lastimport.Replace(" ", "_")   ' 20240922_13_04_30
-
         lastimport = "WP_" & lastimport
 
         Dim oFold As StorageFolder = GetPhotoDir()
@@ -207,13 +239,30 @@ Public NotInheritable Class MainPage
             If oFile.Name > lastimport Then
                 lastName = oFile.Name
 
-                Using strumyk As IRandomAccessStreamWithContentType = Await oFile.OpenReadAsync
-                    sRet = Await lib14_httpClnt.httpKlient.MS_sendPic(lastName, strumyk)
-                    If sRet.NotStartsWith("OK") Then
-                        Me.MsgBox($"Błąd wysyłania zdjęcia {lastName}: " & vbCrLf & sRet)
-                        Return False
-                    End If
-                End Using
+                Try
+
+                    Using strumyk As IRandomAccessStream = Await oFile.OpenAsync(FileAccessMode.Read)
+                        Using memstrim As New MemoryStream
+                            strumyk.AsStreamForRead.CopyTo(memstrim)
+                            memstrim.Position = 0
+                            sRet = Await lib14_httpClnt.httpKlient.MS_sendPic(lastName, memstrim)
+                        End Using
+
+                        'Await Me.MsgBoxAsync("After sendPic: " & sRet)
+
+                        ' ignorujemy ten plik
+                        If sRet.StartsWith("DONT WANT") Then Continue For
+
+                        If sRet.NotStartsWith("OK") Then
+                                Me.MsgBox($"Błąd wysyłania zdjęcia {lastName}: " & vbCrLf & sRet)
+                                Return False
+                            End If
+                    End Using
+                Catch ex As Exception
+
+                    Me.MsgBox("CATCH: " & ex.Message)
+
+                End Try
 
                 Me.ProgRingInc
             End If
@@ -227,16 +276,13 @@ Public NotInheritable Class MainPage
 
         Vblib.SetSettingsDate("uiLastUploadTime", Date.Now)
 
-        Me.MsgBox("Transfer udany! :)")
-
         Return True
 
     End Function
 
 
     Private Function GetPhotoDir() As StorageFolder
-        Dim oFold = KnownFolders.CameraRoll
-        Return oFold
+        Return KnownFolders.CameraRoll
     End Function
 
 

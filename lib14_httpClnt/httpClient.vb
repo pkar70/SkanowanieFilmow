@@ -338,18 +338,26 @@ Public Class httpKlient
     Public Shared Async Function MS_GetLastImport() As Task(Of String)
         If Not EnsureClient() Then Return "FAIL EnsureClient"
 
-        Return Await _clientQuick.GetStringAsync(GetUri(_MS_ShareServer, "getlastupload"))
+        Dim ret As String = Await _clientQuick.GetStringAsync(GetUri(_MS_ShareServer, "getlastupload"))
+        _inuse = False ' =true jest w EnsureClient
+        Return ret
     End Function
 
-    Public Shared Async Function MS_sendPic(fname As String, strumyk As FileStream) As Task(Of String)
-        If Not EnsureClient() Then Return "FAIL EnsureClient"
+    Public Shared Async Function MS_sendPic(fname As String, strumyk As MemoryStream) As Task(Of String)
+        'If Not EnsureClient() Then Return "FAIL EnsureClient"
 
-        Dim ret As String = Await MS_AnnouncePic(fname)
-        If ret.NotStartsWith("OK") Then Return ret
+        Try
+            Dim ret As String = Await MS_AnnouncePic(fname)
+            If ret.StartsWith("DONT WANT") Then Return ret
+            If ret.NotStartsWith("OK") Then Return ret
 
-        ret = Await MS_sendPicData(strumyk)
-        _inuse = False  ' =true jest w EnsureClient
-        Return ret
+            ret = Await MS_sendPicData(strumyk)
+            Return ret
+
+        Finally
+            _inuse = False  ' =true jest w EnsureClient w Announce
+
+        End Try
 
     End Function
 
@@ -373,19 +381,16 @@ Public Class httpKlient
 
     Private Shared Async Function MS_AnnouncePic(filename As String) As Task(Of String)
         If Not EnsureClient() Then Return "FAIL EnsureClient"
-
         Return Await _clientQuick.GetStringAsync(GetUri(_MS_ShareServer, "expectfilename", "fname=" & filename))
     End Function
 
 
-    Private Shared Async Function MS_sendPicData(strumyk As FileStream) As Task(Of String)
+    Private Shared Async Function MS_sendPicData(strumykMem As MemoryStream) As Task(Of String)
 
-        Try ' dla Finally - zwolnienie zasobów
-            Dim contentPic As ByteArrayContent
-            Using strumykMem As New MemoryStream
-                strumyk.CopyTo(strumykMem)
-                contentPic = New ByteArrayContent(strumykMem.ToArray)
-            End Using
+        'Try ' dla Finally - zwolnienie zasobów
+        Dim contentPic As ByteArrayContent
+            contentPic = New ByteArrayContent(strumykMem.ToArray)
+
             Dim resp As HttpResponseMessage
 
             Dim newPicUri As Uri = GetUri(_MS_ShareServer, "putpicdata")
@@ -399,9 +404,9 @@ Public Class httpKlient
 
             Return "OK"
 
-        Finally
-            _inuse = False  ' =true jest w EnsureClient
-        End Try
+        'Finally
+        '    _inuse = False  ' =true jest w EnsureClient
+        'End Try
 
     End Function
 

@@ -229,10 +229,10 @@ Public MustInherit Class ServerWrapperBase
             Return "Who you really are?"
         End Try
 
-        guidStr = queryString.Item("clientHost")
-        _lastAccess.remoteHostName = guidStr
+        Dim clntName As String = queryString.Item("clientHost")
+        _lastAccess.remoteHostName = clntName
 
-        Dim oLogin As Vblib.ShareLogin = ResolveLogin(loginGuid, clientAddress, guidStr)
+        Dim oLogin As Vblib.ShareLogin = ResolveLogin(loginGuid, clientAddress, clntName)
         If oLogin Is Nothing Then Return Await TryMappedSource(guidStr, command, request)
 
         ' /JakasKomenda -> jakaskomenda
@@ -342,13 +342,13 @@ Public MustInherit Class ServerWrapperBase
                 Return WebPageForLogin(oLogin, RequestAllowsPL(request))
             Case "webthumb"
                 If Not Vblib.GetSettingsBool("uiAsWebServer") Then Return "Web interface is disabled"
-                Await WyslijFotke(oLogin, queryString.Item("serno"), response, False)
-                Return "NOTXTRESPONSE"
+                Return Await WyslijFotke(oLogin, queryString.Item("serno"), response, False)
+                ' Return "NOTXTRESPONSE"
             Case "webpic"
                 If Not Vblib.GetSettingsBool("uiAsWebServer") Then Return "Web interface is disabled"
                 AppendLog(oLogin, $"webpic #{queryString.Item("serno")}")
-                Await WyslijFotke(oLogin, queryString.Item("serno"), response, True)
-                Return "NOTXTRESPONSE"
+                Return Await WyslijFotke(oLogin, queryString.Item("serno"), response, True)
+                'Return "NOTXTRESPONSE"
             Case "favicon.ico"
                 Await WyslijFavIcon(response)
                 Return "NOTXTRESPONSE"
@@ -361,7 +361,9 @@ Public MustInherit Class ServerWrapperBase
 
 #Region "Mapped source"
 
-    Private Shared _zapowiedzianyFilename As String
+    'Private Shared _zapowiedzianyFilename As String
+    Private Shared _zapowiedzianeFilename As New Dictionary(Of String, String)
+
 
     Private Async Function TryMappedSource(guidStr As String, command As String, request As HttpListenerRequest) As Task(Of String)
         Dim oSource As lib_PicSource.PicSourceImplement = Nothing
@@ -377,20 +379,29 @@ Public MustInherit Class ServerWrapperBase
 
             Case "expectfilename"
                 Dim queryString As Collections.Specialized.NameValueCollection = request.QueryString
-                _zapowiedzianyFilename = queryString.Item("fname")
-                If OnePic.MatchesMasks(_zapowiedzianyFilename, oSource.includeMask, oSource.excludeMask) Then
+                Dim fname As String = queryString.Item("fname")
+                _zapowiedzianeFilename(guidStr) = fname
+                If OnePic.MatchesMasks(fname, oSource.includeMask, oSource.excludeMask) Then
                     Return "OK, now send file"
                 End If
-                _zapowiedzianyFilename = Nothing
+                _zapowiedzianeFilename(guidStr) = ""
                 Return "DONT WANT: this file doesn't match source masks"
 
             Case "putpicdata" ' przyjêcie zdjêcia
-                If String.IsNullOrEmpty(_zapowiedzianyFilename) Then Return "FAIL no filename set"
+                If Not _zapowiedzianeFilename.ContainsKey(guidStr) Then
+                    Return "FAIL use 'expectfilename' first"
+                End If
+                Dim fname As String = _zapowiedzianeFilename(guidStr)
 
-                Dim oNew As New Vblib.OnePic(oSource.SourceName, _zapowiedzianyFilename, _zapowiedzianyFilename)
+                If String.IsNullOrEmpty(fname) Then
+                    Return "FAIL seems like I dont want this file"
+                End If
+
+                Dim oNew As New Vblib.OnePic(oSource.SourceName, fname, fname)
                 oNew.Exifs.Add(oSource.defaultExif.Clone) ' clone, bo jakby potem gdzieœ zmieniaæ (jak by³o w InetDownld), to by siê zmienia³o wszêdzie
                 Dim oExif As New Vblib.ExifTag(Vblib.ExifSource.SourceFile)
                 oExif.DateMax = Date.Now
+                oExif.DateMin = Date.Now
                 oNew.Exifs.Add(oExif)
 
                 oNew.oContent = request.InputStream
@@ -493,21 +504,21 @@ Public MustInherit Class ServerWrapperBase
 
 
 
-    Private Async Function WyslijFotke(oLogin As ShareLogin, serno As String, response As HttpListenerResponse, fullPic As Boolean) As Task
+    Private Async Function WyslijFotke(oLogin As ShareLogin, serno As String, response As HttpListenerResponse, fullPic As Boolean) As Task(Of String)
 
         Dim oPic As Vblib.OnePic = _buffer.GetList.FirstOrDefault(Function(x) x.serno = serno)
-        If oPic Is Nothing Then Return
-        If oPic.sharingLockSharing Then Return
-        If Not oPic.PeerIsForLogin(oLogin) Then Return
+        If oPic Is Nothing Then Return "ERROR: internal"
+        If oPic.sharingLockSharing Then Return "ERROR: locked"
+        If Not oPic.PeerIsForLogin(oLogin) Then Return "ERROR: not for you"
 
         If fullPic Then
             Await PutPipelinedPicToResponse(oPic, oLogin, response)
-            Return
+            Return "NOTXTRESPONSE"
         End If
 
         ' tylko thumba wysy³amy
         Dim fname As String = oPic.InBufferPathName & ".PicSortThumb.jpg"
-        If Not IO.File.Exists(fname) Then Return
+        If Not IO.File.Exists(fname) Then Return "ERROR: no thumb"
 
         Try
             Dim strumyk As IO.FileStream = IO.File.OpenRead(fname)
@@ -520,6 +531,8 @@ Public MustInherit Class ServerWrapperBase
         Catch ex As Exception
             ' bo CANCEL po tamtej stronie mo¿e byæ, i wtedy tu "The specified network name is no longer available."
         End Try
+
+        Return "NOTXTRESPONSE"
     End Function
 #End Region
 

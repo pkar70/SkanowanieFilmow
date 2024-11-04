@@ -207,6 +207,10 @@ Public Class PicSourceImplement
     End Function
 
     Private Function DeleteFile_MTP(sId As String) As Boolean
+        If Not sId.Contains("\") Then
+            ' mappedsource tak robi - bez ścieżki w pliku purge
+            sId = Path & "\" & sId
+        End If
         Return _MediaDeviceHelper.Delete(sId)
     End Function
 

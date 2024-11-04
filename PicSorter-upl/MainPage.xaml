@@ -24,23 +24,24 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Grid.Row="0" Grid.Column="0" Text="Last inet upload" />
-            <TextBlock Grid.Row="0" Grid.Column="1" Name="uiLastInetUploadTime" />
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="Last upl (loc)" />
+            <TextBlock Grid.Row="0" Grid.Column="1" Name="uiLastLocalUploadTime" />
 
-            <TextBlock Grid.Row="1" Grid.Column="0" Text="Last upload" />
-            <TextBlock Grid.Row="1" Grid.Column="1" Name="uiLastUploadTime" />
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="Last upl (srv)" />
+            <TextBlock Grid.Row="1" Grid.Column="1" Name="uiLastSrvrUploadTime" />
             <Button Grid.Row="1" Grid.Column="2" Content="Check!" Click="uiLastUpload_Click"/>
 
             <TextBlock Grid.Row="2" Grid.Column="0" Text="New pics"  />
             <TextBlock Grid.Row="2" Grid.Column="1" Name="uiNewPics" />
             <TextBlock Grid.Row="2" Grid.Column="2" Name="uiNewPicsSrc" FontSize="10"/>
 
-            <Button Content="Upload" Name="uiUpload" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="5,5,5,0" Click="uiUpload_Click"/>
         </Grid>
+        
+        <Button Content="Upload" Name="uiUpload" Grid.Row="2" Grid.ColumnSpan="2" HorizontalAlignment="Center" Margin="5,5,5,0" Click="uiUpload_Click"/>
 
     </Grid>
     <Page.BottomAppBar>
