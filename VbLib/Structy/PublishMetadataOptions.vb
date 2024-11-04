@@ -1,4 +1,6 @@
 ﻿
+
+
 Public Class PublishMetadataOptions
     Inherits pkar.BaseStruct
 
@@ -7,6 +9,7 @@ Public Class PublishMetadataOptions
     Public Property PrintKwd As Boolean
     Public Property PrintDescr As Boolean
     Public Property PrintGeo As Boolean
+    Public Property PrintGeoName As Boolean
     Public Property PrintFilename As Boolean
     Public Property PrintSerno As Boolean
     Public Property PrintReel As Boolean

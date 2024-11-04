@@ -1373,12 +1373,19 @@ Public Class OnePic
             End If
         End If
 
+        If opcje.PrintGeoName Then
+            Dim geoExif As ExifTag = GetExifOfType(ExifSource.AutoImgw)
+            If geoExif Is Nothing OrElse String.IsNullOrWhiteSpace(geoExif.GeoName) Then geoExif = GetExifOfType(ExifSource.AutoOSM)
+            If geoExif IsNot Nothing AndAlso Not String.IsNullOrWhiteSpace(geoExif.GeoName) Then
+                opis &= $"Geoname: {geoExif.GeoName}" & If(asHTML, "<br />", vbCrLf)
+            End If
+        End If
 
         If opcje.PrintGeo Then
             Dim geo As pkar.BasicGeoposWithRadius = GetGeoTag()
 
             If geo IsNot Nothing Then
-                opis &= $"<a href='{geo.ToOSMLink}'>mapa</a>"
+                opis &= $"<a href='{geo.ToOSMLink}'>mapa</a>" & If(asHTML, "<br />", vbCrLf)
             End If
         End If
 
@@ -1632,9 +1639,18 @@ Public Class OnePic
             If CheckStringMasks(sSuggestedFilename, query.ogolne.Gdziekolwiek) Then bGdziekolwiekMatch = True
         End If
 
+
+        If Not String.IsNullOrWhiteSpace(query.ogolne.Reel) Then
+            oExif = GetExifOfType(ExifSource.SourceDefault)
+
+            If String.IsNullOrEmpty(oExif?.ReelName) Then Return False
+            If Not CheckStringMasks(oExif?.ReelName, query.ogolne.Reel) Then Return False
+
+        End If
+
 #Region "ogólne - advanced"
 
-        If query.ogolne.adv.TargetDir = "!" Then If Not String.IsNullOrWhiteSpace(TargetDir) Then Return False
+            If query.ogolne.adv.TargetDir = "!" Then If Not String.IsNullOrWhiteSpace(TargetDir) Then Return False
         If Not CheckStringMasks(TargetDir, query.ogolne.adv.TargetDir) Then Return False
         If Not CheckStringContains(sSourceName, query.ogolne.adv.Source) Then Return False
 
@@ -2048,7 +2064,7 @@ Public Class OnePic
     ''' <summary>
     ''' true/false, jeśli spełnione są "fragments, prefixed with ! for negate"; TRUE gdy maski są empty; Case insensitive
     ''' </summary>
-    Private Shared Function CheckStringMasks(sFromPicture As String, sMaskiWord As String) As Boolean
+    Public Shared Function CheckStringMasks(sFromPicture As String, sMaskiWord As String) As Boolean
         If String.IsNullOrWhiteSpace(sMaskiWord) Then Return True
 
         sFromPicture = If(sFromPicture?.ToLowerInvariant, "")
@@ -2343,22 +2359,44 @@ Public Class OnePic
     ''' <param name="skrocona">TRUE: dla podpisu, FALSE: dla dymku</param>
     Public Function GetDateSummary(skrocona As Boolean) As String
 
-        If HasRealDate() Then
-            Dim tekstowo As String = If(skrocona, "📷: ", "Real date: ")
-            Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualDate)
+        ' dla nie-cyfrowych, czyli dla skanowania, możemy mieć tylko ManualDate użyte jako datę dzienną
 
-            If oExif Is Nothing Then Return GetMostProbablyDate.ToExifString
-
-            If String.IsNullOrWhiteSpace(oExif.DateTimeOriginal) Then
-                Return tekstowo & oExif.DateMin.ToString("yyyy.MM.dd")
+        Dim oExif As ExifTag = GetExifOfType(ExifSource.ManualDate)
+        If oExif IsNot Nothing Then
+            If Not String.IsNullOrWhiteSpace(oExif?.DateTimeOriginal) Then
+                Return "🕒: " & GetMostProbablyDate.ToExifString
             End If
 
-            Return tekstowo & GetMostProbablyDate.ToExifString
+            If oExif.DateMin.Year = oExif.DateMax.Year AndAlso oExif.DateMin.Month = oExif.DateMax.Month Then
+                If oExif.DateMin.Day = oExif.DateMax.Day Then
+                    Return "📆: " & oExif.DateMin.ToString("yyyy.MM.dd")
+                Else
+                    ' mamy z dokładnością do miesiąca
+                    Return "📅: " & oExif.DateMin.ToString("yyyy.MM")
+                End If
+            End If
+
+            Dim ret As String = $"{GetMinDate.ToString("yyyy.MM.dd")} .. {GetMaxDate.ToString("yyyy.MM.dd")}"
+            If Not skrocona Then
+                ret = "Date range: " & ret & vbCrLf & $"Mid date: {GetMostProbablyDate.ToString("yyyy.MM.dd")}"
+            End If
+            Return ret
+
+        End If
+
+        ' jeśli nie mamy narzuconej, a jest to zdjęcie cyfrowe, to bierzemy z oryginału zdjęcia
+        oExif = GetExifOfType(ExifSource.SourceDefault)
+        If oExif IsNot Nothing AndAlso oExif.FileSourceDeviceType = FileSourceDeviceTypeEnum.digital Then
+            oExif = GetExifOfType(ExifSource.FileExif)
+            If Not String.IsNullOrWhiteSpace(oExif?.DateTimeOriginal) Then
+                Return "📷: " & GetMostProbablyDate.ToExifString
+            End If
+        End If
+
+        If skrocona Then
+            Return GetMinDate.ToString("yyyy.MM.dd") & " .. " & GetMaxDate.ToString("yyyy.MM.dd")
         Else
-            If skrocona Then
-                Return GetMinDate.ToString("yyyy.MM.dd") & " .. " & GetMaxDate.ToString("yyyy.MM.dd")
-            End If
-            return $"Date range: {GetMinDate.ToExifString} .. {GetMaxDate.ToExifString}
+            Return $"Date range: {GetMinDate.ToExifString} .. {GetMaxDate.ToExifString}
 Mid date: {GetMostProbablyDate.ToExifString}"
         End If
 
