@@ -42,14 +42,22 @@ Public Class EditExifTag
         uiCombo.Items.Add(" ")
 
         For iLp = 0 To 6
-            Dim devType As Vblib.FileSourceDeviceTypeEnum = iLp
-            If devType.ToString = iLp.ToString Then Exit For
-            Dim iInd As Integer = uiCombo.Items.Add(iLp & ": " & devType.ToString)
-            If eTypZrodla = iLp Then uiCombo.SelectedIndex = iInd
+            If Not WypelnComboDeviceOneDevice(uiCombo, iLp, eTypZrodla) Then Exit For
         Next
+
+        WypelnComboDeviceOneDevice(uiCombo, 13, 0)
 
         'uiFileSourceDeviceType.SelectedValue = _exifTag.FileSourceDeviceType
     End Sub
+
+    Private Shared Function WypelnComboDeviceOneDevice(uiCombo As ComboBox, iLp As Integer, eTypZrodla As Vblib.FileSourceDeviceTypeEnum) As Boolean
+        Dim devType As Vblib.FileSourceDeviceTypeEnum = iLp
+        If devType.ToString = iLp.ToString Then Return False
+        Dim iInd As Integer = uiCombo.Items.Add(iLp & ": " & devType.ToString)
+        If eTypZrodla = iLp Then uiCombo.SelectedIndex = iInd
+
+        Return True
+    End Function
 
     Private Sub WypelnComboPlikiem(oCombo As ComboBox, sFiletitle As String, sCurrent As String)
         oCombo.Items.Clear()
