@@ -14,6 +14,7 @@ Public NotInheritable Class PicMenuTargetDir
     Private Shared _miPaste As MenuItem
 
 
+    Public Overrides Property ChangeMetadata As Boolean = True
 
     Public Overrides Sub OnApplyTemplate()
         Vblib.DumpCurrMethod()
