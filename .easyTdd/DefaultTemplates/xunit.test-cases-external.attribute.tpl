@@ -1,0 +1,2 @@
+[Theory]
+[ClassData(typeof({{className}}))]

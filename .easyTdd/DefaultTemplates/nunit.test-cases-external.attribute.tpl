@@ -1,0 +1,1 @@
+[TestCaseSource(typeof({{className}}))]

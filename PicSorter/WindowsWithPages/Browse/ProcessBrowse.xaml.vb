@@ -941,6 +941,9 @@ Public Class ProcessBrowse
         pic0.oPic.sSuggestedFilename = IO.Path.GetFileName(packZipName)
         pic0.oPic.SetDefaultFileTypeDiscriminator() ' ikonka przy picku
         pic0.NotifyPropChange("fileTypeDiscriminator")
+        ' podmiana obrazka jeszcze
+        Await pic0.ThumbWczytajLubStworz(False, True)
+
         If pic1 IsNot Nothing Then DeletePicekMain(pic1)   ' zmieni _Reapply, jeśli picek miał splita; ze wszystkąd usuwa
 
         ' *TODO* ewentualnie stereoautoalign, własny anagl z *aligned*, ustalenie R/L, i zrobienie pliku JPS - tak by do StereoViewer wysłac pliki aligned
@@ -2238,7 +2241,7 @@ Public Class ProcessBrowse
             If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then
                 oItem.opacity = 1
                 bMamy = True
-                End If
+            End If
 
             If oAzure.AzureAnalysis.Brands IsNot Nothing AndAlso oAzure.AzureAnalysis.Brands.lista.Count > 0 Then
                 oItem.opacity = 1
@@ -2326,16 +2329,37 @@ Public Class ProcessBrowse
         KoniecFiltrowania(bMamy, True)
     End Sub
 
+    Private Async Sub uiFilterAnywhere_Click(sender As Object, e As RoutedEventArgs)
+        Dim srchterm As String = Await Me.InputBoxAsync("Podaj czego szukać")
+        If String.IsNullOrWhiteSpace(srchterm) Then Return
 
+        uiFilters.Content = "any"
+
+        Dim query As New Vblib.SearchQuery
+        query.ogolne.Gdziekolwiek = srchterm
+
+
+        Me.ProgRingShow(True)
+
+        For Each thumb As ThumbPicek In _thumbsy
+            thumb.opacity = If(thumb.oPic.CheckIfMatchesQuery(query), 1, _OpacityWygas)
+        Next
+
+        Me.ProgRingShow(False)
+
+        ' to jest z FullSearch, znaczy dodawanie/usuwanie zaznaczeń, więc "nie ma takich" jest bez sensu - dlatego pierwszy parametr jest TRUE
+        KoniecFiltrowania(True, True)
+
+    End Sub
     Private Sub uiFilterKeywords_Click(sender As Object, e As RoutedEventArgs)
         'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "kwds"
 
         Dim oWnd As New FilterKeywords
         oWnd.ShowDialog()
 
         Dim sQuery As String = oWnd.GetKwerenda 'Await vb14.DialogBoxInputAllDirectAsync("Podaj kwerendę słów kluczowych")
         If String.IsNullOrWhiteSpace(sQuery) Then Return
+        uiFilters.Content = "kwds"
 
         Dim aKwds As String() = sQuery.Split(" ")
 
@@ -2562,28 +2586,20 @@ Public Class ProcessBrowse
         'uiFilterPopup.IsOpen = False
         uiFilters.Content = "login*"
 
-        Dim oFE As FrameworkElement = sender
-        Dim oLogin As Vblib.ShareLogin = oFE?.DataContext
-        If oLogin?.channels Is Nothing Then Return
-
-
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
             thumb.opacity = _OpacityWygas
 
-            For Each oChannel As Vblib.ShareChannelProcess In oLogin.channels
-                For Each query As Vblib.ShareQueryProcess In oChannel.channel.queries
+            For Each oLogin As Vblib.ShareLogin In Vblib.GetShareLogins
+                If Not oLogin.enabled Then Continue For
 
-                    If thumb.oPic.CheckIfMatchesQuery(query.query) Then
-                        thumb.opacity = 1
-                        bWas = True
-                        Exit For
-                    End If
-                Next
+                If thumb.oPic.PeerIsForLogin(oLogin) Then
+                    thumb.opacity = 1
+                    bWas = True
+                End If
 
                 If thumb.opacity = 1 Then Exit For
             Next
-
         Next
 
         KoniecFiltrowania(bWas, True)
