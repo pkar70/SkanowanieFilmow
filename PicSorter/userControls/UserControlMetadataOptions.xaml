@@ -16,6 +16,7 @@
 
         <CheckBox IsChecked="{Binding PrintKwd, Mode=TwoWay}" Content="Show keywords"/>
         <CheckBox IsChecked="{Binding PrintDescr, Mode=TwoWay}" Content="Show descriptions"/>
+        <CheckBox IsChecked="{Binding PrintGeoName, Mode=TwoWay}" Content="Show geo name"/>
         <CheckBox IsChecked="{Binding PrintGeo, Mode=TwoWay}" Content="Show geo link"/>
         <CheckBox IsChecked="{Binding PrintFilename, Mode=TwoWay}" Content="Show filename"/>
         <CheckBox IsChecked="{Binding PrintSerno, Mode=TwoWay}" Content="Show serno"/>
