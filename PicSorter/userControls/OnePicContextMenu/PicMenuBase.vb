@@ -294,14 +294,20 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
 
             Return True
         Else
+
+            ' przy otwieraniu menu context ze search_archive:miniaturki
+            'Exception Info: System.NullReferenceException : Object reference Not set to an instance of an object.
+            'at PicSorterNS.PicMenuBase.CheckNieMaBlokerow() in H: \Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\userControls\OnePicContextMenu\PicMenuBase.vb:Line 298
+
+
             ' jeden plik; gdy zarchiwizowany, to nie wolno zmieniać ani pic ani metadata
-            If Not String.IsNullOrWhiteSpace(GetFromDataContext.Archived) Then Return False
+            If Not String.IsNullOrWhiteSpace(GetFromDataContext()?.Archived) Then Return False
 
             ' nie zmieniamy pic, więc zmiana tylko metadata - nie ma blokera
             If Not ChangePic Then Return True
 
             ' obrazka nie zmieniamy także gdy już w cloud jest
-            If String.IsNullOrWhiteSpace(GetFromDataContext.CloudArchived) Then Return True
+            If String.IsNullOrWhiteSpace(GetFromDataContext()?.CloudArchived) Then Return True
             Return False
         End If
 

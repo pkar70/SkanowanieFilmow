@@ -16,6 +16,7 @@ Public Enum FileSourceDeviceTypeEnum
     digital = 3
     internet = 11
     reel = 12
+    screenshot = 13
 End Enum
 
 Public Class RestrictionsEnum

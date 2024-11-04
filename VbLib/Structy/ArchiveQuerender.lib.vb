@@ -3,7 +3,7 @@
 Public Class ArchiveIndex
 
     Private _dataFilenameFull As String
-    Private _dataFilenameFlat As String
+    'Private _dataFilenameFlat As String
     Private _prefix As String
     Private _idlist As List(Of String)
 
@@ -11,7 +11,7 @@ Public Class ArchiveIndex
 
     Public Sub New(datafolder As String)
         _dataFilenameFull = IO.Path.Combine(datafolder, "archIndexFull.json")
-        _dataFilenameFlat = IO.Path.Combine(datafolder, "archIndexFlat.json")
+        '_dataFilenameFlat = IO.Path.Combine(datafolder, "archIndexFlat.json")
     End Sub
 
     'Public Sub AddToGlobalJsonIndex(sIndexShortJson As String, sIndexLongJson As String)

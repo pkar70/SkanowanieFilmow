@@ -187,7 +187,7 @@ Public NotInheritable Class PicMenuShareUpload
     Private Sub WypelnMenuLogins(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
         oMenuItem.Items.Clear()
 
-        For Each oLogin As Vblib.ShareLogin In vblib.GetShareLogins
+        For Each oLogin As Vblib.ShareLogin In Vblib.GetShareLogins.OrderBy(Of String)(Function(x) x.displayName.ToLowerInvariant)
             If oLogin.displayName.EqualsCI("FORPICSEARCH") Then Continue For
             Dim oNew As New MenuItem
             oNew.Header = oLogin.displayName

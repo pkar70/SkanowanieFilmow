@@ -115,6 +115,7 @@ MenuItem.SubmenuOpened Event
 * JPS: tworzenie thumb, blokada crop, do Azure/Face/OCR tylko połowę odsyła
 == SORTED:
 
+
 OGOLNE: robić więcej try/catch w funkcjach, z me.msgboxasync(err), i return z default (niepsującym)
 
 ARCHIVE: definiowanie nowego, automatyzacja "sync" (przesłanie do nowego archiwum - fotek z istniejących archiwów)
