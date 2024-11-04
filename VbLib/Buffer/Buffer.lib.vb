@@ -41,6 +41,7 @@ Public Interface IBufor
 
     Function RunAutoExif() As Task
 
+
 End Interface
 
 
@@ -58,7 +59,6 @@ Public Class BufferSortowania
     ''' wczytuje indeks zdjęć z pliku .json
     ''' </summary>
     ''' <param name="sRootDataPath">ścieżka do katalogu z plikami .json</param>
-    ''' <param name="slowka">lista słów kluczowych (potrzebna w .lib)</param>
     Public Sub New(sRootDataPath As String)
         '_RootDataPath = sRootDataPath
         _pliki = New FilesInBuffer(sRootDataPath)
@@ -285,7 +285,8 @@ Public Class BufferSortowania
 
 
         Dim oExif As ExifTag = oPic.GetExifOfType(ExifSource.SourceFile)
-        IO.File.SetCreationTime(sDstPathName, oExif.DateMin)
+        ' z MappedSource nie ma DateMin, bo nie ma dat plików (zalożenie: data jest w EXIFie)
+        If oExif.DateMin.IsDateValid Then IO.File.SetCreationTime(sDstPathName, oExif.DateMin)
         IO.File.SetLastWriteTime(sDstPathName, oExif.DateMax)
 
         oPic.InBufferPathName = sDstPathName
@@ -467,10 +468,26 @@ Public Class BufferFromQuery
     Implements IBufor
 
     Private _pliki As List(Of OnePic)
+    Private _dbase As DatabaseInterface = Nothing
 
+    ''' <summary>
+    ''' tworzy nowy IBuffer; który umie zapisać zmiany
+    ''' </summary>
+    ''' <param name="dbase">Baza danych (do niej będzie próbowało zrobic Save)</param>
+    Public Sub New(dbase As DatabaseInterface)
+        _pliki = New List(Of OnePic)
+        _dbase = dbase
+    End Sub
+
+    ''' <summary>
+    ''' tworzy nowy IBuffer; który NIE umie zapisać zmian
+    ''' </summary>
     Public Sub New()
         _pliki = New List(Of OnePic)
+        _dbase = Nothing
     End Sub
+
+
 
     Public Sub New(sFilepathname As String)
         DumpCurrMethod()
@@ -491,11 +508,14 @@ Public Class BufferFromQuery
             _pliki.Add(oPic)
         Next
 
+        _dbase = Nothing
+
     End Sub
 
     Public Sub SaveData() Implements IBufor.SaveData
-        ' empty - nie zapisujemy NIC
-        ' *TODO* zapisywanie zmian do pliku archive i folder\picsort
+        If _dbase Is Nothing Then Return
+
+        _dbase.SaveData()
     End Sub
 
     Public Sub ResetPipelines() Implements IBufor.ResetPipelines
@@ -549,7 +569,7 @@ Public Class BufferFromQuery
     End Function
 
     Public Function GetIsReadonly() As Boolean Implements IBufor.GetIsReadonly
-        Return True
+        Return (_dbase Is Nothing)
     End Function
 
     Public Function GetBufferName() As String Implements IBufor.GetBufferName

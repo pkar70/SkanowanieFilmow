@@ -37,6 +37,8 @@ Public Interface DatabaseInterface
     ''' </summary>
     Sub Unload()
 
+    Sub SaveData()
+
     ''' <summary>
     ''' Dodaj metadane zdjęć do archiwum, JSON: AppendFile, i jeśli wczytane to do _files, SQL: add to DB
     ''' </summary>

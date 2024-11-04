@@ -318,6 +318,10 @@ Public Class DatabaseSQL
 
     End Function
 
+    Public Sub SaveData() Implements DatabaseInterface.SaveData
+        Throw New NotImplementedException()
+    End Sub
+
 
 
 #Region "Struktury"

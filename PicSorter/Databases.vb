@@ -242,5 +242,21 @@ Public Class Databases
         Throw New NotImplementedException()
     End Function
 
+    Public Sub SaveData() Implements DatabaseInterface.SaveData
 
+
+        If Not IsEditable Then
+            Vblib.MsgBox("Nie umiem zapisać baz danych!")
+            Return
+        End If
+
+        For Each dbase As DatabaseInterface In _bazyDanych
+            If dbase.IsEditable Then
+                dbase.SaveData()
+            End If
+        Next
+
+        Vblib.MsgBox("TESTUJEMY sprawdz zapis pliku archindexfull")
+
+    End Sub
 End Class

@@ -382,5 +382,9 @@ Public Class DatabaseJSON
         If Not IsLoaded Then Return Nothing
         Return _allItems
     End Function
+
+    Public Sub SaveData() Implements DatabaseInterface.SaveData
+        _allItems.Save(True)
+    End Sub
 End Class
 

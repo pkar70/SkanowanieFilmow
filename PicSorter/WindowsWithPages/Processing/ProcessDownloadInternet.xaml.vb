@@ -424,7 +424,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         query.ogolne.geo.OnlyExact = True
         query.ogolne.geo.Location = New BasicGeoposWithRadius(_lastgeo.GeoTag, 200)
 
-        Dim _queryResults As IEnumerable(Of Vblib.OnePic) ' wynik szukania
+        Dim _queryResults As IEnumerable(Of Vblib.OnePic) = Nothing ' wynik szukania
 
         Me.ProgRingShow(True)
 
@@ -436,14 +436,14 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
             Return
         End If
 
-        Dim lista As New Vblib.BufferFromQuery()
+        Dim lista As New Vblib.BufferFromQuery(Application.gDbase) 'być moze (Application.gDbase, ale mamy CLONE
         For Each oPic As Vblib.OnePic In _queryResults
 
             For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
                 'vb14.DumpMessage($"trying archive {oArch.StorageName}")
                 Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
                 If Not String.IsNullOrWhiteSpace(sRealPath) Then
-                    Dim oPicNew As Vblib.OnePic = oPic.Clone
+                    'Dim oPicNew As Vblib.OnePic = oPic.Clone - jak CLONE to do arch nie można dac zmian
                     oPic.InBufferPathName = sRealPath
                     Await lista.AddFile(oPic)
                     Exit For

@@ -7,9 +7,10 @@ Public Class PokazStatystyke
 
     Private _history As String
     Private _entries As List(Of StatEntry)
+    Private _dbase As Vblib.DatabaseInterface = Nothing
 
     ''' <summary>
-    ''' pokaż statystykę zawartą w entries
+    ''' pokaż statystykę zawartą w entries. Pilnować by tylko na ARCHINDEX było!
     ''' </summary>
     ''' <param name="history">poprzednie kroki (statystyki)</param>
     ''' <param name="entries">aktualna statystyka</param>
@@ -49,6 +50,8 @@ Public Class PokazStatystyke
             entry.total = entry.licznik ' na początek mamy tyle samo
             _entries = New List(Of StatEntry)
             _entries.Add(entry)
+
+            _dbase = Application.gDbase
         End If
 
         ' policz procenty
@@ -104,7 +107,7 @@ Public Class PokazStatystyke
 
         ' ten fragment jest przeróbką z SearchWindow.uiGoMiniaturki_Click
 
-        Dim lista As New Vblib.BufferFromQuery()
+        Dim lista As New Vblib.BufferFromQuery(_dbase)
 
         For Each oPic As Vblib.OnePic In entry.lista
 
@@ -116,7 +119,7 @@ Public Class PokazStatystyke
                     'vb14.DumpMessage($"trying archive {oArch.StorageName}")
                     Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
                     If Not String.IsNullOrWhiteSpace(sRealPath) Then
-                        Dim oPicNew As Vblib.OnePic = oPic.Clone
+                        'Dim oPicNew As Vblib.OnePic = oPic.Clone - jak CLONE to do arch nie można dac zmian
                         oPic.InBufferPathName = sRealPath
                         Await lista.AddFile(oPic)
                         Exit For

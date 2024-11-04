@@ -280,7 +280,7 @@ Public Class SearchWindow
 
         If Not _queryResults.Any Then Return
 
-        Dim lista As New Vblib.BufferFromQuery()
+        Dim lista As New Vblib.BufferFromQuery(Application.gDbase)
 
         ' = _queryResults
 
@@ -294,12 +294,12 @@ Public Class SearchWindow
         For Each oPic As Vblib.OnePic In inputList
 
             For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
-                'vb14.DumpMessage($"trying archive {oArch.StorageName}")
+                vb14.DumpMessage($"trying archive {oArch.StorageName}")
                 Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
                 vb14.DumpMessage($"real path of index file: {sRealPath}")
                 If Not String.IsNullOrWhiteSpace(sRealPath) Then
                     ' nie ma clone, więc InBufferPathName się zmienia - ważne dla ewentualnego zmieniania metadanych w archiwum
-                    'Dim oPicNew As Vblib.OnePic = oPic.Clone
+                    'Dim oPicNew As Vblib.OnePic = oPic.Clone - jak CLONE to do arch nie można dac zmian
                     oPic.InBufferPathName = sRealPath
                     lista.AddFile(oPic)
                     Exit For
