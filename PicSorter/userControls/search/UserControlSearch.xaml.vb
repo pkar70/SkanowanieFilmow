@@ -48,8 +48,8 @@ Public Class UserControlSearch
 
         query.nazwa = nazwa
         vblib.GetQueries.Add(query)
-        vblib.GetQueries.Save(True)
-        vblib.GetShareChannels.ReResolveQueries()
+        Vblib.GetQueries.Save(False)
+        Vblib.GetShareChannels.ReResolveQueries()
 
         ' żeby zmiany nie były ciągle w tym samym co właśnie zapisane
         DataContext = query.Clone
