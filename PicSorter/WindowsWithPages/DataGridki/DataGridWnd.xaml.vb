@@ -1,4 +1,5 @@
 ﻿Imports System.IO
+Imports Org.BouncyCastle.Math
 Imports pkar
 Imports pkar.UI.Extensions
 
@@ -46,8 +47,8 @@ Public Class DataGridWnd
         Select Case e.Column.Header.ToString()
             'Case "Archived" ' String
             '    e.Column.IsReadOnly = _standardMode
-            'Case "CloudArchived" ' String
-            '    e.Column.IsReadOnly = _standardMode
+            Case "CloudArchived" ' String
+                e.Column.IsReadOnly = _standardMode
             'Case "Published" ' Dictionary(Of String, String)
             '    e.Column.IsReadOnly = True
             'Case "TargetDir" ' String ' OneDirFlat.sId
@@ -126,9 +127,18 @@ Public Class DataGridWnd
 
         _standardMode = False
 
-        uiGridek.ItemsSource = Nothing
-        ' zakładam że przejdzie jeszcze raz przez autogencolumn
-        uiGridek.ItemsSource = _picki.GetList
+        'uiGridek.ItemsSource = Nothing
+        '' zakładam że przejdzie jeszcze raz przez autogencolumn - nie przechodzi...
+        'uiGridek.ItemsSource = _picki.GetList
+
+        ' przełączenie kolumn r/o r/w
+        For Each kol As DataGridColumn In uiGridek.Columns
+            Dim kolAdv As UserDGridColumnAdv = TryCast(kol, UserDGridColumnAdv)
+            If kolAdv IsNot Nothing Then
+                kolAdv.IsReadOnly = DataGridWnd._standardMode
+                kolAdv.Foreground = If(kol.IsReadOnly, UserDGridColumnAdv.brushRO, UserDGridColumnAdv.brushRW)
+            End If
+        Next
 
     End Sub
 
@@ -146,12 +156,73 @@ Public Class DataGridWnd
         uiFiltr_Changed(propname, fragm)
     End Sub
 
+    Private _filtry As New Dictionary(Of String, String)
+
     Private Sub uiFiltr_Changed(propname As String, query As String)
+
+        Try
+            _filtry.Remove(propname)
+            If Not String.IsNullOrWhiteSpace(query) Then _filtry.Add(propname, query)
+
+            If _filtry.Count > 0 Then
+                uiGridek.Items.Filter = AddressOf FiltrowanieCallback
+            Else
+                uiGridek.Items.Filter = Nothing
+            End If
+
+            uiGridek.Items.Refresh()
+        Catch ex As Exception
+            ' Exception Info: System.InvalidOperationException: 'Filter' is not allowed during an AddNew or EditItem transaction.
+        End Try
 
     End Sub
 
-    Private Sub uiFiltrTyp_SelChanged(sender As Object, e As SelectionChangedEventArgs)
+    Private Function FiltrowanieCallback(obj As Object) As Boolean
+        Dim opic As Vblib.OnePic = TryCast(obj, Vblib.OnePic)
+        If opic Is Nothing Then Return True
 
+        For Each fragm In _filtry
+
+            Dim picPole As Reflection.PropertyInfo = opic.GetType.GetProperty(fragm.Key)
+            If picPole.PropertyType IsNot GetType(String) Then Continue For
+
+            Dim picVal As String = picPole.GetValue(opic)
+            If fragm.Value = "!" Then Return String.IsNullOrWhiteSpace(picVal)
+
+            If Not Vblib.OnePic.CheckStringMasks(picVal, fragm.Value) Then Return False
+
+        Next
+
+        Return True
+
+    End Function
+
+    'Private Function JestCosNieEmpty() As Boolean
+
+    '    For Each kol As DataGridColumn In uiGridek.Columns
+
+    '        Dim kolAdv As DataGridTextColumn = TryCast(kol, DataGridTextColumn)
+    '        If kolAdv Is Nothing Then Continue For
+
+    '        Dim pole As Binding = kolAdv.Binding
+
+    '        Dim nazwa As String = "uiFiltr_" & pole.Path.Path
+
+    '        Dim frmEl As FrameworkElement = Me.FindName(nazwa)
+    '        Dim txtbox As TextBox = TryCast(frmEl, TextBox)
+    '        If txtbox Is Nothing Then Continue For
+
+    '        If Not String.IsNullOrWhiteSpace(txtbox.Text) Then
+    '            Return True
+    '        End If
+
+    '    Next
+
+    '    Return False
+
+    'End Function
+
+    Private Sub uiFiltrTyp_SelChanged(sender As Object, e As SelectionChangedEventArgs)
     End Sub
 
     Private Sub DataGrid_AutoGeneratingColumn(sender As Object, e As DataGridAutoGeneratingColumnEventArgs)

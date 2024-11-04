@@ -151,13 +151,13 @@
                     </DataGridTextColumn.HeaderTemplate>
                 </local:UserDGridColumnRO>
 
-                <local:UserDGridColumnRO Binding="{Binding CloudArchived, Mode=OneWay}" >
+                <local:UserDGridColumnAdv Binding="{Binding CloudArchived, Mode=TwoWay}" >
                     <DataGridTextColumn.HeaderTemplate>
                         <DataTemplate>
                             <local:UserDGridHdrFilter Field="CloudArchived" Header="CloudArchived" QueryChanged="uiFiltr_Changed" />
                         </DataTemplate>
                     </DataGridTextColumn.HeaderTemplate>
-                </local:UserDGridColumnRO>
+                </local:UserDGridColumnAdv>
 
 
                 <local:UserDGridColumnRO Binding="{Binding Archived, Mode=OneWay}" >
