@@ -1,6 +1,7 @@
 ﻿'Imports Auto_WinOCR
 'Imports MetadataExtractor.Formats
 'Imports Vblib
+Imports System.Drawing
 Imports pkar.DotNetExtensions
 
 Public Class ShowAzureLists
@@ -26,12 +27,18 @@ Public Class ShowAzureLists
     Private Async Sub Window_DataContextChanged(sender As Object, e As DependencyPropertyChangedEventArgs)
         Await Task.Delay(20)    ' na zmianę po stronie uiPinUnpin
 
-        Dim picek As Vblib.OnePic = Nothing
-        If Not uiPinUnpin.IsPinned Then
-            picek = TryCast(DataContext, ProcessBrowse.ThumbPicek)?.oPic
+        Dim picek As ProcessBrowse.ThumbPicek = Nothing
+
+        If uiPinUnpin.IsPinned Then Return
+        If DataContext Is Nothing Then Return
+
+        If DataContext.GetType Is GetType(ProcessBrowse.ThumbPicek) Then
+            picek = DataContext
+        Else
+            picek = New ProcessBrowse.ThumbPicek(DataContext, 0)
         End If
 
-        _azurek = picek?.GetExifOfType(Vblib.ExifSource.AutoAzure)?.AzureAnalysis
+        _azurek = picek?.oPic?.GetExifOfType(Vblib.ExifSource.AutoAzure)?.AzureAnalysis
 
         uiRozpiska.DataContext = _azurek
 
