@@ -2372,7 +2372,13 @@ Public Class OnePic
                     Return "📆: " & oExif.DateMin.ToString("yyyy.MM.dd")
                 Else
                     ' mamy z dokładnością do miesiąca
-                    Return "📅: " & oExif.DateMin.ToString("yyyy.MM")
+
+                    If oExif.DateMin.Day = 1 AndAlso (oExif.DateMin.AddDays(1).Month <> oExif.DateMin.AddDays(1).Month) Then
+                        Return "📅: " & oExif.DateMin.ToString("yyyy.MM")
+                    Else
+                        Return "📅: " & oExif.DateMin.ToString("yyyy.MM.dd") & "..." & oExif.DateMax.Day
+                    End If
+
                 End If
             End If
 
