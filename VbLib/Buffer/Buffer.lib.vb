@@ -39,6 +39,8 @@ Public Interface IBufor
 
     Sub SetStagesSettings(listaCheckow As String)
 
+    Function GetMinStage() As Integer
+
     Function RunAutoExif() As Task
 
 
@@ -447,6 +449,18 @@ Public Class BufferSortowania
 
     End Function
 
+    Public Function GetMinStage() As Integer Implements IBufor.GetMinStage
+        ' *TODO* uproszczona wersja - według zaznaczonych checkbox
+        Dim checkboxy As String = GetStagesSettings()
+
+        For Each oStage As Vblib.SequenceStageBase In Vblib.SequenceCheckers.OrderByDescending(Of Integer)(Function(x) x.StageNo)
+            If checkboxy.Contains(oStage.Nazwa) Then Return oStage.StageNo
+        Next
+
+        Return SequenceStages.None
+
+    End Function
+
     Public Class FilesInBuffer
         Inherits pkar.BaseList(Of OnePic)
 
@@ -583,6 +597,10 @@ Public Class BufferFromQuery
 
     Public Async Function RunAutoExif() As Task Implements IBufor.RunAutoExif
         ' empty dla query
+    End Function
+
+    Public Function GetMinStage() As Integer Implements IBufor.GetMinStage
+        Return SequenceStages.LocalArch
     End Function
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
 
