@@ -185,9 +185,13 @@ Public MustInherit Class ServerWrapperBase
         Return folder
     End Function
 
+    Public Function GetCurrLogPath() As String
+        If Not Vblib.GetSettingsBool("uiHttpLog") Then Return ""
+        Return IO.Path.Combine(GetLogDir, Date.Now.ToString("yyyy-MM") & ".log")
+    End Function
+
     Private Sub AppendLog(oLogin As Vblib.ShareLogin, msg As String)
-        If Not Vblib.GetSettingsBool("uiHttpLog") Then Return
-        Dim currFile As String = IO.Path.Combine(GetLogDir, Date.Now.ToString("yyyy-MM") & ".log")
+        Dim currFile As String = GetCurrLogPath()
         Dim linia As String = Date.Now.ToExifString & " "
         If oLogin IsNot Nothing Then linia &= oLogin.displayName.Replace(" ", "_") & " "
         linia &= msg & vbCrLf

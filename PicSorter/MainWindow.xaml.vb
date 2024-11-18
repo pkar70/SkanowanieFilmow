@@ -254,6 +254,10 @@ Class MainWindow
         '    If Not Await Vblib.DialogBoxYNAsync("Zamknąć program?") Then Return
         ' bez tego zamyka tylko to jedno okno, a reszty już NIE
         _closinguje = True
+
+        ' zamknij wszystkie programy potomne (notepad logów)
+        ZwalniajZasobyChildProcesow()
+
         Vblib.SetSettingsDate("lastAppExit", Date.Now)
         Application.Current.Shutdown()
         'End If
@@ -344,6 +348,8 @@ Class MainWindow
         If Vblib.GetSettingsBool("uiServerEnabled") Then
             Dim srvMI As New MenuItem With {.Header = "Server", .ToolTip = "PicSort jako serwer"}
             srvMI.Items.Add(CreateMenuItem("start/stop", "Uruchamianie/zatrzymywanie serwera", AddressOf SrvStartStop_Click))
+            srvMI.Items.Add(CreateMenuItem("currlog", "Otwórz bieżący log", AddressOf SrvCurrLog_Click))
+            srvMI.Items.Add(New Separator)
             srvMI.Items.Add(CreateMenuItem("status", "Ostatnie połączenia", AddressOf SrvLastLog_Click))
             ctxMenu.Items.Add(srvMI)
         End If
@@ -398,6 +404,25 @@ Class MainWindow
         ' *TODO* ma być pełny log pokazywany
         Me.MsgBox(Application.gWcfServer._lastNetAccess.GetString)
     End Sub
+
+    Private _listaProcesowNotepad As New List(Of Process)
+
+    Private Sub SrvCurrLog_Click(sender As Object, e As RoutedEventArgs)
+        Dim logname As String = Application.gWcfServer.GetCurrLogPath
+        If String.IsNullOrWhiteSpace(logname) Then Return
+        If Not IO.File.Exists(logname) Then Return
+
+        Dim newproc As Process = Process.Start("notepad", logname)
+        If newproc IsNot Nothing Then _listaProcesowNotepad.Add(newproc)
+    End Sub
+
+    Private Sub ZwalniajZasobyChildProcesow()
+        ' to nie jest takie potrzebne - chodzi o niezostawianie aktywnych notepad po zamknięciu PicSort
+        For Each procek As Process In _listaProcesowNotepad
+            If Not procek.HasExited Then procek.CloseMainWindow()
+        Next
+    End Sub
+
 
     Private Sub ArchStatus_Click(sender As Object, e As RoutedEventArgs)
         ' *TODO* rozmiar pamięci, oraz możliwość zwolnienia jej
