@@ -261,6 +261,7 @@ End Class
 
 ' nie da się zrobić Shared z MustOverride, a chcę wykorzystywac levele symbolicznie a nie numerycznie później
 Public Enum SequenceStages
+    None = 0
     AutoExif = 10
     CropRotate = 20
     Keywords = 30

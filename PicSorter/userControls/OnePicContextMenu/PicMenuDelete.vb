@@ -5,9 +5,11 @@ Imports pkar
 Public NotInheritable Class PicMenuDeleteTemps
     Inherits PicMenuBase
 
-    Dim _delThumb As MenuItem
+    Dim _delThumb As New MenuItem
 
     Public Overrides Sub OnApplyTemplate()
+        Vblib.DumpCurrMethod()
+
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
         If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
@@ -25,6 +27,7 @@ Public NotInheritable Class PicMenuDeleteTemps
     End Sub
 
     Public Overrides Sub MenuOtwieramy()
+        Vblib.DumpCurrMethod()
         MyBase.MenuOtwieramy()
 
         _delThumb.IsEnabled = UseSelectedItems

@@ -181,8 +181,9 @@
                             <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
                             <MenuItem Header="Pack as stereo" Name="uiStereoPack" Click="uiStereoPack_Click" />
                             <Separator/>
-                            <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
-                            <local:PicMenuCopyOut  UseSelectedItems="True"/>
+                            <!--<MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />-->
+                        <local:PicMenuSlideshow UseSelectedItems="True"/>
+                        <local:PicMenuCopyOut  UseSelectedItems="True"/>
                             <MenuItem Header="Get files size" Click="uiGetFileSize_Click" />
                             <Separator/>
                             <MenuItem Header="new window from filter" Click="uiActionNewWndFltr_Click" />
@@ -231,7 +232,7 @@
                                 
                         <Image Source="{Binding oImageSrc, Mode=OneWay }" Height="{Binding iDuzoscH, Mode=OneWay }" ToolTipService.ToolTip="{Binding sDymek, Mode=OneWay }" ToolTipService.ShowDuration="30000" Opacity="{Binding opacity}" MouseLeftButtonDown="uiImage_LeftClick" ContextMenuOpening="uiActionsContext_Opening">
                                     <Image.ContextMenu >
-                                <ContextMenu >
+                                        <ContextMenu Opened="uiPicCtxMenu_Opened">
                                         <!-- readonly simple metadata -->
                                         <local:PicMenuCopyPath   />
 
@@ -256,7 +257,7 @@
                                         <local:PicMenuSearchArchive />
                                         <local:PicMenuShellExec  />
 
-                                        <MenuItem Header="other...">
+                                        <MenuItem Header="other..." SubmenuOpened="uiActionSubMenu_SubmenuOpened" >
                                             <!-- readonly simple metadata -->
                                             <local:PicMenuShowMetadata UseOwner="True" />
                                             <local:PicMenuFileExif  UseOwner="True" />

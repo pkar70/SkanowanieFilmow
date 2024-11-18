@@ -167,8 +167,6 @@ CHOMIK: https://restsharp.dev/v107/ , tu jest o exhausting, że powinno byc nows
 
 CONFIG: combo z publisherami do email? 
 
-HTTP: log, loginów oraz zdjęć. Uzupełnianie OnePic? Ale do archiwum niekoniecznie to miałoby sens, przy OneLogin na pewno bez sensu (za długi plik)
-
 IMPORT: nowa funkcjonalność, import, podaje się zakres dat, browse folder, i ściaga z foldertree podpadające zdjęcia
 IMPORT: razem z drzewkiem, jakoś tak by przyjmować zdjęcia już sortowane (analogowe)
 IMPORT: internet ogólny, bez FB i ograniczenia lastpage na facebook
@@ -183,7 +181,6 @@ MAIN:BROWSE: ewentualnie "recursive"?
 MAIN:BROWSE: "widzę katalog w kilku archiwach, które chcesz?"
 MAIN:BROWSE: zdjęcia na dzisiaj w historii (znajdywanie wszystkich) (ale dokładnie dzisiaj raczej niż tydzień/miesiąc)
 
-PEERS: Client na naszym telefonie, dla niego utrzymywać Purge
 PEERS: FindAllPics - wyszukiwania przychodzących komentarzy
 PEERS: wysyłanie komentarzy - gdzie? ReviewPeersDescrs
 PEERS: BrowseRemoteDescr do sprawdzenia
@@ -1343,3 +1340,171 @@ Suma opadu dzień  [mm]                               8/1
 Status pomiaru WODZ                                  1
 Suma opadu noc   [mm]                                8/1
 Status pomiaru WONO                                  1
+
+
+
+
+Jaka pozycja w menu: DONE, CURR, FUTU
+
+AEXIF| c&rot | kwds | date | GEO | autotag | check azure | descr | TARGet | publish | CLDARCH | localarch
+
+						FUTURE do x # AFTER od
+
+PicMenuAutotaggers.vb	date # autotag
+PicMenuBatchProc.vb		-- # cloudarch
+PicMenuCloudArchive.vb	descr # cloudarch
+PicMenuCloudPublish.vb	descr # --
+PicMenuCopyId.vb		-- # --
+PicMenuCopyOut.vb		-- # --
+PicMenuCopyPath.vb		-- # --
+PicMenuDelete.vb		-- # localarch
+PicMenuDescribe.vb		chkazr # localarch
+PicMenuFileExif.vb		-- # --
+PicMenuGeotag.vb		date # autotag
+PicMenuKwds.vb			c&rot # localarch
+PicMenuLinksWeb.vb		c&rot # --
+PicMenuLocks.vb			-- # --
+PicMenuOCR.vb			c&rot # localarch
+PicMenuOnMap.vb			date # --
+PicMenuSearchArchive.vb kwds # --
+PicMenuSearchWebByPic.vb c&rot # --
+PicMenuSetDate.vb		kwds # localarch
+PicMenuShareUpload.vb	-- # localarch
+PicMenuShellExec.vb		-- # --
+PicMenuShowMetadata.vb	-- # -- 
+PicMenuShowWiki.vb		kwds # --
+PicMenuTargetDir.vb		desc # cloudarch 
+
+Select from Filter		-- # --
+Remote tags »			kwds # --
+Pack as stereo			-- # descr
+Slideshow				-- # --
+Get files size			-- # --
+new window from filter	-- # --
+new wnd from selection  -- # --
+Save selection			-- # --
+save as contactsheet	-- # --
+Delete					-- # localarch
+Show big				-- # --
+Pic edit				-- # cloudarch
+
+picmenuSlideshow: start z selected (idzie po selected), start z context: od tego do konca, z showbig: start od tego (w nastepnym oknie), stop, next. Ale można na razie tego nie implementować :)
+
+z tego wynika że to raczej jedno menu, other, tyle że z separatorem (after, before)
+
+
+                                        <ContextMenu Opened="uiPicCtxMenu_Opened">
+                                        <!-- readonly simple metadata -->
+                                        <local:PicMenuCopyPath   />
+
+MI                                        <MenuItem Header="Show big" Click="uiShowBig_Click"/>
+
+                                    <!-- sequence step CROP/EDIT -->
+                                        <!-- sequence step GEOTAG -->
+                                        <!-- sequence step AUTOTAGs -->
+                                        <!-- sequence step KEYWORDs -->
+                                        <!-- sequence step DESCRIBE -->
+OD-                                        <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" />-
+OD-DO                                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" />
+OD-DO                                        <local:PicMenuDescribe MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" />
+                                        <!-- sequence step TARGET -->
+OD-DO                                        <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged"  />
+                                        <!-- sequence step PUBLISH, ARCHIVE -->
+-DO                                        <local:PicMenuShareUpload />
+
+                                        <!-- readonly metadata 2 -->
+                                        <local:PicMenuOnMap  />
+OD-                                        <local:PicMenuSearchWebByPic />
+OD-                                        <local:PicMenuSearchArchive />
+                                        <local:PicMenuShellExec  />
+
+SUBMNU                                        <MenuItem Header="other..." SubmenuOpened="uiActionSubMenu_SubmenuOpened" >
+                                            <!-- readonly simple metadata -->
+                                            <local:PicMenuShowMetadata UseOwner="True" />
+                                            <local:PicMenuFileExif  UseOwner="True" />
+-DO                                            <!-- sequence step CROP/EDIT -->
+                                            <local:PicMenuBatchProc UseProgBar="True" MetadataChanged="uiMetadataChanged" />
+                                            <!-- sequence step GEOTAG -->
+OD-DO                                            <local:PicMenuGeotag MetadataChanged="uiGeotagMetadataChanged" />
+OD-DO                                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" />
+                                            <!-- sequence step AUTOTAGs -->
+OD-DO                                            <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
+                                            <!-- sequence step PUBLISH, ARCHIVE -->
+                                            <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj"  />
+OD-DO                                            <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" />
+OD-                                            <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
+                                            <!-- readonly metadata 2 -->
+OD-                                            <local:PicMenuShowWiki />
+                                            <local:PicMenuCopyId />
+                                            <local:PicMenuCopyOut  />
+                                            <Separator/>
+                                            <local:PicMenuDeleteTemps />
+                                        </MenuItem>
+                                        <!-- delete -->
+                                        <Separator/>
+MI                                    <MenuItem Header="Delete" Click="uiDelOne_Click"/>
+                                </ContextMenu>
+
+
+
+
+                        <ContextMenu>
+                            <!-- readonly simple metadata -->
+                            <local:PicMenuCopyPath />
+                            <local:PicMenuShowMetadata />
+                            <local:PicMenuFileExif />
+
+                            <!-- sequence step CROP/EDIT -->
+MI                            <MenuItem Header="Pic edit" Name="uiEditModes" >
+                                <MenuItem Header="Crop" Click="uiCrop_Click" Name="uiEditCrop"/>
+                                <!--<MenuItem Header="Resize" Click="uiResize_Click" IsEnabled="False"/>-->
+                                <MenuItem Header="Rotate">
+                                    <MenuItem Icon="↶"  Header="anticlockwise" FontSize="16" Click="uiRotate_Click" CommandParameter="270"/>
+                                    <MenuItem Icon="↺" Header="180°" FontSize="15" Click="uiRotate_Click" CommandParameter="180"/>
+                                    <MenuItem Icon="↷" Header="clockwise" FontSize="14" Click="uiRotate_Click" CommandParameter="90"/>
+                                </MenuItem>
+                                <MenuItem Icon="⇔" Header="Flip" Click="uiFlipHoriz_Click" />
+                                <MenuItem Icon="◧" Header="Negative " Click="uiNegative_Click"/>
+                                <Separator/>
+                                <MenuItem Header="Save" Name="uiSave" Click="uiSave_Click" />
+                                <MenuItem Header="Revert" Name="uiRevert" Click="uiRevert_Click" />
+                            </MenuItem>
+                            <local:PicMenuBatchProc x:Name="uiBatchProcessors"  MetadataChanged="uiPictureChanged" />
+                            <!-- sequence step GEOTAG -->
+                            <local:PicMenuGeotag x:Name="uiGeotag" MetadataChanged="uiMetadataChanged" />
+                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" />
+                            <!-- sequence step AUTOTAGs -->
+                            <!-- sequence step KEYWORDs -->
+                            <!-- sequence step DESCRIBE -->
+                            <local:PicMenuDescribe x:Name="uiDescribe" MetadataChanged="uiMetadataChanged" />
+                            <local:PicMenuOCR MetadataChanged="uiMetadataChanged" />
+                            <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" />
+                            <!-- sequence step TARGET -->
+                            <local:PicMenuLocks MetadataChanged="uiMetadataChanged" />
+                            <!-- sequence step PUBLISH, ARCHIVE -->
+                            <!-- readonly metadata 2 -->
+                            <local:PicMenuOnMap />
+                            <local:PicMenuSearchWebByPic />
+                            <local:PicMenuSearchArchive />
+                            <local:PicMenuShellExec  />
+SUBMENU                            <MenuItem Header="other..." >
+                                <!-- sequence step AUTOTAGs -->
+                                <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
+                                <!-- sequence step TARGET -->
+                                <local:PicMenuTargetDir x:Name="uiTargetDir" MetadataChanged="uiMetadataChanged" />
+                                <!-- sequence step PUBLISH, ARCHIVE -->
+                                <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" />
+                                <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
+                                <local:PicMenuShareUpload />
+                                <!-- readonly metadata 2 -->
+                                <local:PicMenuShowWiki  />
+                                <local:PicMenuCopyId />
+                                <local:PicMenuCopyOut  />
+MI                                <MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />
+                                <Separator/>
+                                <local:PicMenuDeleteTemps />
+                            </MenuItem>
+                            <Separator/>
+                            <!-- delete -->
+MI                            <MenuItem Header="Delete" Click="uiDelPic_Click" Name="uiDelete" />
+                        </ContextMenu>

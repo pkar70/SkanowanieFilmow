@@ -1,5 +1,6 @@
 ﻿Imports System.Linq
 Imports Vblib
+Imports pkar.DotNetExtensions
 
 ''' <summary>
 ''' klasa załatwiająca wspólną strukturę dla wszystkich PicMenu*
@@ -107,44 +108,19 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         RaiseEvent MetadataChanged(sender, data)
     End Sub
 
-    Protected Function GetSelectedItems() As List(Of ProcessBrowse.ThumbPicek)
 
+    Protected Function TryGetProcessBrowse() As ProcessBrowse
         Dim wnd As Window = Window.GetWindow(Me)
         If wnd Is Nothing Then
-            'Dim ctxmenu As FrameworkElement = Me
-            'While ctxmenu.GetType <> GetType(ContextMenu)
-            '    ctxmenu = ctxmenu.Parent
-            'End While
-
-            'wnd = Window.GetWindow(ctxmenu)
-
-            'If wnd Is Nothing Then
-            '    wnd = Window.GetWindow(ctxmenu.Parent) ' popup
-            'End If
-
-
             wnd = Window.GetWindow(TryCast(FindUiElement("uiPicList"), ListView))
         End If
 
-        Return TryCast(wnd, ProcessBrowse)?.GetSelectedThumbs
+        Return TryCast(wnd, ProcessBrowse)
+    End Function
 
-        'Dim cbox As CheckBox = TryCast(FindUiElement("uiPodpisCheckbox"), CheckBox)
-        'If cbox IsNot Nothing AndAlso cbox.IsChecked Then
-        '    Dim wnd As ProcessBrowse = Window.GetWindow(Me)
-        '    ' *TODO* ma zwrócić listę z IsChecked wzietą!
-        '    Return
-        'End If
-
-        'Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
-
-        'If fe?.SelectedItems Is Nothing Then Return Nothing
-
-        'Dim ret As New List(Of ProcessBrowse.ThumbPicek)
-        'For Each oThumb As ProcessBrowse.ThumbPicek In fe.SelectedItems
-        '    ret.Add(oThumb)
-        'Next
-
-        'Return ret
+    Protected Function GetSelectedItems() As List(Of ProcessBrowse.ThumbPicek)
+        Dim wnd As ProcessBrowse = TryGetProcessBrowse()
+        Return wnd?.GetSelectedThumbs
     End Function
     Protected Function GetSelectedItemsAsPics() As List(Of Vblib.OnePic)
         'Dim fe As ListView = TryCast(FindUiElement("uiPicList"), ListView)
@@ -265,54 +241,73 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ''' <summary>
     ''' do override, reakcja na otwieranie menu - wywoływane dla każdego w menu, z ProcessBrowse
     ''' </summary>
-    Public Overridable Sub MenuOtwieramy()
+    Public Overridable Async Sub MenuOtwieramy()
+        Await Task.Delay(10) ' czas na wypełnienie DataContext
         'If _miCopy IsNot Nothing Then _miCopy.IsEnabled = Not UseSelectedItems
         Me.IsEnabled = CheckNieMaBlokerow()
     End Sub
 
-    Protected Function CheckNieMaBlokerow()
-
-        If Not ChangePic AndAlso Not ChangeMetadata Then Return True
-
-        ' sprawdź czy można - czy nie ma blokerów
+    ''' <summary>
+    ''' sprawdź czy wszystkie są tylko w buforze, żaden nie jest zarchiwizowany
+    ''' </summary>
+    Private Function IsAllNotArch() As Boolean
         If UseSelectedItems Then
-            If ChangePic Then
-                For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                    If Not String.IsNullOrWhiteSpace(oItem.oPic.CloudArchived) OrElse Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then
-                        Return False
-                    End If
-                Next
-            End If
-
-            If ChangeMetadata Then
-                For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
-                    If Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then
-                        Return False
-                    End If
-                Next
-            End If
-
-            Return True
+            For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                If Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then Return False
+                If Not String.IsNullOrWhiteSpace(oItem.oPic.CloudArchived) Then Return False
+            Next
         Else
-
-            ' przy otwieraniu menu context ze search_archive:miniaturki
-            'Exception Info: System.NullReferenceException : Object reference Not set to an instance of an object.
-            'at PicSorterNS.PicMenuBase.CheckNieMaBlokerow() in H: \Home\PIOTR\VStudio\_Vs2017\SkanowanieFilmow\PicSorter\userControls\OnePicContextMenu\PicMenuBase.vb:Line 298
-
-
-            ' jeden plik; gdy zarchiwizowany, to nie wolno zmieniać ani pic ani metadata
-            If Not String.IsNullOrWhiteSpace(GetFromDataContext()?.Archived) Then Return False
-
-            ' nie zmieniamy pic, więc zmiana tylko metadata - nie ma blokera
-            If Not ChangePic Then Return True
-
-            ' obrazka nie zmieniamy także gdy już w cloud jest
-            If String.IsNullOrWhiteSpace(GetFromDataContext()?.CloudArchived) Then Return True
-            Return False
+            Dim oPic As Vblib.OnePic = GetFromDataContext()
+            If oPic Is Nothing Then Debug.WriteLine("OPIC NOTHING OPIC NOTHINGOPIC NOTHINGOPIC NOTHING")
+            If Not String.IsNullOrWhiteSpace(oPic?.Archived) Then Return False
+            If Not String.IsNullOrWhiteSpace(oPic?.CloudArchived) Then Return False
         End If
+
+        Return True
+    End Function
+
+    ''' <summary>
+    ''' sprawdź czy wszystkie są zarchiwizowane, żaden nie z bufora, a wszystkie archiwa - editable
+    ''' </summary>
+    Private Function IsAllArchivedAndEditable() As Boolean
+
+        Dim bufForder As String = Vblib.GetSettingsString("uiFolderBuffer")
+
+        If UseSelectedItems Then
+            For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
+                If String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then Return False
+                If String.IsNullOrWhiteSpace(oItem.oPic.CloudArchived) Then Return False
+                If oItem.oPic.InBufferPathName.StartsWithCI(bufForder) Then Return False
+            Next
+        Else
+            Dim oPic As Vblib.OnePic = GetFromDataContext()
+            If String.IsNullOrWhiteSpace(oPic.Archived) Then Return False
+            If String.IsNullOrWhiteSpace(oPic.CloudArchived) Then Return False
+            If oPic.InBufferPathName.StartsWithCI(bufForder) Then Return False
+        End If
+
+        Return Application.gDbase.IsAllEditable
 
     End Function
 
+    ''' <summary>
+    ''' TRUE gdy można edytować
+    ''' </summary>
+    Protected Function CheckNieMaBlokerow()
+
+        If Not ChangePic AndAlso Not ChangeMetadata() Then Return True
+
+        If ChangePic Then
+            Return IsAllNotArch()
+        End If
+
+        ' czyli edycja metadanych
+        If IsAllNotArch() Then Return True
+        If IsAllArchivedAndEditable() Then Return True
+
+        Return False
+
+    End Function
 
     'Protected Shared _miPaste As MenuItem
     'Protected Shared _miCopy As MenuItem

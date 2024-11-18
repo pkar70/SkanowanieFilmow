@@ -364,7 +364,13 @@ Public Class ProcessBrowse
             oPicek.oImageSrc = Nothing
         Next
 
-        SaveMetaData(True)  '  po Describe, OCR, i tak dalej - lepiej zapisać nawet jak nie było zmian niż je zgubić
+        ' jeśli zdjęcia są z archiwum, to nie ma auto save na close - trzeba robić ręcznie
+        If String.IsNullOrEmpty(_thumbsy?.ElementAt(0)?.oPic?.Archived) Then
+            '  po Describe, OCR, i tak dalej - lepiej zapisać nawet jak nie było zmian niż je zgubić
+            ' ale dotyczy to tylko bufora, czyli zdjęcia muszą być nie zarchiwizowane.
+            SaveMetaData(True)
+        End If
+
 
         GC.Collect()    ' usuwamy, bo dużo pamięci zwolniliśmy
     End Sub
@@ -877,20 +883,20 @@ Public Class ProcessBrowse
 
     End Sub
 
-    Private Sub uiSlideshow_Click(sender As Object, e As RoutedEventArgs)
+    'Private Sub uiSlideshow_Click(sender As Object, e As RoutedEventArgs)
 
-        If uiPicList.SelectedItems.Count < 1 Then Return
+    '    If uiPicList.SelectedItems.Count < 1 Then Return
 
-        Dim oThumb As ThumbPicek = uiPicList.SelectedItems(0)
+    '    Dim oThumb As ThumbPicek = uiPicList.SelectedItems(0)
 
-        Dim oWnd As New ShowBig(oThumb, _oBufor.GetIsReadonly, True)
-        oWnd.Owner = Me
-        oWnd.Show()
+    '    Dim oWnd As New ShowBig(oThumb, _oBufor.GetIsReadonly, True)
+    '    oWnd.Owner = Me
+    '    oWnd.Show()
 
-        Task.Delay(100) ' bo czasem focus wraca do Browser i chodzenie nie działa
-        oWnd.Focus()
+    '    Task.Delay(100) ' bo czasem focus wraca do Browser i chodzenie nie działa
+    '    oWnd.Focus()
 
-    End Sub
+    'End Sub
 
     Private Async Sub uiStereoPack_Click(sender As Object, e As RoutedEventArgs)
 
@@ -1299,6 +1305,13 @@ Public Class ProcessBrowse
         Return oNext
     End Function
 
+    ''' <summary>
+    ''' zmiana zdjęcia - w slideshow ale nie tylko 
+    ''' </summary>
+    ''' <param name="oPic"></param>
+    ''' <param name="iKierunek">&lt; zero; or &gt; zero; +100 = koniec, -100 = początek</param>
+    ''' <param name="binSlideShow"></param>
+    ''' <returns></returns>
     Public Function FromBig_Next(oPic As ThumbPicek, iKierunek As Integer, binSlideShow As Boolean) As ThumbPicek
 
         Dim thumb As ThumbPicek
@@ -1325,8 +1338,18 @@ Public Class ProcessBrowse
         Return FromBig_Next(thumb, iKierunek, binSlideShow)
     End Function
 
-
+    ''' <summary>
+    ''' przeskocz do następnego zdjęcia
+    ''' </summary>
+    ''' <param name="oPic">może być NULL - wtedy skacze do pierwszego z listy</param>
+    ''' <param name="iKierunek">&lt; zero; or &gt; zero; +100 = koniec, -100 = początek</param>
+    ''' <param name="lista"></param>
+    ''' <param name="retSame"></param>
+    ''' <returns></returns>
     Private Function FromBig_NextMain(oPic As ThumbPicek, iKierunek As Integer, lista As IList, retSame As Boolean) As ThumbPicek
+
+        If oPic Is Nothing Then Return lista.Item(0)
+
         For iLP = 0 To lista.Count - 1
             Dim oItem As ThumbPicek = lista.Item(iLP)
             If oItem.oPic.InBufferPathName = oPic.oPic.InBufferPathName Then
@@ -1384,6 +1407,7 @@ Public Class ProcessBrowse
     ''' <summary>
     ''' shortcut do zapisania JSON indeksu (buffer.json)
     ''' </summary>
+    ''' <param name="force">force: zapisz od razu, omijając licznik i timer</param>
     Public Sub SaveMetaData(Optional force As Boolean = False)
 
         If _SaveMetaDataTimer Is Nothing Then
@@ -1755,7 +1779,7 @@ Public Class ProcessBrowse
 
     Private Sub uiPodpis_Checked(sender As Object, e As RoutedEventArgs)
         ' tylko wtedy gdy trzeba przeliczyć, czyli dla description oraz keywords
-        uiPodpisWybor.IsOpen = False
+        'uiPodpisWybor.IsOpen = False
 
         Dim oMI As MenuItem = sender
         If oMI Is Nothing Then Return
@@ -2731,9 +2755,26 @@ Public Class ProcessBrowse
         Dim img As Image = TryCast(sender, Image)
         Dim ctxmn As ContextMenu = TryCast(img.ContextMenu, ContextMenu)
         If ctxmn Is Nothing Then Return
+        'UruchomMenuOpen(ctxmn)
+    End Sub
+
+    Private Sub uiPicCtxMenu_Opened(sender As Object, e As RoutedEventArgs)
+        Dim ctxmn As ContextMenu = TryCast(sender, ContextMenu)
+        If ctxmn Is Nothing Then Return
+
         UruchomMenuOpen(ctxmn)
     End Sub
 
+    Private Sub uiActionSubMenu_SubmenuOpened(sender As Object, e As RoutedEventArgs)
+        ' sender = 'other'
+        Dim mni As MenuItem = TryCast(sender, MenuItem)
+        If mni Is Nothing Then Return
+
+        For Each oItem In mni.Items
+            Dim pmb As PicMenuBase = TryCast(oItem, PicMenuBase)
+            pmb?.MenuOtwieramy()
+        Next
+    End Sub
 
     Private Sub UruchomMenuOpen(meni As MenuBase)
         Vblib.DumpCurrMethod()
@@ -2741,6 +2782,14 @@ Public Class ProcessBrowse
         For Each oItem In meni.Items
             Dim pmb As PicMenuBase = TryCast(oItem, PicMenuBase)
             pmb?.MenuOtwieramy()
+
+            'Dim pmi As MenuItem = TryCast(oItem, MenuItem)
+            'If pmi?.Items IsNot Nothing Then
+            '    For Each oSubmenu In pmi.Items
+            '        Dim subpmb As PicMenuBase = TryCast(oSubmenu, PicMenuBase)
+            '        ' subpmb?.MenuOtwieramy()
+            '    Next
+            'End If
         Next
     End Sub
 
