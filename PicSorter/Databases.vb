@@ -42,6 +42,15 @@ Public Class Databases
         End Get
     End Property
 
+    Public ReadOnly Property IsAllEditable As Boolean
+        Get
+            For Each dbase As DatabaseInterface In _bazyDanych
+                If Not dbase.IsEditable Then Return False
+            Next
+            Return True
+        End Get
+    End Property
+
     Public ReadOnly Property IsQuick As Boolean Implements DatabaseInterface.IsQuick
         Get
             For Each dbase As DatabaseInterface In _bazyDanych
