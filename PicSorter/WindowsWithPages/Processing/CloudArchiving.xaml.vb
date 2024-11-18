@@ -175,6 +175,8 @@ Public Class CloudArchiving
             Dim sErr1 As String = ""
             Me.ProgRingInc
 
+            If oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For
+
             If Not IO.File.Exists(oPic.InBufferPathName) Then
                 sErr1 = $"Cannot cloud archive {oPic.InBufferPathName} because file doesn't exist"
                 Debug.WriteLine(sErr1)
@@ -187,8 +189,6 @@ Public Class CloudArchiving
                 'sErr &= sErr1 & vbCrLf
                 Continue For
             End If
-
-            If oPic.IsCloudArchivedIn(oSrc.nazwa) Then Continue For
 
             'If oPic.serno < 1 Then
             '    ' bo może już być przydzielony z archiwizacji na inny dysk
