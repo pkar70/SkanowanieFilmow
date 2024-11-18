@@ -13,14 +13,14 @@ Public NotInheritable Class PicMenuSetDate
     Private Shared _clipOrg As Date
 
     'Private _itemPaste As MenuItem
-    Private _itemInterpolate As MenuItem
+    Private Shared _itemInterpolate As MenuItem
     'Private _itemCopy As MenuItem
-    Private _itemCalcDiff As MenuItem
-    Private _miCopy As MenuItem
-    Private _timeDiff As String
-    Private _miPaste As MenuItem
-    Private _miReelKwds As MenuItem
-    Private _miReelKwdsDelta As MenuItem
+    Private Shared _itemCalcDiff As MenuItem
+    Private Shared _miCopy As MenuItem
+    Private Shared _timeDiff As String
+    Private Shared _miPaste As MenuItem
+    Private Shared _miReelKwds As MenuItem
+    Private Shared _miReelKwdsDelta As MenuItem
 
 
     Public Overrides Sub OnApplyTemplate()
@@ -110,6 +110,7 @@ Public NotInheritable Class PicMenuSetDate
 
         If _itemCalcDiff Is Nothing Then Return
 
+        _miCopy.IsEnabled = Not UseSelectedItems
         _itemCalcDiff.IsEnabled = UseSelectedItems
         _itemInterpolate.IsEnabled = UseSelectedItems
         _miReelKwds.IsEnabled = UseSelectedItems
@@ -211,6 +212,7 @@ Public NotInheritable Class PicMenuSetDate
     End Sub
 
     Private Sub CopyCalled(sender As Object, e As RoutedEventArgs)
+        If GetFromDataContext() Is Nothing Then Return
         _clipMin = GetFromDataContext.GetMinDate
         _clipMax = GetFromDataContext.GetMaxDate
         _clipOrg = GetFromDataContext.GetMostProbablyDate
