@@ -23,6 +23,9 @@ Public Class ShowBig
         _picek = oPicek
         _inArchive = bInArchive
         _inSlideShow = bSlideShow
+        If oPicek Is Nothing AndAlso _inSlideShow Then
+
+        End If
         DataContext = _picek.oPic
 
         AddHandler _timer.Tick, AddressOf Timer_Ticked
@@ -248,9 +251,10 @@ Public Class ShowBig
             uiSlideshow.Header = "Stop slideshow"
             _timer.Interval = TimeSpan.FromSeconds(Vblib.GetSettingsInt("uiSlideShowSeconds"))
             _timer.Start()
+            uiSlideshow.Visibility = Visibility.Visible
         Else
             _timer.Stop()
-            uiSlideshow.Header = "Start slideshow"
+            uiSlideshow.Visibility = Visibility.Collapsed
         End If
     End Sub
 
@@ -907,7 +911,7 @@ Public Class ShowBig
     End Sub
 
     Private Sub uiSlideshow_Click(sender As Object, e As RoutedEventArgs)
-        Me.MsgBox("jeszcze nie umiem stąd zrobić")
+        TimerOnOff()
     End Sub
 
     Private Async Sub uiFlipHoriz_Click(sender As Object, e As RoutedEventArgs)
