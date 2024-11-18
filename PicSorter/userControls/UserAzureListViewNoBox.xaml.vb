@@ -8,7 +8,10 @@ Public Class UserAzureListViewNoBox
 
         _mylist = New List(Of AzureListWithCheck)
         Dim fromList As ListTextWithProbability = TryCast(DataContext, ListTextWithProbability)
-        If fromList Is Nothing Then Return
+        If fromList Is Nothing Then
+            uiLista.ItemsSource = Nothing
+            Return
+        End If
 
         For Each oItem As TextWithProbability In fromList.GetList
             _mylist.Add(New AzureListWithCheck(oItem))
