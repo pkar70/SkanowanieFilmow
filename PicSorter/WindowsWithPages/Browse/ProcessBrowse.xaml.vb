@@ -10,13 +10,17 @@ Imports System.ComponentModel   ' dla PropertyChangedEventHandler i podobnych
 Imports System.Linq
 Imports Windows.UI.Notifications
 Imports PicSorterNS.BrowseFullSearch
-Imports Newtonsoft.Json
+'Imports Newtonsoft.Json
 Imports System.Windows.Controls.Primitives
-Imports Microsoft.Rest.Azure
+'Imports Microsoft.Rest.Azure
 Imports Windows.Storage.Streams
+Imports System.Net.Sockets
+'Imports Org.BouncyCastle.Asn1.X509
+'Imports System.Security.Policy
 'Imports System.Windows.Forms
 'Imports Windows.ApplicationModel.Background
 'Imports Microsoft.EntityFrameworkCore.Internal
+
 
 Public Class ProcessBrowse
 
@@ -31,6 +35,16 @@ Public Class ProcessBrowse
     Private _memSizeKb As Integer
 
     ' Private _MetadataWindow As ShowExifs
+
+    ''' <summary>
+    ''' TRUE gdy ma być wygaszone (czyli dla WygasPokaz)
+    ''' </summary>
+    Protected Delegate Function SzareCzarne(thumb As ThumbPicek) As Boolean
+    ''' <summary>
+    ''' wygaś lub odgaś thumb
+    ''' </summary>
+    Private _FiltrEngine As SzareCzarne
+
 
 #Region "called on init"
 
@@ -481,85 +495,6 @@ Public Class ProcessBrowse
 
 #Region "menu actions"
 
-    'Public Function WypelnMenuActionSharing() As Integer
-    '    uiActionUploadMenu.Items.Clear()
-
-
-    '    Dim iCnt As Integer = 0
-
-    '    For Each oLogin As Vblib.ShareServer In Application.GetShareServers.GetList
-
-    '        Dim oNew As New MenuItem
-    '        oNew.Header = oLogin.displayName
-    '        oNew.DataContext = oLogin
-
-    '        AddHandler oNew.Click, AddressOf ActionSharingServer
-
-    '        uiActionUploadMenu.Items.Add(oNew)
-    '        iCnt += 1
-    '    Next
-
-    '    uiActionUploadMenu.Visibility = If(iCnt > 0, Visibility.Visible, Visibility.Collapsed)
-    '    uiSeparatorActionUpload.Visibility = If(iCnt > 0, Visibility.Visible, Visibility.Collapsed)
-    '    Return iCnt
-    'End Function
-
-    'Private Async Sub ActionSharingServer(sender As Object, e As RoutedEventArgs)
-    '    uiActionsPopup.IsOpen = False
-
-    '    Dim oFE As FrameworkElement = sender
-    '    Dim oPicSortSrv As Vblib.ShareServer = oFE?.DataContext
-    '    If oPicSortSrv Is Nothing Then Return
-
-    '    Dim sRet As String = Await lib_sharingNetwork.httpKlient.TryConnect(oPicSortSrv)
-    '    If Not sRet.StartsWith("OK") Then
-    '        Vblib.DialogBox("Błąd podłączenia do serwera: " & sRet)
-    '        Return
-    '    End If
-
-    '    sRet = Await lib_sharingNetwork.httpKlient.CanUpload(oPicSortSrv)
-    '    If Not sRet.StartsWith("YES") Then
-    '        Vblib.DialogBox("Upload jest niedostępny: " & sRet)
-    '        Return
-    '    End If
-
-    '    uiProgBar.Value = 0
-    '    uiProgBar.Maximum = uiPicList.SelectedItems.Count
-    '    uiProgBar.Visibility = Visibility.Visible
-
-    '    Dim allErrs As String = ""
-    '    For Each oThumb As ThumbPicek In uiPicList.SelectedItems
-    '        Dim oPic As Vblib.OnePic = oThumb.oPic
-
-    '        If oPic.sharingLockSharing Then
-    '            allErrs &= oPic.sSuggestedFilename & " is excluded from sharing, ignoring" & vbCrLf
-    '        Else
-
-    '            oPic.ResetPipeline()
-    '            Dim ret As String = Await oPic.RunPipeline(oPicSortSrv.uploadProcessing, Application.gPostProcesory)
-    '            If ret <> "" Then
-    '                ' jakiś błąd
-    '                allErrs &= ret & vbCrLf
-    '            Else
-    '                ' pipeline OK
-    '                ret = Await lib_sharingNetwork.httpKlient.UploadPic(oPicSortSrv, oPic)
-    '                allErrs &= ret & vbCrLf
-    '            End If
-
-    '        End If
-
-    '        oPic.ResetPipeline() ' zwolnienie streamów, readerów, i tak dalej
-    '        uiProgBar.Value += 1
-    '    Next
-
-    '    uiProgBar.Visibility = Visibility.Visible
-
-    '    If allErrs <> "" Then
-    '        Vblib.ClipPut(allErrs)
-    '        Vblib.DialogBox(allErrs)
-    '    End If
-
-    'End Sub
 
     Private Shared Function GetDateBetween(oDate1 As Date, oDate2 As Date) As Date
         Dim minutes As Integer = Math.Abs((oDate1 - oDate2).TotalMinutes)
@@ -567,31 +502,6 @@ Public Class ProcessBrowse
         Return oDate2.AddMinutes(minutes / 2)
     End Function
 
-    'Private Sub uiSetTargetDir_Click(sender As Object, e As RoutedEventArgs)
-    '    uiActionsPopup.IsOpen = False
-
-    '    If uiPicList.SelectedItems.Count < 1 Then Return
-
-    '    Dim lSelected As New List(Of ThumbPicek)
-    '    For Each oThumb As ThumbPicek In uiPicList.SelectedItems
-    '        lSelected.Add(oThumb)
-    '    Next
-
-    '    Dim oWnd As New TargetDir(_thumbsy.ToList, lSelected)
-    '    If Not oWnd.ShowDialog Then Return
-
-    '    If _isTargetFilterApplied Then
-    '        For Each oThumb As ThumbPicek In uiPicList.SelectedItems
-    '            oThumb.opacity = _OpacityWygas
-    '        Next
-    '    End If
-
-    '    ' pokaz na nowo obrazki
-    '    ReDymkuj()
-    '    UstawRozmiaryMiniaturki(False)
-
-    '    SaveMetaData()
-    'End Sub
 
     Private Sub uiActionLock_Click(sender As Object, e As RoutedEventArgs)
         'uiActionsPopup.IsOpen = False
@@ -618,24 +528,62 @@ Public Class ProcessBrowse
 
 #End Region
 
-    Private Sub uiMetadataChanged(sender As Object, e As EventArgs)
-        'uiActionsPopup.IsOpen = False
-        SaveMetaData()
+    Private Sub uiMetadataChanged(sender As Object, zmiana As PicMenuModifies)
+        MetaDataChanged(uiPicList.SelectedItems.Cast(Of ThumbPicek).ToList, zmiana)
     End Sub
 
-    Private Sub uiMetadataChangedResort(sender As Object, e As EventArgs)
-        ' tu wskakuje po zmianie daty zdjęć...
+    ''' <summary>
+    ''' obsługa zmiany dymku, pól podpis, i SaveMetaData
+    ''' </summary>
+    ''' <param name="picek">dla jakiego pic</param>
+    ''' <param name="zmiana">jaka zmiana</param>
+    Public Sub FromBig_MetaDataChanged(picek As ThumbPicek, zmiana As PicMenuModifies)
+        If picek Is Nothing Then Return
+        If picek.oPic.serno < 1 Then Return
+
+        'Dim thumb As ThumbPicek = _thumbsy.First(Function(x) x.oPic.serno = picek.serno)
+        'If thumb Is Nothing Then Return
+
+        Dim lista As New List(Of ThumbPicek)
+        lista.Add(picek)
+        MetaDataChanged(lista, zmiana)
+
+    End Sub
+
+    ''' <summary>
+    ''' obsługa zmiany dymku, pól podpis, i SaveMetaData
+    ''' </summary>
+    ''' <param name="lista">dla których pic</param>
+    ''' <param name="zmiana">jaka zmiana</param>
+    Private Sub MetaDataChanged(lista As List(Of ThumbPicek), zmiana As PicMenuModifies)
+
         'uiActionsPopup.IsOpen = False
-        Vblib.DumpCurrMethod()
+        If zmiana = PicMenuModifies.None Then Return
 
+        ' czyli coś zmieniamy
+        ReDymkuj() ' to tak na wszelki wypadek, zawsze dymkujemy bo to jest szybka operacja; pójdzie notify zmian dymku
 
-        ReDymkuj()
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            oItem.NotifyPropChange("sumOfDates")
+        ' notify o zmianach - być może do przeniesienia głębiej
+        For Each oItem As ThumbPicek In lista
+
+            ' użyj filtra, jeśli taki znamy
+            If _FiltrEngine IsNot Nothing Then
+                oItem.WygasPokaz(_FiltrEngine(oItem))
+            End If
+
+            ' If zmiana.HasFlag(PicMenuModifies.Geo) Then ' oItem.NotifyPropChange("sumOfDates") nie mamy oddzielnego property
+            'If zmiana.HasFlag(PicMenuModifies.Azure) Then oItem.NotifyPropChange("sumOfDates")
+            If zmiana.HasFlag(PicMenuModifies.Descript) Then oItem.NotifyPropChange("sumOfDescr")
+            If zmiana.HasFlag(PicMenuModifies.Kwds) Then oItem.NotifyPropChange("sumOfKwds")
+            If zmiana.HasFlag(PicMenuModifies.Target) Then oItem.NotifyPropChange("TargetDir")
+            'If zmiana.HasFlag(PicMenuModifies.Lock) Then oItem.NotifyPropChange("sumOfDates")
+            If zmiana.HasFlag(PicMenuModifies.Data) Then oItem.NotifyPropChange("sumOfDates")
         Next
 
-        ' jeśli sortowanie jest wg dat, to zaktualizuj
-        If uiSortBy.GetRequestedSort = ThumbSortOrder.Data Then SortujThumbsy(True)
+        ' resortowanie
+        If zmiana.HasFlag(PicMenuModifies.Data) Then
+            If uiSortBy.GetRequestedSort = ThumbSortOrder.Data Then SortujThumbsy(True)
+        End If
 
         SaveMetaData()
     End Sub
@@ -656,87 +604,6 @@ Public Class ProcessBrowse
         Return _thumbsy.ToList
     End Function
 
-    Private Sub uiTargetMetadataChanged(sender As Object, e As EventArgs)
-
-        uiMetadataChangedDymkuj(Nothing, Nothing)
-
-        ' teoretycznie się wygasi / zgasi samo z siebie (via Notify)
-        If _isTargetFilterApplied Then
-            ' mogliśmy zarówno skasować Target, jak i nadać
-            For Each oItem As ThumbPicek In uiPicList.SelectedItems
-                If String.IsNullOrWhiteSpace(oItem.TargetDir) Then
-                    oItem.opacity = 1
-                Else
-                    oItem.opacity = _OpacityWygas
-                End If
-            Next
-        End If
-    End Sub
-    Private Sub uiGeotagMetadataChanged(sender As Object, e As EventArgs)
-        uiMetadataChangedDymkuj(Nothing, Nothing)
-        ' tu trzeba wraz z reapply filter
-        If _isGeoFilterApplied Then uiFilterNoGeo_Click(Nothing, Nothing)
-    End Sub
-
-    Private Async Sub uiMetadataChangedReparse(sender As Object, e As EventArgs)
-        uiMetadataChangedDymkuj(Nothing, Nothing)
-        Await SortujThumbsy(True)
-        UstawRozmiaryMiniaturki(True)
-    End Sub
-
-    Private Sub uiMetadataChangedDymkuj(sender As Object, e As EventArgs)
-        'uiActionsPopup.IsOpen = False
-        ReDymkuj()
-        SaveMetaData()
-    End Sub
-
-    Private Sub uiMetadataChangedDescribe(sender As Object, e As EventArgs)
-        'uiActionsPopup.IsOpen = False
-        For Each oItem As ThumbPicek In uiPicList.SelectedItems
-            oItem.ZrobDymek()
-            oItem.NotifyPropChange("sumOfDescr")
-        Next
-
-        SaveMetaData()
-    End Sub
-
-
-    'Private Sub uiCopyOut_Click(sender As Object, e As System.Windows.RoutedEventArgs)
-    '    uiActionsPopup.IsOpen = False
-
-    '    Dim sFolder As String = SettingsGlobal.FolderBrowser("", "Gdzie skopiować pliki?")
-    '    If sFolder = "" Then Return
-    '    If Not IO.Directory.Exists(sFolder) Then Return
-
-    '    Dim iErrCount As Integer = 0
-    '    For Each oThumb As ThumbPicek In uiPicList.SelectedItems
-    '        Try
-    '            IO.File.Copy(oThumb.oPic.InBufferPathName, IO.Path.Combine(sFolder, oPic.oPic.sSuggestedFilename))
-    '        Catch ex As Exception
-    '            iErrCount += 1
-    '        End Try
-    '    Next
-
-    '    If iErrCount < 1 Then Return
-
-    '    vb14.DialogBox($"{iErrCount} errors while copying")
-
-    'End Sub
-
-    'Private Sub uiCopyClip_Click(sender As Object, e As System.Windows.RoutedEventArgs)
-    '    uiActionsPopup.IsOpen = False
-
-    '    Clipboard.Clear()
-    '    Dim lista As New Specialized.StringCollection
-    '    For Each oTB As ThumbPicek In uiPicList.SelectedItems
-    '        lista.Add(oTB.oPic.InBufferPathName)
-    '    Next
-
-    '    Clipboard.SetFileDropList(lista)
-
-    '    vb14.DialogBox("Files in Clipboard")
-
-    'End Sub
 
     Private _lastMouseDownTime As Integer
     Private _lastMouseMovePosition As Point
@@ -1846,29 +1713,13 @@ Public Class ProcessBrowse
 
 #Region "filtry"
 
-
-    Private _isGeoFilterApplied As Boolean = False
-    Private _isTargetFilterApplied As Boolean = False
-    Private _OpacityWygas As Double = 0.3
+    'Private _currFilter As PicMenuModifies = PicMenuModifies.None
 
     Private Sub uiFilterAll_Click(sender As Object, e As RoutedEventArgs)
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "Filters"
-
-        For Each oItem In _thumbsy
-            oItem.opacity = 1
-        Next
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = False
-
-        '*PROBA* nieudana zakomentownia
-        'UstawRozmiaryMiniaturki(False)
+        FiltrujWedle("Filters", False, Function(x) False)
     End Sub
 
     Private Sub uiFilterReverse_Click(sender As Object, e As RoutedEventArgs)
-        'uiFilterPopup.IsOpen = False
-        ' uiFilters.Content = "none" - nie zmieniamy typu, jest po prostu odwrotnie
         If uiFilters.Content.ToString.StartsWith("¬") Then
             uiFilters.Content = uiFilters.Content.ToString.Substring(1)
         Else
@@ -1876,76 +1727,30 @@ Public Class ProcessBrowse
         End If
 
         For Each oItem In _thumbsy
-            oItem.opacity = If(oItem.opacity = 1, _OpacityWygas, 1)
+            oItem.WygasPokazReverse()
         Next
 
-        '*PROBA* nieudana zakomentownia
-        'UstawRozmiaryMiniaturki(False)
     End Sub
 
     Private Sub uiFilterNone_Click(sender As Object, e As RoutedEventArgs)
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "none"
-
-        For Each oItem In _thumbsy
-            oItem.opacity = _OpacityWygas
-        Next
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = False
-
-        '*PROBA* nieudana zakomentownia
-        'UstawRozmiaryMiniaturki(False)
+        FiltrujWedle("none", False, Function(x) True)
     End Sub
 
-
     Private Sub uiFilterNoRealDate_Click(sender As Object, e As RoutedEventArgs)
-        vb14.DumpCurrMethod()
-
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "no date"
-
-        Dim bMamy As Boolean = False
-        For Each oItem In _thumbsy
-            If oItem.oPic.HasRealDate Then
-                oItem.opacity = _OpacityWygas
-            Else
-                oItem.opacity = 1
-                bMamy = True
-            End If
-        Next
-
-        KoniecFiltrowania(bMamy, True)
+        FiltrujWedle("no date", False, True, True, Function(x) x.oPic.HasRealDate)
     End Sub
 
     Private Sub uiFilterNoGeo_Click(sender As Object, e As RoutedEventArgs)
-        vb14.DumpCurrMethod()
-
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "no geo"
-
-        Dim bMamy As Boolean = False
-        For Each oItem In _thumbsy
-            If oItem.oPic.GetGeoTag IsNot Nothing Then
-                oItem.opacity = _OpacityWygas
-            Else
-                oItem.opacity = 1
-                bMamy = True
-            End If
-        Next
-
-        If bMamy Then _isGeoFilterApplied = True
-
-        KoniecFiltrowania(bMamy, sender IsNot Nothing)
+        FiltrujWedle("no geo", False, True, True, Function(x) x.oPic.GetGeoTag IsNot Nothing)
+        'sender IsNot Nothing
     End Sub
 
-
     Private Sub uiFilterLocked_Click(sender As Object, e As RoutedEventArgs)
-        uiFilterLocking(True)
+        FiltrujWedle("🔒 locked", False, True, True, Function(x) Not x.oPic.locked)
     End Sub
 
     Private Sub uiFilterunLocked_Click(sender As Object, e As RoutedEventArgs)
-        uiFilterLocking(False)
+        FiltrujWedle("unlocked", False, True, True, Function(x) x.oPic.locked)
     End Sub
 
     Private Sub uiFilterStage_Click(sender As Object, e As RoutedEventArgs)
@@ -1956,104 +1761,32 @@ Public Class ProcessBrowse
         If stage Is Nothing Then Return
         Dim tryb As Integer = CType(oMI.CommandParameter, Integer) ' 0, -1
 
-        Dim bMamy As Boolean = False
-
         Select Case tryb
-
             Case 0
                 ' dokładny etap
-                uiFilters.Content = "=" & stage.Nazwa
-                For Each oItem In _thumbsy
-                    If stage.Check(oItem.oPic) Then
-                        oItem.opacity = 1
-                        bMamy = True
-                    Else
-                        oItem.opacity = 0
-                    End If
-                Next
-
+                FiltrujWedle("=" & stage.Nazwa, False, True, True, Function(x) stage.Check(x.oPic))
             Case -1
                 ' zdjęcie nie dotarło do poziomu
-                uiFilters.Content = "<" & stage.Nazwa
-                For Each oItem In _thumbsy
-                    If oItem.oPic.GetStage.StageNo < stage.StageNo Then
-                        oItem.opacity = 1
-                        bMamy = True
-                    Else
-                        oItem.opacity = 0
-                    End If
-                Next
-
+                FiltrujWedle("<" & stage.Nazwa, False, True, True, Function(x) x.oPic.GetStage.StageNo < stage.StageNo)
             Case -99
                 ' dokładny etap
-                uiFilters.Content = "¬" & stage.Nazwa
-                For Each oItem In _thumbsy
-                    If Not stage.Check(oItem.oPic) Then
-                        oItem.opacity = 1
-                        bMamy = True
-                    Else
-                        oItem.opacity = 0
-                    End If
-                Next
-
+                FiltrujWedle("¬" & stage.Nazwa, False, True, True, Function(x) Not stage.Check(x.oPic))
         End Select
-
-        ' gdy nie trafi na CASE, to bMamy będzie false i wyłączy filtrowanie
-        KoniecFiltrowania(bMamy, sender IsNot Nothing)
     End Sub
 
 
     Private Sub uiFilterStageReady_Click(sender As Object, e As RoutedEventArgs)
         ' te które mają spełnione wszystkie required
+        FiltrujWedle("ready", False, True, True,
+                     Function(x)
+                         Dim requirsy As IEnumerable(Of SequenceStageBase) = Globs.SequenceCheckers.Where(Function(y) y.IsRequired)
 
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "ready"
-
-        Dim requirsy As IEnumerable(Of SequenceStageBase) = Globs.SequenceCheckers.Where(Function(x) x.IsRequired)
-
-
-        Dim bMamy As Boolean = False
-
-        For Each oItem In _thumbsy
-            oItem.opacity = 1
-
-            For Each oStage In requirsy
-                If Not oStage.Check(oItem.oPic) Then
-                    oItem.opacity = _OpacityWygas
-                    Exit For
-                End If
-            Next
-
-            If oItem.opacity = 1 Then bMamy = True
-
-        Next
-
-        KoniecFiltrowania(bMamy, sender IsNot Nothing)
-
+                         For Each oStage In requirsy
+                             If Not oStage.Check(x.oPic) Then Return True
+                         Next
+                         Return False
+                     End Function)
     End Sub
-
-
-
-
-    Private Sub uiFilterLocking(locked As Boolean)
-        vb14.DumpCurrMethod()
-
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = If(locked, "🔒 locked", "unlocked")
-
-        Dim bMamy As Boolean = False
-        For Each oItem In _thumbsy
-            If oItem.oPic.locked = locked Then
-                oItem.opacity = 1
-                bMamy = True
-            Else
-                oItem.opacity = _OpacityWygas
-            End If
-        Next
-
-        KoniecFiltrowania(bMamy, True)
-    End Sub
-
 
     Private Sub uiFilterDwaSek_Click(sender As Object, e As RoutedEventArgs)
         'uiFilterPopup.IsOpen = False
@@ -2068,32 +1801,32 @@ Public Class ProcessBrowse
 
         ' element 1
         If _thumbsy(0).oPic.GetMostProbablyDate = _thumbsy(1).oPic.GetMostProbablyDate Then
-            _thumbsy(0).opacity = 1
+            _thumbsy(0).WygasPokaz(False)
             bMamy = True
         Else
-            _thumbsy(0).opacity = _OpacityWygas
+            _thumbsy(0).WygasPokaz(True)
         End If
 
         ' element LAST
         If _thumbsy(_thumbsy.Count - 1).oPic.GetMostProbablyDate = _thumbsy(_thumbsy.Count - 2).oPic.GetMostProbablyDate Then
-            _thumbsy(_thumbsy.Count - 1).opacity = 1
+            _thumbsy(_thumbsy.Count - 1).WygasPokaz(False)
             bMamy = True
         Else
-            _thumbsy(_thumbsy.Count - 1).opacity = _OpacityWygas
+            _thumbsy(_thumbsy.Count - 1).WygasPokaz(True)
         End If
 
         ' oraz wszystkie pomiędzy
 
         For iLp As Integer = 1 To _thumbsy.Count - 2
-            _thumbsy(iLp).opacity = _OpacityWygas
+            _thumbsy(iLp).WygasPokaz(True)
 
             If _thumbsy(iLp).oPic.GetMostProbablyDate = _thumbsy(iLp - 1).oPic.GetMostProbablyDate Then
-                _thumbsy(iLp).opacity = 1
+                _thumbsy(iLp).WygasPokaz(False)
                 bMamy = True
             End If
 
             If _thumbsy(iLp + 1).oPic.GetMostProbablyDate = _thumbsy(iLp).oPic.GetMostProbablyDate Then
-                _thumbsy(iLp).opacity = 1
+                _thumbsy(iLp).WygasPokaz(False)
                 bMamy = True
             End If
 
@@ -2103,26 +1836,10 @@ Public Class ProcessBrowse
     End Sub
 
     Private Sub uiFilterNoAzure_Click(sender As Object, e As RoutedEventArgs)
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "no azure"
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = False
-
-        Dim bMamy As Boolean = False
-
-        For Each oItem As ThumbPicek In _thumbsy
-            If oItem.oPic.fileTypeDiscriminator = "►" OrElse
-                oItem.oPic.GetExifOfType("AUTO_AZURE") IsNot Nothing Then
-                oItem.opacity = _OpacityWygas
-            Else
-                oItem.opacity = 1
-                bMamy = True
-            End If
-        Next
-
-        KoniecFiltrowania(bMamy, True)
-
+        FiltrujWedle("no azure", False, True, True,
+                     Function(x)
+                         Return x.oPic.fileTypeDiscriminator = "►" OrElse x.oPic.GetExifOfType("AUTO_AZURE") IsNot Nothing
+                     End Function)
     End Sub
 
     Private Async Sub uiFilterAzure_Click(sender As Object, e As RoutedEventArgs)
@@ -2140,69 +1857,32 @@ Public Class ProcessBrowse
         End If
 
         Dim oMI As MenuItem = sender
-        uiFilters.Content = oMI.Header
 
         Dim bNot As Boolean = oMI.Header.ToString.StartsWithCI("no")
         Dim bPerson As Boolean = oMI.Header.ToString.ContainsCI("person") ' false: faces
 
-        Dim bMamy As Boolean = False
-
-        For Each oItem In _thumbsy
-            oItem.opacity = 1   ' domyślnie: pokazujemy (także gdy nie ma Azure)
-            Dim oAzure As Vblib.ExifTag = oItem.oPic.GetExifOfType("AUTO_AZURE")
-            If oAzure IsNot Nothing Then
-                If bPerson Then
-                    ' czy są osoby
-                    ' w tags, oraz w objects, albo po prostu w UserComment (gdzie jest dump)
-                    If oAzure.UserComment.ContainsCI("person") Then
-                        If bNot Then oItem.opacity = _OpacityWygas
-                    Else
-                        If Not bNot Then oItem.opacity = _OpacityWygas
-                    End If
-                Else
-                    ' faces
-                    If oAzure.AzureAnalysis?.Faces IsNot Nothing Then
-                        If oAzure.AzureAnalysis?.Faces.lista.Count > 0 Then
-                            If bNot Then oItem.opacity = _OpacityWygas
-                        Else
-                            If Not bNot Then oItem.opacity = _OpacityWygas
-                        End If
-                    Else
-                        ' nie ma twarzy
-                        If Not bNot Then oItem.opacity = _OpacityWygas
-                    End If
-                End If
-            End If
-            If oItem.opacity = 1 Then bMamy = True
-        Next
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = False
-
-        KoniecFiltrowania(bMamy, True)
+        FiltrujWedle(oMI.Header, False, True, True,
+                     Function(x)
+                         Dim oAzure As Vblib.ExifTag = x.oPic.GetExifOfType("AUTO_AZURE")
+                         If oAzure Is Nothing Then Return False ' domyślnie: pokazujemy (także gdy nie ma Azure)
+                         If bPerson Then
+                             ' czy są osoby
+                             ' w tags, oraz w objects, albo po prostu w UserComment (gdzie jest dump)
+                             Return oAzure.UserComment.ContainsCI("person") Xor bNot
+                         Else
+                             ' faces
+                             If oAzure.AzureAnalysis?.Faces Is Nothing Then Return Not bNot
+                             Return oAzure.AzureAnalysis?.Faces.lista.Count > 0 Xor bNot
+                         End If
+                     End Function)
     End Sub
 
     Private Sub uiFilterAzureAdult_Click(sender As Object, e As RoutedEventArgs)
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "Az 🔞"
-
-        Dim bMamy As Boolean = False
-
-        For Each oItem In _thumbsy
-            oItem.opacity = _OpacityWygas   ' domyślnie: nie pokazujemy 
-            Dim oAzure As Vblib.ExifTag = oItem.oPic.GetExifOfType("AUTO_AZURE")
-            If oAzure IsNot Nothing Then
-                If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then
-                    oItem.opacity = 1
-                    bMamy = True
-                End If
-            End If
-        Next
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = False
-
-        KoniecFiltrowania(bMamy, True)
+        FiltrujWedle("Az 🔞", False, True, True,
+                     Function(x)
+                         Dim oAzure As Vblib.ExifTag = x.oPic.GetExifOfType("AUTO_AZURE")
+                         Return String.IsNullOrWhiteSpace(oAzure?.AzureAnalysis?.Wiekowe)
+                     End Function)
     End Sub
 
     Private Sub uiFilterAzureTag_Click(sender As Object, e As RoutedEventArgs)
@@ -2227,6 +1907,7 @@ Public Class ProcessBrowse
     Private Sub ShowFilterAzureTag(listaPropName As String, selectedFilter As String)
         'uiFilterPopup.IsOpen = False
         uiFilters.Content = selectedFilter
+        _FiltrEngine = Nothing
 
         Me.ProgRingShow(True)
 
@@ -2253,126 +1934,56 @@ Public Class ProcessBrowse
 
     End Sub
     Private Sub uiFilterAzureCheck_Click(sender As Object, e As RoutedEventArgs)
-        uiFilters.Content = "™⛰🔞👤"
+        FiltrujWedle("™⛰🔞👤", False, True, True,
+                     Function(x)
+                         Dim oAzure As Vblib.ExifTag = x.oPic.GetExifOfType("AUTO_AZURE")
+                         If oAzure Is Nothing Then Return True
 
-        Dim bMamy As Boolean = False
+                         If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then
+                             Return False
+                         End If
 
-        For Each oItem In _thumbsy
-            oItem.opacity = _OpacityWygas   ' domyślnie: nie pokazujemy 
-            Dim oAzure As Vblib.ExifTag = oItem.oPic.GetExifOfType("AUTO_AZURE")
-            If oAzure Is Nothing Then Continue For
+                         If oAzure.AzureAnalysis.Brands IsNot Nothing AndAlso oAzure.AzureAnalysis.Brands.lista.Count > 0 Then
+                             Return False
+                         End If
 
-            If Not String.IsNullOrWhiteSpace(oAzure.AzureAnalysis.Wiekowe) Then
-                oItem.opacity = 1
-                bMamy = True
-            End If
+                         If oAzure.AzureAnalysis.Landmarks IsNot Nothing AndAlso oAzure.AzureAnalysis.Landmarks.lista.Count > 0 Then
+                             Return False
+                         End If
 
-            If oAzure.AzureAnalysis.Brands IsNot Nothing AndAlso oAzure.AzureAnalysis.Brands.lista.Count > 0 Then
-                oItem.opacity = 1
-                bMamy = True
-            End If
+                         If oAzure.AzureAnalysis.Celebrities IsNot Nothing AndAlso oAzure.AzureAnalysis.Celebrities.lista.Count > 0 Then
+                             Return False
+                         End If
 
-            If oAzure.AzureAnalysis.Landmarks IsNot Nothing AndAlso oAzure.AzureAnalysis.Landmarks.lista.Count > 0 Then
-                oItem.opacity = 1
-                bMamy = True
-            End If
-
-            If oAzure.AzureAnalysis.Celebrities IsNot Nothing AndAlso oAzure.AzureAnalysis.Celebrities.lista.Count > 0 Then
-                oItem.opacity = 1
-                bMamy = True
-            End If
-        Next
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = False
-
-        KoniecFiltrowania(bMamy, True)
+                         Return True
+                     End Function)
 
     End Sub
 
     Private Sub uiFilterNoDescr_Click(sender As Object, e As RoutedEventArgs)
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "no desc"
-
-        Dim bMamy As Boolean = False
-
-        For Each oItem As ThumbPicek In _thumbsy
-            If String.IsNullOrWhiteSpace(oItem.oPic.GetSumOfDescriptionsText) Then
-                oItem.opacity = 1
-                bMamy = True
-            Else
-                oItem.opacity = _OpacityWygas
-            End If
-        Next
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = True
-        KoniecFiltrowania(bMamy, True)
-
+        FiltrujWedle("no desc", False, True, True,
+                     Function(x) Not String.IsNullOrWhiteSpace(x.oPic.GetSumOfDescriptionsText))
     End Sub
 
     Private Sub uiFilterNoTarget_Click(sender As Object, e As RoutedEventArgs)
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "no dir"
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = True
-
-        Dim bMamy As Boolean = False
-
-        For Each oItem As ThumbPicek In _thumbsy
-            If String.IsNullOrWhiteSpace(oItem.oPic.TargetDir) Then
-                oItem.opacity = 1
-                bMamy = True
-            Else
-                oItem.opacity = _OpacityWygas
-            End If
-        Next
-
-        KoniecFiltrowania(bMamy, sender IsNot Nothing)
-
+        FiltrujWedle("no dir", False, True, True,
+                     Function(x) Not String.IsNullOrWhiteSpace(x.oPic.TargetDir))
     End Sub
 
     Private Sub uiFilterNAR_Click(sender As Object, e As RoutedEventArgs)
-        'uiFilterPopup.IsOpen = False
-        uiFilters.Content = "NARs"
-
-        Dim bMamy As Boolean = False
-
-        For Each oItem As ThumbPicek In _thumbsy
-            If oItem.oPic.fileTypeDiscriminator = "*" Then
-                oItem.opacity = 1
-                bMamy = True
-            Else
-                oItem.opacity = _OpacityWygas
-            End If
-        Next
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = False
-        KoniecFiltrowania(bMamy, True)
+        FiltrujWedle("NARs", False, True, True,
+                     Function(x) Not x.oPic.fileTypeDiscriminator = "*")
     End Sub
 
     Private Async Sub uiFilterAnywhere_Click(sender As Object, e As RoutedEventArgs)
         Dim srchterm As String = Await Me.InputBoxAsync("Podaj czego szukać")
-        If String.IsNullOrWhiteSpace(srchterm) Then Return
-
-        uiFilters.Content = "any"
+        If String.IsNullOrWhiteSpace(srchterm) Then Return ' brak zmian filtru
 
         Dim query As New Vblib.SearchQuery
         query.ogolne.Gdziekolwiek = srchterm
 
-
-        Me.ProgRingShow(True)
-
-        For Each thumb As ThumbPicek In _thumbsy
-            thumb.opacity = If(thumb.oPic.CheckIfMatchesQuery(query), 1, _OpacityWygas)
-        Next
-
-        Me.ProgRingShow(False)
-
-        ' to jest z FullSearch, znaczy dodawanie/usuwanie zaznaczeń, więc "nie ma takich" jest bez sensu - dlatego pierwszy parametr jest TRUE
-        KoniecFiltrowania(True, True)
+        FiltrujWedle("any", False, True, True,
+                     Function(x) Not x.oPic.CheckIfMatchesQuery(query))
 
     End Sub
     Private Sub uiFilterKeywords_Click(sender As Object, e As RoutedEventArgs)
@@ -2383,29 +1994,60 @@ Public Class ProcessBrowse
 
         Dim sQuery As String = oWnd.GetKwerenda 'Await vb14.DialogBoxInputAllDirectAsync("Podaj kwerendę słów kluczowych")
         If String.IsNullOrWhiteSpace(sQuery) Then Return
-        uiFilters.Content = "kwds"
 
         Dim aKwds As String() = sQuery.Split(" ")
 
-        Dim bMamy As Boolean = False
+        FiltrujWedle("kwds", False, True, True,
+                     Function(x) Not x.oPic.MatchesKeywords(aKwds))
 
-        For Each thumb As ThumbPicek In _thumbsy
-            If thumb.oPic.MatchesKeywords(aKwds) Then
-                thumb.opacity = 1
-                bMamy = True
-            Else
-                thumb.opacity = _OpacityWygas
-            End If
-        Next
-
-        _isGeoFilterApplied = False
-        _isTargetFilterApplied = False
-        KoniecFiltrowania(bMamy, True)
     End Sub
 
-    'Private Sub uiFilter_Click(sender As Object, e As RoutedEventArgs)
-    '    uiFilterPopup.IsOpen = Not uiFilterPopup.IsOpen
-    'End Sub
+    ''' <summary>
+    ''' spróbuj włączyć filtrowanie, wedle nazwy, na zakresie thumbpic, wedle mechanizmu (TRUE gdy wygaszone)
+    ''' </summary>
+    ''' <param name="nazwa">co ma być na guziku filtrów napisane</param>
+    ''' <param name="onlySel">TRUE gdy na selected, FALSE gdy na wszystkich</param>
+    ''' <param name="engine">fun(thumb) TRUE gdy wygaszone</param>
+    ''' <returns>TRUE gdy któreś jest niewygaszone</returns>
+    Private Function FiltrujWedle(nazwa As String, onlySel As Boolean, engine As SzareCzarne) As Boolean
+        Return FiltrujWedle(nazwa, onlySel, False, False, engine)
+    End Function
+
+
+    ''' <summary>
+    ''' spróbuj włączyć filtrowanie, wedle nazwy, na zakresie thumbpic, wedle mechanizmu (TRUE gdy wygaszone)
+    ''' </summary>
+    ''' <param name="nazwa">co ma być na guziku filtrów napisane</param>
+    ''' <param name="onlySel">TRUE gdy na selected, FALSE gdy na wszystkich</param>
+    ''' <param name="engine">fun(thumb) TRUE gdy wygaszone</param>
+    ''' <param name="autoKoniec">TRUE gdy ma uruchomić KoniecFiltrowania</param>
+    ''' <param name="bScrollIntoView">TRUE gdy ma przewinąć do zaznaczonego - parametr dla KoniecFiltrowania</param>
+    ''' <returns>TRUE gdy któreś jest niewygaszone</returns>
+    Private Function FiltrujWedle(nazwa As String, onlySel As Boolean, autoKoniec As Boolean, bScrollIntoView As Boolean, engine As SzareCzarne) As Boolean
+        uiFilters.Content = nazwa
+        _FiltrEngine = engine
+
+        Dim bMamy As Boolean = False
+        If onlySel Then
+            For Each thumb As ThumbPicek In uiPicList.Items
+                Dim state As Boolean = engine(thumb)
+                If Not state Then bMamy = True
+                thumb.WygasPokaz(state)
+            Next
+        Else
+            For Each thumb As ThumbPicek In _thumbsy
+                Dim state As Boolean = engine(thumb)
+                If Not state Then bMamy = True
+                thumb.WygasPokaz(state)
+            Next
+        End If
+
+        If autoKoniec Then
+            KoniecFiltrowania(bMamy, bScrollIntoView)
+        End If
+
+        Return bMamy
+    End Function
 
     ''' <summary>
     ''' jeśli były jakieś zaznaczone, to je pokaż; jeśli nie było nic - przywróć wszystkie
@@ -2415,6 +2057,7 @@ Public Class ProcessBrowse
         If Not bMamy Then
             Me.MsgBox("Nie ma takich zdjęć, wyłączam filtrowanie")
             uiFilterAll_Click(Nothing, Nothing)
+            _FiltrEngine = Nothing
         Else
             'UstawRozmiaryMiniaturki(False)
 
@@ -2455,14 +2098,14 @@ Public Class ProcessBrowse
 
         Select Case typek
             Case TypFilterCallbacka.Doznacz, TypFilterCallbacka.Odznacz
-                Dim targetOpactity As Double = If(typek = TypFilterCallbacka.Odznacz, _OpacityWygas, 1)
+                Dim targetOpactityWygas As Boolean = If(typek = TypFilterCallbacka.Odznacz, True, False)
 
                 For Each thumb As ThumbPicek In _thumbsy.Where(Function(x) x.oPic.CheckIfMatchesQuery(query))
-                    thumb.opacity = targetOpactity
+                    thumb.WygasPokaz(targetOpactityWygas)
                 Next
             Case TypFilterCallbacka.Zaznacz
                 For Each thumb As ThumbPicek In _thumbsy
-                    thumb.opacity = If(thumb.oPic.CheckIfMatchesQuery(query), 1, _OpacityWygas)
+                    thumb.WygasPokaz(Not thumb.oPic.CheckIfMatchesQuery(query))
                 Next
         End Select
 
@@ -2474,17 +2117,7 @@ Public Class ProcessBrowse
     End Sub
 
 
-    'Public Sub WypelnMenuFilterSharing()
 
-    '    Dim iCnt As Integer = WypelnMenuFilterSharingChannels()
-    '    iCnt += WypelnMenuFilterSharingLogins()
-
-    '    If iCnt < 1 Then
-    '        uiFilterSharing.Visibility = Visibility.Collapsed
-    '    Else
-    '        uiFilterSharing.Visibility = Visibility.Visible
-    '    End If
-    'End Sub
 
     Private Sub uiFilterSharing_SubmenuOpened(sender As Object, e As RoutedEventArgs)
         WypelnMenuFilterQuery()
@@ -2530,13 +2163,13 @@ Public Class ProcessBrowse
 
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
-            thumb.opacity = _OpacityWygas
+            thumb.WygasPokaz(True)
 
             For Each query As Vblib.ShareQueryProcess In oChannel.queries
 
                 If thumb.oPic.CheckIfMatchesQuery(query.query) Then
                     bWas = True
-                    thumb.opacity = 1
+                    thumb.WygasPokaz(False)
                     Exit For
                 End If
             Next
@@ -2553,9 +2186,9 @@ Public Class ProcessBrowse
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
             If String.IsNullOrWhiteSpace(thumb.oPic.sharingFromGuid) Then
-                thumb.opacity = _OpacityWygas
+                thumb.WygasPokaz(True)
             Else
-                thumb.opacity = 1
+                thumb.WygasPokaz(False)
                 bWas = True
             End If
         Next
@@ -2571,9 +2204,9 @@ Public Class ProcessBrowse
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
             If Vblib.GetShareDescriptionsIn.FindAllForPic(thumb.oPic) Is Nothing Then
-                thumb.opacity = _OpacityWygas
+                thumb.WygasPokaz(True)
             Else
-                thumb.opacity = 1
+                thumb.WygasPokaz(False)
                 bWas = True
             End If
         Next
@@ -2593,10 +2226,10 @@ Public Class ProcessBrowse
 
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
-            thumb.opacity = _OpacityWygas
+            thumb.WygasPokaz(True)
 
             If thumb.oPic.CheckIfMatchesQuery(oItem) Then
-                thumb.opacity = 1
+                thumb.WygasPokaz(False)
                 bWas = True
             End If
         Next
@@ -2612,13 +2245,13 @@ Public Class ProcessBrowse
 
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
-            thumb.opacity = _OpacityWygas
+            thumb.WygasPokaz(True)
 
             For Each oLogin As Vblib.ShareLogin In Vblib.GetShareLogins
                 If Not oLogin.enabled Then Continue For
 
                 If thumb.oPic.PeerIsForLogin(oLogin) Then
-                    thumb.opacity = 1
+                    thumb.WygasPokaz(False)
                     bWas = True
                 End If
 
@@ -2641,9 +2274,9 @@ Public Class ProcessBrowse
 
         Dim bWas As Boolean = False
         For Each thumb As ThumbPicek In _thumbsy
-            thumb.opacity = _OpacityWygas
+            thumb.WygasPokaz(True)
             If thumb.oPic.PeerIsForLogin(oLogin) Then
-                thumb.opacity = 1
+                thumb.WygasPokaz(False)
                 bWas = True
             End If
         Next
@@ -2857,7 +2490,9 @@ Public Class ProcessBrowse
                             oPic.oPic.RemoveExifOfType(Vblib.ExifSource.AutoOSM)
                             oPic.oPic.RemoveExifOfType(Vblib.ExifSource.AutoImgw)
 
-                            If _isGeoFilterApplied Then oPic.opacity = _OpacityWygas
+                            ' w nowerj wersji nie mamy informacji o tym filtrze (nie w ten sposób)
+                            'If _currFilter = PicMenuModifies.Geo Then oPic.WygasPokaz(True)
+                            If _FiltrEngine IsNot Nothing Then oPic.WygasPokaz(_FiltrEngine(oPic))
 
                         End If
                     End If
@@ -2998,6 +2633,8 @@ Public Class ProcessBrowse
             End Set
         End Property
 
+#Region "opacity and visibility"
+
         Private _opacity As Double = 1 ' czyli normalnie pokazany
         Public Property opacity As Double
             Get
@@ -3009,6 +2646,39 @@ Public Class ProcessBrowse
                 If bChange Then NotifyPropChange("opacity")
             End Set
         End Property
+
+        Private _OpacityWygas As Double = 0.3
+
+        ''' <summary>
+        ''' TRUE gdy thumb ma być wygaszony, FALSE gdy ma byc w pełni widoczny. Wysyła NotifyPropChange
+        ''' </summary>
+        ''' <param name="wygas">TRUE gdy ma wygasić</param>
+        Public Sub WygasPokaz(wygas As Boolean)
+            Dim prevOpac As Double = opacity
+            opacity = If(wygas, _OpacityWygas, 1)
+            If prevOpac <> opacity Then NotifyPropChange("opacity")
+        End Sub
+
+        Public Sub WygasPokazReverse()
+            opacity = If(opacity = 1, _OpacityWygas, 1)
+            NotifyPropChange("opacity")
+        End Sub
+
+
+        Private _isVisible As Visibility = Visibility.Visible
+
+        Public Property isVisible As Visibility
+            Get
+                Return _isVisible
+            End Get
+            Set(value As Visibility)
+                Dim bChange As Boolean = value <> _isVisible
+                _isVisible = value
+                If bChange Then NotifyPropChange("isVisible")
+            End Set
+        End Property
+
+#End Region
 
         Private _iDuzoscH As Integer
         Public Property iDuzoscH As Integer ' XAML height
@@ -3385,19 +3055,20 @@ Public Class ProcessBrowse
 
     End Sub
 
-    Private Shared _GrayOrHide As Boolean
+    'Private Shared _GrayOrHide As Boolean
 
-    Public Shared Function GetGrayOrHide() As Boolean
-        Return _GrayOrHide
-    End Function
+    'Public Shared Function GetGrayOrHide() As Boolean
+    '    Return _GrayOrHide
+    'End Function
 
     Private Sub uiGrayOrHide_Checked(sender As Object, e As RoutedEventArgs)
-        _GrayOrHide = uiGrayOrHide.IsChecked
+        '_GrayOrHide = uiGrayOrHide.IsChecked
 
-        Dim opac As Double = If(_GrayOrHide, 0.1, _OpacityWygas)
+        'Dim opac As Double = If(_GrayOrHide, 0.1, _OpacityWygas)
+        Dim visib As Visibility = If(uiGrayOrHide.IsChecked, Visibility.Collapsed, Visibility.Visible)
 
         For Each oItem In _thumbsy
-            If oItem.opacity < 1 Then oItem.opacity = opac
+            If oItem.opacity < 1 Then oItem.isVisible = visib
             'oItem.NotifyPropChange("opacity")
         Next
     End Sub
@@ -3459,18 +3130,18 @@ Public Class KonwersjaDescrIgnoreNewLine
     End Function
 End Class
 
-Public Class KonwersjaGrayOrHide
-    Inherits ValueConverterOneWaySimple
+'Public Class KonwersjaGrayOrHide
+'    Inherits ValueConverterOneWaySimple
 
-    Protected Overrides Function Convert(value As Object) As Object
-        Dim opac As Double = CType(value, Double)
-        If opac = 1 Then Return Visibility.Visible
+'    Protected Overrides Function Convert(value As Object) As Object
+'        Dim opac As Double = CType(value, Double)
+'        If opac = 1 Then Return Visibility.Visible
 
-        If ProcessBrowse.GetGrayOrHide() Then Return Visibility.Collapsed
+'        If ProcessBrowse.GetGrayOrHide() Then Return Visibility.Collapsed
 
-        Return Visibility.Visible
-    End Function
-End Class
+'        Return Visibility.Visible
+'    End Function
+'End Class
 
 Public Class KonwersjaPasekKolor
     Inherits ValueConverterOneWaySimple

@@ -15,7 +15,6 @@
         <local:KonwersjaVisibility x:Key="KonwersjaVisibility"/>
         <local:KonwersjaSourcePath2Podpis x:Key="KonwersjaSourcePath2Podpis" />
         <local:KonwersjaDescrIgnoreNewLine x:Key="KonwersjaDescrIgnoreNewLine" />
-        <local:KonwersjaGrayOrHide x:Key="KonwersjaGrayOrHide" />
     </Window.Resources>
     
     <Grid Margin="5,5,5,5">
@@ -159,18 +158,18 @@
                             <Popup IsOpen="False" Name="uiActionsPopup" PlacementTarget="{Binding ElementName=uiAction}" StaysOpen="False">
                     <local:MenuVertical x:Name="uiActionsMenu">
                             <MenuItem Header="Select from Filter" Click="uiActionSelectFilter_Click" />
-                            <local:PicMenuAutotaggers MetadataChanged="uiMetadataChangedDymkuj" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
-                            <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" UseSelectedItems="True" />
-                            <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" UseSelectedItems="True"/>
+                        <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" x:Name="uiMenuAutotags" UseSelectedItems="True"/>
+                        <local:PicMenuOCR MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />
+                        <local:PicMenuDescribe x:Name="uiDescribeSelected" MetadataChanged="uiMetadataChanged" UseOwner="True" UseSelectedItems="True"/>
                             <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" UseSelectedItems="True"/>
                             <!--<MenuItem Header="Add link" Click="uiAddLink_Click" />-->
-                            <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiGeotagMetadataChanged" UseSelectedItems="True" />
-                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" UseSelectedItems="True" />
-                            <local:PicMenuKwds MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
+                        <local:PicMenuGeotag x:Name="uiGeotagSelected" MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />
+                        <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />
+                        <local:PicMenuKwds MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />
                             <!--<local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />-->
                             <local:PicMenuBatchProc x:Name="uiBatchProcessors" UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged" />
 
-                            <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj" UseSelectedItems="True" />
+                        <local:PicMenuLocks MetadataChanged="uiMetadataChanged" UseSelectedItems="True" />
                             <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
                             <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged" UseSelectedItems="True" UseProgBar="True" />
                         <local:PicMenuShareUpload UseSelectedItems="True" UseProgBar="True" MetadataChanged="uiMetadataChanged"/>
@@ -178,7 +177,7 @@
                             <!--<MenuItem Header="Publish  »" Name="uiMenuPublish"  />-->
                             <MenuItem Header="Remote tags »" Name="uiMenuRemoteTags"  />
                             <!--<MenuItem Header="Set target dir" Click="uiSetTargetDir_Click" Name="uiSetTargetDir"/>-->
-                            <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
+                            <local:PicMenuTargetDir MetadataChanged="uiMetadataChanged" x:Name="uiActionTargetDir" UseSelectedItems="True"/>
                             <MenuItem Header="Pack as stereo" Name="uiStereoPack" Click="uiStereoPack_Click" />
                             <Separator/>
                             <!--<MenuItem Header="Slideshow" Name="uiSlideshow" Click="uiSlideshow_Click" />-->
@@ -216,7 +215,7 @@
             </ListView.ItemContainerStyle>
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <StackPanel Orientation="Horizontal" Visibility="{Binding opacity, Converter={StaticResource KonwersjaGrayOrHide}}">
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding isVisible}">
                         <Grid Visibility="{Binding splitBefore, Converter={StaticResource KonwersjaPasekVisibility}}" Background="{Binding splitBefore, Converter={StaticResource KonwersjaPasekKolor}}" Width="{Binding widthPaskow}" ToolTip="{Binding dymekSplit}" >
                             <Grid.Height>
                                 <MultiBinding Converter="{StaticResource KonwersjaPasekWysok}" >
@@ -244,10 +243,10 @@
                                         <!-- sequence step KEYWORDs -->
                                         <!-- sequence step DESCRIBE -->
                                         <local:PicMenuLinksWeb MetadataChanged="uiMetadataChanged" />
-                                        <local:PicMenuOCR MetadataChanged="uiMetadataChangedDescribe" />
-                                        <local:PicMenuDescribe MetadataChanged="uiMetadataChangedDescribe" UseOwner="True" />
+                                            <local:PicMenuOCR MetadataChanged="uiMetadataChanged" />
+                                            <local:PicMenuDescribe MetadataChanged="uiMetadataChanged" UseOwner="True" />
                                         <!-- sequence step TARGET -->
-                                        <local:PicMenuTargetDir MetadataChanged="uiTargetMetadataChanged"  />
+                                            <local:PicMenuTargetDir MetadataChanged="uiMetadataChanged"  />
                                         <!-- sequence step PUBLISH, ARCHIVE -->
                                         <local:PicMenuShareUpload />
 
@@ -264,12 +263,12 @@
                                             <!-- sequence step CROP/EDIT -->
                                             <local:PicMenuBatchProc UseProgBar="True" MetadataChanged="uiMetadataChanged" />
                                             <!-- sequence step GEOTAG -->
-                                            <local:PicMenuGeotag MetadataChanged="uiGeotagMetadataChanged" />
-                                            <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChangedResort" />
+                                                <local:PicMenuGeotag MetadataChanged="uiMetadataChanged" />
+                                                <local:PicMenuSetDate x:Name="uiDatetag" MetadataChanged="uiMetadataChanged" />
                                             <!-- sequence step AUTOTAGs -->
                                             <local:PicMenuAutotaggers MetadataChanged="uiMetadataChanged" />
                                             <!-- sequence step PUBLISH, ARCHIVE -->
-                                            <local:PicMenuLocks MetadataChanged="uiMetadataChangedDymkuj"  />
+                                                <local:PicMenuLocks MetadataChanged="uiMetadataChanged"  />
                                             <local:PicMenuCloudPublish MetadataChanged="uiMetadataChanged" />
                                             <local:PicMenuCloudArchive MetadataChanged="uiMetadataChanged"/>
                                             <!-- readonly metadata 2 -->
