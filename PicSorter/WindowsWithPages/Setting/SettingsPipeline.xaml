@@ -13,6 +13,11 @@
         <local:SliderWithHdr Header="Nie zamazuj gdy ≤ %:" x:Name="uiWinFaceMinSize" Minimum="0" Maximum="25" ToolTip="Sprawdza rozmiar procentowy; 0 oznacza zawsze. Art 81 ustawy o prawach autorskich, plus Sąd Apelacyjny w Warszawie z dnia 4 lipca 2018 (sygn. akt V ACa 484/17)"/>
         <local:SliderWithHdr Header="Nie zamazuj gdy zmarli > miesięcy:" x:Name="uiWinFaceAfterDeath" Minimum="0" Maximum="25" ToolTip="Gdy liczba twarzy (Azure/WinFace) odpowiada liczbie słów kluczowych, i wszystkie osoby są już (gdy FaceRemove działa) zmarłe od podanej liczby miesięcy"/>
 
+        <local:SliderWithHdr Header="Składowa czerwona:" x:Name="uiWinFaceR" Minimum="0" Maximum="255" ToolTip="Intensywność czerwieni, domyślnie 128"/>
+        <local:SliderWithHdr Header="Składowa zielona:" x:Name="uiWinFaceG" Minimum="0" Maximum="255" ToolTip="Intensywność zieleni, domyślnie 128"/>
+        <local:SliderWithHdr Header="Składowa niebieska:" x:Name="uiWinFaceB" Minimum="0" Maximum="255" ToolTip="Intensywność niebieskiego, domyślnie 128"/>
+        <local:SliderWithHdr Header="Składowa alfa:" x:Name="uiWinFaceA" Minimum="0" Maximum="255" ToolTip="Składowa alfa, gdzie 0 to całkiem przeźroczyste, a 255 to w ogóle nieprzeźroczyste, domyślnie 255"/>
+
         <Button Margin="0,15,0,5" Content="Watermark" HorizontalAlignment="Left" Click="uiWatermark_Click" />
 
         <local:ButtonOkSave Margin="5,20,5,0" Click="uiOK_Click" />

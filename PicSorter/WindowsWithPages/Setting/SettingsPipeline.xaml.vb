@@ -2,17 +2,28 @@
 Imports pkar.UI.Extensions
 
 
+' być może wykorzystać
+' https://github.com/PixiEditor/ColorPicker
+
 Class SettingsPipeline
     Private Sub Page_Loaded(sender As Object, e As RoutedEventArgs)
         uiWinFaceMaxAge.GetSettingsInt()
         uiWinFaceMinSize.GetSettingsInt()
         uiWinFaceAfterDeath.GetSettingsInt()
+        uiWinFaceR.GetSettingsInt()
+        uiWinFaceG.GetSettingsInt()
+        uiWinFaceB.GetSettingsInt()
+        uiWinFaceA.GetSettingsInt()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
         uiWinFaceMaxAge.SetSettingsInt()
         uiWinFaceMinSize.SetSettingsInt()
         uiWinFaceAfterDeath.SetSettingsInt()
+        uiWinFaceR.SetSettingsInt()
+        uiWinFaceG.SetSettingsInt()
+        uiWinFaceB.SetSettingsInt()
+        uiWinFaceA.SetSettingsInt()
     End Sub
 
     Private Sub uiWatermark_Click(sender As Object, e As RoutedEventArgs)

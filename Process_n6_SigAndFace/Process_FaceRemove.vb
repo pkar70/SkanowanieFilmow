@@ -10,7 +10,6 @@ Public Class Process_FaceRemove
 
     Public Overrides Property dymekAbout As String = "Zakrywanie twarzy"
 
-    Private _brush As New SolidBrush(Color.Gray)
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
@@ -49,6 +48,16 @@ Public Class Process_FaceRemove
             Return True
         End If
 
+        Dim pedzel As SolidBrush 'New SolidBrush(Color.Gray)
+        ' ustalane w SettingsPipeline
+        Dim r As Integer = Vblib.GetSettingsInt("uiWinFaceR")
+        Dim g As Integer = Vblib.GetSettingsInt("uiWinFaceG")
+        Dim b As Integer = Vblib.GetSettingsInt("uiWinFaceB")
+        Dim a As Integer = Vblib.GetSettingsInt("uiWinFaceA")
+
+        pedzel = New SolidBrush(Color.FromArgb(a, r, g, b))
+
+
         Dim limitRozmiaru As Integer = Vblib.GetSettingsInt("uiWinFaceMinSize")
 
         oPic._PipelineInput.Seek(0, SeekOrigin.Begin)
@@ -83,7 +92,7 @@ Public Class Process_FaceRemove
 
 
                     ' i robimy owal
-                    graphic.FillEllipse(_brush, iX, iY, iW, iH)
+                    graphic.FillEllipse(pedzel, iX, iY, iW, iH)
                 Next
 
                 img.Save(oPic._PipelineOutput, Process_EmbedTexts.GetEncoder(ImageFormat.Jpeg), Process_EmbedTexts.GetJpgQuality)
