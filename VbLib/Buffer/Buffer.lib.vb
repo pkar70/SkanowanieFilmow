@@ -34,6 +34,7 @@ Public Interface IBufor
     Function GetMaxDate() As Date
 
     Function GetIsReadonly() As Boolean
+    Function GetIsArchiwum() As Boolean
 
     Function GetBufferName() As String
 
@@ -190,15 +191,22 @@ Public Class BufferSortowania
     ''' <summary>
     ''' usuwa wszystkie pliki z katalogu - używać ostrożnie!
     ''' </summary>
-    Public Sub RemoveAllFiles()
+    Public Function RemoveAllFiles() As String
+        Dim ret As String = ""
         Dim pliki As String() = IO.Directory.GetFiles(_rootPictures)
         For Each plik As String In pliki
-            IO.File.Delete(plik)
+            Try
+                IO.File.Delete(plik)
+            Catch ex As Exception
+                ret &= vbCrLf & plik & ": " & ex.Message
+            End Try
         Next
 
         _pliki.Clear()
         _pliki.Save()
-    End Sub
+
+        Return ret
+    End Function
 
 
     ''' <summary>
@@ -413,6 +421,10 @@ Public Class BufferSortowania
         Return False
     End Function
 
+    Public Function GetIsArchiwum() As Boolean Implements IBufor.GetIsArchiwum
+        Return False
+    End Function
+
     Public Async Function RunAutoExif() As Task Implements IBufor.RunAutoExif
         Dim oEngine As AutotaggerBase = Vblib.gAutoTagery.Where(Function(x) x.Nazwa = Vblib.ExifSource.FileExif).ElementAt(0)
         ' się nie powinno zdarzyć, no ale cóż...
@@ -584,6 +596,9 @@ Public Class BufferFromQuery
 
     Public Function GetIsReadonly() As Boolean Implements IBufor.GetIsReadonly
         Return (_dbase Is Nothing)
+    End Function
+    Public Function GetIsArchiwum() As Boolean Implements IBufor.GetIsArchiwum
+        Return True
     End Function
 
     Public Function GetBufferName() As String Implements IBufor.GetBufferName
