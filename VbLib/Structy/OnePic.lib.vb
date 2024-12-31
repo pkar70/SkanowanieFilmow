@@ -547,6 +547,7 @@ Public Class OnePic
         ' If String.IsNullOrEmpty(opis.data) Then opis.data = Date.Now.ToString("yyyy.MM.dd HH:mm")
         descriptions.Add(opis)
         RecalcSumsy()
+        NotifyPropChange("sumOfDescr")
 
         TagsChanged = True
     End Sub
@@ -1553,6 +1554,8 @@ Public Class OnePic
 
     Public Function CheckIfMatchesQuery(query As SearchQuery) As Boolean
 
+        If query Is Nothing Then Return False
+
         Dim oExif As Vblib.ExifTag
         Dim bGdziekolwiekMatch As Boolean = False
 
@@ -2459,7 +2462,7 @@ Mid date: {GetMostProbablyDate.ToExifString}"
 
         ' line 6: targetdir
         If Not String.IsNullOrWhiteSpace(TargetDir) Then
-            newDymek = newDymek & vbCrLf & "► " & TargetDir
+            newDymek = newDymek & vbCrLf & "📂 " & TargetDir
         End If
 
         ' line 7: picid - właściwie tylko do picków z archiwum
