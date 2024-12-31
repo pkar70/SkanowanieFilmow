@@ -231,6 +231,7 @@ Public Class ProcessBrowse
 
     Private Async Function EwentualneKasowanieArchived() As Task
         If _oBufor.GetIsReadonly Then Return
+        If _oBufor.GetIsArchiwum Then Return
         If _niekasujArchived Then Return
 
         Dim iArchCount As Integer = Application.GetArchivesList.Count
