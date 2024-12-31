@@ -14,6 +14,12 @@ Class SettingsPipeline
         uiWinFaceG.GetSettingsInt()
         uiWinFaceB.GetSettingsInt()
         uiWinFaceA.GetSettingsInt()
+        uiEmbedTxtR.GetSettingsInt()
+        uiEmbedTxtG.GetSettingsInt()
+        uiEmbedTxtB.GetSettingsInt()
+        uiEmbedTxtBwR.GetSettingsInt()
+        uiEmbedTxtBwG.GetSettingsInt()
+        uiEmbedTxtBwB.GetSettingsInt()
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -24,6 +30,12 @@ Class SettingsPipeline
         uiWinFaceG.SetSettingsInt()
         uiWinFaceB.SetSettingsInt()
         uiWinFaceA.SetSettingsInt()
+        uiEmbedTxtR.SetSettingsInt()
+        uiEmbedTxtG.SetSettingsInt()
+        uiEmbedTxtB.SetSettingsInt()
+        uiEmbedTxtBwR.SetSettingsInt()
+        uiEmbedTxtBwG.SetSettingsInt()
+        uiEmbedTxtBwB.SetSettingsInt()
     End Sub
 
     Private Sub uiWatermark_Click(sender As Object, e As RoutedEventArgs)

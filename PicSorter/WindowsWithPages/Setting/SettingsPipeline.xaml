@@ -8,6 +8,9 @@
       Title="Pipeline" Loaded="Page_Loaded">
     <StackPanel Margin="5,5,5,5">
         <local:TextBlockPageTitle Text="Pipeline"/>
+
+        <Expander Header="=FaceRemove">
+            <StackPanel>
         <TextBlock FontWeight="Bold" Text="FaceRemove" />
         <local:SliderWithHdr Header="Nie zamazuj dla zdjęć starszych niż lat:" x:Name="uiWinFaceMaxAge" Minimum="20" Maximum="100" />
         <local:SliderWithHdr Header="Nie zamazuj gdy ≤ %:" x:Name="uiWinFaceMinSize" Minimum="0" Maximum="25" ToolTip="Sprawdza rozmiar procentowy; 0 oznacza zawsze. Art 81 ustawy o prawach autorskich, plus Sąd Apelacyjny w Warszawie z dnia 4 lipca 2018 (sygn. akt V ACa 484/17)"/>
@@ -17,7 +20,22 @@
         <local:SliderWithHdr Header="Składowa zielona:" x:Name="uiWinFaceG" Minimum="0" Maximum="255" ToolTip="Intensywność zieleni, domyślnie 128"/>
         <local:SliderWithHdr Header="Składowa niebieska:" x:Name="uiWinFaceB" Minimum="0" Maximum="255" ToolTip="Intensywność niebieskiego, domyślnie 128"/>
         <local:SliderWithHdr Header="Składowa alfa:" x:Name="uiWinFaceA" Minimum="0" Maximum="255" ToolTip="Składowa alfa, gdzie 0 to całkiem przeźroczyste, a 255 to w ogóle nieprzeźroczyste, domyślnie 255"/>
+            </StackPanel>
+        </Expander>
 
+        <Expander Header="embed/imprint">
+            <StackPanel>
+                <TextBlock Text="na kolorowych"/>
+                <local:SliderWithHdr Header="Składowa czerwona:" x:Name="uiEmbedTxtR" Minimum="0" Maximum="255" ToolTip="Intensywność czerwieni, domyślnie 128"/>
+                <local:SliderWithHdr Header="Składowa zielona:" x:Name="uiEmbedTxtG" Minimum="0" Maximum="255" ToolTip="Intensywność zieleni, domyślnie 128"/>
+                <local:SliderWithHdr Header="Składowa niebieska:" x:Name="uiEmbedTxtB" Minimum="0" Maximum="255" ToolTip="Intensywność niebieskiego, domyślnie 128"/>
+                <TextBlock Text="na cz/b (Azure!)"/>
+                <local:SliderWithHdr Header="Składowa czerwona:" x:Name="uiEmbedTxtBwR" Minimum="0" Maximum="255" ToolTip="Intensywność czerwieni, domyślnie 0; do rozpoznania zdjęcia jako cz/b potrzebne jest Azure"/>
+                <local:SliderWithHdr Header="Składowa zielona:" x:Name="uiEmbedTxtBwG" Minimum="0" Maximum="255" ToolTip="Intensywność zieleni, domyślnie 0; do rozpoznania zdjęcia jako cz/b potrzebne jest Azure"/>
+                <local:SliderWithHdr Header="Składowa niebieska:" x:Name="uiEmbedTxtBwB" Minimum="0" Maximum="255" ToolTip="Intensywność niebieskiego, domyślnie 180; do rozpoznania zdjęcia jako cz/b potrzebne jest Azure"/>
+            </StackPanel>
+        </Expander>
+        
         <Button Margin="0,15,0,5" Content="Watermark" HorizontalAlignment="Left" Click="uiWatermark_Click" />
 
         <local:ButtonOkSave Margin="5,20,5,0" Click="uiOK_Click" />

@@ -5,6 +5,7 @@ Imports System.Drawing
 Imports System.Drawing.Imaging
 Imports System.Text
 Imports vb14 = Vblib.pkarlibmodule14
+Imports Windows.Networking.Sockets
 
 
 Public Class Process_EmbedTexts
@@ -23,8 +24,6 @@ Public Class Process_EmbedTexts
         Dim oEngine As New Process_EmbedTexts
         Return Await oEngine.ApplyMain(oPic, bPipeline, params)
     End Function
-
-
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Protected Overrides Async Function ApplyMain(oPic As Vblib.OnePic, bPipeline As Boolean, params As String) As Task(Of Boolean)
@@ -69,12 +68,27 @@ Public Class Process_EmbedTexts
                     If attribs.Contains("U") Then styl = styl Or FontStyle.Underline
                     If attribs.Contains("S") Then styl = styl Or FontStyle.Strikeout
 
-                    Dim oBrush As New SolidBrush(Color.Gray)
+                    'Dim oBrush As New SolidBrush(Color.Gray)
+                    Dim oBrush As SolidBrush = Nothing
                     If attribs.Contains("w") Then oBrush = New SolidBrush(Color.WhiteSmoke)
                     If attribs.Contains("k") Then oBrush = New SolidBrush(Color.Black)
                     If attribs.Contains("e") Then oBrush = New SolidBrush(Color.Blue)
                     If attribs.Contains("d") Then oBrush = New SolidBrush(Color.Red)
                     If attribs.Contains("n") Then oBrush = New SolidBrush(Color.Green)
+
+                    If oBrush Is Nothing Then
+                        Dim azr As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
+                        If azr.AzureAnalysis Is Nothing OrElse (Not azr.AzureAnalysis.IsBW) Then
+                            ' Color nie mo¿e byæ NULLem! a chcia³em czytaæ ze zmiennych tylko raz
+                            Dim clr As Color = Color.FromArgb(Vblib.GetSettingsInt("uiEmbedTxtR"), Vblib.GetSettingsInt("uiEmbedTxtG"), Vblib.GetSettingsInt("uiEmbedTxtB"))
+                            oBrush = New SolidBrush(clr)
+                        Else
+                            Dim clr As Color = Color.FromArgb(Vblib.GetSettingsInt("uiEmbedTxtBwR"), Vblib.GetSettingsInt("uiEmbedTxtBwG"), Vblib.GetSettingsInt("uiEmbedTxtBwB"))
+                            oBrush = New SolidBrush(clr)
+                        End If
+                    End If
+                    If oBrush Is Nothing Then oBrush = New SolidBrush(Color.Gray)
+
 
                     Dim oFont As New Font(FontFamily.GenericSansSerif, fontSize, styl, GraphicsUnit.Pixel)
 
