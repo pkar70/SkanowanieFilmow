@@ -70,7 +70,10 @@ Class ProcessPic
         Me.ProgRingShow(True)
         Me.ProgRingSetText("Removing files...")
 
-        _buforek.RemoveAllFiles()
+        Dim ret As String = _buforek.RemoveAllFiles()
+        If ret <> "" Then
+            Me.MsgBox("Podczas kasowania były błędy (zignorowane):" & ret)
+        End If
 
         Me.ProgRingShow(False)
 

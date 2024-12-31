@@ -43,6 +43,19 @@ uiAutoCrop=True
 uiWinFaceMinSize=2
 uiWinFaceAfterDeath=12
 
+uiWinFaceR=128
+uiWinFaceG=128
+uiWinFaceB=128
+uiWinFaceA=255
+
+; 127, bo default calkowity jest 128
+uiEmbedTxtR=127
+uiEmbedTxtG=127
+uiEmbedTxtB=127
+uiEmbedTxtBwR=0
+uiEmbedTxtBwG=0
+uiEmbedTxtBwB=180
+
 # remark
 ' remark
 ; remark

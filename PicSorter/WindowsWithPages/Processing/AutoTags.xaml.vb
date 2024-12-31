@@ -259,7 +259,7 @@ Public Class AutoTags
                     End If
                 End If
 
-                Await Task.Delay(3) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
+                Await Task.Delay(1) ' na wszelki wypadek, żeby był czas na przerysowanie progbar, nawet jak tworzenie EXIFa jest empty
                 maxGuard -= 1
                 If maxGuard < 1 Then Exit For
             End If

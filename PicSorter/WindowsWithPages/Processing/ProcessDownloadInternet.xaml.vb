@@ -47,7 +47,7 @@ Public Class ProcessDownloadInternet
         If _source.lastDownload.IsDateValid Then
             Await Me.MsgBoxAsync($"Last download: {_source.lastDownload.ToExifString} 
 Pic: {_source.VolLabel}
-Możesz przewinąć stronę WWW do tego zdjęcia...")
+Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciśnięciem OK")
         End If
 
         Mouse.OverrideCursor = Nothing ' bo z poprzedniego okna jest override, i przeszkadza
@@ -190,6 +190,8 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         ' yyyy.mm
         Dim data As Date
 
+
+        ' pełna data (dd.MM.yyyy)
         Dim mam As Match = Regex.Match(tekst, "[0-3][0-9].[0-1][0-9].[12][0-9][0-9][0-9]")
         If mam.Success Then
             If Date.TryParseExact(mam.Value, "dd.MM.yyyy", Nothing, Globalization.DateTimeStyles.None, data) Then
@@ -198,6 +200,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
             End If
         End If
 
+        ' pełna data (yyyy.MM.dd)
         mam = Regex.Match(tekst, "[12][0-9][0-9][0-9].[0-1][0-9].[0-3][0-9]")
         If mam.Success Then
             If Date.TryParseExact(mam.Value, "yyyy.MM.dd", Nothing, Globalization.DateTimeStyles.None, data) Then
@@ -267,7 +270,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         If mam.Success Then
             Dim tempInt As Integer
             If Integer.TryParse(mam.Value.Replace("ata ", ""), tempInt) Then
-                uiDateRange.RangeAsText = (1900 + tempInt).ToString
+                uiDateRange.RangeAsText = ((1900 + tempInt) / 10).ToString
                 Return
             End If
         End If
@@ -276,7 +279,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         If mam.Success Then
             Dim tempInt As Integer
             If Integer.TryParse(mam.Value.Replace("ata ", ""), tempInt) Then
-                uiDateRange.RangeAsText = (1900 + tempInt).ToString
+                uiDateRange.RangeAsText = ((1900 + tempInt) / 10).ToString
                 Return
             End If
         End If
@@ -286,7 +289,7 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
         If mam.Success Then
             Dim tempInt As Integer
             If Integer.TryParse(mam.Value.Replace("ata '", ""), tempInt) Then
-                uiDateRange.RangeAsText = (1900 + tempInt * 10).ToString
+                uiDateRange.RangeAsText = ((1900 + tempInt) / 10).ToString
                 Return
             End If
         End If
@@ -332,9 +335,11 @@ Możesz przewinąć stronę WWW do tego zdjęcia...")
                 _samZmieniamAutora = True
                 uiAutor.Text = autor
                 _samZmieniamAutora = False
+                uiAddAuthor.IsEnabled = False
                 Return
             End If
         Next
+        uiAddAuthor.IsEnabled = True
     End Sub
 
 
