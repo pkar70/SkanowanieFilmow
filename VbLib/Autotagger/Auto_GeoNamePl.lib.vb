@@ -48,7 +48,7 @@ Public Class Auto_GeoNamePl
         DumpCurrMethod("file: " & oFile.sSuggestedFilename)
         If Not CanTag(oFile) Then Return Nothing
 
-        Dim oGeo As BasicGeoposWithRadius = oFile.GetGeoTag
+        Dim oGeo As BasicGeoposWithRadius = oFile.sumOfGeo ' .GetGeoTag
         Dim oNew As New ExifTag(Nazwa)
         oNew.GeoTag = oFile.GetGeoTag
         oNew.GeoName = Await GetNameForGeoPos(oGeo, oGeo.Radius > 1000)

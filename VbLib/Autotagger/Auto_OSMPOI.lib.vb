@@ -42,7 +42,7 @@ Public Class Auto_OSM_POI
     Public Overrides Async Function GetForFile(oFile As OnePic) As Task(Of ExifTag)
         If Not CanTag(oFile) Then Return Nothing
 
-        Dim oGeo As BasicGeoposWithRadius = oFile.GetGeoTag
+        Dim oGeo As BasicGeoposWithRadius = oFile.sumOfGeo ' .GetGeoTag
         Dim oNew As New ExifTag(Nazwa)
         oNew.GeoTag = oFile.GetGeoTag
         oNew.GeoName = OSMnameZgrubne(Await GetNameForGeoPos(oGeo), oGeo.Radius > 1000)
