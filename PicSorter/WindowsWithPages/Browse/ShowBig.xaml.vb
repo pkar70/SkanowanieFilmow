@@ -313,11 +313,15 @@ Public Class ShowBig
 
     End Sub
 
-    Private Sub uiMetadataChanged(sender As Object, e As EventArgs)
-        SaveMetaData()
+    Private Sub uiMetadataChanged(sender As Object, zmiana As PicMenuModifies)
+        Dim oBrowserWnd As ProcessBrowse = Me.Owner
+        If oBrowserWnd Is Nothing Then Return
+
+        oBrowserWnd.FromBig_MetaDataChanged(_picek, zmiana)
+        'SaveMetaData()
     End Sub
 
-    Private Sub uiPictureChanged(sender As Object, e As EventArgs)
+    Private Sub uiPictureChanged(sender As Object, zmiana As PicMenuModifies)
         ' po BatchProcessor - obrazek może być zmieniony
         Window_Loaded(sender, Nothing)
     End Sub
