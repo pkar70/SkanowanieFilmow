@@ -9,6 +9,7 @@
     <Grid Margin="5,5,5,5">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" x:Name="uiRowTitle"/>
+            <RowDefinition Height="*" x:Name="uiMapyMainSecondaryList" />
             <RowDefinition Height="*" x:Name="uiRowSrcList" />
             <RowDefinition Height="Auto" x:Name="uiRowOK"/>
         </Grid.RowDefinitions>
@@ -17,34 +18,25 @@
 
         <Grid Grid.Row="1" Margin="2,2,2,2">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" x:Name="uiRowListaHdr"/>
-                <RowDefinition Height="*" x:Name="uiRowListaItems" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TextBlock Text="Lista map:" FontWeight="Bold" ToolTip="Lista zawiera zarówno mapy zdefiowane przez Ciebie, jak i znane programowi"/>
+            <TextBlock Text="Znane mapy:" FontWeight="Bold" ToolTip="Zaznacz te, które mają pojawiać się w menu bezpośrednio; pozostałe będą w submenu 'other'"/>
             <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddMapa_Click" Margin="2,2,2,2" ToolTip="Dodana mapa będzie aktywna w programie od razu, ale bez [OK] nie zostanie zapisana na dysku"/>
 
-            <ListView Name="uiLista" Grid.Row="1">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="HorizontalContentAlignment"  Value="Stretch"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
+            <local:StretchedListView x:Name="uiLista" Grid.Row="1">
 
                 <ListView.ItemTemplate>
                     <DataTemplate>
-                        <Grid  HorizontalAlignment="Stretch" Margin="0,5,0,0"  >
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="5*" />
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Grid.Column="0" Text="{Binding nazwa}" Margin="2,0,5,0"/>
-                            <TextBox Grid.Column="2" Text="{Binding link}" />
-                        </Grid>
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox MinWidth="20" IsChecked="{Binding isMain}" />
+                            <TextBlock Text="{Binding nazwa}" Margin="2,0,5,0"/>
+                        </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
-            </ListView>
+            </local:StretchedListView>
         </Grid>
 
-        <Button Grid.Row="2" Content=" OK " HorizontalAlignment="Center" Width="Auto" Click="uiOk_Click"/>
+        <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Width="Auto" Click="uiOk_Click"/>
     </Grid>
 </Page>
