@@ -2,9 +2,12 @@
 Imports MediaDevices
 Imports pkar
 Imports pkar.UI.Extensions
+Imports Vblib
 
 Public NotInheritable Class PicMenuOnMap
     Inherits PicMenuBase
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.Dates
 
 
     Public Overrides Sub OnApplyTemplate()
@@ -18,20 +21,28 @@ Public NotInheritable Class PicMenuOnMap
 
         If UseSelectedItems Then Return
 
-        Try
-            Me.Items.Clear()
+        Me.Items.Clear()
+        Dim secmaps As New MenuItem With {.Header = "other maps"}
 
-            For Each oDictMapa In BasicGeopos.MapServices
+        For Each oDictMapa As SettingsMapsy.JednaMapa In SettingsMapsy.GetListaMap.OrderBy(Of String)(Function(x) x.nazwa)
+            Try
                 Dim oNew As New MenuItem
-                oNew.Header = oDictMapa.Key
-                oNew.DataContext = oDictMapa.Key
+                oNew.Header = oDictMapa.nazwa
+                oNew.DataContext = oDictMapa.link
                 AddHandler oNew.Click, AddressOf uiOnMap_Click
-                Me.Items.Add(oNew)
-            Next
-            ' SettingsMapsy.WypelnMenuMapami(TryCast(Me, MenuItem), AddressOf uiOnMap_Click)
-        Catch ex As Exception
 
-        End Try
+                If oDictMapa.isMain Then
+                    Me.Items.Add(oNew)
+                Else
+                    secmaps.Items.Add(oNew)
+                End If
+
+            Catch ex As Exception
+
+            End Try
+        Next
+
+        Me.Items.Add(secmaps)
 
         DodajMenuFlicker(Me)
     End Sub
@@ -53,8 +64,9 @@ Public NotInheritable Class PicMenuOnMap
         Dim oFE As FrameworkElement = sender
         Dim mapsvc As String = oFE?.DataContext
         Dim zoom As Integer = 18
+        Dim oMI As MenuItem = TryCast(sender, MenuItem)
         If oGps.Radius > 500 Then zoom = 16
-        Dim sUri As Uri = oGps.ToUri(mapsvc, zoom)
+        Dim sUri As Uri = oGps.ToUri(oMI.Header, zoom)
 
         'Dim sUri As New Uri("https://www.openstreetmap.org/#map=16/" & oGps.Latitude & "/" & oGps.Longitude)
         sUri.OpenBrowser

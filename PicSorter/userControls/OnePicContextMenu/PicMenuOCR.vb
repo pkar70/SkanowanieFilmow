@@ -1,9 +1,13 @@
 ﻿
 Imports pkar.UI.Extensions
+Imports Vblib
 
 
 Public Class PicMenuOCR
     Inherits PicMenuBase
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.CropRotate
+
 
     Public Shared _Clip As String = "" ' public dla OCRwnd.xaml
     Private Shared _PasteDesc As MenuItem
@@ -47,10 +51,12 @@ Public Class PicMenuOCR
     Private Sub uiOCRpasteDescr_Click(sender As Object, e As RoutedEventArgs)
         ' z zabezpieczeniem przed wielokrotnym dodawaniem
         OneOrMany(Sub(x) If Not x.sumOfDescr.Contains(_Clip) Then x.AddDescription(New Vblib.OneDescription(_Clip, "")))
+        EventRaise(PicMenuModifies.Descript)
     End Sub
 
     Private Sub Pastecalled(sender As Object, e As RoutedEventArgs)
         OneOrMany(Sub(x) x.ReplaceOrAddExif(New Vblib.ExifTag(Vblib.ExifSource.AutoWinOCR) With {.UserComment = _Clip}))
+        EventRaise(PicMenuModifies.Descript)
     End Sub
 
     Private Sub uiOCRcopy_Click(sender As Object, e As RoutedEventArgs)

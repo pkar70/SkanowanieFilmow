@@ -1,6 +1,11 @@
 ﻿
+Imports Vblib
+
 Public NotInheritable Class PicMenuAutotaggers
     Inherits PicMenuBase
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.Dates
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.AutoTaggers
 
     Public Overrides Sub OnApplyTemplate()
         If Not String.IsNullOrWhiteSpace(Me.Header) Then Return
@@ -12,7 +17,8 @@ Public NotInheritable Class PicMenuAutotaggers
     End Sub
 
 
-    Public Shared Sub WypelnMenuAutotagerami(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
+
+    Private Shared Sub WypelnMenuAutotagerami(oMenuItem As MenuItem, oEventHandler As RoutedEventHandler)
         oMenuItem.Items.Clear()
         ' _UImenuOnClick = oEventHandler
 
@@ -40,7 +46,7 @@ Public NotInheritable Class PicMenuAutotaggers
 
         Await OneOrManyAsync(AddressOf ApplyTagger)
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Any)
     End Sub
 
     Private Async Function ApplyTagger(oPic As Vblib.OnePic) As Task

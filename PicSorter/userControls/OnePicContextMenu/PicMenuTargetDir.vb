@@ -2,9 +2,15 @@
 
 
 Imports PicSorterNS.ProcessBrowse
+Imports Vblib
 
 Public NotInheritable Class PicMenuTargetDir
     Inherits PicMenuBase
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.Descriptions
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.CloudArch
+
+
 
     Private Shared _clipForTargetDir As String
     Private Shared _itemSet As MenuItem
@@ -90,12 +96,12 @@ Public NotInheritable Class PicMenuTargetDir
             End If
         Next
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Target)
     End Sub
 
     Private Sub uiTargetClear_Click(sender As Object, e As RoutedEventArgs)
         OneOrMany(Sub(x) x.TargetDir = "")
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Target)
     End Sub
 
     Private Sub CopyCalled(sender As Object, e As RoutedEventArgs)
@@ -105,7 +111,7 @@ Public NotInheritable Class PicMenuTargetDir
 
     Private Sub PasteCalled(sender As Object, e As RoutedEventArgs)
         OneOrMany(Sub(x) If String.IsNullOrWhiteSpace(x.TargetDir) Then x.TargetDir = _clipForTargetDir)
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Target)
     End Sub
 
     Private Sub uiCreateTargetDir_Click(sender As Object, e As RoutedEventArgs)
@@ -118,7 +124,7 @@ Public NotInheritable Class PicMenuTargetDir
         If Not oWnd.ShowDialog Then Return
         ' ale to jest bardzo skomplikowane, bo operuje na całej liście do auto-dzielenia
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Target)
 
     End Sub
 

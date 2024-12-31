@@ -1,7 +1,11 @@
 ﻿
 
+Imports Vblib
+
 Public NotInheritable Class PicMenuShowWiki
     Inherits PicMenuBase
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.Keywords
 
 
     Public Overrides Sub OnApplyTemplate()

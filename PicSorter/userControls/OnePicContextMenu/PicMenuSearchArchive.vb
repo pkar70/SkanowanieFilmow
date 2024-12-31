@@ -6,6 +6,9 @@ Imports Vblib
 Public Class PicMenuSearchArchive
     Inherits PicMenuBase
 
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.Keywords
+
+
     Private Shared _ByAzureTags As MenuItem
     Private Shared _ByAzureObjects As MenuItem
     Private Shared _ByKeywords As MenuItem

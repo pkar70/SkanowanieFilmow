@@ -1,10 +1,13 @@
 ﻿Imports System.Reflection.Metadata.Ecma335
 Imports pkar.DotNetExtensions
+Imports Vblib
 
 
 
 Public MustInherit Class PicMenuCloudBase
     Inherits PicMenuBase
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.Descriptions
 
     Protected MustOverride Property IsForCloudArchive As Boolean
 
@@ -87,12 +90,12 @@ Public MustInherit Class PicMenuCloudBase
             Case "delete"
                 Await engine.Delete(_picek)
                 WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
-                EventRaise(Me) ' zmieniono metadane
+                EventRaise(PicMenuModifies.Any) ' zmieniono metadane
 
             Case "get tags"
                 Dim newTags As String = Await engine.GetRemoteTags(_picek)
                 ' *TODO* coś z tym zrób
-                EventRaise(Me) ' zmieniono metadane
+                EventRaise(PicMenuModifies.Any) ' zmieniono metadane
 
             Case "share link"
                 Dim sLink As String = Await engine.GetShareLink(_picek)

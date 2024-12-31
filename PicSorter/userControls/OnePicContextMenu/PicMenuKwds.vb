@@ -1,9 +1,14 @@
 ﻿Imports Org.BouncyCastle.Utilities.Collections
 Imports pkar
+Imports Vblib
 
 
 Public Class PicMenuKwds
     Inherits PicMenuBase
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.CropRotate
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.LocalArch
+
 
     Private Shared _itemRemove As MenuItem
     Private Shared _itemForce As MenuItem
@@ -78,7 +83,7 @@ Public Class PicMenuKwds
                   End Sub
         )
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Kwds)
 
     End Sub
 
@@ -99,7 +104,7 @@ Public Class PicMenuKwds
                   End Sub
         )
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Kwds)
     End Sub
 
     Private Sub uiRemoveAll_Click(sender As Object, e As RoutedEventArgs)
@@ -110,7 +115,7 @@ Public Class PicMenuKwds
                   End Sub
         )
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Kwds)
     End Sub
 
     Private Sub uiKwdsForce_Click(sender As Object, e As RoutedEventArgs)
@@ -121,7 +126,7 @@ Public Class PicMenuKwds
                   End Sub
         )
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Kwds)
     End Sub
 
 

@@ -1,9 +1,12 @@
 ﻿
 
 Imports pkar.UI.Extensions
+Imports Vblib
 
 Public NotInheritable Class PicMenuSearchWebByPic
     Inherits PicMenuBase
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.CropRotate
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd

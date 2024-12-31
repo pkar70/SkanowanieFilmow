@@ -1,7 +1,12 @@
 ﻿
 
+Imports Vblib
+
 Public NotInheritable Class PicMenuDescribe
     Inherits PicMenuBase
+
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.LocalArch
+
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -26,11 +31,11 @@ Public NotInheritable Class PicMenuDescribe
         OneOrMany(Sub(x)
                       x.AddDescription(oDesc)
                       If Not String.IsNullOrWhiteSpace(x.sharingFromGuid) Then
-                          vblib.GetShareDescriptionsOut.AddPicDescForPicLastPeer(x, oDesc.comment)
+                          Vblib.GetShareDescriptionsOut.AddPicDescForPicLastPeer(x, oDesc.comment)
                       End If
 
                   End Sub)
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Descript)
 
     End Sub
 

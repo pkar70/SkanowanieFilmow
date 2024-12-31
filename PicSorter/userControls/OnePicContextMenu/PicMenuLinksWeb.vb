@@ -10,6 +10,9 @@ Imports Org.BouncyCastle.Crypto.Prng
 Public Class PicMenuLinksWeb
     Inherits PicMenuBase
 
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.CropRotate
+
+
     Private Shared _itemLinki As MenuItem
     Private Shared _miCopy As MenuItem
     Private Shared _miPaste As MenuItem
@@ -176,7 +179,7 @@ Public Class PicMenuLinksWeb
 
         OneOrMany(Sub(x) x.AddLink(oWnd.linek))
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Any)
     End Sub
 
     Private Sub DodajRevLinkizJednego(oPic As OnePic)

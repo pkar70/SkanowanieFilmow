@@ -22,7 +22,7 @@ Public Class PicMenuLocks
                       End Sub
         )
 
-            EventRaise(Me)
+            EventRaise(PicMenuModifies.Lock)
         End Sub
         )
 
@@ -34,7 +34,7 @@ Public Class PicMenuLocks
                       End Sub
         )
 
-            EventRaise(Me)
+            EventRaise(PicMenuModifies.Lock)
         End Sub
         )
 

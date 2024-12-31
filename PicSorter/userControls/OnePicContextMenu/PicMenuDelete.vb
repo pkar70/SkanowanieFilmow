@@ -1,11 +1,14 @@
 ﻿
 
 Imports pkar
+Imports Vblib
 
 Public NotInheritable Class PicMenuDeleteTemps
     Inherits PicMenuBase
 
-    Dim _delThumb As New MenuItem
+    Private Shared _delThumb As New MenuItem
+
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.LocalArch
 
     Public Overrides Sub OnApplyTemplate()
         Vblib.DumpCurrMethod()

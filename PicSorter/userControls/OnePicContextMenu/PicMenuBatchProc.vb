@@ -1,9 +1,13 @@
 ﻿
+Imports Vblib
+
 Public NotInheritable Class PicMenuBatchProc
     Inherits PicMenuBase
 
     Public Overrides Property ChangePic As Boolean = True
     Public Overrides Property ChangeMetadata As Boolean = True
+
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.CloudArch
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -41,7 +45,7 @@ Public NotInheritable Class PicMenuBatchProc
 
         Await OneOrManyAsync(AddressOf ApplyBatch)
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Any)
     End Sub
 
     Private Async Function ApplyBatch(oPic As Vblib.OnePic) As Task

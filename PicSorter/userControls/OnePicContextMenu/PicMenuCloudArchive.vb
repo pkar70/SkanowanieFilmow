@@ -1,10 +1,12 @@
 ﻿Imports pkar.DotNetExtensions
+Imports Vblib
 
 
 Public NotInheritable Class PicMenuCloudArchive
     Inherits PicMenuCloudBase
 
     Protected Overrides Property IsForCloudArchive As Boolean = True
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.CloudArch
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -52,7 +54,7 @@ Public NotInheritable Class PicMenuCloudArchive
 
         WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Any)
 
     End Sub
 

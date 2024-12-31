@@ -42,7 +42,7 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ''' wywoływany po zmianie metadanych (dla listy: dopiero po całej serii)
     ''' </summary>
     Public Event MetadataChanged As MetadataChangedHandler
-    Public Delegate Sub MetadataChangedHandler(sender As Object, data As EventArgs)
+    Public Delegate Sub MetadataChangedHandler(sender As Object, zmieniam As PicMenuModifies)
 
     ' musi być OnePic, bo potrzebny jest InBufferPathName i tak dalej, ale może być NULL gdy ma używać listy
     Protected _picek As Vblib.OnePic
@@ -72,10 +72,14 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
             End If
         End If
 
+
+        AddHandler Me.SubmenuOpened, AddressOf OtwieramToSubmenu
+
         Me.IsEnabled = True
         Return True
 
     End Function
+
 
     Protected Function GetFromDataContext() As Vblib.OnePic
         Dim picek As Vblib.OnePic = TryCast(DataContext, Vblib.OnePic)
@@ -104,8 +108,8 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         Return oNew
     End Function
 
-    Protected Sub EventRaise(sender As Object, Optional data As EventArgs = Nothing)
-        RaiseEvent MetadataChanged(sender, data)
+    Protected Sub EventRaise(zmiana As PicMenuModifies)
+        RaiseEvent MetadataChanged(Me, zmiana)
     End Sub
 
 
@@ -239,6 +243,37 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     End Function
 
     ''' <summary>
+    ''' otwieramy to konkretne submenu (złożone z tego MenuItem.Items)
+    ''' </summary>
+    Protected Overridable Sub OtwieramToSubmenu()
+
+    End Sub
+
+
+    Protected Overridable Property _minAktualne As SequenceStages = SequenceStages.None
+    Protected Overridable Property _maxAktualne As SequenceStages = SequenceStages.LocalArch
+
+    ''' <summary>
+    ''' wywoływane przy otwieraniu menu piętro wyżej (czyli gdy TO MenuItem się pojawia jako pozycja w menu)
+    ''' </summary>
+    ''' <param name="whichmenu">-1: to już było, 0: aktualne, 1: na przyszłość</param>
+    ''' <param name="stage">według tego stanu</param>
+    Public Sub OtwieramMenuWyzej(whichmenu As Integer, stage As SequenceStages)
+        If whichmenu < 0 Then
+            Me.Visibility = If(stage > _minAktualne, Visibility.Visible, Visibility.Collapsed)
+        End If
+        If whichmenu > 0 Then
+            Me.Visibility = If(_maxAktualne > stage, Visibility.Visible, Visibility.Collapsed)
+        End If
+        If whichmenu = 0 Then
+            Me.Visibility = Visibility.Visible
+            If stage < _minAktualne Then Me.Visibility = Visibility.Collapsed
+            If stage > _maxAktualne Then Me.Visibility = Visibility.Collapsed
+        End If
+    End Sub
+
+
+    ''' <summary>
     ''' do override, reakcja na otwieranie menu - wywoływane dla każdego w menu, z ProcessBrowse
     ''' </summary>
     Public Overridable Async Sub MenuOtwieramy()
@@ -309,28 +344,22 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
 
     End Function
 
-    'Protected Shared _miPaste As MenuItem
-    'Protected Shared _miCopy As MenuItem
 
-    'Protected Function CreateCopyItem(header As String, dymek As String) As MenuItem
-    '    Dim oNew As MenuItem = AddMenuItem(header, dymek, Sub() CopyCalled())
-    '    Me.Items.Add(oNew)
-    '    Return oNew
-    'End Function
-
-
-    'Protected Function CreatePasteItem(header As String, dymek As String) As MenuItem
-    '    Dim oNew As MenuItem = AddMenuItem(header, dymek, Sub() PasteCalled(), False)
-    '    Me.Items.Add(oNew)
-    '    Return oNew
-    'End Function
-
-    'Protected Overridable Sub CopyCalled()
-
-    'End Sub
-
-    'Protected Overridable Sub PasteCalled()
-
-    'End Sub
 
 End Class
+
+
+<Flags>
+Public Enum PicMenuModifies
+    None = 0
+    Any = 1
+    Geo = 2
+    Azure = 4
+    Descript = 8
+    Kwds = 16
+    Target = 32
+    Lock = 64
+    Peers = 128
+
+    Data = 1024
+End Enum

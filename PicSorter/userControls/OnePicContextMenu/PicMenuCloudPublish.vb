@@ -8,6 +8,8 @@ Public NotInheritable Class PicMenuCloudPublish
 
     Protected Overrides Property IsForCloudArchive As Boolean = False
 
+
+
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
         'System.Windows.Data Error: 4 : Cannot find source for binding with reference 'RelativeSource FindAncestor, AncestorType='System.Windows.Controls.ItemsControl', AncestorLevel='1''. BindingExpression:Path=HorizontalContentAlignment; DataItem=null; target element is 'MenuItem' (Name=''); target property is 'HorizontalContentAlignment' (type 'HorizontalAlignment')
@@ -155,10 +157,10 @@ Public NotInheritable Class PicMenuCloudPublish
 
             If Not String.IsNullOrWhiteSpace(_retMsg) Then Vblib.DialogBox(_retMsg)
             WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
-            EventRaise(Me)
+            EventRaise(PicMenuModifies.Any)
         Else
             OneOrMany(Sub(x) x.AddCloudPublished(_engine.konfiguracja.nazwa, ""))
-            EventRaise(Me)
+            EventRaise(PicMenuModifies.Any)
         End If
         Application.ShowWait(False)
 

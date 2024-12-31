@@ -8,6 +8,12 @@ Imports pkar.UI.Extensions
 Public NotInheritable Class PicMenuSetDate
     Inherits PicMenuBase
 
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.Keywords
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.LocalArch
+
+
+
     Private Shared _clipMin As Date
     Private Shared _clipMax As Date
     Private Shared _clipOrg As Date
@@ -102,7 +108,7 @@ Public NotInheritable Class PicMenuSetDate
                       ' x.RecalcSumsy() a to nie, bo nie ma sumy datemin/max
                   End Sub)
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Data)
     End Sub
 
     Public Overrides Sub MenuOtwieramy()
@@ -127,7 +133,7 @@ Public NotInheritable Class PicMenuSetDate
             AdjustOffsetInPic(offset, GetFromDataContext)
         End If
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Data)
     End Sub
 
 #Region "przesuniecia dat"
@@ -208,7 +214,7 @@ Public NotInheritable Class PicMenuSetDate
             ForceInPic(GetFromDataContext, _clipMin, _clipMax, _clipOrg)
         End If
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Data)
     End Sub
 
     Private Sub CopyCalled(sender As Object, e As RoutedEventArgs)
@@ -255,7 +261,7 @@ Public NotInheritable Class PicMenuSetDate
             currDate += offset
         Next
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Data)
 
         ' logika poprzednio była inna - tylko na 3 obrazki, i ścinało odstępcę :)
         'If Math.Abs((date1 - date2).TotalHours) < 1 Then
@@ -388,7 +394,7 @@ Public NotInheritable Class PicMenuSetDate
             oPic.ReplaceOrAddExif(oExif)
         End If
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Data)
 
     End Sub
 
@@ -506,7 +512,7 @@ Public NotInheritable Class PicMenuSetDate
             ForceInPic(GetFromDataContext, dateMin, dateMax, emptydate)
         End If
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Data)
 
     End Sub
 

@@ -1,11 +1,16 @@
 ﻿
 'Imports PicSorterNS.ProcessBrowse
 Imports pkar
+Imports Vblib
 
 Public NotInheritable Class PicMenuGeotag
     Inherits PicMenuBase
 
     Public Overrides Property ChangeMetadata As Boolean = True
+
+    Protected Overrides Property _minAktualne As SequenceStages = SequenceStages.Dates
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.AutoTaggers
+
 
     Private Shared _clip As BasicGeoposWithRadius
     Private Shared _itemReset As MenuItem
@@ -114,7 +119,7 @@ Public NotInheritable Class PicMenuGeotag
 
         Next
 
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Geo)
 
     End Sub
 
@@ -126,7 +131,7 @@ Public NotInheritable Class PicMenuGeotag
 
     Private Sub uiGeotagClear_Click(sender As Object, e As RoutedEventArgs)
         OneOrMany(AddressOf GeotagClear)
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Geo)
     End Sub
 
     Private Sub CopyCalled(sender As Object, e As RoutedEventArgs)
@@ -160,7 +165,7 @@ Public NotInheritable Class PicMenuGeotag
         _exifGeoToPaste.GeoZgrubne = _clip.Radius > 100  ' Exif zawiera BasicGeotag, bez radiusa, więc tutaj trzeba konwersję zrobić
 
         OneOrMany(AddressOf GeotagSet)
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Geo)
     End Sub
 
 
@@ -174,7 +179,7 @@ Public NotInheritable Class PicMenuGeotag
         _exifGeoToPaste.GeoZgrubne = oWnd.IsZgrubne
 
         OneOrMany(AddressOf GeotagSet)
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Geo)
 
     End Sub
 

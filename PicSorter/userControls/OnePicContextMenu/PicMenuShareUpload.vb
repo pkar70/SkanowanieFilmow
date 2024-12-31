@@ -8,6 +8,10 @@ Imports pkar.DotNetExtensions
 Public NotInheritable Class PicMenuShareUpload
     Inherits PicMenuBase
 
+    Protected Overrides Property _maxAktualne As SequenceStages = SequenceStages.LocalArch
+
+
+
     Private Shared _menuAllow As MenuItem
     Private Shared _menuDeny As MenuItem
 
@@ -207,7 +211,7 @@ Public NotInheritable Class PicMenuShareUpload
         If _ShareLogin Is Nothing Then Return
 
         Await OneOrManyAsync(AddressOf MarkOnePicForLogin)
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Peers)
 
     End Sub
 
@@ -217,7 +221,7 @@ Public NotInheritable Class PicMenuShareUpload
         If _ShareLogin Is Nothing Then Return
 
         Await OneOrManyAsync(AddressOf UnMarkOnePicForLogin)
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Peers)
 
     End Sub
 
@@ -285,7 +289,7 @@ Public NotInheritable Class PicMenuShareUpload
         Else
             Await OneOrManyAsync(AddressOf MarkOnePic)
         End If
-        EventRaise(Me)
+        EventRaise(PicMenuModifies.Peers)
 
 
         If _allErrs <> "" Then
