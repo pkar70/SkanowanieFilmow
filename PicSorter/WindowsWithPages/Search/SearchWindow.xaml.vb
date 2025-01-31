@@ -261,6 +261,7 @@ Public Class SearchWindow
 
         ' pokazanie rezultatów
         uiLista.ItemsSource = _queryResults 'From c In _queryResults
+        uiGoMiniaturki.IsEnabled = _queryResults IsNot Nothing AndAlso _queryResults.Count > 0
 
         stopTime = Date.Now
         'Await Me.MsgBoxAsync("wstawienie do UI files took ms: " & (stopTime - startTime).TotalMilliseconds)
@@ -278,6 +279,7 @@ Public Class SearchWindow
 
     Private Sub uiGoMiniaturki_Click(sender As Object, e As RoutedEventArgs)
 
+        If _queryResults Is Nothing Then Return
         If Not _queryResults.Any Then Return
 
         Dim lista As New Vblib.BufferFromQuery(Application.gDbase)
