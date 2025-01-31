@@ -278,7 +278,7 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
         mam = Regex.Match(tekst, "lat [0-9]0")
         If mam.Success Then
             Dim tempInt As Integer
-            If Integer.TryParse(mam.Value.Replace("ata ", ""), tempInt) Then
+            If Integer.TryParse(mam.Value.Replace("lat ", ""), tempInt) Then
                 uiDateRange.RangeAsText = ((1900 + tempInt) / 10).ToString
                 Return
             End If
