@@ -51,7 +51,7 @@ Public Class UserControlGeo
 
         If dataCont.Location IsNot Nothing Then
             uiLatLon.Text = $"szer. {dataCont.Location.StringLat(3)}, dług. {dataCont.Location.StringLon(3)}"
-            uiGeoRadius.Text = dataCont.Location.Radius \ 1000  ' integer tylko nas interesuje
+            uiGeoRadius.Text = (dataCont.Location.Radius \ 1000).ToSIstring ' integer tylko nas interesuje
         End If
 
         bInChange = False

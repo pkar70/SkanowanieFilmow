@@ -1,4 +1,4 @@
 ﻿
 Public Module BuldTimeConstant
-    Public Const BUILD_TIMESTAMP As String = "2024.12.31 09:50"
+    Public Const BUILD_TIMESTAMP As String = "2025.01.28 13:08"
 End Module

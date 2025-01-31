@@ -6,6 +6,8 @@ Imports System.Windows.Interop
 Imports System.Threading
 Imports MetadataExtractor.Formats
 Imports Windows.Media.Playback
+'Imports MetadataExtractor
+'Imports PdfSharp.Charting
 
 Class MainWindow
     Inherits Window
@@ -574,11 +576,36 @@ Class MainWindow
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
         'PoprawDateMinMaxKwds()
+        'Await UzupelnijGeoName()
+        'Me.MsgBox("poprawilem")
     End Sub
 
 
 
 #Region "poprawianie plików"
+
+    Private Async Function UzupelnijGeoName() As Task
+        Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
+        arch.Load()
+
+        Dim tagger As New Auto_OSM_POI
+
+        For Each oFile As Vblib.OnePic In arch
+            Dim oExif = oFile.GetExifOfType(Vblib.ExifSource.AutoOSM)
+            If oExif Is Nothing Then Continue For
+            If oExif.GeoName.EndsWith("Polska") Then Continue For
+
+            oFile.sumOfGeo = oFile.GetGeoTag
+            Debug.WriteLine("poprawiam tag dla " & oFile.serno)
+            Dim oNewExif = Await tagger.GetForFile(oFile)
+            If oNewExif Is Nothing Then Continue For
+            oFile.ReplaceOrAddExif(oNewExif)
+        Next
+
+        arch.Save(True)
+    End Function
+
+#If False Then
 
 
     Private Shared Sub PoprawDateMinMaxKwds()
@@ -618,7 +645,6 @@ Class MainWindow
     End Sub
 
 
-#If False Then
     Private Sub PoprawZeszyty()
         Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "u.240812.json")
         arch.Load()

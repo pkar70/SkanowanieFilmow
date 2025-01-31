@@ -44,7 +44,6 @@ Public Class DatesSummary
         .maxval = oPicek.oPic.GetMaxDate.ToString("yyyy.MM.dd")
         })
 
-
         uiLista.ItemsSource = daty
 
     End Sub

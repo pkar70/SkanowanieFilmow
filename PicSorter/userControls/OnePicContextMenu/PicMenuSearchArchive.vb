@@ -215,6 +215,7 @@ Public Class PicMenuSearchArchive
         qry.ogolne.geo.Location = New BasicGeoposWithRadius(geo, 500)
         qry.ogolne.geo.AlsoEmpty = False
         qry.ogolne.geo.OnlyExact = True
+        'qry.ogolne.geo.
         Szukaj(qry)
     End Sub
 

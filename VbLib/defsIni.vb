@@ -56,6 +56,12 @@ uiEmbedTxtBwR=0
 uiEmbedTxtBwG=0
 uiEmbedTxtBwB=180
 
+
+; linki do wiki wedlug geo
+uiGeoWikiRadius=500
+uiGeoWikiCount=10
+uiGeoWikiLangs=pl,en
+
 # remark
 ' remark
 ; remark
