@@ -45,7 +45,7 @@ Public Class Auto_OSM_POI
         Dim oGeo As BasicGeoposWithRadius = oFile.sumOfGeo ' .GetGeoTag
         Dim oNew As New ExifTag(Nazwa)
         oNew.GeoTag = oFile.GetGeoTag
-        oNew.GeoName = OSMnameZgrubne(Await GetNameForGeoPos(oGeo), oGeo.Radius > 1000)
+        oNew.GeoName = Await GetNameForGeoPos(oGeo, oGeo.Radius > 1000)
         DumpMessage("geoname: " & oNew.GeoName)
         Return oNew
 
@@ -54,7 +54,7 @@ Public Class Auto_OSM_POI
     Private Shared _lastGeo As pkar.BasicGeopos = pkar.BasicGeopos.Empty
     Private Shared _lastName As String
 
-    Private Async Function GetNameForGeoPos(oPos As pkar.BasicGeopos) As Task(Of String)
+    Private Async Function GetNameForGeoPos(oPos As pkar.BasicGeopos, zgrubne As Boolean) As Task(Of String)
         DumpCurrMethod()
         EnsureCache()
 
@@ -63,7 +63,7 @@ Public Class Auto_OSM_POI
             Return _lastName
         End If
 
-        _lastName = Await GetNameForGeoPosMain(oPos)
+        _lastName = OSMnameZgrubne(Await GetNameForGeoPosMain(oPos), zgrubne)
         _lastGeo = oPos
 
         Return _lastName
@@ -89,6 +89,9 @@ Public Class Auto_OSM_POI
 
     Private Shared _oHttp As Net.Http.HttpClient
 
+    ''' <summary>
+    ''' skracanie nazwy dla zgrubnego
+    ''' </summary>
     Private Function OSMnameZgrubne(OSMname As String, zgrubne As Boolean)
         If Not zgrubne Then Return OSMname
 
@@ -129,7 +132,7 @@ Public Class Auto_OSM_POI
             _oHttp.DefaultRequestHeaders.UserAgent.TryParseAdd(Nazwa)
             _oHttp.DefaultRequestHeaders.Add("Accept", "application/json; charset=UTF-8")
         End If
-        Dim oResp As Net.Http.HttpResponseMessage = Await _oHttp.GetAsync(New Uri(sUri))
+        Dim oResp As Net.Http.HttpResponseMessage = Await _oHttp.GetAsync(New Uri(sUri & "&accept-language=pl"))
         sPage = Await oResp.Content.ReadAsStringAsync()
 
         Await Task.Delay(1000)  ' wymogi licencyjne
@@ -144,18 +147,33 @@ Public Class Auto_OSM_POI
             Return ""
         End Try
 
-        ' jeśli czegoś nie ma w _CacheLista, to dodaj - i zapisz
-        Dim bNieZnam As Boolean = True
-        For Each oItem As CacheOSMPOI_Item In _CacheLista
-            If oItem.place_id = nowyItem.place_id AndAlso oItem.osm_id = nowyItem.osm_id Then
-                bNieZnam = False
-                Exit For
+        If nowyItem.display_name Is Nothing Then
+            Return ""
+        End If
+
+
+        If Not nowyItem.display_name.EndsWith("Polska") Then
+            oResp = Await _oHttp.GetAsync(New Uri(sUri))
+            sPage = Await oResp.Content.ReadAsStringAsync()
+            Await Task.Delay(1000)  ' wymogi licencyjne
+            If Not String.IsNullOrWhiteSpace(sPage) Then
+                Dim nowyItemLocal As CacheOSMPOI_Item
+                Try
+                    nowyItemLocal = Newtonsoft.Json.JsonConvert.DeserializeObject(sPage, GetType(CacheOSMPOI_Item))
+                    nowyItem.display_name &= vbCrLf & nowyItem.address.country_code & ": " & nowyItemLocal.display_name
+                Catch ex As Exception
+                End Try
             End If
-        Next
+        End If
 
-        If bNieZnam Then _CacheLista.Add(nowyItem)
+        ' już nie potrzebujemy tego - a szkoda wydłużać cache
+        nowyItem.address = Nothing
 
-        _CacheLista.Save()
+        ' jeśli czegoś nie ma w _CacheLista, to dodaj - i zapisz
+        If Not _CacheLista.All(Function(x) x.place_id = nowyItem.place_id AndAlso x.osm_id = nowyItem.osm_id) Then
+            _CacheLista.Add(nowyItem)
+            _CacheLista.Save()
+        End If
 
         Return nowyItem.display_name
     End Function
@@ -201,31 +219,35 @@ Public Class Auto_OSM_POI
         Inherits pkar.BaseStruct
         Public Property place_id As String
         'Public Property licence As String
-        Public Property osm_type As String
+        Public Property osm_type As String ' "way"
         Public Property osm_id As String
         Public Property lat As String
         Public Property lon As String
         'Public Property place_rank As String
-        'Public Property category As String
-        'Public Property type As String
+        'Public Property category As String ' "highway"
+        'Public Property type As String ' "tertiary"
         'Public Property importance As String
-        'Public Property addresstype As String
+        'Public Property addresstype As String ' "road"
         Public Property display_name As String
         'Public Property name As String
-        'Public Property address As CacheOSMPOI_Address
+        Public Property address As CacheOSMPOI_Address
         'Public Property boundingbox() As String
     End Class
 
-    'Public Class CacheOSMPOI_Address
-    '    Public Property road As String
-    '    Public Property village As String
-    '    Public Property state_district As String
-    '    Public Property state As String
-    '    Public Property postcode As String
-    '    Public Property country As String
-    '    Public Property country_code As String
-    'End Class
+    Public Class CacheOSMPOI_Address
+        'Public Property road As String
+        'Public Property village As String
+        'Public Property state_district As String
+        'Public Property state As String
+        'Public Property postcode As String
+        'Public Property country As String
+        Public Property country_code As String
+    End Class
 
+    ' PL: "display_name": "Majdan Krzywski, gmina Łopiennik Górny, powiat krasnostawski, województwo lubelskie, Polska",
+    ' EN: "display_name": "Majdan Krzywski, gmina Łopiennik Górny, Krasnystaw County, Lublin Voivodeship, Poland",
+    ' PL: "display_name": "Черно море, Burgas, Бургас, Obwód Burgas, 8115, Bułgaria",
+    ' --: "display_name": "Cherno more, Burgas, 8115, Bulgaria", [via http]
 
 End Class
 
