@@ -78,7 +78,7 @@ Public Class Process_EmbedTexts
 
                     If oBrush Is Nothing Then
                         Dim azr As Vblib.ExifTag = oPic.GetExifOfType(Vblib.ExifSource.AutoAzure)
-                        If azr.AzureAnalysis Is Nothing OrElse (Not azr.AzureAnalysis.IsBW) Then
+                        If azr?.AzureAnalysis Is Nothing OrElse (Not azr.AzureAnalysis.IsBW) Then
                             ' Color nie mo¿e byæ NULLem! a chcia³em czytaæ ze zmiennych tylko raz
                             Dim clr As Color = Color.FromArgb(Vblib.GetSettingsInt("uiEmbedTxtR"), Vblib.GetSettingsInt("uiEmbedTxtG"), Vblib.GetSettingsInt("uiEmbedTxtB"))
                             oBrush = New SolidBrush(clr)
