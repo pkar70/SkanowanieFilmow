@@ -105,6 +105,14 @@ Public Class ShowBig
         Me.InitDialogs
         uiEditCrop.IsEnabled = True ' po zmianie zdjęcia włącza Crop (bywa zablokowany po FullSize)
 
+        If _picek.oPic.sSuggestedFilename.EndsWithCI(".txt") Then
+
+            Dim sTxt As String = IO.File.ReadAllText(_picek.oPic.InBufferPathName)
+            If sTxt.Length > 512 Then sTxt = sTxt.Substring(0, 500) & "..."
+            Me.MsgBox("File content:" & vbCrLf & sTxt)
+            Return
+        End If
+
         Dim iObrot As Rotation = DetermineOrientation(_picek.oPic)
 
         ' *TODO* reakcja jakaś na inne typy niż JPG
