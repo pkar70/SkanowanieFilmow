@@ -285,17 +285,17 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
     ''' <summary>
     ''' sprawdź czy wszystkie są tylko w buforze, żaden nie jest zarchiwizowany
     ''' </summary>
-    Private Function IsAllNotArch() As Boolean
+    Private Function IsAllNotArch(Optional bCheckAlsoCloud As Boolean = True) As Boolean
         If UseSelectedItems Then
             For Each oItem As ProcessBrowse.ThumbPicek In GetSelectedItems()
                 If Not String.IsNullOrWhiteSpace(oItem.oPic.Archived) Then Return False
-                If Not String.IsNullOrWhiteSpace(oItem.oPic.CloudArchived) Then Return False
+                If bCheckAlsoCloud AndAlso Not String.IsNullOrWhiteSpace(oItem.oPic.CloudArchived) Then Return False
             Next
         Else
             Dim oPic As Vblib.OnePic = GetFromDataContext()
             If oPic Is Nothing Then Debug.WriteLine("OPIC NOTHING OPIC NOTHINGOPIC NOTHINGOPIC NOTHING")
             If Not String.IsNullOrWhiteSpace(oPic?.Archived) Then Return False
-            If Not String.IsNullOrWhiteSpace(oPic?.CloudArchived) Then Return False
+            If bCheckAlsoCloud AndAlso Not String.IsNullOrWhiteSpace(oPic?.CloudArchived) Then Return False
         End If
 
         Return True
@@ -336,8 +336,8 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
             Return IsAllNotArch()
         End If
 
-        ' czyli edycja metadanych
-        If IsAllNotArch() Then Return True
+        ' czyli tylko edycja metadanych
+        If IsAllNotArch(False) Then Return True
         If IsAllArchivedAndEditable() Then Return True
 
         Return False
