@@ -6,6 +6,7 @@ Imports System.Text.RegularExpressions
 Imports System.IO
 Imports pkar.DotNetExtensions
 Imports Org.BouncyCastle.Crypto.Prng
+Imports pkar
 
 Public Class PicMenuLinksWeb
     Inherits PicMenuBase
@@ -17,6 +18,7 @@ Public Class PicMenuLinksWeb
     Private Shared _miCopy As MenuItem
     Private Shared _miPaste As MenuItem
     Private Shared _miOpenReverse As MenuItem
+    Private Shared _miWikiLinks As MenuItem
 
     Public Overrides Sub OnApplyTemplate()
         ' wywoływame było dwa razy! I głupi błąd
@@ -37,6 +39,9 @@ Public Class PicMenuLinksWeb
         _miOpenReverse = New MenuItem With {.Header = "Reverse"}
         Me.Items.Add(_miOpenReverse)
 
+        _miWikiLinks = New MenuItem With {.Header = "geowiki " & AutotaggerBase.IconWeb}
+        ToolTipService.SetShowOnDisabled(_miWikiLinks, True)
+        Me.Items.Add(_miWikiLinks)
 
         Me.Items.Add(New Separator)
         _miCopy = AddMenuItem("Create", "Stwórz link do zaznaczonego zdjęcia", AddressOf CopyCalled)
@@ -69,6 +74,15 @@ Public Class PicMenuLinksWeb
         OneOrMany(AddressOf DodajLinkizJednego)
         _itemLinki.IsEnabled = _itemLinki.Items.Count > 0
 
+        ' obsluga wikilink
+        OpeningMenuUstawWiki()
+
+        OpeningMenuRevLink()
+
+    End Sub
+
+
+    Private Sub OpeningMenuRevLink()
         _miOpenReverse.IsEnabled = False
         If Not Application.gDbase.IsLoaded Then Return
         _miOpenReverse.IsEnabled = True
@@ -83,6 +97,96 @@ Public Class PicMenuLinksWeb
         End If
 
     End Sub
+
+    Private Sub OpeningMenuUstawWiki()
+
+        RemoveHandler _miWikiLinks.Click, AddressOf uiOpenWikiLink
+
+        If UseSelectedItems Then
+            _miWikiLinks.ToolTip = "działa tylko dla pojedyńczego zdjęcia"
+            _miWikiLinks.IsEnabled = False
+            Return
+        End If
+
+        Dim oGeo As BasicGeoposWithRadius = GetFromDataContext()?.sumOfGeo
+        If oGeo Is Nothing Then
+            _miWikiLinks.IsEnabled = False
+            _miWikiLinks.ToolTip = "brak geotag"
+            Return
+        End If
+
+        AddHandler _miWikiLinks.Click, AddressOf uiOpenWikiLink
+        _miWikiLinks.IsEnabled = True
+        _miWikiLinks.ToolTip = "kliknij by wczytać linki z Wikipedii"
+
+    End Sub
+
+    Private _lastSerNo As Integer
+
+    Private Async Sub uiOpenWikiLink(sender As Object, e As RoutedEventArgs)
+        ' kliknięto na Wikilinks
+
+        RemoveHandler _miWikiLinks.Click, AddressOf uiOpenWikiLink
+
+        Dim oPic As Vblib.OnePic = GetFromDataContext()
+        If oPic Is Nothing Then Return
+
+        ' jesteśmy w tym samym miejscu - czyli nie robimy skanowania Wiki
+        If _lastSerNo = oPic.serno Then Return
+
+        ' nie mamy geo, to nic nie zrobimy
+        Dim oGeo As BasicGeoposWithRadius = oPic.sumOfGeo
+        If oGeo Is Nothing Then Return
+
+        _lastSerNo = oPic.serno
+
+        _miWikiLinks.ToolTip = Nothing
+
+        Dim radius As Integer = Vblib.GetSettingsInt("uiGeoWikiRadius")
+        Dim count As Integer = Vblib.GetSettingsInt("uiGeoWikiCount")
+
+        _miWikiLinks.Items.Clear()
+
+        Dim langs As String() = Vblib.GetSettingsString("uiGeoWikiLangs").Split(",")
+        If langs.Count > 1 Then
+            For Each slang As String In langs
+                Dim langmi As New MenuItem With {.Header = slang}
+                _miWikiLinks.Items.Add(langmi)
+                Await AddWikiLinks(slang, langmi, oGeo, radius, count)
+            Next
+        Else
+            Await AddWikiLinks(langs(0), _miWikiLinks, oGeo, radius, count)
+        End If
+
+
+    End Sub
+
+    Private Async Function AddWikiLinks(slang As String, langmi As MenuItem, oGeo As BasicGeoposWithRadius, radius As Integer, count As Integer) As Task
+
+        langmi.Items.Clear()
+
+        Dim lista = Await oGeo.GeoWikiGetItems(slang, radius, count, BasicGeopos.GeoWikiSort.Distance)
+        If lista Is Nothing Then Return
+
+        For Each oLink As BasicGeopos.GeoWikiItem In lista
+            Dim oNew As New MenuItem
+            oNew.Header = oLink.title
+            oNew.DataContext = oLink.pageUri
+            AddHandler oNew.Click, AddressOf uiOpenWikiThisLink
+            langmi.Items.Add(oNew)
+        Next
+
+
+    End Function
+
+    Private Sub uiOpenWikiThisLink(sender As Object, e As RoutedEventArgs)
+        Dim oFE As FrameworkElement = sender
+        Dim linek As Uri = TryCast(oFE.DataContext, Uri)
+        If linek Is Nothing Then Return
+
+        linek.OpenBrowser
+    End Sub
+
     Private Async Sub CopyCalled()
 
         If GetSelectedItems().Count <> 1 Then

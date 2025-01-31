@@ -149,6 +149,7 @@
                         <MenuItem Header="DatesSummary" Click="uiOknaDatesSumm_Click" />
                         <MenuItem Header="Any property" Click="uiOknaExifProp_Click" />
                         <MenuItem Header="Remote desc" Click="uiOknaRemoteDesc_Click" Name="uiOknaRemoteDesc" />
+                        <MenuItem Header="Wikigeolinks" Click="uiOknaWikiGeo_Click" />
                     </local:MenuVertical>
                 </Popup>
                 <Button x:Name="uiAction" Content=" Action " Height="Auto" Width="Auto"  Click="uiActionOpen_Click" />

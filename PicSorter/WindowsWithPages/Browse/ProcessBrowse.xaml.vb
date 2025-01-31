@@ -2588,6 +2588,12 @@ Public Class ProcessBrowse
         OpenSubWindow(New ShowAzureLists)
     End Sub
 
+
+    Private Sub uiOknaWikiGeo_Click(sender As Object, e As RoutedEventArgs)
+        OpenSubWindow(New GeoWikiLinks)
+    End Sub
+
+
 #End Region
 
 
