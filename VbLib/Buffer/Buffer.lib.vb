@@ -7,7 +7,10 @@ Imports pkar.DotNetExtensions
 'Imports Vblib.BufferSortowania
 
 Public Interface IBufor
-    Sub SaveData()
+    Sub SaveData(Optional bDelayed As Boolean = False)
+
+    Sub EnableDelay(bEnable As Boolean)
+
     Function Count() As Integer
 
     Function GetList() As List(Of OnePic)
@@ -145,8 +148,12 @@ Public Class BufferSortowania
 
 #End If
 
-    Public Sub SaveData() Implements IBufor.SaveData
-        _pliki.Save(True)
+    Public Sub SaveData(Optional bDelayed As Boolean = False) Implements IBufor.SaveData
+        If bDelayed Then
+            _pliki.DelayedSave()
+        Else
+            _pliki.Save(True)
+        End If
     End Sub
 
     Public Function Count() As Integer Implements IBufor.Count
@@ -310,6 +317,15 @@ Public Class BufferSortowania
         Return True
 
     End Function
+
+    Public Sub EnableDelay(bEnable As Boolean) Implements IBufor.EnableDelay
+        If bEnable Then
+            _pliki.SetDelay(20, 600)
+        Else
+            ' wracamy do defaulta
+            _pliki.SetDelay(1, 60)
+        End If
+    End Sub
 
 
     Public Sub ResetPipelines() Implements IBufor.ResetPipelines
@@ -538,11 +554,17 @@ Public Class BufferFromQuery
 
     End Sub
 
-    Public Sub SaveData() Implements IBufor.SaveData
+    Public Sub SaveData(Optional bDelayed As Boolean = False) Implements IBufor.SaveData
         If _dbase Is Nothing Then Return
 
         _dbase.SaveData()
     End Sub
+
+    Public Sub EnableDelay(bEnable As Boolean) Implements IBufor.EnableDelay
+        ' dla bazy danych to nie ma znaczenia
+    End Sub
+
+
 
     Public Sub ResetPipelines() Implements IBufor.ResetPipelines
         For Each oItem As OnePic In _pliki

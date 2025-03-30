@@ -45,6 +45,7 @@ Public Class ProcessDownloadInternet
 
         Dim sTxt As String = "(nieznana)"
         If _source.lastDownload.IsDateValid Then
+            _source.VolLabel.SendToClipboard
             Await Me.MsgBoxAsync($"Last download: {_source.lastDownload.ToExifString} 
 Pic: {_source.VolLabel}
 Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciśnięciem OK")
@@ -53,6 +54,8 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
         Mouse.OverrideCursor = Nothing ' bo z poprzedniego okna jest override, i przeszkadza
 
         uiKeywords.uiSlowka.Text = _source.defaultKwds
+
+        ProcessPic.GetBuffer(Me).EnableDelay(True)
 
         NextPic()
     End Sub
@@ -92,6 +95,8 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
 
     Private Sub uiEnd_Click(sender As Object, e As RoutedEventArgs)
 
+        ProcessPic.GetBuffer(Me).EnableDelay(False)
+
         ProcessPic.GetBuffer(Me).SaveData()
         'Application.GetBuffer.SaveData()
         'Application.GetSourcesList.Save() - zapis będzie z "piętro wyżej", razem z datą itp.
@@ -130,6 +135,8 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
         Await ProcessPic.GetBuffer(Me).AddFile(_picek)
 
         _picek.oContent.Close() ' bez tego nie byłoby możliwe delete
+
+        ProcessPic.GetBuffer(Me).SaveData(True)
 
         ' INET używa Recursive jako "Immediately delete"
         If _source.Recursive Then IO.File.Delete(_picek.sInSourceID)
@@ -208,7 +215,7 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
                 Return
             End If
         End If
-
+        ' data z miesiącem (yyyy.MM)
         mam = Regex.Match(tekst, "[12][0-9][0-9][0-9].[0-1][0-9]")
         If mam.Success Then
             If Date.TryParseExact(mam.Value & ".01", "yyyy.MM.dd", Nothing, Globalization.DateTimeStyles.None, data) Then
@@ -217,6 +224,7 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
             End If
         End If
 
+        ' zakres dat, yyyy-yyyy
         mam = Regex.Match(tekst, "[12][0-9][0-9][0-9]-[12][0-9][0-9][0-9]")
         If mam.Success Then
             Dim iInd As Integer = mam.Value.IndexOf("-")
@@ -227,6 +235,7 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
             If Integer.TryParse(mam.Value.AsSpan(iInd + 1), tempInt) Then
                 uiDateRange.MaxDate = New Date(tempInt, 12, 31)
             End If
+            Return
         End If
 
         mam = Regex.Match(tekst, "[12][0-9][0-9][0-9]")
@@ -236,15 +245,18 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
                 uiDateRange.RangeAsText = mam.Value
 
                 Try
+                    Dim prevWyraz As String
                     Dim iInd As Integer = tekst.LastIndexOf(" ", mam.Index - 2)
                     If iInd > -1 Then
-                        Dim prevWyraz As String = tekst.Substring(iInd, mam.Index - 1 - iInd).Trim
-                        Dim month As Integer = TryWyraz2Miesiac(prevWyraz)
-                        If month > 0 Then
-                            Dim smonth As String = month
-                            If month < 10 Then smonth = "0" & smonth
-                            uiDateRange.RangeAsText = mam.Value & "." & smonth
-                        End If
+                        prevWyraz = tekst.Substring(iInd, mam.Index - 1 - iInd).Trim
+                    Else
+                        prevWyraz = tekst.Substring(0, mam.Index - 1).Trim
+                    End If
+                    Dim month As Integer = TryWyraz2Miesiac(prevWyraz)
+                    If month > 0 Then
+                        Dim smonth As String = month
+                        If month < 10 Then smonth = "0" & smonth
+                        uiDateRange.RangeAsText = mam.Value & "." & smonth
                     End If
                 Catch ex As Exception
                 End Try
@@ -284,7 +296,6 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
             End If
         End If
 
-
         mam = Regex.Match(tekst, "ata '[0-9]0")
         If mam.Success Then
             Dim tempInt As Integer
@@ -293,6 +304,18 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
                 Return
             End If
         End If
+
+        If tekst.ContainsCIAI("początek XX") Then
+            uiDateRange.RangeAsText = "190"
+            Return
+        End If
+
+        If tekst.ContainsCIAI("pocz. XX") Then
+            uiDateRange.RangeAsText = "190"
+            Return
+        End If
+
+
     End Sub
 
     Private Shared Function TryWyraz2Miesiac(wyraz As String) As Integer
