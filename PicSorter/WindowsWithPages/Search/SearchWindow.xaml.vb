@@ -261,7 +261,8 @@ Public Class SearchWindow
 
         ' pokazanie rezultatów
         uiLista.ItemsSource = _queryResults 'From c In _queryResults
-        uiGoMiniaturki.IsEnabled = _queryResults IsNot Nothing AndAlso _queryResults.Count > 0
+        uiGoSelMiniaturki.IsEnabled = _queryResults IsNot Nothing AndAlso _queryResults.Count > 0
+        uiGoAllMiniaturki.IsEnabled = _queryResults IsNot Nothing AndAlso _queryResults.Count > 0
 
         stopTime = Date.Now
         'Await Me.MsgBoxAsync("wstawienie do UI files took ms: " & (stopTime - startTime).TotalMilliseconds)
@@ -277,20 +278,31 @@ Public Class SearchWindow
         SzukajOdZeraLubWyniki(_queryResults)
     End Sub
 
-    Private Sub uiGoMiniaturki_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub uiGoAllMiniaturki_Click(sender As Object, e As RoutedEventArgs)
+        GoMiniaturki(True)
+    End Sub
+
+    Private Sub uiGoSelMiniaturki_Click(sender As Object, e As RoutedEventArgs)
+        GoMiniaturki(False)
+    End Sub
+
+
+    Private Sub GoMiniaturki(bAll As Boolean)
 
         If _queryResults Is Nothing Then Return
         If Not _queryResults.Any Then Return
+
+        If uiLista.SelectedItems.Count < 1 Then bAll = True
 
         Dim lista As New Vblib.BufferFromQuery(Application.gDbase)
 
         ' = _queryResults
 
         Dim inputList As List(Of Vblib.OnePic)
-        If uiLista.SelectedItems.count > 0 Then
-            inputList = uiLista.SelectedItems.Cast(Of Vblib.OnePic).ToList
-        Else
+        If bAll Then
             inputList = New List(Of OnePic)(uiLista.ItemsSource)
+        Else
+            inputList = uiLista.SelectedItems.Cast(Of Vblib.OnePic).ToList
         End If
 
         For Each oPic As Vblib.OnePic In inputList
