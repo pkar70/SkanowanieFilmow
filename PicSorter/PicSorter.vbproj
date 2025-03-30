@@ -81,7 +81,7 @@
     </PackageReference>
     <PackageReference Include="pkar.DotNetExts" Version="2.2.7" />
     <PackageReference Include="pkar.WPF.Configs" Version="2.0.1" />
-    <PackageReference Include="pkar.Wpf.Extensions" Version="2.0.14" />
+    <PackageReference Include="pkar.Wpf.Extensions" Version="2.0.16" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup>
 

@@ -38,7 +38,7 @@ Public Class GeoWikiLinks
         Dim langsy As String() = uiCurrLangs.Text.Split(",")
         For Each lang As String In langsy
 
-            Dim linki = Await oPic.sumOfGeo.GeoWikiGetItems(lang, radius, maxcount, BasicGeopos.GeoWikiSort.Distance)
+            Dim linki = Await oPic.sumOfGeo.GeoWikiGetItemsAsync(lang, radius, maxcount, BasicGeopos.GeoWikiSort.Distance)
             If linki Is Nothing Then Continue For
 
             For Each geowiki As BasicGeopos.GeoWikiItem In linki

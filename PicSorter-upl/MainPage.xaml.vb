@@ -84,6 +84,8 @@ Public NotInheritable Class MainPage
 
         Try
             For Each oFile As StorageFile In Await oFold.GetFilesAsync
+                If oFile.Name.NotStartsWith("WP_") Then Continue For
+
                 'Await Me.MsgBoxAsync($"{oFile.Name} ? {odDaty}")
                 If oFile.Name.Substring(0, odDaty.Length) > odDaty Then
                     Dim basProp As FileProperties.BasicProperties = Await oFile.GetBasicPropertiesAsync

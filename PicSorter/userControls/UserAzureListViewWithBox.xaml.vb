@@ -58,7 +58,7 @@ Public Class UserAzureListViewWithBox
 
         Public ReadOnly Property boxdata As String
             Get
-                Return $"({item.X}, {item.Y}), ({item.Width}×{item.Height}"
+                Return $"({item.X}, {item.Y}), ({item.Width}×{item.Height})"
             End Get
         End Property
 

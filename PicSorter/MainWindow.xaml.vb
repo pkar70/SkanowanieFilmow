@@ -412,7 +412,10 @@ Class MainWindow
     Private Sub SrvCurrLog_Click(sender As Object, e As RoutedEventArgs)
         Dim logname As String = Application.gWcfServer.GetCurrLogPath
         If String.IsNullOrWhiteSpace(logname) Then Return
-        If Not IO.File.Exists(logname) Then Return
+        If Not IO.File.Exists(logname) Then
+            Me.MsgBox("Nie ma logu z bieżącego miesiąca")
+            Return
+        End If
 
         Dim newproc As Process = Process.Start("notepad", logname)
         If newproc IsNot Nothing Then _listaProcesowNotepad.Add(newproc)

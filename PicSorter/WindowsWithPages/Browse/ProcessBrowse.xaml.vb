@@ -979,10 +979,13 @@ Public Class ProcessBrowse
         Dim metadane As New BaseList(Of Vblib.OnePic)(stereopackfolder, "picsort.json")
         If Not metadane.Load Then Return retVal.ToArray
 
-        If metadane.Count < 2 Then Return retVal.ToArray
+        If metadane.Count > 0 Then
+            retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(0).GetInBuffName))
+            If metadane.Count > 1 Then
+                retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(1).GetInBuffName))
+            End If
+        End If
 
-        retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(0).GetInBuffName))
-        retVal.Add(IO.Path.Combine(stereopackfolder, metadane.Item(1).GetInBuffName))
         Return retVal.ToArray
 
     End Function
@@ -2839,15 +2842,23 @@ Public Class ProcessBrowse
         End Function
 
         Public Shared Function ThumbCreateFromNormal(sInputFile As String) As BitmapImage
+            Dim bitmapa As New BitmapImage()
+            bitmapa.BeginInit()
 
             Try
                 ' z temp (.png) należy stworzyć THUMB
-                Dim bitmapa As New BitmapImage()
-                bitmapa.BeginInit()
-                bitmapa.DecodePixelHeight = 400
-                bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-                bitmapa.UriSource = New Uri(sInputFile)
-                bitmapa.EndInit()
+
+                Using stream = File.OpenRead(sInputFile)
+
+                    bitmapa.DecodePixelHeight = 400
+                    bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+                    bitmapa.CreateOptions = BitmapCreateOptions.IgnoreImageCache
+                    ' bitmapa.UriSource = New Uri(sInputFile)
+                    bitmapa.StreamSource = stream
+                    bitmapa.EndInit()
+
+                    stream.Close()
+                End Using
 
                 Return bitmapa
             Catch ex As Exception

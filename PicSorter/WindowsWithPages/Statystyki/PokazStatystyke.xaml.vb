@@ -73,7 +73,7 @@ Public Class PokazStatystyke
         If uiFilterek.Text = "" Then
             uiLista.ItemsSource = _entries
         Else
-            uiLista.ItemsSource = _entries.Where(Function(x) x.label.ContainsCI(uiFilterek.Text))
+            uiLista.ItemsSource = _entries.Where(Function(x) If(x.label IsNot Nothing, x.label.ContainsCI(uiFilterek.Text), False))
         End If
     End Sub
 

@@ -165,7 +165,9 @@ Public Class PicMenuLinksWeb
 
         langmi.Items.Clear()
 
-        Dim lista = Await oGeo.GeoWikiGetItems(slang, radius, count, BasicGeopos.GeoWikiSort.Distance)
+        Dim lista As List(Of BasicGeopos.GeoWikiItem) =
+            Await oGeo.GeoWikiGetItemsAsync(slang, radius, count, BasicGeopos.GeoWikiSort.Distance)
+
         If lista Is Nothing Then Return
 
         For Each oLink As BasicGeopos.GeoWikiItem In lista

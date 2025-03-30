@@ -136,7 +136,7 @@ Public NotInheritable Class PicMenuGeotag
 
     Private Sub CopyCalled(sender As Object, e As RoutedEventArgs)
 
-        Dim oGeo As BasicGeoposWithRadius = GetFromDataContext.GetGeoTag
+        Dim oGeo As BasicGeoposWithRadius = GetFromDataContext()?.GetGeoTag
         If oGeo Is Nothing Then
             Vblib.DialogBox("Zaznaczone zdjęcie nie ma GeoTag")
             Return
