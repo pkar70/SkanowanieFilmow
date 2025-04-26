@@ -7,6 +7,8 @@ Public Class Publish_AdHoc
 
     Public Overrides Property sProvider As String = PROVIDERNAME
 
+
+
     Public Overrides Async Function SendFileMain(oPic As Vblib.OnePic) As Task(Of String)
 
         If String.IsNullOrEmpty(sZmienneZnaczenie) Then Return "ERROR: Publish_AdHoc, folderForFiles is not set"
@@ -29,13 +31,33 @@ Public Class Publish_AdHoc
         Return ""
     End Function
 
+
+    Private _sPostBody As String
+
     Public Overrides Async Function SendFilesMain(oPicki As List(Of Vblib.OnePic), oNextPic As JedenWiecejPlik) As Task(Of String)
+
         For Each oPic As Vblib.OnePic In oPicki
             Dim sErr As String = Await SendFileMain(oPic)
             If sErr <> "" Then Return sErr
             oNextPic()
         Next
+
+        If Await DialogBoxYNAsync("Wysłać opis do clipboard?") Then
+            ClipPut(CreateDescriptionForPics(oPicki))
+        End If
+
         Return ""
+    End Function
+
+    Private Function CreateDescriptionForPics(oPicki As List(Of Vblib.OnePic)) As String
+        Dim sDesc As String = ""
+        For Each oPic As Vblib.OnePic In oPicki
+            Dim metaklon As Vblib.PublishMetadataOptions = konfiguracja.MetaOptions.Clone
+            metaklon.PrintSerno = True
+            metaklon.PrintDescr = False
+            sDesc &= oPic.GetMetaDataForPublish(metaklon, True) & vbCrLf
+        Next
+        Return sDesc
     End Function
 
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
