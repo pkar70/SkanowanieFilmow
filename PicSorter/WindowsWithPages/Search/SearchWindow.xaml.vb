@@ -24,7 +24,7 @@ Imports System.Linq
 
 Public Class SearchWindow
 
-    Private Shared _fullArchive As BaseList(Of Vblib.OnePic) ' pełny plik archiwum, do wyszukiwania
+    'Private Shared _fullArchive As BaseList(Of Vblib.OnePic) ' pełny plik archiwum, do wyszukiwania
     Private _inputList As IEnumerable(Of Vblib.OnePic) ' aktualnie używany na wejściu
     Private _queryResults As IEnumerable(Of Vblib.OnePic) ' wynik szukania
     'Private _geoTag As BasicGeopos
@@ -394,13 +394,46 @@ Public Class SearchWindow
         SettingsDirTree.OpenFolderInPicBrowser(oPic.TargetDir)
     End Sub
 
-    Private Sub uiFoldersOpenFolder_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiFoldersOpenFolder_Click(sender As Object, e As RoutedEventArgs)
         Dim oFE As FrameworkElement = sender
         Dim oDir As Vblib.OneDir = oFE.DataContext
         If oDir Is Nothing Then Return
 
-        ' otwórz folder - ale z listy folderów
-        SettingsDirTree.OpenFolderInPicBrowser(oDir.fullPath)
+        Dim query As New Vblib.SearchQuery
+        query.ogolne.adv.TargetDir = oDir.fullPath
+
+        Dim _queryResults As IEnumerable(Of Vblib.OnePic) = Nothing
+        Await Task.Run(Sub() _queryResults = Application.gDbase.Search(query))
+        If _queryResults Is Nothing Then
+            Me.MsgBox("Nie mogę znaleźć plików w archiwum")
+            Return
+        End If
+
+        For Each oPic As Vblib.OnePic In _queryResults
+            For Each oArch As lib_PicSource.LocalStorageMiddle In Application.GetArchivesList
+                vb14.DumpMessage($"trying archive {oArch.StorageName}")
+                Dim sRealPath As String = oArch.GetRealPath(oPic.TargetDir, oPic.sSuggestedFilename)
+                vb14.DumpMessage($"real path of index file: {sRealPath}")
+                If Not String.IsNullOrWhiteSpace(sRealPath) Then
+                    ' nie ma clone, więc InBufferPathName się zmienia - ważne dla ewentualnego zmieniania metadanych w archiwum
+                    'Dim oPicNew As Vblib.OnePic = oPic.Clone - jak CLONE to do arch nie można dac zmian
+                    oPic.InBufferPathName = sRealPath
+                    Exit For
+                End If
+            Next
+        Next
+
+        Dim foldBuff As New BufferFromQuery()
+        For Each oPic As Vblib.OnePic In _queryResults
+            Await foldBuff.AddFile(oPic)
+        Next
+
+        Dim oWnd As New ProcessBrowse(foldBuff, "InDir")
+        oWnd.Show()
+        'Return
+
+        '' otwórz folder - ale z listy folderów
+        'SettingsDirTree.OpenFolderInPicBrowser(oDir.fullPath)
     End Sub
 End Class
 
