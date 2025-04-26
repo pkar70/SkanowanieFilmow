@@ -809,16 +809,28 @@ Public Class ProcessBrowse
 
         ' buffer.json.pic1 - skasowanie pliku, w JSON zmiana nazwy (InBuffer, sSuggested i chyba tyle), zmiana ikonki typu w thumbs
         pic0.oPic.DeleteAllTempFiles()
-        IO.File.Delete(pic0.oPic.InBufferPathName)
+
+        Try
+            IO.File.Delete(pic0.oPic.InBufferPathName)
+        Catch ex As Exception
+            ' nie można skasować - plik w użyciu albo coś, to pomijamy to 
+        End Try
+
         pic0.oPic.InBufferPathName = packZipName
         pic0.oPic.Archived = "" ' takiej wersji na pewno nie było zarchiwizowanej :)
         pic0.oPic.sSuggestedFilename = IO.Path.GetFileName(packZipName)
         pic0.oPic.SetDefaultFileTypeDiscriminator() ' ikonka przy picku
-        pic0.NotifyPropChange("fileTypeDiscriminator")
+        pic0.NotifyPropChange("fileTypeDiscriminator") 'jest w Set, ale tam na poziomie oPic, a tu na poziomie Thumb
         ' podmiana obrazka jeszcze
         Await pic0.ThumbWczytajLubStworz(False, True)
 
-        If pic1 IsNot Nothing Then DeletePicekMain(pic1)   ' zmieni _Reapply, jeśli picek miał splita; ze wszystkąd usuwa
+        If pic1 IsNot Nothing Then
+            Try
+                DeletePicekMain(pic1)   ' zmieni _Reapply, jeśli picek miał splita; ze wszystkąd usuwa
+            Catch ex As Exception
+
+            End Try
+        End If
 
         ' *TODO* ewentualnie stereoautoalign, własny anagl z *aligned*, ustalenie R/L, i zrobienie pliku JPS - tak by do StereoViewer wysłac pliki aligned
     End Sub
@@ -1513,6 +1525,24 @@ Public Class ProcessBrowse
         Next
     End Sub
 
+    Private Sub ApplyAutoSplitReel()
+
+        Dim lastReel As String = ""
+
+        For Each oItem As ThumbPicek In _thumbsy
+            Dim oExif As Vblib.ExifTag = oItem.oPic.GetExifOfType(Vblib.ExifSource.SourceDefault)
+            If oExif Is Nothing Then Continue For
+
+            ' było EqualsCI, ale bywa przecież reelname NULL
+            If oExif.ReelName = lastReel Then Continue For
+
+            oItem.splitBefore = SplitBeforeEnum.reel
+            lastReel = oExif.ReelName
+        Next
+
+    End Sub
+
+
     Private Function PoliczMaxRun() As Integer
 
         Dim iMax As Integer = 0
@@ -1548,6 +1578,9 @@ Public Class ProcessBrowse
         ' split ważniejszy
         If vb14.GetSettingsBool("uiDayChange") Then ApplyAutoSplitDaily()
         If vb14.GetSettingsBool("uiHourGapOn", True) Then ApplyAutoSplitHours(vb14.GetSettingsInt("uiHourGapInt"))
+
+        ' spli najważniejszy
+        ApplyAutoSplitReel()
 
         _iMaxRun = PoliczMaxRun()
 
@@ -1742,6 +1775,11 @@ Public Class ProcessBrowse
 
     Private Sub uiFilterNoRealDate_Click(sender As Object, e As RoutedEventArgs)
         FiltrujWedle("no date", False, True, True, Function(x) x.oPic.HasRealDate)
+    End Sub
+
+    Private Sub uiFilterMoreThanYear_Click(sender As Object, e As RoutedEventArgs)
+        FiltrujWedle("> yr", False, True, True,
+                     Function(x) x.oPic.HasRealDate OrElse x.oPic.GetMinDate.AddYears(1) > x.oPic.GetMaxDate)
     End Sub
 
     Private Sub uiFilterNoGeo_Click(sender As Object, e As RoutedEventArgs)
@@ -2844,21 +2882,22 @@ Public Class ProcessBrowse
         Public Shared Function ThumbCreateFromNormal(sInputFile As String) As BitmapImage
             Dim bitmapa As New BitmapImage()
             bitmapa.BeginInit()
+            bitmapa.DecodePixelHeight = 400
+            bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
+            bitmapa.CreateOptions = BitmapCreateOptions.IgnoreImageCache
 
             Try
                 ' z temp (.png) należy stworzyć THUMB
+                'Using stream = File.OpenRead(sInputFile)
 
-                Using stream = File.OpenRead(sInputFile)
+                ' chciałem przez Stream, żeby go jawnie zamykać - bo zdaje się czasami zostaje obrazek zablokowany i nie można go zaktualizować. Ale wtedy jest że  "Key cannot be null. (Parameter 'key') w Init
 
-                    bitmapa.DecodePixelHeight = 400
-                    bitmapa.CacheOption = BitmapCacheOption.OnLoad ' Close na Stream uzyty do ładowania
-                    bitmapa.CreateOptions = BitmapCreateOptions.IgnoreImageCache
-                    ' bitmapa.UriSource = New Uri(sInputFile)
-                    bitmapa.StreamSource = stream
+                bitmapa.UriSource = New Uri(sInputFile)
+                    'bitmapa.StreamSource = stream.AsInputStream
                     bitmapa.EndInit()
 
-                    stream.Close()
-                End Using
+                '    stream.Close()
+                'End Using
 
                 Return bitmapa
             Catch ex As Exception
@@ -2941,6 +2980,7 @@ Public Class ProcessBrowse
 
             Using fileStream = IO.File.Create(ThumbGetFilename())
                 encoder.Save(fileStream)
+                fileStream.Close() ' niby niepotrzebne, bo Dispose zamyka, ale lepiej
             End Using
 
             FileAttrHidden(ThumbGetFilename(), True)
@@ -3170,6 +3210,8 @@ Public Class KonwersjaPasekKolor
         If temp = SplitBeforeEnum.czas Then Return New SolidColorBrush(Colors.SkyBlue)
         If temp = SplitBeforeEnum.geo Then Return New SolidColorBrush(Colors.OrangeRed)
 
+        If temp = SplitBeforeEnum.reel Then Return New SolidColorBrush(Colors.LimeGreen)
+
         ' i tak będzie niewidoczny, więc w sumie nie jest takie ważne, ale po co robić nowe obiekty
         Return Microsoft.Windows.Themes.ThemeColor.NormalColor
     End Function
@@ -3252,6 +3294,7 @@ Public Enum SplitBeforeEnum
     none
     czas
     geo
+    reel
 End Enum
 
 Interface BrowseSubWindow

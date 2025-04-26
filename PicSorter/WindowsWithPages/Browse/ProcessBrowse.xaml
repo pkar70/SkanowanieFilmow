@@ -45,6 +45,7 @@
                             <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
                             <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" Icon="🚩" />
                             <MenuItem Header="bez realdate" Click="uiFilterNoRealDate_Click" Icon="📆"/>
+                            <MenuItem Header="&gt; year" Click="uiFilterMoreThanYear_Click" Icon="📆"/>
                             <MenuItem Header="only NAR" Click="uiFilterNAR_Click" />
                             <MenuItem Header="wg keywords" Click="uiFilterKeywords_Click" Icon="#"/>
                             <MenuItem Header="wg 'gdziekolwiek'" Click="uiFilterAnywhere_Click" />
