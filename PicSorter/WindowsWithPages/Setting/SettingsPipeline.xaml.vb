@@ -20,6 +20,8 @@ Class SettingsPipeline
         uiEmbedTxtBwR.GetSettingsInt()
         uiEmbedTxtBwG.GetSettingsInt()
         uiEmbedTxtBwB.GetSettingsInt()
+        'uiWinFaceAverage.GetSettingsBool
+        uiTrybZamazywania.GetSettingsInt
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -36,10 +38,33 @@ Class SettingsPipeline
         uiEmbedTxtBwR.SetSettingsInt()
         uiEmbedTxtBwG.SetSettingsInt()
         uiEmbedTxtBwB.SetSettingsInt()
+        'uiWinFaceAverage.SetSettingsBool
+        uiTrybZamazywania.SetSettingsInt
+
     End Sub
 
     Private Sub uiWatermark_Click(sender As Object, e As RoutedEventArgs)
         Me.NavigationService.Navigate(New SettingsWatermark)
     End Sub
 
+    'Private Sub uiWinFaceAverage_Checked(sender As Object, e As RoutedEventArgs)
+    '    uiKolorekTwarzowy.Visibility = If(uiWinFaceAverage.IsChecked, Visibility.Collapsed, Visibility.Visible)
+    'End Sub
+
+    Private Sub uiTrybZamazywania_SelectionChanged(sender As Object, e As SelectionChangedEventArgs)
+        Dim tryb As Integer = uiTrybZamazywania.SelectedIndex
+
+        uiKolorekTwarzowy.Visibility = Visibility.Collapsed
+        uiBlurSettings.Visibility = Visibility.Collapsed
+
+        Select Case tryb
+            Case 0
+                uiKolorekTwarzowy.Visibility = Visibility.Visible
+            Case 1
+
+            Case 2
+                uiBlurSettings.Visibility = Visibility.Visible
+        End Select
+
+    End Sub
 End Class
