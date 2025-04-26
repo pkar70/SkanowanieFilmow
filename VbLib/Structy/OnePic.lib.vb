@@ -453,6 +453,10 @@ Public Class OnePic
 
 #End Region
 #Region "operacje na maskach"
+
+    ''' <summary>
+    ''' sprawdza InBufferPathName, a jak to NULL, to sSuggestedFilename
+    ''' </summary>
     Public Function MatchesMasks(sIncludeMasks As String, Optional sExcludeMasks As String = "") As Boolean
 
         Dim sFilenameNoPath As String
@@ -520,6 +524,7 @@ Public Class OnePic
 
     Public Sub SetDefaultFileTypeDiscriminator()
         fileTypeDiscriminator = GetFileTypeIcon()
+        NotifyPropChange("fileTypeDiscriminator")
     End Sub
 
 #Region "linki"
@@ -1258,17 +1263,16 @@ Public Class OnePic
         'For Each oExif As ExifTag In Exifs
         '    If oExif.Keywords.Contains(oKey.sId) Then Return True
         'Next
-
+        Return HasKeyword(oKey.sId & " ")
         'Return False
-        Return sumOfKwds.Contains(oKey.sId & " ")
+        'Return sumOfKwds.Contains(oKey.sId & " ")
     End Function
 
     Public Function HasKeyword(sKey As String) As Boolean
         'If Exifs Is Nothing Then Return False
 
-        'For Each oExif As ExifTag In Exifs
-        '    If oExif.Keywords IsNot Nothing AndAlso oExif.Keywords.Contains(sKey) Then Return True
-        'Next
+        ' nie wiem czemu ale się zdarza, że jest pusty
+        If sumOfKwds Is Nothing Then Return False
 
         'Return False
         Return sumOfKwds.Contains(sKey & " ")

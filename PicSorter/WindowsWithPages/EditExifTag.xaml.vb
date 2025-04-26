@@ -194,8 +194,10 @@ Public Class EditExifTag
 
     Private Sub uiAuthor_SelectionChanged(sender As Object, e As SelectionChangedEventArgs) Handles uiAuthor.SelectionChanged
         Dim autor As String = uiAuthor.SelectedValue
+        If autor Is Nothing Then Return
 
         For Each copyr As String In uiCopyright.Items
+            If copyr Is Nothing Then Continue For
             If copyr.ContainsCIAI(autor) Then
                 uiCopyright.SelectedItem = copyr
             End If

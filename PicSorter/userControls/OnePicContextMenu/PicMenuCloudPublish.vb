@@ -156,6 +156,7 @@ Public NotInheritable Class PicMenuCloudPublish
             End If
 
             If Not String.IsNullOrWhiteSpace(_retMsg) Then Vblib.DialogBox(_retMsg)
+
             WypelnMenu(Me, AddressOf ApplyActionSingle, AddressOf ApplyActionMulti)
             EventRaise(PicMenuModifies.Any)
         Else

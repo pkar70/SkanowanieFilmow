@@ -530,7 +530,15 @@ Public Class BufferFromQuery
     End Sub
 
 
-
+    ''' <summary>
+    ''' otwarcie bufora z pliku JSON
+    ''' </summary>
+    ''' <param name="sFilepathname">ścieżka do pliku JSON</param>
+    ''' <remarks>nie umie zapisać zmian</remarks>
+    ''' <summary>
+    ''' otwarcie bufora z pliku JSON
+    ''' </summary>
+    ''' <param name="sFilepathname">plik JSON z indeksem</param>
     Public Sub New(sFilepathname As String)
         DumpCurrMethod()
 

@@ -1,3 +1,6 @@
+picsort: usuwanie powtorek z fbstary, z archiwum, ze sklejaniem informacji
+menu, copy id, copyraw - bez archiwum, bo nie bufpic :)
+
 
 OCR w AppSDK (z AI):
 https://learn.microsoft.com/en-us/windows/ai/apis/text-recognition

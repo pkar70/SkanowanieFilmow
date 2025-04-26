@@ -187,7 +187,8 @@ Public Class SequenceStage_Publish
     Public Overrides ReadOnly Property Icon As String = "🏛"
 
     Public Overrides Function Check(picek As OnePic) As Boolean
-        Return False ' bo niby co może tu zrobić? wszak mogą być wielokrotne...
+        Return picek.Published Is Nothing
+        ' Return False ' bo niby co może tu zrobić? wszak mogą być wielokrotne...
     End Function
     Public Overrides Function Check(picki As List(Of OnePic)) As Boolean
         Return False
