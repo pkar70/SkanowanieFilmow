@@ -35,6 +35,7 @@ Class MainWindow
             Me.MsgBox("Narzucona nazwa instancji:" & vbCrLf & appname)
         End If
 
+        uiStats.IsEnabled = Application.gDbase.IsLoaded
 
         ' gdy nie ma cmd line, kończymy
         If String.IsNullOrEmpty(Environment.CommandLine) Then Return
@@ -42,7 +43,6 @@ Class MainWindow
         ' specjalne uruchomienia
         Dim argsy As String() = Environment.CommandLine.Split(" ")
         If argsy.Length < 2 Then Return
-
 
         Select Case argsy(1).ToLowerInvariant
             Case "expl"
