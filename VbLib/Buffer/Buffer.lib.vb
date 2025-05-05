@@ -232,9 +232,30 @@ Public Class BufferSortowania
             Dim sTempName As String = sDstPathName & ".tmp"
 
             If File.Exists(sTempName) Then
-                DumpMessage("Temp file already exists! " & sTempName)
-                Await Vblib.DialogBoxAsync("Temp file already exists! " & sTempName)
-                Return False
+
+                ' no dobra, taki plik istnieje, ale może jest wystarczająco stary by go usunąć?
+                Dim oTempFileInfo As FileInfo = New FileInfo(sTempName)
+
+
+                If oTempFileInfo.CreationTime.AddHours(1) < Date.Now Then
+                    Try
+                        IO.File.Delete(sTempName)
+                    Catch ex As Exception
+                        ' nic nie rób, bo i tak nie można usunąć
+                    End Try
+                End If
+
+                If File.Exists(sTempName) Then
+                    ' albo za świeży, albo nieudane skasowanie
+                    DumpMessage("Temp file already exists! " & sTempName)
+                    Try
+                        Await Vblib.DialogBoxAsync("Temp file already exists! " & sTempName)
+                    Catch ex As Exception
+                        ' to może być z server, może nie byc okna żadnego więc DlgBox nie zadziała
+                    End Try
+                    Return False
+                End If
+
             End If
 
             Dim bSame As Boolean = False
