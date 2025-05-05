@@ -2305,6 +2305,7 @@ Public Class OnePic
         sumOfKwds = GetAllKeywords().Trim & " " ' zapewnienie spacji do szukania
         sumOfUserComment = GetSumOfUserComment()
         sumOfGeo = GetGeoTag()
+        NotifyPropChange("sumOfGeo")
         If sumOfGeo Is Nothing AndAlso slowka IsNot Nothing Then
             RecalcGeoFromKwd(slowka)
         End If

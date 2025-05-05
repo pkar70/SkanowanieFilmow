@@ -15,6 +15,7 @@
         <local:KonwersjaVisibility x:Key="KonwersjaVisibility"/>
         <local:KonwersjaSourcePath2Podpis x:Key="KonwersjaSourcePath2Podpis" />
         <local:KonwersjaDescrIgnoreNewLine x:Key="KonwersjaDescrIgnoreNewLine" />
+        <local:KonwersjaGeo2Podpis x:Key="KonwersjaGeo2Podpis" />
     </Window.Resources>
     
     <Grid Margin="5,5,5,5">
@@ -124,6 +125,7 @@
                         <MenuItem IsCheckable="True" Header="Filename" MouseDoubleClick="uiPodpisDbl_Click"  Name="uiPodpisFilename"/>
                         <MenuItem IsCheckable="True" Header="Keywords" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisKeywords"/>
                         <MenuItem IsCheckable="True" Header="Dates" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisDates"/>
+                        <MenuItem IsCheckable="True" Header="Geo" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisGeo"/>
                         <MenuItem IsCheckable="True" Header="Description" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisDescription"/>
                         <MenuItem IsCheckable="True" Header="Src path" Checked="uiPodpis_Checked" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisSrcPath"/>
                         <MenuItem IsCheckable="True" Header="Targetdir" MouseDoubleClick="uiPodpisDbl_Click" Name="uiPodpisTarget" />
@@ -304,6 +306,7 @@
                             <TextBox Margin="0,0,0,0" Text="{Binding oPic.sSourceName, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSource, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding oPic.sSuggestedFilename, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisFilename, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding sumOfKwds, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisKeywords, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
+                            <TextBox Margin="0,0,0,0" Text="{Binding oPic.sumOfGeo, Mode=OneWay, Converter={StaticResource KonwersjaGeo2Podpis}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisGeo, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding sumOfDates, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDates, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding sumOfDescr, Mode=OneWay, Converter={StaticResource KonwersjaDescrIgnoreNewLine}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDescription, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding oPic.sInSourceID, Mode=OneWay, Converter={StaticResource KonwersjaSourcePath2Podpis}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSrcPath, Converter={StaticResource KonwersjaVisibility}}" HorizontalAlignment="Left"  BorderThickness="0" IsReadOnly="True"/>

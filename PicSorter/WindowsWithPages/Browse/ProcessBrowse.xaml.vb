@@ -3289,6 +3289,17 @@ Public Class KonwersjaSourcePath2Podpis
     End Function
 End Class
 
+Public Class KonwersjaGeo2Podpis
+    Inherits ValueConverterOneWaySimple
+
+    Protected Overrides Function Convert(value As Object) As Object
+        Dim oGeo As BasicGeoposWithRadius = TryCast(value, BasicGeoposWithRadius)
+        If oGeo Is Nothing Then Return ""
+
+        Return $"(@ {oGeo.StringLat(2)}, {oGeo.StringLon(2)})"
+    End Function
+End Class
+
 
 Public Enum SplitBeforeEnum
     none
