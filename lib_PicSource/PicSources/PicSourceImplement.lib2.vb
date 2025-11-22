@@ -217,16 +217,23 @@ Public Class PicSourceImplement
 
     <Newtonsoft.Json.JsonIgnore>
     Private _MediaDeviceHelper As MediaHelper.Helper
-
+    Private _MediaVolLabel As String
 
 
     Private Function CheckDeviceFromVolLabel_MTP(sVolLabel As String) As Boolean
-        Try
+        If _MediaDeviceHelper IsNot Nothing Then
+            If sVolLabel = _MediaVolLabel Then Return True
+            ' inny VolLabel - trzeba rozłączyć i poszukać nowego
+            _MediaDeviceHelper.Disconnect()
+            _MediaDeviceHelper = Nothing
+        End If
 
+        Try
             DumpCurrMethod(sVolLabel)
             Dim oMD As New MediaHelper.Helper(sVolLabel)
             If Not oMD.IsValid Then Return False
             _MediaDeviceHelper = oMD
+            _MediaVolLabel = sVolLabel
             DumpMessage("tuż przed Connect")
             _MediaDeviceHelper.Connect()
             DumpMessage("już po Connect")

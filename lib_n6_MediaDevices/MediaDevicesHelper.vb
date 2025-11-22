@@ -33,9 +33,34 @@ Public Class Helper
     End Function
 
     Public Sub Connect()
+        vb14.DumpCurrMethod()
+        If _oMD Is Nothing Then
+            vb14.DumpMessage("Nie mogê CONNECT bo _oMD jest Nothing")
+            Exit Sub
+        End If
+
+        If _oMD.IsConnected Then
+            vb14.DumpMessage("Ju¿ jestem po³¹czony")
+            Exit Sub
+        End If
+
         _oMD?.Connect(MediaDevices.MediaDeviceAccess.GenericRead Or MediaDevices.MediaDeviceAccess.GenericWrite)
         '_oMD?.Connect(MediaDevices.MediaDeviceAccess.GenericRead)
     End Sub
+
+    Public Sub Disconnect()
+        vb14.DumpCurrMethod()
+        If _oMD Is Nothing Then
+            vb14.DumpMessage("Nie mogê DISCONNECT bo _oMD jest Nothing")
+            Exit Sub
+        End If
+        If Not _oMD.IsConnected Then
+            vb14.DumpMessage("Ju¿ jestem roz³¹czony")
+            Exit Sub
+        End If
+        _oMD?.Disconnect()
+    End Sub
+
 
     Public Function Delete(sPathname As String)
         If _oMD Is Nothing Then Return False
@@ -49,6 +74,7 @@ Public Class Helper
     End Function
 
     Public Function GetStream(sPathname As String) As IO.Stream
+        vb14.DumpCurrMethod()
         Dim oFI As MediaDevices.MediaFileInfo
         Try
             ' 2023.07.28, doda³em TRY bo wyskakiwa³
@@ -73,9 +99,16 @@ Public Class Helper
         vb14.DumpCurrMethod(sVolLabel)
         sVolLabel = sVolLabel.ToLowerInvariant
         If String.IsNullOrWhiteSpace(sVolLabel) Then Return Nothing
-        Dim iInd As Integer = sVolLabel.IndexOf("(")
-        If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd - 1).Trim
-        vb14.DumpMessage("searching for '" & sVolLabel & "'")
+
+        ' przypadek szczególny: moto G(50)
+        If sVolLabel.StartsWithCI("moto g(50)") Then
+            sVolLabel = "moto g(50)"
+        Else
+            Dim iInd As Integer = sVolLabel.IndexOf("(")
+            If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd - 1).Trim
+        End If
+
+        vb14.DumpMessage("searching For '" & sVolLabel & "'")
 
         For Each oMD As MediaDevices.MediaDevice In MediaDevices.MediaDevice.GetDevices
             vb14.DumpMessage($"device: {oMD.FriendlyName.ToLowerInvariant}")
@@ -87,11 +120,12 @@ Public Class Helper
     End Function
 
     Public Function GetDirList(sForDir As String) As List(Of String)
+        vb14.DumpCurrMethod(sForDir)
         If _oMD Is Nothing Then Return Nothing
 
         Dim lista As New List(Of String)
 
-        _oMD.Connect()
+        Connect()
 
         If sForDir = "\" Then
             ' z MTPget , bo inaczej pokazuje np. \Apps i tak dalej
@@ -112,6 +146,7 @@ Public Class Helper
 
     Private _listaPlikow As List(Of Vblib.OnePic)
     Public Function ReadDirectory(sInitialPath As String, sSourceName As String, sIncludeMask As String, sExcludeMask As String, oCurrentExif As Vblib.ExifTag) As List(Of Vblib.OnePic)
+        vb14.DumpCurrMethod(sInitialPath)
         _listaPlikow = New List(Of Vblib.OnePic)
 
         If Not ReadDirectory_Recursion(sInitialPath, sSourceName, sIncludeMask, sExcludeMask, oCurrentExif) Then Return Nothing
