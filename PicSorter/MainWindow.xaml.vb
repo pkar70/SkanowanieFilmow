@@ -6,12 +6,15 @@ Imports System.Windows.Interop
 Imports System.Threading
 Imports MetadataExtractor.Formats
 Imports Windows.Media.Playback
+Imports pkar.UI.LogExtensions
+
 'Imports MetadataExtractor
 'Imports PdfSharp.Charting
 
 Class MainWindow
     Inherits Window
 
+    Private _juzMam As Boolean
 
     Private Async Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         InitLib(Nothing)
@@ -35,8 +38,7 @@ Class MainWindow
             Me.MsgBox("Narzucona nazwa instancji:" & vbCrLf & appname)
         End If
 
-        uiStats.IsEnabled = Application.gDbase.IsLoaded
-
+        _juzMam = True
         ' gdy nie ma cmd line, kończymy
         If String.IsNullOrEmpty(Environment.CommandLine) Then Return
 
@@ -99,6 +101,10 @@ Class MainWindow
         End Select
     End Sub
 
+    Private Sub Window_Activated(sender As Object, e As EventArgs)
+        If Not _juzMam Then Return ' Activated jest przed Loaded? na start tu jeszcze nie ma globals._folder
+        uiStats.IsEnabled = Application.gDbase.IsLoaded
+    End Sub
 
 #Region "commandline"
 
@@ -361,12 +367,18 @@ Class MainWindow
         ctxMenu.Items.Add(_ctxSettings)
 
         ctxMenu.Items.Add(CreateMenuItem("About", "O programie", AddressOf About_Click))
+        ctxMenu.Items.Add(CreateMenuItem("Debug log", "Pokaż kotku co masz w środku", AddressOf ShowLog_Click))
 
         ctxMenu.Items.Add(New Separator)
         ctxMenu.Items.Add(CreateMenuItem("Quit", "Zamknięcie programu", AddressOf uiQuit_Click))
 
         Return ctxMenu
     End Function
+
+    Private Sub ShowLog_Click(sender As Object, e As RoutedEventArgs)
+        Dim oWnd As New DebugLog
+        oWnd.Show()
+    End Sub
 
     Private Sub uiQuit_Click(sender As Object, e As RoutedEventArgs)
         ' potrzebne takie proxy - bo zmiana typu 'e' z RoutedEventArgs na CancelEventArgs
@@ -578,6 +590,8 @@ Class MainWindow
 
         uiVers.Text = GetAppVers() & " (" & BUILD_TIMESTAMP & ")"
 
+        'DumpujListePlikow()
+
         'PoprawDateMinMaxKwds()
         'Await UzupelnijGeoName()
         'Me.MsgBox("poprawilem")
@@ -609,6 +623,20 @@ Class MainWindow
     End Function
 
 #If False Then
+
+    Private Sub DumpujListePlikow()
+        Dim arch As New BaseList(Of Vblib.OnePic)("C:\Users\pkar\AppData\Local\PicSorter", "archIndexFull.json")
+        arch.Load()
+
+        Dim filenamesy As New List(Of String)
+        For Each oFile As Vblib.OnePic In arch
+            filenamesy.Add("L:\HomeArchive\FotoVideo\PicSort\" & oFile.TargetDir & "\" & oFile.sSuggestedFilename)
+        Next
+
+        IO.File.WriteAllText("C:\Users\pkar\AppData\Local\PicSorter\filenames.txt", String.Join(vbCrLf, filenamesy))
+
+    End Sub
+
 
 
     Private Shared Sub PoprawDateMinMaxKwds()
@@ -1189,6 +1217,8 @@ Class MainWindow
     End Function
 
 
+#If False Then
+    ' teraz jest w Nuget
     Private Async Function CheckEventLog() As Task
         'za duże opóźnienie by zawsze testować, to musi być "on demand"
 
@@ -1220,9 +1250,12 @@ Class MainWindow
         End Using
 
     End Function
+
+#End If
+
 End Class
 
-
+#If False Then
 
 Public Module ExtsWnd
 
@@ -1292,3 +1325,5 @@ Public Module ExtsWnd
     End Function
 
 End Module
+
+#end if
