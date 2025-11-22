@@ -8,6 +8,9 @@ Public Class SimpleDescribe
     Private _orgDescribe As String
     Private _readonly As Boolean
 
+    Private _sizeOnStartWnd As Double
+    Private _sizeOnStartTBox As Double
+
     Public Sub New(bReadOnly As Boolean)
 
         ' This call is required by the designer.
@@ -160,11 +163,25 @@ Public Class SimpleDescribe
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         uiAllDescribe.Focus()
+        _sizeOnStartWnd = Me.Height
+        _sizeOnStartTBox = uiAllDescribe.Height
     End Sub
 
     Private Sub Window_KeyUp(sender As Object, e As KeyEventArgs)
         If e.IsRepeat Then Return
         If e.Key <> Key.Escape Then Return
         Me.Close()
+    End Sub
+
+    Private Sub Window_SizeChanged(sender As Object, e As SizeChangedEventArgs)
+        If _sizeOnStartWnd < Me.Height Then Return
+        uiAllDescribe.Height = _sizeOnStartTBox + Me.Height - _sizeOnStartWnd
+        If uiAllDescribe.Height < 2 * _sizeOnStartTBox Then
+            uiAllDescribe.TextWrapping = TextWrapping.NoWrap
+            uiAllDescribe.VerticalScrollBarVisibility = ScrollBarVisibility.Disabled
+        Else
+            uiAllDescribe.TextWrapping = TextWrapping.Wrap
+            uiAllDescribe.VerticalScrollBarVisibility = ScrollBarVisibility.Auto
+        End If
     End Sub
 End Class

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
-        Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow" Loaded="Window_Loaded" KeyUp="Window_KeyUp">
+        Title="Describe" Height="110" Width="400" DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow" Loaded="Window_Loaded" KeyUp="Window_KeyUp" SizeChanged="Window_SizeChanged">
     <StackPanel Margin="5,2,5,2">
         <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
         <!--<TextBox Name="uiFileName" FontWeight="Bold" IsReadOnly="True" BorderThickness="0" />-->
