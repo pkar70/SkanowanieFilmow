@@ -23,7 +23,7 @@ Public Class PicMenuLocks
         )
 
             EventRaise(PicMenuModifies.Lock)
-        End Sub
+        End Sub, ikonka:="🔒"
         )
 
 

@@ -35,10 +35,10 @@ Public NotInheritable Class PicMenuTargetDir
         Me.Items.Clear()
 
         _itemSet = AddMenuItem("Set target dir", "Ustawianie katalogu docelowego", AddressOf uiCreateTargetDir_Click)
-        _itemMakeSame = AddMenuItem("Make same", "Skopiowanie katalogu docelowego między zdjęciami", AddressOf uiTargetMakeSame_Click)
+        _itemMakeSame = AddMenuItem("Make same", "Skopiowanie katalogu docelowego między zdjęciami", AddressOf uiTargetMakeSame_Click, ikonka:="=")
         _miCopy = AddMenuItem("Copy TargetDir", "Skopiowanie katalogu docelowego do lokalnego schowka", AddressOf CopyCalled)
         _miPaste = AddMenuItem("Paste TargetDir", "Narzucenie zdjęciom katalogu docelowego wg lokalnego schowka", AddressOf PasteCalled, False)
-        _itemClear = AddMenuItem("Clear TargetDir", "Usunięcie wskazania katalogu docelowego", AddressOf uiTargetClear_Click)
+        _itemClear = AddMenuItem("Clear TargetDir", "Usunięcie wskazania katalogu docelowego", AddressOf uiTargetClear_Click, ikonka:="❌")
 
         MenuOtwieramy()
     End Sub

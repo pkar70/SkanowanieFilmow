@@ -89,8 +89,9 @@ GetType(PicMenuBase), New FrameworkPropertyMetadata(False))
         Return picek
     End Function
 
-    Protected Function AddMenuItem(header As String, dymek As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True) As MenuItem
+    Protected Function AddMenuItem(header As String, dymek As String, Optional handler As RoutedEventHandler = Nothing, Optional isenabled As Boolean = True, Optional ikonka As Object = Nothing) As MenuItem
         Dim oNew As MenuItem = CreateMenuItem(header, dymek, handler, isenabled)
+        If ikonka IsNot Nothing Then oNew.Icon = ikonka
         Me.Items.Add(oNew)
         Return oNew
     End Function
