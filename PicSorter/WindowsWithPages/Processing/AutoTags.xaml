@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
+        xmlns:pksc="clr-namespace:pk.UI.SharedControls;assembly=pkar.UI.SharedControls"
         mc:Ignorable="d"
         Title="AutoTags" Height="450" Width="300" Loaded="Window_Loaded">
     <Window.Resources>
@@ -17,8 +18,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-
-        <local:TextBlockPageTitle Text="Auto-znakowanie zdjęć"  />
+        <pksc:TextBlockPageTitle Text="Auto-znakowanie zdjęć"  />
 
             <ListView Name="uiLista" Margin="0,5,0,10" Grid.Row="1">
                 <ListView.ItemContainerStyle>

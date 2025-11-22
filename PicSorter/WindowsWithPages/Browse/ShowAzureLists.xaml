@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:pksc="clr-namespace:pk.UI.SharedControls;assembly=pkar.UI.SharedControls"
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="ShowAzureLists" Height="450" Width="550" DataContextChanged="Window_DataContextChanged">
@@ -59,6 +60,6 @@
             </TabItem>
         </TabControl>
 
-        <local:pButton Content="Save!" Grid.Row="2" Margin="5,5,5,5" Click="uiOk_Click" />
+        <pksc:Button Content="Save!" Grid.Row="2" Margin="5,5,5,5" Click="uiOk_Click" />
     </local:StretchedGrid>
 </Window>

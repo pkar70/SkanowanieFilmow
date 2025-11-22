@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:pksc="clr-namespace:pk.UI.SharedControls;assembly=pkar.UI.SharedControls"  
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="GeoWikiLinks" Height="450" Width="300" DataContextChanged="Window_DataContextChanged"  KeyUp="Window_KeyUp">
@@ -22,7 +23,7 @@
             <Button Margin="5,0,0,0" Content=" Check! " Click="uiCheck_Click" />
         </StackPanel>
 
-        <local:StretchedListView Grid.Row="2" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="uiLista">
+        <pksc:StretchedListView Grid.Row="2" ScrollViewer.HorizontalScrollBarVisibility="Auto" x:Name="uiLista">
             <ListView.ItemTemplate>
                 <DataTemplate>
                     <local:StretchedGrid Cols="A,A,*">
@@ -36,7 +37,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
 
-        </local:StretchedListView>
+        </pksc:StretchedListView>
             
         <Button Content=" Set! " Grid.Row="3" HorizontalAlignment="Center" Margin="5,5,5,5" />
 

@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PicSorterNS"
+xmlns:pksc="clr-namespace:pk.UI.SharedControls;assembly=pkar.UI.SharedControls"  
         mc:Ignorable="d"
         Title="Dates summary" Height="200" Width="250" 
         DataContextChanged="Window_DataContextChanged" WindowStyle="ToolWindow" KeyUp="Window_KeyUp">
@@ -11,7 +12,7 @@
     <local:StretchedGrid Rows="A,*" >
             <local:MetaWndFilename IsPinned="False" x:Name="uiPinUnpin"/>
 
-        <local:StretchedListView x:Name="uiLista" Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Auto">
+        <pksc:StretchedListView x:Name="uiLista" Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Auto">
             <ListView.ItemTemplate>
                 <DataTemplate>
                 <local:StretchedGrid Cols="*,*,*">
@@ -22,7 +23,7 @@
                 </DataTemplate>
             </ListView.ItemTemplate>
 
-        </local:StretchedListView>
+        </pksc:StretchedListView>
 
         
     </local:StretchedGrid>

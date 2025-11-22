@@ -3,20 +3,21 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+xmlns:pksc="clr-namespace:pk.UI.SharedControls;assembly=pkar.UI.SharedControls"  
         xmlns:local="clr-namespace:PicSorterNS"
         mc:Ignorable="d"
         Title="ReelRenames" Height="450" Width="400" Loaded="Window_Loaded">
-    <local:StretchedGrid Rows="A,A,*,A" Margin="5,5,5,5">
-        <local:TextBlockPageTitle Text="Katalogi i reels" Margin="0,0,0,5"/>
-        <local:StretchedGrid Cols="A,*" Grid.Row="1">
+    <pksc:StretchedGrid Rows="A,A,*,A" Margin="5,5,5,5">
+        <pksc:TextBlockPageTitle Text="Katalogi i reels" Margin="0,0,0,5"/>
+        <pksc:StretchedGrid Cols="A,*" Grid.Row="1">
             <TextBlock Text="Common prefix: " />
             <TextBox Name="uiCommPrefix" HorizontalAlignment="Stretch" Grid.Column="1"/>
-        </local:StretchedGrid>
+        </pksc:StretchedGrid>
 
-        <local:StretchedListView Grid.Row="2" x:Name="uiLista">
+        <pksc:StretchedListView Grid.Row="2" x:Name="uiLista">
             <ListView.ItemTemplate>
                 <DataTemplate>
-                    <local:StretchedGridBlue Cols="*,A,*,A,20,A,A">
+                    <pksc:StretchedGridBlue Cols="*,A,*,A,20,A,A">
                         <TextBlock Text="{Binding fromDir}" ToolTip="directory in source folder"/>
                         <TextBlock Text=" → .\reel\" Grid.Column="1" />
                         <TextBox Text="{Binding toDir, Mode=TwoWay}"  Grid.Column="2" ToolTip="target directory"/>
@@ -29,12 +30,12 @@
                             <ComboBoxItem Content="prefix + DESC" ToolTip="nazwa pliku będzie utworzona z reel name i numeru kolejnego"/>
                             <ComboBoxItem Content="none" IsSelected="True" ToolTip="bez zmian nazw plików"/>
                         </ComboBox>
-                    </local:StretchedGridBlue>
+                    </pksc:StretchedGridBlue>
                 </DataTemplate>
             </ListView.ItemTemplate>
-        </local:StretchedListView>
+        </pksc:StretchedListView>
         
         
-        <local:pButton HorizontalAlignment="Center" Content="Import" IsDefault="True" Grid.Row="3" Margin="0,5,0,0" Click="pButton_Click"/>
-    </local:StretchedGrid>
+        <pksc:Button HorizontalAlignment="Center" Content="Import" IsDefault="True" Grid.Row="3" Margin="0,5,0,0" Click="pButton_Click"/>
+    </pksc:StretchedGrid>
 </Window>

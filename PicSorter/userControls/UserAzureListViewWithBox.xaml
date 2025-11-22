@@ -3,10 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+        xmlns:pksc="clr-namespace:pk.UI.SharedControls;assembly=pkar.UI.SharedControls"
              xmlns:local="clr-namespace:PicSorterNS"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800" DataContextChanged="UserControl_DataContextChanged">
-    <local:StretchedListView x:Name="uiLista">
+    <pksc:StretchedListView x:Name="uiLista">
         <ListView.ItemTemplate>
             <DataTemplate>
                 <local:StretchedGrid Margin="0,5,0,0" Cols="*,100,200">
@@ -16,5 +17,5 @@
                 </local:StretchedGrid>
             </DataTemplate>
         </ListView.ItemTemplate>
-    </local:StretchedListView>
+    </pksc:StretchedListView>
 </UserControl>

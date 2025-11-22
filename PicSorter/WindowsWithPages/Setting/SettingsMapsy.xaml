@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+xmlns:pksc="clr-namespace:pk.UI.SharedControls;assembly=pkar.UI.SharedControls"  
             xmlns:local="clr-namespace:PicSorterNS"
       mc:Ignorable="d" 
       Title="Mapy" Loaded="Page_Loaded">
@@ -24,7 +25,7 @@
             <TextBlock Text="Znane mapy:" FontWeight="Bold" ToolTip="Zaznacz te, które mają pojawiać się w menu bezpośrednio; pozostałe będą w submenu 'other'"/>
             <Button Content=" + " HorizontalAlignment="Right" FontWeight="Bold" Click="uiAddMapa_Click" Margin="2,2,2,2" ToolTip="Dodana mapa będzie aktywna w programie od razu, ale bez [OK] nie zostanie zapisana na dysku"/>
 
-            <local:StretchedListView x:Name="uiLista" Grid.Row="1">
+            <pksc:StretchedListView x:Name="uiLista" Grid.Row="1">
 
                 <ListView.ItemTemplate>
                     <DataTemplate>
@@ -34,7 +35,7 @@
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>
-            </local:StretchedListView>
+            </pksc:StretchedListView>
         </Grid>
 
         <Button Grid.Row="3" Content=" OK " HorizontalAlignment="Center" Width="Auto" Click="uiOk_Click"/>
