@@ -247,8 +247,14 @@ Class SettingsSources
 
         Dim sVolLabel As String = uiSrcVolume.SelectedValue
         If String.IsNullOrWhiteSpace(sVolLabel) Then Return
-        Dim iInd As Integer = sVolLabel.IndexOfOrdinal("(")
-        If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd - 1).Trim
+
+        ' przypadek szczególny: moto G(50)
+        If sVolLabel.StartsWithCI("moto g(50)") Then
+            sVolLabel = "moto g(50)"
+        Else
+            Dim iInd As Integer = sVolLabel.IndexOfOrdinal("(")
+            If iInd > 0 Then sVolLabel = sVolLabel.Substring(0, iInd - 1).Trim
+        End If
 
         Dim sPath As String = uiSrcPath.Text
         If String.IsNullOrWhiteSpace(sPath) Then sPath = "" ' nie chcemy NULLa
