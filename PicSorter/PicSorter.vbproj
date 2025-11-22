@@ -75,13 +75,16 @@
     <PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.51" />
     <PackageReference Include="IPUserControls.Wpf" Version="1.1.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0">
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="pkar.DotNetExts" Version="2.2.10" />
+    <PackageReference Include="pkar.NetConfigs" Version="2.0.8" />
     <PackageReference Include="pkar.WPF.Configs" Version="2.0.1" />
-    <PackageReference Include="pkar.Wpf.Extensions" Version="2.0.16" />
+    <PackageReference Include="pkar.Wpf.Extensions" Version="2.0.18" />
+    <PackageReference Include="pkar.WPF.Log" Version="1.2.1" />
+    <PackageReference Include="pkar.Wpf.SharedControls" Version="1.0.20" />
     <PackageReference Include="System.Text.Encoding.CodePages" Version="8.0.0" />
   </ItemGroup>
 
