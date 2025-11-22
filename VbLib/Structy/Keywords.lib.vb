@@ -109,11 +109,13 @@ Public Class KeywordsList
     End Function
 
     Public Function GetKeywordsList(sKeys As String) As List(Of OneKeyword)
+        Dim lista As New List(Of OneKeyword)
+        If String.IsNullOrWhiteSpace(sKeys) Then Return lista
+
         Dim sSlowka As String = sKeys.Replace("-", ",-").Replace("#", ",#").Replace("=", ",=")
         sSlowka = sSlowka.Replace(",,", ",")
         Dim aKwds As String() = sSlowka.Split(",")
 
-        Dim lista As New List(Of OneKeyword)
         For Each sKwd As String In aKwds
             Dim oNew As OneKeyword = GetKeyword(sKwd.Trim)
             If oNew IsNot Nothing Then lista.Add(oNew)

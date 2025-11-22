@@ -142,11 +142,12 @@ Public Class DatabaseJSON
                 lista = lista.Where(Function(x) String.IsNullOrWhiteSpace(x?.TargetDir))
             Else
                 For Each kwd As String In query.ogolne.adv.TargetDir.Split(" ")
+                    Dim kwdnopolit As String = kwd.Depolit
                     If kwd.Substring(0, 1) = "!" Then
-                        Dim notkwd As String = kwd.Substring(1)
-                        lista = lista.Where(Function(x) Not If(x?.TargetDir.ContainsCI(notkwd), True))
+                        Dim notkwd As String = kwdnopolit.Substring(1)
+                        lista = lista.Where(Function(x) Not If(x?.TargetDir.Depolit.ContainsCI(notkwd), True))
                     Else
-                        lista = lista.Where(Function(x) If(x?.TargetDir.ContainsCI(kwd), False))
+                        lista = lista.Where(Function(x) If(x?.TargetDir.Depolit.ContainsCI(kwdnopolit), False))
                     End If
                 Next
             End If
@@ -163,24 +164,29 @@ Public Class DatabaseJSON
 
             ' najpierw wykluczenie - nie może być żadnego z fragmentów
             For Each kwd As String In query.ogolne.Gdziekolwiek.Split(" ")
+                If String.IsNullOrWhiteSpace(kwd) Then Continue For
                 If Not kwd.Substring(0, 1) = "!" Then Continue For
                 Dim notkwd As String = kwd.Substring(1)
-                lista = lista.Where(Function(x) Not If(x?.TargetDir.ContainsCI(notkwd), True))
-                lista = lista.Where(Function(x) Not If(x?.sSuggestedFilename.ContainsCI(notkwd), True))
-                lista = lista.Where(Function(x) Not If(x?.sumOfDescr?.ContainsCI(notkwd), True))
-                lista = lista.Where(Function(x) Not If(x?.sumOfUserComment?.ContainsCI(notkwd), True))
+                Dim kwdnopolit As String = kwd.Depolit
+
+                lista = lista.Where(Function(x) Not If(x?.TargetDir.Depolit.ContainsCI(kwdnopolit), True))
+                lista = lista.Where(Function(x) Not If(x?.sSuggestedFilename.Depolit.ContainsCI(kwdnopolit), True))
+                lista = lista.Where(Function(x) Not If(x?.sumOfDescr?.Depolit.ContainsCI(kwdnopolit), True))
+                lista = lista.Where(Function(x) Not If(x?.sumOfUserComment?.Depolit.ContainsCI(kwdnopolit), True))
             Next
 
             ' teraz dodanie - musi być każdy fragment, ale gdziekolwiek (albo dowolny fragment gdziekolwiek)
             For Each kwd As String In query.ogolne.Gdziekolwiek.Split(" ")
+                If String.IsNullOrWhiteSpace(kwd) Then Continue For
                 If kwd.Substring(0, 1) = "!" Then Continue For
+                Dim kwdnopolit As String = kwd.Depolit
 
                 ' ten fragment musi wystąpić - ale może gdziekolwiek wystąpić, więc appendujemy wystąpienia z różnych miejsc
                 Dim newlista As New List(Of OnePic)
-                newlista = lista.Where(Function(x) If(x?.TargetDir.ContainsCI(kwd), True)).ToList
-                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sSuggestedFilename.ContainsCI(kwd), True)).ToList).ToList
-                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sumOfDescr?.ContainsCI(kwd), True)).ToList).ToList
-                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sumOfUserComment?.ContainsCI(kwd), True)).ToList).ToList
+                newlista = lista.Where(Function(x) If(x?.TargetDir.Depolit.ContainsCI(kwdnopolit), True)).ToList
+                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sSuggestedFilename.Depolit.ContainsCI(kwdnopolit), True)).ToList).ToList
+                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sumOfDescr?.Depolit.ContainsCI(kwdnopolit), True)).ToList).ToList
+                newlista = newlista.Concat(lista.Where(Function(x) If(x?.sumOfUserComment?.Depolit.ContainsCI(kwdnopolit), True)).ToList).ToList
 
                 lista = newlista
             Next

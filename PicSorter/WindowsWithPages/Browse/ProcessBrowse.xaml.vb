@@ -379,12 +379,17 @@ Public Class ProcessBrowse
             oPicek.oImageSrc = Nothing
         Next
 
-        ' jeśli zdjęcia są z archiwum, to nie ma auto save na close - trzeba robić ręcznie
-        If String.IsNullOrEmpty(_thumbsy?.ElementAt(0)?.oPic?.Archived) Then
-            '  po Describe, OCR, i tak dalej - lepiej zapisać nawet jak nie było zmian niż je zgubić
-            ' ale dotyczy to tylko bufora, czyli zdjęcia muszą być nie zarchiwizowane.
-            SaveMetaData(True)
+        ' bo był crash przy zamykaniu, gdy nie było zdjęć
+        ' Index was out of range. Must be non-negative and less than the size of the collection. (Parameter 'index')
+        If _thumbsy IsNot Nothing AndAlso _thumbsy.Count > 0 Then
+            ' jeśli zdjęcia są z archiwum, to nie ma auto save na close - trzeba robić ręcznie
+            If String.IsNullOrEmpty(_thumbsy?.ElementAt(0)?.oPic?.Archived) Then
+                '  po Describe, OCR, i tak dalej - lepiej zapisać nawet jak nie było zmian niż je zgubić
+                ' ale dotyczy to tylko bufora, czyli zdjęcia muszą być nie zarchiwizowane.
+                SaveMetaData(True)
+            End If
         End If
+
 
 
         GC.Collect()    ' usuwamy, bo dużo pamięci zwolniliśmy
@@ -648,10 +653,16 @@ Public Class ProcessBrowse
         StartDragOut()
     End Sub
 
+    ' jako że czasem robi drugie Drag&Drop nie kończąc jeszcze pierwszego, trzeba samemu pilnować (bo inaczej Exception)
+    Private _inDragDrop As Boolean
+
 #Disable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
     Private Async Function StartDragOut() As Task
 #Enable Warning BC42356 ' This async method lacks 'Await' operators and so will run synchronously
         vb14.DumpCurrMethod()
+
+
+        If _inDragDrop Then Return
 
         '' sprawdzamy czy mamy odpowiedni Publisher do tego
         'Dim validPubl As New List(Of CloudPublish)
@@ -728,9 +739,10 @@ Public Class ProcessBrowse
         Dim data As New DataObject
         data.SetData(DataFormats.FileDrop, lista.ToArray)
 
+        _inDragDrop = True
         ' Inititate the drag-and-drop operation.
         DragDrop.DoDragDrop(Me, data, DragDropEffects.Copy)
-
+        _inDragDrop = False
     End Function
 
     Private Sub uiGetFileSize_Click(sender As Object, e As System.Windows.RoutedEventArgs)
@@ -820,7 +832,7 @@ Public Class ProcessBrowse
         pic0.oPic.Archived = "" ' takiej wersji na pewno nie było zarchiwizowanej :)
         pic0.oPic.sSuggestedFilename = IO.Path.GetFileName(packZipName)
         pic0.oPic.SetDefaultFileTypeDiscriminator() ' ikonka przy picku
-        pic0.NotifyPropChange("fileTypeDiscriminator") 'jest w Set, ale tam na poziomie oPic, a tu na poziomie Thumb
+        pic0.oPic.NotifyPropChange("fileTypeDiscriminator") 'jest w Set, ale tam na poziomie oPic, a tu na poziomie Thumb
         ' podmiana obrazka jeszcze
         Await pic0.ThumbWczytajLubStworz(False, True)
 
@@ -1830,6 +1842,9 @@ Public Class ProcessBrowse
                      End Function)
     End Sub
 
+#If False Then
+
+' niewykorzystane, bo skoro nie ma już starej wersji ID obrazka, branego z sekund, to nie ma sensu takie zaznaczanie
     Private Sub uiFilterDwaSek_Click(sender As Object, e As RoutedEventArgs)
         'uiFilterPopup.IsOpen = False
         uiFilters.Content = "dwa/sek"
@@ -1876,6 +1891,8 @@ Public Class ProcessBrowse
 
         KoniecFiltrowania(bMamy, True)
     End Sub
+
+#End If
 
     Private Sub uiFilterNoAzure_Click(sender As Object, e As RoutedEventArgs)
         FiltrujWedle("no azure", False, True, True,
@@ -2090,6 +2107,24 @@ Public Class ProcessBrowse
 
         Return bMamy
     End Function
+
+
+    Private Sub uiFilterSent_Click(sender As Object, e As RoutedEventArgs)
+
+        Dim logname As String = Application.gWcfServer.GetCurrLogPath
+        If String.IsNullOrWhiteSpace(logname) OrElse Not IO.File.Exists(logname) Then
+            Me.MsgBox("Nie ma logu z bieżącego miesiąca")
+            uiFilterAll_Click(Nothing, Nothing)
+            _FiltrEngine = Nothing
+            Return
+        End If
+
+        Dim sLog As String = IO.File.ReadAllText(logname)
+
+        FiltrujWedle("sent", False, True, True,
+                     Function(x) Not sLog.ContainsCI("#" & x.oPic.serno))
+    End Sub
+
 
     ''' <summary>
     ''' jeśli były jakieś zaznaczone, to je pokaż; jeśli nie było nic - przywróć wszystkie
@@ -2569,13 +2604,18 @@ Public Class ProcessBrowse
         uiOknaPopup.IsOpen = Not uiOknaPopup.IsOpen
     End Sub
 
-    Private Sub OpenSubWindow(oWnd As Window)
+    Private Sub OpenSubWindow(oWnd As Window, Optional thumb As ThumbPicek = Nothing)
         uiOknaPopup.IsOpen = False
 
-        If uiPicList.SelectedItems.Count < 1 Then Return
 
         oWnd.Owner = Me
-        oWnd.DataContext = uiPicList.SelectedItems.Item(0)
+        If thumb IsNot Nothing Then
+            oWnd.DataContext = thumb
+        Else
+            If uiPicList.SelectedItems.Count < 1 Then Return
+            oWnd.DataContext = uiPicList.SelectedItems.Item(0)
+        End If
+
         oWnd.Show()
 
     End Sub
@@ -2843,7 +2883,7 @@ Public Class ProcessBrowse
 
             Select Case sExt
                 Case ".nar", ".zip"
-                    Using strumyk As Stream = oPic.SinglePicFromMulti()
+                    Using strumyk As Stream = oPic.SinglePicFromMulti(Vblib.GetSettingsBool("uiStereoThumbAnaglyph"))
                         If strumyk Is Nothing Then Return Nothing
                         Dim bitmapa As New BitmapImage()
                         bitmapa.BeginInit()
@@ -3126,7 +3166,13 @@ Public Class ProcessBrowse
         Dim visib As Visibility = If(uiGrayOrHide.IsChecked, Visibility.Collapsed, Visibility.Visible)
 
         For Each oItem In _thumbsy
-            If oItem.opacity < 1 Then oItem.isVisible = visib
+            If oItem.opacity < 1 Then
+                oItem.isVisible = visib
+            Else
+                If oItem.isVisible <> Visibility.Visible Then
+                    oItem.isVisible = Visibility.Visible
+                End If
+            End If
             'oItem.NotifyPropChange("opacity")
         Next
     End Sub
@@ -3175,6 +3221,44 @@ Public Class ProcessBrowse
         Next
     End Sub
 
+    Private Sub uiCaptionKwd_DblClick(sender As Object, e As MouseButtonEventArgs)
+        Dim oItem As FrameworkElement = sender
+        Dim oPicek As ThumbPicek = TryCast(oItem?.DataContext, ThumbPicek)
+        If oPicek Is Nothing Then Return
+        OpenSubWindow(New BrowseKeywordsWindow(_oBufor.GetIsReadonly), oPicek)
+    End Sub
+
+    Private Sub uiCaptionGeo_DblClick(sender As Object, e As MouseButtonEventArgs)
+        Dim oItem As FrameworkElement = sender
+        Dim oPicek As ThumbPicek = TryCast(oItem?.DataContext, ThumbPicek)
+        If oPicek Is Nothing Then Return
+
+        Dim oWnd As New EnterGeoTag
+        If Not oWnd.ShowDialog Then Return
+
+        Dim exifGeoToPaste As New Vblib.ExifTag(Vblib.ExifSource.ManualGeo)
+        exifGeoToPaste.GeoTag = oWnd.GetGeoPos
+        exifGeoToPaste.GeoZgrubne = oWnd.IsZgrubne
+
+        oPicek.oPic.ReplaceOrAddExif(exifGeoToPaste)
+        oPicek.oPic.RecalcSumsy()
+        oPicek.ZrobDymek() ' copilot zaproponował
+
+    End Sub
+
+    Private Sub uiCaptionDates_DblClick(sender As Object, e As MouseButtonEventArgs)
+        Dim oItem As FrameworkElement = sender
+        Dim oPicek As ThumbPicek = TryCast(oItem?.DataContext, ThumbPicek)
+        If oPicek Is Nothing Then Return
+        OpenSubWindow(New DatesSummary, oPicek)
+    End Sub
+
+    Private Sub uiCaptionDesc_DblClick(sender As Object, e As MouseButtonEventArgs)
+        Dim oItem As FrameworkElement = sender
+        Dim oPicek As ThumbPicek = TryCast(oItem?.DataContext, ThumbPicek)
+        If oPicek Is Nothing Then Return
+        OpenSubWindow(New SimpleDescribe(_oBufor.GetIsReadonly), oPicek)
+    End Sub
 End Class
 
 
@@ -3294,9 +3378,9 @@ Public Class KonwersjaGeo2Podpis
 
     Protected Overrides Function Convert(value As Object) As Object
         Dim oGeo As BasicGeoposWithRadius = TryCast(value, BasicGeoposWithRadius)
-        If oGeo Is Nothing Then Return ""
+        If oGeo Is Nothing Then Return "(" & AutotaggerBase.IconGeo & ")"
 
-        Return $"(@ {oGeo.StringLat(2)}, {oGeo.StringLon(2)})"
+        Return $"({AutotaggerBase.IconGeo}: {oGeo.StringLat(2)}, {oGeo.StringLon(2)})"
     End Function
 End Class
 

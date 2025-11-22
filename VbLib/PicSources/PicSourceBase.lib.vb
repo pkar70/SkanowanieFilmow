@@ -83,7 +83,9 @@ Public MustInherit Class PicSourceBase
 			currentExif = defaultExif.Clone
 		End If
 
-		Dim iRet As Integer = ReadDirectory_Main()
+        Dim iRet As Integer = ReadDirectory_Main()
+        If _listaPlikow Is Nothing Then Return -2
+
 		UseTagsFromFilename(_listaPlikow, lKeywords)
 		' jesli sobie przełączyliśmy, to teraz przełączamy na powrot
 		If bNoCurrentExif Then currentExif = Nothing

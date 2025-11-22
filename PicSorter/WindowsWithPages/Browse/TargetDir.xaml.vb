@@ -43,6 +43,13 @@ Public Class TargetDir
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
         Me.InitDialogs
 
+        If _selected Is Nothing OrElse _selected.Count = 0 Then
+            Me.MsgBox("Nie zaznaczono żadnych zdjęć!")
+            Me.DialogResult = False
+            Me.Close()
+            Return
+        End If
+
         Dim sFirstItemFilename As String = _selected(0).oPic.InBufferPathName
 
         If _onePic Is Nothing Then

@@ -76,10 +76,17 @@ Public Class OnePic
     ''' "*.mov;*.avi;*.mp4;*.m4v;*.mkv"
     ''' </summary>
     Public Shared ReadOnly ExtsMovie As String = "*.mov;*.avi;*.mp4;*.m4v;*.mkv;"
+
     ''' <summary>
     ''' "*.jps;*.stereo.zip"
     ''' </summary>
     Public Shared ReadOnly ExtsStereo As String = "*.jps;*.stereo.zip;"
+
+    ''' <summary>
+    ''' "*.mp3"
+    ''' </summary>
+    Public Shared ReadOnly ExtsAudio As String = "*.mp3;"
+
 
     <Newtonsoft.Json.JsonIgnore>
     Public Property sumOfKwds As String
@@ -91,6 +98,10 @@ Public Class OnePic
     Public Property sumOfUserComment As String
     <Newtonsoft.Json.JsonIgnore>
     Public Property sumOfGeo As BasicGeoposWithRadius
+
+    <Newtonsoft.Json.JsonIgnore>
+    Public Property sumOfGeoName As String
+
 
     <Newtonsoft.Json.JsonIgnore>
     Public ReadOnly Property dymek
@@ -307,9 +318,8 @@ Public Class OnePic
 
 
     ''' <summary>
-    ''' zwraca minimalną datę zdjęcia, bądź Invalid
+    ''' zwraca minimalną datę zdjęcia, bądź Invalid (pomija SourceFile)
     ''' </summary>
-    ''' <returns></returns>
     Public Function GetMinDate() As Date
         Dim dDateMin As Date = Date.MinValue
 
@@ -324,6 +334,9 @@ Public Class OnePic
 
     End Function
 
+    ''' <summary>
+    ''' zwraca maksymalną datę zdjęcia, bądź Invalid (NIE pomija SourceFile)
+    ''' </summary>
     Public Function GetMaxDate() As Date
         Dim dDateMax As Date = Date.MaxValue
 
@@ -518,6 +531,9 @@ Public Class OnePic
         If MatchesMasks("*.mp4") Then Return "►"
         If MatchesMasks("*.mkv") Then Return "►"
         If MatchesMasks("*.jps") Then Return "⧉"
+
+        If MatchesMasks("*.mp3") Then Return "🔈"
+
         If InBufferPathName.ContainsCI("stereo.zip") Then Return "⧉"
         Return ""
     End Function
@@ -583,6 +599,10 @@ Public Class OnePic
         RecalcSumsy()
     End Sub
 
+    ''' <summary>
+    ''' Suma z descriptions, czyli komentarze, które są w nich zawarte
+    ''' (pomijamy systemowe opisy, takie jak "Cropped to ...", "Rotated ...", itp.)
+    ''' </summary>
     Public Function GetSumOfDescriptionsText(Optional separator As String = " | ") As String
         If descriptions Is Nothing Then Return ""
 
@@ -1575,7 +1595,9 @@ Public Class OnePic
             Dim picMinDate, picMaxDate As Date
 
             Dim oExifDate As Vblib.ExifTag = GetExifOfType(ExifSource.ManualDate)
-            If oExifDate Is Nothing Then oExifDate = oExif
+            ' manual date, a potem FileExif. SourceDefault, ManualTag są pomijane?
+
+            'If oExifDate Is Nothing Then oExifDate = oExif ' 2025.11.22: próba
 
             Dim oExifSrc As ExifTag = GetExifOfType(ExifSource.SourceDefault)
             ' jeśli istnieje data zrobienia zdjęcia, to ją bierzemy, jeśli nie - to zakres ze słów kluczowych itp.
@@ -1586,6 +1608,8 @@ Public Class OnePic
                 picMinDate = GetMinDate()
                 picMaxDate = GetMaxDate()
             End If
+
+            If Math.Abs((picMaxDate - picMinDate).TotalDays) > query.ogolne.MaxDaysRange Then Return False
 
             If query.ogolne.IgnoreYear Then
                 ' jeśli nie wiemy kiedy zdjęcie było zrobione, to nie można go pokazać przy szukaniu IgnoreYear
@@ -1657,7 +1681,7 @@ Public Class OnePic
 
 #Region "ogólne - advanced"
 
-            If query.ogolne.adv.TargetDir = "!" Then If Not String.IsNullOrWhiteSpace(TargetDir) Then Return False
+        If query.ogolne.adv.TargetDir = "!" Then If Not String.IsNullOrWhiteSpace(TargetDir) Then Return False
         If Not CheckStringMasks(TargetDir, query.ogolne.adv.TargetDir) Then Return False
         If Not CheckStringContains(sSourceName, query.ogolne.adv.Source) Then Return False
 
@@ -1873,6 +1897,9 @@ Public Class OnePic
                 If CheckStringMasks(sTextDump, query.Azure.Anywhere) Then bGdziekolwiekMatch = True
             End If
 
+            If query.Azure.SkipBW AndAlso oExif.AzureAnalysis.IsBW Then Return False
+            If query.Azure.SkipColor AndAlso Not oExif.AzureAnalysis.IsBW Then Return False
+
         End If
 #End Region
 
@@ -2077,11 +2104,11 @@ Public Class OnePic
         sFromPicture = If(sFromPicture?.ToLowerInvariant, "")
 
         For Each maska As String In sMaskiWord.Split(" ")
-            Dim temp As String = maska.ToLowerInvariant
+            Dim temp As String = maska.ToLowerInvariant.Depolit
             If temp.StartsWith("!") Then
-                If sFromPicture.Contains(temp.Substring(1)) Then Return False
+                If sFromPicture.Depolit.Contains(temp.Substring(1)) Then Return False
             Else
-                If Not sFromPicture.Contains(temp) Then Return False
+                If Not sFromPicture.Depolit.Contains(temp) Then Return False
             End If
         Next
 
@@ -2098,9 +2125,9 @@ Public Class OnePic
         sFromPicture = If(sFromPicture?.ToLowerInvariant, "")
 
         For Each maska As String In sMaskiWord.Split(" ")
-            Dim temp As String = maska.ToLowerInvariant
+            Dim temp As String = maska.ToLowerInvariant.Depolit
             If temp.StartsWith("!") Then
-                If sFromPicture.Contains(temp.Substring(1)) Then Return False
+                If sFromPicture.Depolit.Contains(temp.Substring(1)) Then Return False
             End If
         Next
 
@@ -2113,7 +2140,7 @@ Public Class OnePic
     ''' </summary>
     Private Shared Function CheckStringContains(sFromPicture As String, sMaska As String) As Boolean
         If String.IsNullOrWhiteSpace(sFromPicture) Then Return True
-        Return sFromPicture.ContainsCI(sMaska)
+        Return sFromPicture.Depolit.ContainsCI(sMaska.Depolit)
     End Function
 
 
@@ -2301,14 +2328,36 @@ Public Class OnePic
     ''' wylicza wszystkie "summary", pola ktore nie są zapisywane. Może zmienić EXIF, jeśli w KeysList pojawiło się GEO, którego nie ma w metadanych zdjęcia
     ''' </summary>
     Public Sub RecalcSumsy(Optional slowka As KeywordsList = Nothing)
+
         sumOfDescr = GetSumOfDescriptionsText()
-        sumOfKwds = GetAllKeywords().Trim & " " ' zapewnienie spacji do szukania
-        sumOfUserComment = GetSumOfUserComment()
-        sumOfGeo = GetGeoTag()
-        NotifyPropChange("sumOfGeo")
-        If sumOfGeo Is Nothing AndAlso slowka IsNot Nothing Then
-            RecalcGeoFromKwd(slowka)
+        ' 2025.06.27 - dodanie SourceDescription, jeśli istnieje (bo nie było widać czemu znajduje niebieski autobusik, Rugby - było w DESCRIPT.ION, a w dymku nie było widać :)
+        Dim oExif As ExifTag = GetExifOfType(Vblib.ExifSource.SourceDescriptIon)
+        If oExif?.UserComment IsNot Nothing AndAlso Not sumOfDescr.ContainsCI(oExif.UserComment) Then
+            ' jeśli mamy SourceDescription, to dodajemy do sumy opisów
+            sumOfDescr = sumOfDescr.ConcatenateWithPipe("ION: " & oExif.UserComment)
         End If
+        NotifyPropChange("sumOfDescr")
+
+        sumOfKwds = GetAllKeywords().Trim & " " ' zapewnienie spacji do szukania
+        NotifyPropChange("sumOfKwds")
+        sumOfUserComment = GetSumOfUserComment()
+        NotifyPropChange("sumOfUserComment")
+        sumOfGeo = GetGeoTag()
+        If sumOfGeo IsNot Nothing Then
+            oExif = GetExifOfType(Vblib.ExifSource.AutoImgw)
+            If oExif Is Nothing Then oExif = GetExifOfType(Vblib.ExifSource.AutoOSM)
+
+            If oExif IsNot Nothing Then
+                ' jeśli mamy dane o nazwie...
+                sumOfGeoName = oExif.GeoName
+                NotifyPropChange("sumOfGeoName")
+            End If
+            NotifyPropChange("sumOfGeo")
+        Else
+            If slowka IsNot Nothing Then RecalcGeoFromKwd(slowka)
+            NotifyPropChange("sumOfGeo")
+        End If
+
     End Sub
 
     Public Sub RecalcGeoFromKwd(lista As KeywordsList)

@@ -6,7 +6,8 @@ Class SettingsStereo
         uiStereoSPMPath.GetSettingsString
         uiStereoBigAnaglyph.GetSettingsBool
         uiStereoMaxDiffSecs.GetSettingsInt
-        uiStereoMaxDiffMeteres.GetSettingsInt
+        uiStereoMaxDiffMeteres.GetSettingsInt()
+        uiStereoThumbAnaglyph.GetSettingsBool
     End Sub
 
     Private Sub uiOK_Click(sender As Object, e As RoutedEventArgs)
@@ -15,6 +16,7 @@ Class SettingsStereo
         uiStereoBigAnaglyph.SetSettingsBool
         uiStereoMaxDiffSecs.SetSettingsInt
         uiStereoMaxDiffMeteres.SetSettingsInt
+        uiStereoThumbAnaglyph.SetSettingsBool
 
         Me.NavigationService.GoBack()
     End Sub

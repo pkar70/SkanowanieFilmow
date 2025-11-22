@@ -1,5 +1,6 @@
 ﻿
 Imports pkar.UI.Configs
+Imports pk.UI.SharedControls
 
 Class SettingsShare
 

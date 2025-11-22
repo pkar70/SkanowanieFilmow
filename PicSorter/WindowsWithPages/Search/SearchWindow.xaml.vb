@@ -42,7 +42,12 @@ Public Class SearchWindow
         InitializeComponent()
 
         _inputList = Nothing
-        _query = If(query, New Vblib.SearchQuery)
+        If query IsNot Nothing Then
+            _query = query
+        Else
+            _query = New Vblib.SearchQuery
+            _query.ogolne.MaxDaysRange = 300 ' jeśli tworzymy nowe szukanie, to bierzemy 300 dni
+        End If
 
     End Sub
 
@@ -434,6 +439,10 @@ Public Class SearchWindow
 
         '' otwórz folder - ale z listy folderów
         'SettingsDirTree.OpenFolderInPicBrowser(oDir.fullPath)
+    End Sub
+
+    Private Sub uiOpenBigPic_DoubleClick(sender As Object, e As MouseButtonEventArgs)
+        uiOpenBig_Click(sender, Nothing)
     End Sub
 End Class
 

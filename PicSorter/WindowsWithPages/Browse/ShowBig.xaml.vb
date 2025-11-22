@@ -828,7 +828,7 @@ Public Class ShowBig
                 End Using
                 Me.Close()
 
-            Case "►" ' filmik
+            Case "►", "🔈" ' filmik lub audio
                 uiMovie.Source = New Uri(_picek.oPic.InBufferPathName)
                 uiMovie.Visibility = Visibility.Visible
                 uiFullPicture.Visibility = Visibility.Collapsed
@@ -838,7 +838,7 @@ Public Class ShowBig
                 uiMovie.Visibility = Visibility.Collapsed
                 uiFullPicture.Visibility = Visibility.Visible
                 uiIkonkaTypu.Visibility = Visibility.Visible
-                uiIkonkaTypu.Content = "►"
+                uiIkonkaTypu.Content = _picek.oPic.fileTypeDiscriminator ' "►" bo już niekoniecznie filmik, może być także audio
                 uiMovie.Stop()
             Case "✋"
                 If Not Await Me.DialogBoxYNAsync($"Czy podmienić JPG na {_picek.oPic.sSuggestedFilename}?") Then Return

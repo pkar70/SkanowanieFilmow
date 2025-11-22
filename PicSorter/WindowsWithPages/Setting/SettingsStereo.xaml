@@ -21,6 +21,7 @@
         </Grid>
         <TextBox Text="https://stereo.jpn.org/eng/stphmkr/" TextDecorations="Underline" IsReadOnly="True" Margin="0,1,0,10" MouseDoubleClick="TextBox_MouseDoubleClick"/>
 
+        <CheckBox Content="Use anaglyph for Thumb" Name="uiStereoThumbAnaglyph" ToolTip="Zaznacz gdy jako Thumb ma być pokazywany anaglyph - to samo pokaże web sharing interface"  />
         <CheckBox Content="Use anaglyph for BigPic" Name="uiStereoBigAnaglyph"  />
 
         <local:SliderWithHdr Header="Max różnica czasu" x:Name="uiStereoMaxDiffSecs" Minimum="5" Maximum="120" Sufix="s"/>

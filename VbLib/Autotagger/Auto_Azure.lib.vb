@@ -137,8 +137,14 @@ Public Class Auto_AzureTest
             Return oAzureTag
         End If
 
+        Vblib.DumpMessage($"Auto_Azure.GetForFile({oFile.InBufferPathName})")
+
         Dim oStream As Stream = Await GetStreamForSending(oFile)
         If oStream Is Nothing Then Return Nothing
+        If oStream.Length < 1 Then
+            oStream.Dispose()
+            Return Nothing
+        End If
 
         If Not EnsureClient() Then Return Nothing
 

@@ -1,8 +1,8 @@
 ﻿
-
-
 Imports Vblib
 Imports pkar.DotNetExtensions
+Imports Microsoft.EntityFrameworkCore.Metadata.Conventions
+Imports pkar.UI.Extensions
 
 
 Public NotInheritable Class PicMenuShareUpload
@@ -29,20 +29,29 @@ Public NotInheritable Class PicMenuShareUpload
             _menuAllow = New MenuItem With {.Header = "Force allow"}
             AddHandler _menuAllow.SubmenuOpened, AddressOf OpeningForceAllowMenu
             WypelnMenuLogins(_menuAllow, AddressOf ActionSharingLogin)
+            _menuAllow.Icon = "✔"
             Me.Items.Add(_menuAllow)
 
             _menuDeny = New MenuItem With {.Header = "Force deny"}
             AddHandler _menuDeny.SubmenuOpened, AddressOf OpeningForceDenyMenu
             WypelnMenuLogins(_menuDeny, AddressOf ActionSharingLoginUnMark)
+            _menuAllow.Icon = "❌"
             Me.Items.Add(_menuDeny)
 
         End If
 
-        If vblib.GetShareServers.Count > 0 Then
+        If Vblib.GetShareServers.Count > 0 Then
             Dim oNew As New MenuItem With {.Header = "Send to Server"}
             Me.Items.Add(oNew)
             WypelnMenuServers(oNew, AddressOf ActionSharingServer)
         End If
+
+        Me.Items.Add(New Separator)
+        Dim oNewKomu As New MenuItem With {.Header = "Sent to where?"}
+        AddHandler oNewKomu.Click, AddressOf ActionSharingKomu
+        Me.Items.Add(oNewKomu)
+
+
     End Sub
 
     Private Sub OpeningForceDenyMenu(sender As Object, e As RoutedEventArgs)
@@ -182,6 +191,49 @@ Public NotInheritable Class PicMenuShareUpload
     End Sub
 
 
+    Private Async Sub ActionSharingKomu(sender As Object, e As RoutedEventArgs)
+
+        Dim jakiepic As New List(Of String)
+
+        If UseSelectedItems Then
+            Vblib.DialogBox("Umiem tylko dla jednego zdjęcia na razie")
+            Return
+        End If
+
+        Dim picek As Vblib.OnePic = GetFromDataContext()
+        If picek Is Nothing Then
+            Vblib.DialogBox("Nie wybrano zdjęcia??")
+            Return
+        End If
+        Dim szukam As String = "#" & picek.serno
+
+        ' a teraz iterujemy po wszystkich logach
+        Dim logname As String = Application.gWcfServer.GetLogDir
+
+        ' 2025.06.25 19:35:57 Krzysztof_Heller webpic #52159
+
+        Dim sResult As String = ""
+
+        For Each plik In IO.Directory.EnumerateFiles(logname, "*.log")
+            Dim tresc As String = IO.File.ReadAllText(plik)
+
+            For Each linia As String In tresc.Split(vbCrLf)
+                Dim iInd As Integer = linia.IndexOf(szukam)
+                If iInd < 0 Then Continue For ' nie ma tego wpisu
+                If iInd + szukam.Length <> linia.Length Then Continue For ' pominięcie #52159 gdy szukamy #5215 (krótszego)
+
+                sResult &= linia.Substring(0, iInd).Trim() & vbCrLf
+            Next
+        Next
+
+        If sResult = "" Then
+            Vblib.MsgBox("Nie znaleziono żadnych logów z tym zdjęciem")
+        Else
+            sResult.SendToClipboard
+            Vblib.MsgBox("Zdjęcie wysłano:" & vbCrLf & vbCrLf & sResult)
+        End If
+
+    End Sub
 
 
 #Region "submenu logins"

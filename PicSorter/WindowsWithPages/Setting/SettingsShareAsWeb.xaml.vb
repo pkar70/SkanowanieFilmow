@@ -1,5 +1,5 @@
 ﻿Imports pkar.UI.Configs
-
+Imports pk.UI.SharedControls
 ' wydzielenie noHttpLog po to, by guzik OpenLog był ładnie...
 
 Class SettingsShareAsWeb

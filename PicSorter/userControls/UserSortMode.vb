@@ -4,7 +4,7 @@
     Public Overrides Sub OnApplyTemplate()
         MyBase.OnApplyTemplate()
 
-        ' Me.Items.Clear()
+        Me.Items.Clear()
         AddSortMode("date", ThumbSortOrder.Data)
         AddSortMode("serno", ThumbSortOrder.Serno)
         AddSortMode("fname", ThumbSortOrder.Fname)

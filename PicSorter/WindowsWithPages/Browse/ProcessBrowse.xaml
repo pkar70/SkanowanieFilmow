@@ -43,11 +43,11 @@
                 <local:ButtonLeftContext Content="Filters" x:Name="uiFilters">
                     <Button.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" />
+                            <!--<MenuItem Header="dwa/sek" Click="uiFilterDwaSek_Click" Icon="2"/>-->
                             <MenuItem Header="bez geotag" Click="uiFilterNoGeo_Click" Icon="🚩" />
                             <MenuItem Header="bez realdate" Click="uiFilterNoRealDate_Click" Icon="📆"/>
-                            <MenuItem Header="&gt; year" Click="uiFilterMoreThanYear_Click" Icon="📆"/>
-                            <MenuItem Header="only NAR" Click="uiFilterNAR_Click" />
+                            <MenuItem Header="range &gt; year" Click="uiFilterMoreThanYear_Click" Icon="📆"/>
+                            <MenuItem Header="only NAR" Click="uiFilterNAR_Click" Icon="*"/>
                             <MenuItem Header="wg keywords" Click="uiFilterKeywords_Click" Icon="#"/>
                             <MenuItem Header="wg 'gdziekolwiek'" Click="uiFilterAnywhere_Click" />
                             <MenuItem Header="by stage" >
@@ -81,25 +81,26 @@
                             </MenuItem>
                             <MenuItem Header="no Description" Click="uiFilterNoDescr_Click" Name="uiFilterNoDescr"/>
                             <MenuItem Header="no target dir" Click="uiFilterNoTarget_Click" Name="uiFilterNoTarget" Icon="📂"/>
-                            <MenuItem Header="Sharing" Name="uiFilterSharing" SubmenuOpened="uiFilterSharing_SubmenuOpened">
-                                <MenuItem Header="Query" Name="uiFilterQuery" />
+                            <MenuItem Header="Sharing" Name="uiFilterSharing" SubmenuOpened="uiFilterSharing_SubmenuOpened" Icon="🖧">
+                                <MenuItem Header="Query" Name="uiFilterQuery" Icon="🔍"/>
                                 <MenuItem Header="for Channel" Name="uiFilterChannels" />
                                 <!--<MenuItem Header="Queries for Login" Name="uiFilterLogins"/>-->
                                 <!--<MenuItem Header="Marked for Login" Name="uiFilterLoginsMarked"/>-->
-                                <MenuItem Header="for Login" Name="uiFilterLoginsMarked"/>
+                                <MenuItem Header="for Login" Name="uiFilterLoginsMarked" Icon="👤"/>
+                                <Separator/>
                                 <MenuItem Header="Cudze" Click="uiFilterCudze_Click" />
-                                <MenuItem Header="remote desc" Click="uiFilterRemoteDesc_Click" />
+                                <MenuItem Header="sent" Click="uiFilterSent_Click" Icon="🖅"/>
                             </MenuItem>
-                            <MenuItem Header="addytywne">
-                                <MenuItem Header="none" Click="uiFilterNone_Click" />
+                            <MenuItem Header="addytywne" Icon="🔍">
+                                <MenuItem Header="none" Click="uiFilterNone_Click" Icon="☐" />
                                 <MenuItem Header="Full search" Click="uiFilterSearch_Click" Icon="🔍"/>
                                 <MenuItem Header="reverse" Click="uiFilterReverse_Click"  Icon="¬"/>
                             </MenuItem>
-                            <MenuItem Header="locks">
+                            <MenuItem Header="locks" Icon="🔒">
                                 <MenuItem Header="locked" Click="uiFilterLocked_Click" Icon="🔒"/>
                                 <MenuItem Header="UNlocked" Click="uiFilterUnLocked_Click" />
                             </MenuItem>
-                            <MenuItem Header="all" Click="uiFilterAll_Click" />
+                            <MenuItem Header="all" Click="uiFilterAll_Click" Icon="∞"/>
                         </ContextMenu>
                     </Button.ContextMenu>
                 </local:ButtonLeftContext>
@@ -305,10 +306,10 @@
                             <TextBox Margin="0,0,0,0" Text="{Binding oPic.serno, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSerNo, Converter={StaticResource KonwersjaVisibility}}" BorderThickness="0" IsReadOnly="True"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding oPic.sSourceName, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSource, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding oPic.sSuggestedFilename, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisFilename, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
-                            <TextBox Margin="0,0,0,0" Text="{Binding sumOfKwds, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisKeywords, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
-                            <TextBox Margin="0,0,0,0" Text="{Binding oPic.sumOfGeo, Mode=OneWay, Converter={StaticResource KonwersjaGeo2Podpis}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisGeo, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
-                            <TextBox Margin="0,0,0,0" Text="{Binding sumOfDates, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDates, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
-                            <TextBox Margin="0,0,0,0" Text="{Binding sumOfDescr, Mode=OneWay, Converter={StaticResource KonwersjaDescrIgnoreNewLine}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDescription, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True"/>
+                            <TextBox Margin="0,0,0,0" Text="{Binding sumOfKwds, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisKeywords, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True" MouseDoubleClick="uiCaptionKwd_DblClick"/>
+                            <TextBox Margin="0,0,0,0" Text="{Binding oPic.sumOfGeo, Mode=OneWay, Converter={StaticResource KonwersjaGeo2Podpis}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisGeo, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True" MouseDoubleClick="uiCaptionGeo_DblClick" ToolTip="{Binding oPic.sumOfGeoName, Mode=OneWay}"/>
+                            <TextBox Margin="0,0,0,0" Text="{Binding sumOfDates, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDates, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True" MouseDoubleClick="uiCaptionDates_DblClick"/>
+                            <TextBox Margin="0,0,0,0" Text="{Binding sumOfDescr, Mode=OneWay, Converter={StaticResource KonwersjaDescrIgnoreNewLine}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisDescription, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True" MouseDoubleClick="uiCaptionDesc_DblClick"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding oPic.sInSourceID, Mode=OneWay, Converter={StaticResource KonwersjaSourcePath2Podpis}}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisSrcPath, Converter={StaticResource KonwersjaVisibility}}" HorizontalAlignment="Left"  BorderThickness="0" IsReadOnly="True"/>
                             <TextBox Margin="0,0,0,0" Text="{Binding TargetDir, Mode=OneWay}" FontSize="10" Width="{Binding iDuzoscH, Mode=OneWay }" Visibility="{Binding IsChecked, ElementName=uiPodpisTarget, Converter={StaticResource KonwersjaVisibility}}"  BorderThickness="0" IsReadOnly="True" HorizontalAlignment="Left"  />
                         </StackPanel>

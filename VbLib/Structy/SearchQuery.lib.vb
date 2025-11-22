@@ -58,6 +58,7 @@ Public Class QueryOgolne
     Public Property MaxDateCheck As Boolean
     Public Property MaxDate As Date
     Public Property IgnoreYear As Boolean
+    Public Property MaxDaysRange As Integer
     Public Property GUID As String = ""
     Public Property serno As Integer
     Public Property Reel As String
@@ -119,7 +120,8 @@ Public Class QueryAzure
 
     Public Property Anywhere As String = ""
 
-    'IsBW
+    Public Property SkipBW As Boolean = False
+    Public Property SkipColor As Boolean = False
 
 End Class
 
