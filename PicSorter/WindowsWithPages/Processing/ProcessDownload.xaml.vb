@@ -7,11 +7,13 @@ Imports pkar.DotNetExtensions
 Imports pkar    ' dla baselist
 Imports pkar.UI.Extensions
 
+
 Public Class ProcessDownload
     ' Inherits ProcessWnd_Base
 
 
     Private Sub Window_Loaded(sender As Object, e As RoutedEventArgs)
+        Log.DumpCurrMethod()
         vb14.DumpCurrMethod()
         Me.InitDialogs
         Me.ProgRingInit(True, True)
@@ -72,7 +74,15 @@ Public Class ProcessDownload
             ' troche bardziej skomplikowane, zeby w oSrc.Path był ostatni naprawdę użyty katalog
             Dim dirToGet As String = SettingsGlobal.FolderBrowser(oSrc.Path, "Select source folder")
             If dirToGet = "" Then Return
-            oSrc.Path = dirToGet
+
+            If dirToGet.StartsWith("\\") Then
+                If Not Await Me.DialogBoxYNAsync("Czy naprawdę ma byc katalog sieciowy?") Then
+                    Return
+                End If
+            End If
+
+
+                oSrc.Path = dirToGet
 
             oSrc.VolLabel = GetVolLabelForPath(dirToGet)
 
@@ -207,6 +217,12 @@ Public Class ProcessDownload
 
         vb14.DumpCurrMethod(oSrc.SourceName & ": " & oSrc.VolLabel)
 
+        If ProcessPic.GetBuffer(Me) Is Nothing Then
+            ' nie ma bufora, więc nie ma jak ściągać
+            Me.MsgBox("Nie znam bufora, nie mogę importować!")
+            Return 0
+        End If
+
         Me.ProgRingSetMax(100) 'obojętnie ile, byle teraz nie pokazać paska :)
         Me.ProgRingSetVal(0)
         Me.ProgRingShow(True)
@@ -246,7 +262,14 @@ Public Class ProcessDownload
 
         ProcessPic.GetBuffer(Me).SaveData()
         If retval > 0 Then
+
             oSrc.lastDownload = Date.Now
+
+            If oSrc.Typ = PicSourceType.Inet Then
+                Dim dataret As String = Await Me.InputBoxAsync("Jaką datę ostatniego pobrania ustawić?", oSrc.lastDownload.ToExifString)
+                oSrc.lastDownload = dataret.ParseExifDate(oSrc.lastDownload)
+            End If
+
             Application.GetSourcesList.Save()   ' zmieniona data
         End If
 
