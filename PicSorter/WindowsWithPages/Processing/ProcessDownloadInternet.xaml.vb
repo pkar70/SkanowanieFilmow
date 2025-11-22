@@ -63,6 +63,8 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
     Private Sub NextPic()
         Vblib.DumpCurrMethod()
 
+        _canAutoDateRecognize = True
+
         Dim countnew As Integer = _source.ReadDirectory(False)
         If countnew <= 0 Then Return
 
@@ -176,10 +178,12 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
 
     End Sub
 
+    Private _canAutoDateRecognize As Boolean = True
+
     Private Sub uiDescription_TextChanged(sender As Object, e As TextChangedEventArgs)
         Dim tekst As String = uiDescription.Text
         SprobujRozpoznacAutora(tekst)
-        SprobujRozpoznacDate(tekst)
+        If _canAutoDateRecognize Then SprobujRozpoznacDate(tekst)
 
         If Not tekst.Contains(vbCr) AndAlso Not tekst.Contains(vbLf) Then Return
 
@@ -188,7 +192,11 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
 
         uiDescription.Text = tekst
 
+        _canAutoDateRecognize = False
+    End Sub
 
+    Private Sub uiRescanDate_Click(sender As Object, e As RoutedEventArgs)
+        SprobujRozpoznacDate(uiDescription.Text)
     End Sub
 
     Private Sub SprobujRozpoznacDate(tekst As String)
@@ -497,4 +505,5 @@ Przewinąć stronę WWW do tego zdjęcia, i zapisz kolejne zdjęcie przed naciś
         If _samZmieniamAutora Then Return
         uiAddAuthor.IsEnabled = True
     End Sub
+
 End Class

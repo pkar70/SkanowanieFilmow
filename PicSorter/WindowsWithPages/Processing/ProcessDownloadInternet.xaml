@@ -47,7 +47,8 @@
             <TextBox Grid.Row="1" Grid.Column="1" Name="uiAutor" HorizontalAlignment="Stretch" Margin="0,0,25,0" TextChanged="uiAutor_TextChanged" />
             <Button Grid.Row="1" Grid.Column="1" Content="+" HorizontalAlignment="Right" Name="uiAddAuthor" Click="uiAddAuthor_Click" ToolTip="Dopisz do listy autorów (dbając by nie powtarzać)"/>
             <TextBlock Grid.Row="2" Text="Date range " />
-            <local:UserDateRange Grid.Row="2"  Grid.Column="1" x:Name="uiDateRange"/>
+            <local:UserDateRange Grid.Row="2"  Grid.Column="1" x:Name="uiDateRange" Margin="0,0,25,0" />
+            <Button Content="↻" Click="uiRescanDate_Click" Grid.Row="2"  Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             <TextBlock Grid.Row="3" Text="Link " />
             <TextBox Grid.Row="3" Grid.Column="1" Name="uiLink" TextChanged="uiLink_TextChanged"/>
             <TextBlock Grid.Row="4" Text="Keywords " />
