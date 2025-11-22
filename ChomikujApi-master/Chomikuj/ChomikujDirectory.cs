@@ -318,18 +318,31 @@ namespace Chomikuj
             var fileType = q.SelectSingleNode(".//div[contains(@class, 'filename')]").Attributes["class"].Value.Split(' ')[1];
             var fileSize = fileInfo[0].InnerText;
             var additionalInfo = q.SelectSingleNode(".//@additionalInfo");
+
+            // pkar: bo tu jest coœ zle, daje crash - zeby bylo latwiej debugowac rozdielam new {} na zmienne
+
+            var tempTitle = PozbadzSieSpanClassE(fileLink);
+            var tempLink = fileLink.Attributes["href"].Value;
+            var tempSizeInKb = Helpers.ParseFileSize(fileSize.Split(' ')[0], fileSize.Split(' ')[1]);
+            var tempDate = Helpers.ParseChomikujDate(fileInfo[1].InnerText);
+            Uri tempThumbnailLink = thumbnail == null ? null : new Uri(thumbnail.SelectSingleNode(".//img").Attributes["src"].Value);
+            var tempDescription = description  == null ? null : description.InnerText.Trim();
+            var tempFileType = Helpers.GetFileType(fileType);
+            var tempIsHoarded = additionalInfo != null;
+            var tempHoardedFrom = additionalInfo == null ? null : additionalInfo.SelectSingleNode(".//a").InnerText;
+
             return new ChomikujFile(_base)
             {
-                Title = PozbadzSieSpanClassE(fileLink), //.InnerText.Trim(),
-                Link = fileLink.Attributes["href"].Value,
-                SizeInKb = Helpers.ParseFileSize(fileSize.Split(' ')[0], fileSize.Split(' ')[1]),
-                Date = Helpers.ParseChomikujDate(fileInfo[1].InnerText),
-                ThumbnailLink = thumbnail == null ? null : new Uri(thumbnail.SelectSingleNode(".//img").Attributes["src"].Value),
+                Title = tempTitle,
+                Link = tempLink,
+                SizeInKb = tempSizeInKb,
+                Date = tempDate,
+                ThumbnailLink = tempThumbnailLink,
                 // ThumbnailLink = thumbnail == null ? null : new Uri(thumbnail.QuerySelector("img").Attributes["src"].Value),
-                Description = description  == null ? null : description.InnerText.Trim(),
-                FileType = Helpers.GetFileType(fileType),
-                IsHoarded = additionalInfo != null,
-                HoardedFrom = additionalInfo == null ? null : additionalInfo.SelectSingleNode(".//a").InnerText,
+                Description = tempDescription,
+                FileType = tempFileType,
+                IsHoarded = tempIsHoarded,
+                HoardedFrom = tempHoardedFrom,
                 // HoardedFrom = additionalInfo == null ? null : additionalInfo.QuerySelector("a").InnerText,
             };
         }

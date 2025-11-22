@@ -71,6 +71,8 @@ namespace Chomikuj
 
         public static double ParseFileSize(string value, string unit)
         {
+            if (string.IsNullOrWhiteSpace(value)) return 0;
+
             switch (unit.ToUpper())
             {
                 case "KB":
