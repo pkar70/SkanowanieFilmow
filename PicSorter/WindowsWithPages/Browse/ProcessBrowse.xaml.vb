@@ -1336,20 +1336,21 @@ Public Class ProcessBrowse
     ''' <summary>
     ''' usuń plik "ze wszystkąd"
     ''' </summary>
-    Private Sub DeletePicture(oThumb As ThumbPicek)
-        If oThumb Is Nothing Then Return
+    Private Function DeletePicture(oThumb As ThumbPicek) As Boolean
+        If oThumb Is Nothing Then Return False
 
         oThumb.oImageSrc = Nothing  ' bez tego plik był zajęty, nie mógł go skasować
 
-        If Not DeletePicture(oThumb.oPic) Then Return
+        If Not DeletePicture(oThumb.oPic) Then Return False
 
         ' przesunięcie "dzielnika" *TODO* bezpośrednio na liscie
         If oThumb.splitBefore Then _ReapplyAutoSplit = True
 
         ' skasuj z tutejszej listy
         _thumbsy.Remove(oThumb)
+        Return True
 
-    End Sub
+    End Function
 
     ''' <summary>
     ''' usuń plik "ze wszystkąd"
@@ -1393,32 +1394,35 @@ Public Class ProcessBrowse
         Next
     End Sub
 
-    Private Sub uiDelOne_Click(sender As Object, e As RoutedEventArgs)
+    Private Async Sub uiDelOne_Click(sender As Object, e As RoutedEventArgs)
         Dim oItem As FrameworkElement = sender
         Dim oPicek As ThumbPicek = oItem?.DataContext
 
-        DeleteAskPicekMain(oPicek)
+        If Await DeleteAskPicekMain(oPicek) Then Return
+
+        Me.MsgBox("Nieudane Delete zdjęcia - może otwarte gdzie indziej?")
+
     End Sub
 
-    Private Async Function DeleteAskPicekMain(oPicek As ThumbPicek) As Task
-        If oPicek Is Nothing Then Return
+    Private Async Function DeleteAskPicekMain(oPicek As ThumbPicek) As Task(Of Boolean)
+        If oPicek Is Nothing Then Return True
 
         If Not vb14.GetSettingsBool("uiNoDelConfirm") Then
-            If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcie ({oPicek.oPic.sSuggestedFilename})?") Then Return
+            If Not Await vb14.DialogBoxYNAsync($"Skasować zdjęcie ({oPicek.oPic.sSuggestedFilename})?") Then Return True
         End If
 
-        DeletePicekMain(oPicek)
+        Return DeletePicekMain(oPicek)
     End Function
 
 
     ''' <summary>
     ''' usuwa plik "ze wszystkąd", zapisuje metadane oraz odnawia miniaturki
     ''' </summary>
-    Private Sub DeletePicekMain(oPicek As ThumbPicek)
-        If oPicek Is Nothing Then Return
+    Private Function DeletePicekMain(oPicek As ThumbPicek) As Boolean
+        If oPicek Is Nothing Then Return False
 
         _ReapplyAutoSplit = False
-        DeletePicture(oPicek)   ' zmieni _Reapply, jeśli picek miał splita
+        If Not DeletePicture(oPicek) Then Return False   ' zmieni _Reapply, jeśli picek miał splita
 
         SaveMetaData()
 
@@ -1427,7 +1431,9 @@ Public Class ProcessBrowse
             ' tu można byłoby "przesuwać" splita pomiędzy zdjęciami
             UstawRozmiaryMiniaturki(_ReapplyAutoSplit)
         End If
-    End Sub
+
+        Return True
+    End Function
 
     Private Async Sub uiDeleteSelected_Click(sender As Object, e As RoutedEventArgs)
         'uiActionsPopup.IsOpen = False
