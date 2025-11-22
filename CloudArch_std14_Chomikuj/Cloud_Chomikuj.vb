@@ -25,6 +25,7 @@ Public Class Cloud_Chomikuj
     Private _lastChomikFiles As List(Of ChomikujFile)
 
     Public Overrides Async Function SendFileMain(oPic As Vblib.OnePic) As Task(Of String)
+        DumpCurrMethod()
 
         If Not _loggedIn Then Await Login()
         If Not _loggedIn Then Return "ERROR cannot login"
@@ -32,10 +33,13 @@ Public Class Cloud_Chomikuj
         Dim currFolder As String = GetFolderForFile(oPic)
         Dim oDir As Chomikuj.ChomikujDirectory
         If _lastTargetDir = currFolder Then
+            DumpMessage("Wykorzystuje ten sam katalog co poprzednio")
             oDir = _lastChomikDir
         Else
+            DumpMessage("Wstawiam do innego katalogu ni¿ poprzednie")
             oDir = TryCreateDirectoryTree(currFolder)
             If oDir IsNot Nothing Then
+                DumpMessage("... wiêc œci¹gam jego listing")
                 _lastTargetDir = currFolder
                 _lastChomikDir = oDir
                 _lastChomikFiles = oDir.GetFiles.ToList
@@ -44,7 +48,7 @@ Public Class Cloud_Chomikuj
 
         If oDir Is Nothing Then Return "ERROR: cannot get/create dirs path"
 
-        If _lastChomikFiles.Any(Function(x) x.Title.EqualsCI(oPic.sSuggestedFilename)) Then
+        If _lastChomikFiles IsNot Nothing AndAlso _lastChomikFiles.Any(Function(x) x.Title.EqualsCI(oPic.sSuggestedFilename)) Then
             ' jeœli ju¿ plik mamy, to nie wysy³amy ponownie (stan mo¿liwy po crash po wys³aniu wielu)
             DumpMessage($"Plik {oPic.sSuggestedFilename} in {oPic.TargetDir} ju¿ jest cloudniêty")
         Else
@@ -56,8 +60,9 @@ Public Class Cloud_Chomikuj
             oFile.ContentType = MimeTypes.MimeTypeMap.GetMimeType(IO.Path.GetExtension(oPic.InBufferPathName))
 
             oDir.UploadFile(oFile)
-
+            DumpMessage($"Wys³ano plik {oPic.sSuggestedFilename} do {currFolder}")
             Dim oRemoteFile As Chomikuj.ChomikujFile = oDir.TryGetFileFromNewest(oPic.sSuggestedFilename)
+            DumpMessage("Znalaz³em plik w katalogu")
             If oRemoteFile Is Nothing Then
                 ' 2024.03.07 mo¿e jednak siê uda³o, tylko trzeba by³o poczekaæ - albo w pe³nej liœcie trzeba sprawdziæ
                 Await Task.Delay(2 * 1000)
