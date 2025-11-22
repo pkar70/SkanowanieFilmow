@@ -19,7 +19,10 @@
             </Grid>
         <DatePicker Name="uiMaxDate" Grid.Column="1" DisplayDateStart="1800.01.01" DisplayDateEnd="2099.01.01" IsEnabled="{Binding IsChecked, ElementName=uiMaxDateCheck}" ToolTip="Zdjęcie zrobione do tej daty" SelectedDate="{Binding MaxDate, Mode=TwoWay}"/>
             <CheckBox Margin="0,5,0,0" ToolTip="Ignore year (use only month and day), tylko zdjęcia których data jest znana z dokładnością ≤ 30 dni" Content="Ignore year" IsChecked="{Binding IgnoreYear, Mode=TwoWay}"/>
-
+        <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+            <TextBlock Text="Max days: "/>
+            <TextBox Width="50" ToolTip="Maks. rozrzut dat zdjęcia, -1 oznacza zablokowanie sprawdzania" Text="{Binding MaxDaysRange, Mode=TwoWay}" InputScope="Digits" />
+        </StackPanel>
         <TextBlock Text="GUID (obsolete)" Margin="0,5,0,0"/>
         <TextBox ToolTip="Enter fragment of GUID, or '!' to search for empty" Text="{Binding GUID}"/>
         <TextBlock Text="serNo" Margin="0,2,0,0"/>

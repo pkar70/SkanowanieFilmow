@@ -8,6 +8,11 @@
              d:DesignHeight="450" d:DesignWidth="800">
     <StackPanel>
         <CheckBox IsChecked="{Binding AlsoEmpty, Mode=TwoWay}" Content="Dołącz zdjęcia bez Azure" ToolTip="Zaznacz jeśli w wynikach wyszukiwania powinny się znaleźć także zdjęcia które nie mają Azure" />
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Ignoruj: " />
+            <CheckBox IsChecked="{Binding SkipColor, Mode=TwoWay}" Content="kolor" ToolTip="Zaznacz, jeśli wyszukiwanie ma pomijać zdjęcia kolorowe" />
+            <CheckBox IsChecked="{Binding SkipBW, Mode=TwoWay}" Content="b/w" ToolTip="Zaznacz, jeśli wyszukiwanie ma pomijać zdjęcia czarnobiałe" />
+        </StackPanel>
         <local:StretchedGrid Cols="A,*" Rows="A,A,A,A,A,A,A,A,A,A,A,A">
             <TextBlock Grid.Row="0" Text="Brands" />
             <TextBlock Grid.Row="1" Text="Categories" />
