@@ -119,6 +119,9 @@ Public Class Helper
         Return Nothing
     End Function
 
+    ''' <summary>
+    ''' Zwraca listê katalogów w danym katalogu na urz¹dzeniu MTP
+    ''' </summary>
     Public Function GetDirList(sForDir As String) As List(Of String)
         vb14.DumpCurrMethod(sForDir)
         If _oMD Is Nothing Then Return Nothing
@@ -141,7 +144,7 @@ Public Class Helper
         End If
 
         _oMD.Disconnect()
-        Return lista
+        Return lista.OrderBy(Of String)(Function(s) s).ToList()
     End Function
 
     Private _listaPlikow As List(Of Vblib.OnePic)
@@ -151,7 +154,7 @@ Public Class Helper
 
         If Not ReadDirectory_Recursion(sInitialPath, sSourceName, sIncludeMask, sExcludeMask, oCurrentExif) Then Return Nothing
 
-        Return _listaPlikow
+        Return _listaPlikow.ToList()
     End Function
 
     Private Function ReadDirectory_Recursion(sSrcPath As String, sSourceName As String, sIncludeMask As String, sExcludeMask As String, oCurrentExif As Vblib.ExifTag) As Boolean
@@ -164,7 +167,7 @@ Public Class Helper
                 If Not ReadDirectory_Recursion(sDir, sSourceName, sIncludeMask, sExcludeMask, oCurrentExif) Then Return Nothing
             Next
 
-            For Each sFilePathName As String In _oMD.EnumerateFiles(sSrcPath)
+            For Each sFilePathName As String In _oMD.EnumerateFiles(sSrcPath).OrderBy(Of String)(Function(s) s)
                 Dim sFileName As String = IO.Path.GetFileName(sFilePathName)
 
                 If Vblib.OnePic.MatchesMasks(sFileName, sIncludeMask, sExcludeMask) Then
